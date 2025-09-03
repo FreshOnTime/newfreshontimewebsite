@@ -5,8 +5,7 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "20.18.0"
-  NPM_VERSION = "10.8.2"
+  NODE_VERSION = "20.17.0"
   NEXT_TELEMETRY_DISABLED = "1"
   SKIP_TYPE_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
@@ -14,9 +13,3 @@
 # Ensure the Next.js Runtime is enabled
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# Handle routing for Next.js app
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
