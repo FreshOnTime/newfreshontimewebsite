@@ -1,0 +1,28 @@
+pipelines:
+  custom:
+    build:
+      - variables:
+          - name: IMAGE_TAG
+            default: "latest"
+      - step:
+          name: Build-and-Push
+          services:
+            - docker
+          caches:
+            - docker # Rely on Docker layer caching for npm ci and npm install
+          script:
+            - echo "Logging into Azure Container Registry..."
+            - docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME -p $ACR_PASSWORD || { echo "Login failed"; exit 1; }
+
+            - echo "Building Docker image..."
+            - docker build -t $ACR_NAME.azurecr.io/fotui:$IMAGE_TAG --pull --no-cache=false .
+
+            - echo "Pushing Docker image..."
+            - docker push $ACR_NAME.azurecr.io/fotui:$IMAGE_TAG || { echo "Push failed"; exit 1; }
+
+            - echo "Docker image pushed successfully"
+
+definitions:
+  services:
+    docker:
+      memory: 3072 # Plenty for a Next.js build

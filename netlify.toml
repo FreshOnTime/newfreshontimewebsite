@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  # For Next.js on Netlify, the plugin handles functions and routing.
+  # The publish directory is the Next.js build output.
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Ensure the Next.js Runtime is enabled
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

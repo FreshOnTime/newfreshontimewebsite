@@ -1,0 +1,24 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "roots": ["<rootDir>"],
+  "testMatch": [
+    "**/__tests__/**/*.+(ts|tsx|js)",
+    "**/*.(test|spec).+(ts|tsx|js)"
+  ],
+  "transform": {
+    "^.+\\.(ts|tsx)$": "ts-jest"
+  },
+  "collectCoverageFrom": [
+    "app/api/**/*.{js,ts}",
+    "lib/**/*.{js,ts}",
+    "!**/*.d.ts",
+    "!**/node_modules/**"
+  ],
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+  "modulePathIgnorePatterns": ["<rootDir>/.next/"],
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/$1"
+  },
+  "testTimeout": 30000
+}
