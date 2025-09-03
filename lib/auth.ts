@@ -68,8 +68,12 @@ export async function verifyToken(request: NextRequest) {
   }
 }
 
-export function requireAuth<T = unknown>(handler: (request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, context?: T) => Promise<NextResponse> | Promise<Response>) {
-  return async (request: NextRequest, context?: T) => {
+// Function without generics to simplify typing
+export function requireAuth(handler: (
+  request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, 
+  context: any
+) => Promise<NextResponse> | Promise<Response>) {
+  return async (request: NextRequest, context: any) => {
     const user = await verifyToken(request);
     
     if (!user) {
@@ -86,8 +90,11 @@ export function requireAuth<T = unknown>(handler: (request: NextRequest & { user
   };
 }
 
-export function requireAdmin<T = unknown>(handler: (request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, context?: T) => Promise<NextResponse> | Promise<Response>) {
-  return async (request: NextRequest, context?: T) => {
+export function requireAdmin(handler: (
+  request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, 
+  context: any
+) => Promise<NextResponse> | Promise<Response>) {
+  return async (request: NextRequest, context: any) => {
     const user = await verifyToken(request);
     
     if (!user) {

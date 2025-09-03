@@ -9,12 +9,12 @@ import { sendSuccess, sendNotFound, sendInternalError, sendBadRequest } from '@/
 // GET /api/products/[id] - Get a single product
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
 
-    const id = (await params).id;
+    const id = params.id;
     
     if (!id) {
       return sendBadRequest('Product ID is required');

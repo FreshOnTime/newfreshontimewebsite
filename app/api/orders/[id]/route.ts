@@ -10,7 +10,7 @@ interface AuthenticatedRequest extends NextRequest {
 }
 
 // GET - fetch single order (owner or admin)
-export const GET = requireAuth<{ params: { id: string } }>(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const GET = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
   try {
     await connectDB();
     const id = context?.params?.id;
@@ -41,7 +41,7 @@ export const GET = requireAuth<{ params: { id: string } }>(async (request: NextR
 });
 
 // PUT - update an order (owner or admin). Allows editing shippingAddress and notes while order is not shipped/delivered.
-export const PUT = requireAuth<{ params: { id: string } }>(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const PUT = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
   try {
     await connectDB();
     const id = context?.params?.id;

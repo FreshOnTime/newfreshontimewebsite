@@ -1,5 +1,5 @@
 [build]
-  command = "SKIP_TYPE_CHECK=true npm run build"
+  command = "npm run build"
   # For Next.js on Netlify, the plugin handles functions and routing.
   # The publish directory is the Next.js build output.
   publish = ".next"
