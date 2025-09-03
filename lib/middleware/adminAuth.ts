@@ -74,9 +74,9 @@ export async function verifyAdminToken(cookieToken?: string): Promise<AdminUser 
  * Middleware to require admin authentication
  */
 export function requireAdmin<T extends Record<string, string>>(
-  handler: (req: AdminRequest, context: { params: T }) => Promise<NextResponse>
+  handler: (req: AdminRequest, context: { params: Promise<T> }) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context: { params: T }) => {
+  return async (request: NextRequest, context: { params: Promise<T> }) => {
     try {
       // Prefer NextRequest cookies API; fallback to header parsing
       const cookieToken = request.cookies.get('accessToken')?.value ||
@@ -98,6 +98,42 @@ export function requireAdmin<T extends Record<string, string>>(
       (request as AdminRequest).user = user;
 
       return await handler(request as AdminRequest, context);
+    } catch (error) {
+      console.error('Admin auth middleware error:', error);
+      return NextResponse.json(
+        { error: 'Authentication failed' },
+        { status: 401 }
+      );
+    }
+  };
+}
+
+// For routes without parameters
+export function requireAdminSimple(
+  handler: (req: AdminRequest) => Promise<NextResponse>
+) {
+  return async (request: NextRequest) => {
+    try {
+      // Prefer NextRequest cookies API; fallback to header parsing
+      const cookieToken = request.cookies.get('accessToken')?.value ||
+        request.headers.get('cookie')
+          ?.split(';')
+          ?.find(c => c.trim().startsWith('accessToken='))
+          ?.split('=')[1];
+      
+      const user = await verifyAdminToken(cookieToken);
+      
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Admin access required' },
+          { status: 403 }
+        );
+      }
+
+      // Add user to request
+      (request as AdminRequest).user = user;
+
+      return await handler(request as AdminRequest);
     } catch (error) {
       console.error('Admin auth middleware error:', error);
       return NextResponse.json(

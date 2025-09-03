@@ -3,7 +3,7 @@ import { z } from 'zod';
 import connectDB from '@/lib/database';
 import AuditLog from '@/lib/models/AuditLog';
 import User from '@/lib/models/User';
-import { requireAdmin } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? Math.max(parseInt(v), 1) : 1)),
@@ -47,7 +47,7 @@ function describeLog(log: Pick<LeanAuditLog, 'resourceType' | 'action' | 'resour
   return `${action} ${res}${id}`;
 }
 
-export const GET = requireAdmin(async (request) => {
+export const GET = requireAdminSimple(async (request) => {
   try {
     await connectDB();
 

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import connectDB from '@/lib/database';
 import Order from '@/lib/models/EnhancedOrder';
 import Customer from '@/lib/models/Customer';
-import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
@@ -15,7 +15,7 @@ const querySchema = z.object({
   sort: z.enum(['created-desc','created-asc','next-asc','next-desc']).optional(),
 });
 
-export const GET = requireAdmin(async (request) => {
+export const GET = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const { searchParams } = new URL(request.url);
@@ -130,7 +130,7 @@ const createOrderSchema = z.object({
   }).optional(),
 });
 
-export const POST = requireAdmin(async (request) => {
+export const POST = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const body = await request.json();

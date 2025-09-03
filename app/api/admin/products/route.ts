@@ -3,7 +3,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/database';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
-import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const createProductSchema = z.object({
   name: z.string().min(1).max(200),
@@ -43,7 +43,7 @@ const querySchema = z.object({
   archived: z.string().optional(),
 });
 
-export const GET = requireAdmin(async (request) => {
+export const GET = requireAdminSimple(async (request) => {
   try {
     await connectDB();
 
@@ -82,7 +82,7 @@ export const GET = requireAdmin(async (request) => {
   }
 });
 
-export const POST = requireAdmin(async (request) => {
+export const POST = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const body = await request.json();

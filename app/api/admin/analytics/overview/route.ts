@@ -4,10 +4,10 @@ import Customer from '@/lib/models/Customer';
 import User from '@/lib/models/User';
 import Product from '@/lib/models/EnhancedProduct';
 import Order from '@/lib/models/EnhancedOrder';
-import { requireAdmin } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 // GET /api/admin/analytics/overview
-export const GET = requireAdmin(async () => {
+export const GET = requireAdminSimple(async () => {
   try {
     await connectDB();
 

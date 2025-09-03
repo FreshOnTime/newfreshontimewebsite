@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/database';
 import Supplier from '@/lib/models/Supplier';
-import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const supplierSchema = z.object({
   name: z.string().min(1).max(200),
@@ -28,7 +28,7 @@ const querySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-export const GET = requireAdmin(async (request) => {
+export const GET = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const { searchParams } = new URL(request.url);
@@ -59,7 +59,7 @@ export const GET = requireAdmin(async (request) => {
   }
 });
 
-export const POST = requireAdmin(async (request) => {
+export const POST = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const body = await request.json();

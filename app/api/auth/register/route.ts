@@ -21,7 +21,7 @@ async function handleSignup(request: NextRequest) {
     }
 
     // Create user
-    const result = await authService.signup(validation.data);
+    const result = await authService.signup(validation.data!);
 
     // Create response
     const response = NextResponse.json(
@@ -57,38 +57,3 @@ async function handleSignup(request: NextRequest) {
 
 // Apply rate limiting to signup
 export const POST = withRateLimit(handleSignup, 'auth');
-      name: savedUser.name,
-      email: savedUser.email,
-      phone: savedUser.phone,
-      role: savedUser.role,
-      isActive: savedUser.isActive,
-      createdAt: savedUser.createdAt
-    };
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: savedUser._id, 
-        email: savedUser.email,
-        role: savedUser.role 
-      },
-      process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: '7d' }
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: 'User registered successfully',
-      data: {
-        user: userResponse,
-        token
-      }
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Error registering user:', error);
-    return NextResponse.json(
-      { error: 'Failed to register user' },
-      { status: 500 }
-    );
-  }
-}

@@ -4,7 +4,7 @@ import connectDB from '@/lib/database';
 import Customer from '@/lib/models/Customer';
 import User from '@/lib/models/User';
 import type { Types } from 'mongoose';
-import { requireAdmin, logAuditAction, checkRateLimit, getClientIP } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple, logAuditAction, checkRateLimit, getClientIP } from '@/lib/middleware/adminAuth';
 
 const createCustomerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -28,7 +28,7 @@ const querySchema = z.object({
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
-export const GET = requireAdmin(async (request) => {
+export const GET = requireAdminSimple(async (request) => {
   try {
     await connectDB();
 
@@ -154,7 +154,7 @@ export const GET = requireAdmin(async (request) => {
   }
 });
 
-export const POST = requireAdmin(async (request) => {
+export const POST = requireAdminSimple(async (request) => {
   try {
     // Rate limiting
     const clientIP = getClientIP(request);

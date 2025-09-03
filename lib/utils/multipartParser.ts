@@ -61,7 +61,7 @@ export async function parseMultipartForm(request: NextRequest): Promise<FormFiel
     const contentType = typeMatch ? typeMatch[1].trim() : 'text/plain';
 
     // Find the start of data
-    let dataStart = headerEndIndex + 4; // Skip \r\n\r\n
+    const dataStart = headerEndIndex + 4; // Skip \r\n\r\n
 
     // Find the end of data (next boundary)
     const nextBoundaryIndex = findBytes(bodyBytes, new TextEncoder().encode('\r\n--' + boundary), dataStart);

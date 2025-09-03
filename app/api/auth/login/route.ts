@@ -55,33 +55,3 @@ async function handleLogin(request: NextRequest) {
 
 // Apply rate limiting to login
 export const POST = withRateLimit(handleLogin, 'auth');
-      createdAt: user.createdAt
-    };
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: user._id, 
-        email: user.email,
-        role: user.role 
-      },
-      process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: '7d' }
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        user: userResponse,
-        token
-      }
-    });
-  } catch (error) {
-    console.error('Error logging in user:', error);
-    return NextResponse.json(
-      { error: 'Failed to login' },
-      { status: 500 }
-    );
-  }
-}

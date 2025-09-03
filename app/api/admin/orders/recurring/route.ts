@@ -3,7 +3,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/database';
 import Order from '@/lib/models/EnhancedOrder';
-import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 interface AuthenticatedRequest extends NextRequest {
   user: {
@@ -27,7 +27,7 @@ const adminQuerySchema = z.object({
 });
 
 // GET - fetch all recurring orders for admin with advanced filtering
-export const GET = requireAdmin(async (request: NextRequest) => {
+export const GET = requireAdminSimple(async (request: NextRequest) => {
   try {
     await connectDB();
     const url = new URL(request.url);
@@ -166,7 +166,7 @@ export const GET = requireAdmin(async (request: NextRequest) => {
 });
 
 // POST - admin bulk actions on recurring orders
-export const POST = requireAdmin(async (request: NextRequest) => {
+export const POST = requireAdminSimple(async (request: NextRequest) => {
   try {
     await connectDB();
     const body = await request.json();

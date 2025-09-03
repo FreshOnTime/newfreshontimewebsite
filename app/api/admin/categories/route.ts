@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/database';
 import Category from '@/lib/models/Category';
-import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const schema = z.object({ name: z.string().min(1).max(100), slug: z.string().optional(), description: z.string().max(500).optional(), parentCategoryId: z.string().optional(), imageUrl: z.string().url().optional(), isActive: z.boolean().optional(), sortOrder: z.number().int().optional() });
 const querySchema = z.object({ page: z.string().optional().transform((v)=>v?parseInt(v):1), limit: z.string().optional().transform((v)=>v?Math.min(parseInt(v),100):100), search: z.string().optional() });
 
-export const GET = requireAdmin(async (request) => {
+export const GET = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const { searchParams } = new URL(request.url);
@@ -25,7 +25,7 @@ export const GET = requireAdmin(async (request) => {
   }
 });
 
-export const POST = requireAdmin(async (request) => {
+export const POST = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const body = await request.json();

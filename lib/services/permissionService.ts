@@ -105,7 +105,7 @@ export class PermissionService {
     for (const permData of defaultPermissions) {
       try {
         await this.createPermission(permData);
-      } catch (error) {
+      } catch {
         // Permission already exists, skip
         console.log(`Permission ${permData.resource}:${permData.operation} already exists`);
       }

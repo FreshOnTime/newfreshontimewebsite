@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/utils/apiResponses';
-import connectDB from '@/lib/db';
+import connectDB from '@/lib/database';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Test database connection
     await connectDB();

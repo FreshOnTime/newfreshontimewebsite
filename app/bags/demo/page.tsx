@@ -12,8 +12,7 @@ function BagDemo() {
     error, 
     createBag, 
     addToBag, 
-    removeFromBag,
-    fetchBags 
+    removeFromBag
   } = useBag();
 
   const [products, setProducts] = useState<Product[]>([]);

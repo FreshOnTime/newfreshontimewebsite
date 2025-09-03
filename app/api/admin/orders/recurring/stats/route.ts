@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/database';
 import { RecurringOrderService } from '@/lib/services/recurringOrderService';
-import { requireAdmin } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 // GET - get recurring order statistics (admin only)
-export const GET = requireAdmin(async () => {
+export const GET = requireAdminSimple(async () => {
   try {
     await connectDB();
 
