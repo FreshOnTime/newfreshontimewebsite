@@ -51,7 +51,7 @@ export const GET = requireAdmin(async (_request: AdminRequest, { params }: { par
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
-    const user = await User.findById(id);
+  const user = await User.findById(id).lean();
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
     return NextResponse.json({ user });
   } catch (error) {
@@ -80,11 +80,19 @@ export const PATCH = requireAdmin(async (request: AdminRequest, { params }: { pa
       if (exists) return NextResponse.json({ error: 'Phone already in use' }, { status: 400 });
     }
 
-    const before = await User.findById(id);
+        const before = await User.findById(id).lean();
     if (!before) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const updated = await User.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
-  await logAuditAction(request.user!.userId, 'update', 'user', id, before.toObject(), updated!.toObject(), request);
+        const updated = await User.findByIdAndUpdate(id, data, { new: true }).lean();
+        await logAuditAction(
+          request.user!.userId,
+          'update',
+          'user',
+          id,
+          before as unknown as Record<string, unknown>,
+          updated as unknown as Record<string, unknown>,
+          request
+        );
     return NextResponse.json({ user: updated });
   } catch (error) {
     if (error instanceof z.ZodError) {

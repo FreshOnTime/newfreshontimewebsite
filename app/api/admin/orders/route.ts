@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/database';
+import mongoose from 'mongoose';
 import Order from '@/lib/models/EnhancedOrder';
 import Customer from '@/lib/models/Customer';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
@@ -13,6 +14,7 @@ const querySchema = z.object({
   isRecurring: z.string().optional(), // 'true'|'false'
   scheduleStatus: z.enum(['active','paused','ended']).optional(),
   sort: z.enum(['created-desc','created-asc','next-asc','next-desc']).optional(),
+  customerId: z.string().optional(),
 });
 
 export const GET = requireAdminSimple(async (request) => {
@@ -31,6 +33,12 @@ export const GET = requireAdminSimple(async (request) => {
   if (query.isRecurring === 'true') filter.isRecurring = true;
   if (query.isRecurring === 'false') filter.isRecurring = { $in: [false, undefined] };
   if (query.scheduleStatus) filter.scheduleStatus = query.scheduleStatus;
+  if (query.customerId) {
+      if (!mongoose.Types.ObjectId.isValid(query.customerId)) {
+        return NextResponse.json({ error: 'Invalid customerId' }, { status: 400 });
+      }
+      filter.customerId = new mongoose.Types.ObjectId(query.customerId);
+    }
 
     const page = query.page;
     const limit = query.limit;

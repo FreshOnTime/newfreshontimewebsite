@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, ListOrdered } from 'lucide-react';
+import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -264,6 +265,14 @@ export function CustomersPage() {
                                 <Eye className="h-4 w-4 mr-2" />
                                 View
                               </DropdownMenuItem>
+                              {'_id' in customer && (
+                                <Link href={`/admin/orders?customerId=${customer._id}`}>
+                                  <DropdownMenuItem>
+                                    <ListOrdered className="h-4 w-4 mr-2" />
+                                    View Orders
+                                  </DropdownMenuItem>
+                                </Link>
+                              )}
                               <DropdownMenuItem onClick={() => handleEdit(customer)}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit

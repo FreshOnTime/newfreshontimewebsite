@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,11 +50,14 @@ export function OrdersPage() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [open, setOpen] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
+  const [customerId, setCustomerId] = useState<string | ''>('');
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const fetchItems = async () => {
     try {
       setLoading(true);
-  const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }), ...(isRecurring !== 'all' && { isRecurring }), ...(schedStatus !== 'all' && { scheduleStatus: schedStatus }), ...(sort && { sort }) });
+  const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }), ...(isRecurring !== 'all' && { isRecurring }), ...(schedStatus !== 'all' && { scheduleStatus: schedStatus }), ...(sort && { sort }), ...(customerId ? { customerId } : {}) });
       const res = await fetch(`/api/admin/orders?${params}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed');
       const data: OrdersResponse = await res.json();
@@ -66,7 +70,14 @@ export function OrdersPage() {
     }
   };
 
-  useEffect(() => { fetchItems(); }, [page, search, isRecurring, schedStatus, sort]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // Initialize customerId from URL once
+    const cid = searchParams.get('customerId');
+    if (cid && !customerId) setCustomerId(cid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => { fetchItems(); }, [page, search, isRecurring, schedStatus, sort, customerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const view = (o: Order) => { setSelected(o); setOpen(true); };
   const saved = () => { setOpen(false); setSelected(null); fetchItems(); };
@@ -104,6 +115,14 @@ export function OrdersPage() {
           <CardDescription>Recent orders</CardDescription>
         </CardHeader>
         <CardContent>
+          {customerId && (
+            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-800 rounded-md px-3 py-2 mb-3 text-sm">
+              <div>
+                Filtering by customer ID: <span className="font-mono">{customerId}</span>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => { setCustomerId(''); router.push('/admin/orders'); }}>Clear</Button>
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-2 mb-6">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
