@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bag } from '@/models/Bag';
 // import { BagItem } from '@/models/BagItem';
 import { Product } from '@/models/product';
@@ -56,6 +57,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   // Use authenticated user ObjectId for database queries; don't fallback to a hardcoded id
   const userId = user?._id;
+  const router = useRouter();
 
   const fetchBags = async () => {
     setLoading(true);
@@ -117,7 +119,10 @@ export function BagProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       if (!userId) {
-        throw new Error('User not authenticated');
+        // redirect unauthenticated users to login, preserving current path
+        const redirectTo = typeof window !== 'undefined' ? window.location.pathname : '/';
+        router.push(`/auth/login?redirect=${encodeURIComponent(redirectTo)}`);
+        return;
       }
       const response = await fetch('/api/bags', {
         method: 'POST',
@@ -125,12 +130,12 @@ export function BagProvider({ children }: { children: ReactNode }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId,
           name,
           description,
           items: [],
           tags: []
         }),
+        credentials: 'include'
       });
 
       const data = await response.json();

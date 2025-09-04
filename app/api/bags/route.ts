@@ -4,6 +4,7 @@ import Bag from '@/lib/models/Bag';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
 import User from '@/lib/models/User';
 import mongoose from 'mongoose';
+import { requireAuth } from '@/lib/auth';
 
 // GET - Fetch all bags for a user
 export async function GET(request: NextRequest) {
@@ -62,16 +63,18 @@ export async function GET(request: NextRequest) {
 }
 
 // POST - Create a new bag
-export async function POST(request: NextRequest) {
+export const POST = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
   try {
     await connectDB();
-    
-    const body = await request.json();
-    const { userId, name, description, items, tags } = body;
 
-    if (!userId || !name || !items || !Array.isArray(items)) {
+    const body = await request.json();
+    const { name, description, items, tags } = body;
+    const authUser = request.user;
+    const effectiveUserId = authUser?.mongoId || authUser?.userId;
+
+    if (!effectiveUserId || !name || !items || !Array.isArray(items)) {
       return NextResponse.json(
-        { error: 'User ID, name, and items are required' },
+        { error: 'Authentication, name, and items are required' },
         { status: 400 }
       );
     }
@@ -102,10 +105,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Ensure user reference is an ObjectId
-    let userRef: string = userId;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      const user = await User.findOne({ userId });
+    // Ensure user reference is an ObjectId (resolve if we have a userId string)
+    let userRef: string = effectiveUserId;
+    if (!mongoose.Types.ObjectId.isValid(userRef)) {
+      const user = await User.findOne({ userId: userRef });
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
@@ -120,7 +123,7 @@ export async function POST(request: NextRequest) {
       tags: tags || []
     });
 
-    const savedBag = await newBag.save();
+  const savedBag = await newBag.save();
     
     const populatedBag = await Bag.findById(savedBag._id)
       .populate({
@@ -140,4 +143,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
