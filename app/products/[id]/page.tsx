@@ -7,14 +7,12 @@ import { Suspense } from "react";
 import { ProductControls } from "./ProductControls";
 import { PageContainer } from "@/components/templates/PageContainer";
 import rehypeSanitize from "rehype-sanitize";
-import { withBase } from "@/lib/serverUrl";
 import Link from "next/link";
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
-  const response = await fetch(withBase(`/api/products/${id}`), {
-      cache: 'no-store'
-    });
+  // Use relative API route for internal server fetch
+  const response = await fetch(`/api/products/${id}`, { cache: 'no-store' });
     if (response.ok) {
       const data = await response.json();
       return data.data || null;

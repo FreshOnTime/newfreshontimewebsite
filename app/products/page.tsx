@@ -1,15 +1,13 @@
 import ProductGrid from "@/components/products/ProductGrid";
 import SectionHeader from "@/components/home/SectionHeader";
 import { PageContainer } from "@/components/templates/PageContainer";
-import { withBase } from "@/lib/serverUrl";
 import ProductsFilterBar from "../../components/products/ProductsFilterBar";
 
 async function getProducts(query: string) {
   try {
-  const url = withBase(`/api/products${query ? `?${query}` : ''}`);
-  const response = await fetch(url, {
-      cache: 'no-store'
-    });
+  // Use relative path so Next.js server fetches the internal API route directly
+  const url = `/api/products${query ? `?${query}` : ''}`;
+  const response = await fetch(url, { cache: 'no-store' });
     if (response.ok) {
       const data = await response.json();
       return data.data?.products || [];
