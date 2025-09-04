@@ -3,7 +3,29 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, User, Menu, X, MapPin, LogOut, Settings } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Menu,
+  X,
+  MapPin,
+  LogOut,
+  Settings,
+  Cake,
+  CupSoda,
+  Milk,
+  Apple,
+  Snowflake,
+  Beef,
+  Archive,
+  Candy,
+  ShoppingBasket,
+  Drumstick,
+  Carrot,
+  IceCream2,
+  Package,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -17,7 +39,27 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 
-type NavCategory = { name: string; slug: string };
+interface NavCategory {
+  name: string;
+  slug: string;
+}
+
+const categoryIcons: Record<string, React.ElementType> = {
+  bakery: Cake,
+  beverages: CupSoda,
+  dairy: Milk,
+  "dairy-eggs": Milk,
+  produce: Apple,
+  "fresh-produce": Carrot,
+  frozen: Snowflake,
+  "frozen-foods": IceCream2,
+  meat: Beef,
+  "meat-poultry": Drumstick,
+  "meat-seafood": Drumstick,
+  pantry: Archive,
+  "pantry-staples": Package,
+  snacks: Candy,
+};
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,16 +72,16 @@ export function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-  router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/');
+      router.push("/");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -47,26 +89,31 @@ export function Navbar() {
     let ignore = false;
     async function loadCategories() {
       try {
-        const res = await fetch('/api/categories');
+        const res = await fetch("/api/categories");
         if (!res.ok) return;
         const json = await res.json();
         const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
         const mapped: NavCategory[] = items
           .map((c) => {
-            if (typeof c === 'object' && c && 'name' in c && 'slug' in c) {
+            if (typeof c === "object" && c && "name" in c && "slug" in c) {
               const cc = c as { name?: unknown; slug?: unknown };
-              return { name: String(cc.name ?? ''), slug: String(cc.slug ?? '') };
+              return {
+                name: String(cc.name ?? ""),
+                slug: String(cc.slug ?? ""),
+              };
             }
-            return { name: '', slug: '' };
+            return { name: "", slug: "" };
           })
           .filter((c) => Boolean(c.name) && Boolean(c.slug));
         if (!ignore) setNavCategories(mapped);
-  } catch {
-        console.warn('Failed to load categories for navbar');
+      } catch {
+        console.warn("Failed to load categories for navbar");
       }
     }
     loadCategories();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
@@ -78,11 +125,11 @@ export function Navbar() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-green-700">
                 <MapPin className="w-4 h-4 mr-1" />
-                <span>Delivering to Colombo 03</span>
+                <span>Delivering around colombo</span>
               </div>
               <span className="text-gray-600">|</span>
               <span className="text-green-700 font-medium">
-                Same-day delivery available
+                Scheduled delivery available
               </span>
             </div>
             <div className="hidden md:flex items-center space-x-4 text-gray-600">
@@ -109,7 +156,9 @@ export function Navbar() {
               height={40}
               className="text-green-600"
             />
-            <span className="text-2xl font-bold text-green-700">Fresh Pick</span>
+            <span className="text-2xl font-bold text-green-700">
+              Fresh Pick
+            </span>
           </Link>
 
           {/* Search bar - Desktop */}
@@ -139,9 +188,12 @@ export function Navbar() {
             {/* Account dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="hidden md:flex items-center space-x-2">
-                  <User className={`w-5 h-5 ${user ? 'text-green-600' : ''}`} />
-                  <span>{user ? user.firstName : 'Account'}</span>
+                <Button
+                  variant="ghost"
+                  className="hidden md:flex items-center space-x-2"
+                >
+                  <User className={`w-5 h-5 ${user ? "text-green-600" : ""}`} />
+                  <span>{user ? user.firstName : "Account"}</span>
                   {user && (
                     <Badge variant="secondary" className="ml-1 text-xs">
                       {user.role}
@@ -170,7 +222,7 @@ export function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link href="/orders">Order History</Link>
                     </DropdownMenuItem>
-                    {(user.role === 'admin' || user.role === 'manager') && (
+                    {(user.role === "admin" || user.role === "manager") && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
@@ -182,7 +234,10 @@ export function Navbar() {
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-red-600"
+                    >
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
@@ -220,11 +275,12 @@ export function Navbar() {
 
         {/* Categories navigation - Desktop */}
         <div className="hidden md:block border-t border-gray-100">
-          <nav className="flex items-center space-x-8 py-3 overflow-x-auto">
+          <nav className="flex items-center space-x-6 py-3 overflow-x-auto">
             <Link
               href="/products"
-              className="text-gray-900 font-semibold hover:text-green-600 whitespace-nowrap py-2 text-sm transition-colors"
+              className="text-gray-900 font-semibold hover:text-green-600 whitespace-nowrap py-2 text-sm transition-colors flex items-center gap-2"
             >
+              <ShoppingBasket className="w-4 h-4" />
               All Products
             </Link>
             <Link
@@ -239,15 +295,20 @@ export function Navbar() {
             >
               Categories
             </Link>
-      {navCategories.map((category) => (
-              <Link
-        key={category.slug}
-        href={`/categories/${category.slug}`}
-                className="text-gray-700 hover:text-green-600 whitespace-nowrap py-2 text-sm font-medium transition-colors duration-200"
-              >
-        {category.name}
-              </Link>
-            ))}
+            {navCategories.map((category) => {
+              const Icon =
+                categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
+              return (
+                <Link
+                  key={category.slug}
+                  href={`/categories/${category.slug}`}
+                  className="text-gray-700 hover:text-green-600 whitespace-nowrap py-2 text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                >
+                  <Icon className="w-4 h-4" />
+                  {category.name}
+                </Link>
+              );
+            })}
             <Link
               href="/orders"
               className="text-gray-700 hover:text-green-600 whitespace-nowrap py-2 text-sm transition-colors"
@@ -297,7 +358,7 @@ export function Navbar() {
                       className="block text-gray-600 hover:text-green-600"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      {user.firstName || 'My Profile'}
+                      {user.firstName || "My Profile"}
                     </Link>
                     <Link
                       href="/orders"
@@ -306,7 +367,7 @@ export function Navbar() {
                     >
                       Order History
                     </Link>
-                    {(user.role === 'admin' || user.role === 'manager') && (
+                    {(user.role === "admin" || user.role === "manager") && (
                       <Link
                         href="/dashboard"
                         className="block text-gray-600 hover:text-green-600"
@@ -316,7 +377,10 @@ export function Navbar() {
                       </Link>
                     )}
                     <button
-                      onClick={async () => { await handleLogout(); setIsMenuOpen(false); }}
+                      onClick={async () => {
+                        await handleLogout();
+                        setIsMenuOpen(false);
+                      }}
                       className="block text-left text-red-600 hover:text-red-700 w-full"
                     >
                       Sign Out
@@ -347,16 +411,22 @@ export function Navbar() {
             <div className="border-b border-gray-200 pb-4 mb-4">
               <h3 className="font-medium mb-3">Categories</h3>
               <div className="space-y-2">
-        {navCategories.map((category) => (
-                  <Link
-          key={category.slug}
-          href={`/categories/${category.slug}`}
-                    className="block text-gray-600 hover:text-green-600 py-1"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-          {category.name}
-                  </Link>
-                ))}
+                {navCategories.map((category) => {
+                  const Icon =
+                    categoryIcons[category.slug?.toLowerCase()] ||
+                    ShoppingBasket;
+                  return (
+                    <Link
+                      key={category.slug}
+                      href={`/categories/${category.slug}`}
+                      className="flex items-center gap-3 text-gray-600 hover:text-green-600 py-1"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {category.name}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
