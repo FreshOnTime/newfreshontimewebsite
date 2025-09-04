@@ -290,20 +290,56 @@ export function Navbar() {
                 <span className="font-medium">Account</span>
               </div>
               <div className="space-y-2 ml-9">
-                <Link
-                  href="/auth/signup"
-                  className="block text-gray-600 hover:text-green-600"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
-                <Link
-                  href="/auth/login"
-                  className="block text-gray-600 hover:text-green-600"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign In
-                </Link>
+                {user ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      className="block text-gray-600 hover:text-green-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {user.firstName || 'My Profile'}
+                    </Link>
+                    <Link
+                      href="/orders"
+                      className="block text-gray-600 hover:text-green-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Order History
+                    </Link>
+                    {(user.role === 'admin' || user.role === 'manager') && (
+                      <Link
+                        href="/dashboard"
+                        className="block text-gray-600 hover:text-green-600"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                    )}
+                    <button
+                      onClick={async () => { await handleLogout(); setIsMenuOpen(false); }}
+                      className="block text-left text-red-600 hover:text-red-700 w-full"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/signup"
+                      className="block text-gray-600 hover:text-green-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                    <Link
+                      href="/auth/login"
+                      className="block text-gray-600 hover:text-green-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Sign In
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
