@@ -9,18 +9,101 @@ import { PageContainer } from "@/components/templates/PageContainer";
 import rehypeSanitize from "rehype-sanitize";
 import Link from "next/link";
 
+import connectDB from '@/lib/database';
+import EnhancedProduct from '@/lib/models/EnhancedProduct';
+import Category from '@/lib/models/Category';
+
 async function getProduct(id: string): Promise<Product | null> {
   try {
-  // Use relative API route for internal server fetch
-  const response = await fetch(`/api/products/${id}`, { cache: 'no-store' });
-    if (response.ok) {
-      const data = await response.json();
-      return data.data || null;
+  console.log('ProductPage - getProduct id:', id);
+    await connectDB();
+    // Support finding by _id, sku or slug in the DB
+    const mongoose = await import('mongoose');
+    let p: any = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      p = await EnhancedProduct.findById(id).lean();
     }
+    if (!p) {
+      p = await EnhancedProduct.findOne({ $or: [{ sku: id }, { slug: id }] }).lean();
+    }
+    if (!p) {
+      console.log('ProductPage - product not found in DB for id:', id);
+      return null;
+    }
+
+    let categoryMeta: { id: string; name: string; slug: string } | undefined;
+    if (p.categoryId) {
+      try {
+        const cat = await Category.findById(p.categoryId).select('name slug').lean();
+        if (cat) categoryMeta = { id: String(p.categoryId), name: cat.name || '', slug: cat.slug || '' };
+      } catch {}
+    }
+
+    const attrs = p.attributes || {};
+    const maybeUnitOptions = attrs.unitOptions;
+    const unitOptions = Array.isArray(maybeUnitOptions)
+      ? maybeUnitOptions
+          .map((o: any) => {
+            const unit = typeof o.unit === 'string' && ['g','kg','ml','l','ea','lb'].includes(o.unit) ? o.unit : undefined;
+            const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
+            const price = typeof o.price === 'number' ? o.price : undefined;
+            if (!unit || !quantity || price === undefined) return null;
+            return { label: o.label || `${quantity}${unit}`, quantity, unit, price };
+          })
+          .filter(Boolean)
+      : undefined;
+
+    const product = {
+      sku: String(p.sku || p._id),
+      name: p.name || '',
+      image: {
+        url: Array.isArray(p.images) && p.images[0] ? String(p.images[0]) : (p.image ? String(p.image) : '/placeholder.svg'),
+        filename: '',
+        contentType: '',
+        path: Array.isArray(p.images) && p.images[0] ? String(p.images[0]) : (p.image ? String(p.image) : '/placeholder.svg'),
+        alt: p.name || undefined,
+      },
+      description: p.description || '',
+      category: categoryMeta,
+      baseMeasurementQuantity: 1,
+      pricePerBaseQuantity: Number(p.price ?? 0),
+      measurementUnit: 'ea' as const,
+      isSoldAsUnit: true,
+      minOrderQuantity: 1,
+      maxOrderQuantity: 9999,
+      stepQuantity: 1,
+      stockQuantity: Number(p.stockQty ?? 0),
+      isOutOfStock: Number(p.stockQty ?? 0) <= 0,
+      totalSales: 0,
+      isFeatured: false,
+      discountPercentage: 0,
+      lowStockThreshold: Number(p.minStockLevel ?? 0),
+      createdAt: p.createdAt as unknown as Date | undefined,
+      updatedAt: p.updatedAt as unknown as Date | undefined,
+      ingredients: undefined,
+      nutritionFacts: undefined,
+      unitOptions,
+    };
+
+    return product as Product;
   } catch (error) {
-    console.error('Failed to fetch product:', error);
+    console.error('Failed to load product from DB:', error);
+    // Fallback: try fetching internal API
+    try {
+      const { withBase } = await import('@/lib/serverUrl');
+      const absolute = withBase(`/api/products/${id}`);
+      let resp = await fetch(absolute, { cache: 'no-store' });
+      if (!resp.ok) resp = await fetch(`/api/products/${id}`, { cache: 'no-store' });
+      if (resp.ok) {
+        const data = await resp.json();
+        return data.data || null;
+      }
+      console.error('ProductPage - fallback fetch failed status', resp.status);
+    } catch (err) {
+      console.error('ProductPage - fallback fetch error:', err);
+    }
+    return null;
   }
-  return null;
 }
 
 export default async function ProductPage({
