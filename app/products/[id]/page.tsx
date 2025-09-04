@@ -8,11 +8,12 @@ import { ProductControls } from "./ProductControls";
 import { PageContainer } from "@/components/templates/PageContainer";
 import rehypeSanitize from "rehype-sanitize";
 import Link from "next/link";
+import { withBase } from "@/lib/serverUrl";
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
-  // Use relative API route for internal server fetch
-  const response = await fetch(`/api/products/${id}`, { cache: 'no-store' });
+    // Use absolute URL for server-side rendering
+    const response = await fetch(withBase(`/api/products/${id}`), { cache: 'no-store' });
     if (response.ok) {
       const data = await response.json();
       return data.data || null;
@@ -26,9 +27,9 @@ async function getProduct(id: string): Promise<Product | null> {
 export default async function ProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const productId = params.id;
+  const { id: productId } = await params;
   const product = await getProduct(productId);
 
   if (!product) {
