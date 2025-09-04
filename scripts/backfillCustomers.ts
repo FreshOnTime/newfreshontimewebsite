@@ -1,3 +1,5 @@
+import { config } from 'dotenv';
+config();
 import connectDB from '@/lib/database';
 import User from '@/lib/models/User';
 import Customer from '@/lib/models/Customer';
