@@ -2,9 +2,22 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/database';
 import Customer from '@/lib/models/Customer';
+import Order from '@/lib/models/EnhancedOrder';
 import User from '@/lib/models/User';
 import type { Types } from 'mongoose';
 import { requireAdminSimple, logAuditAction, checkRateLimit, getClientIP } from '@/lib/middleware/adminAuth';
+
+type CustomerAgg = {
+  _id: typeof import('mongoose')['Types']['ObjectId'];
+  name: string;
+  email: string;
+  phone?: string;
+  address?: Record<string, unknown>;
+  totalOrders?: number;
+  totalSpent?: number;
+  lastOrderDate?: Date;
+  createdAt?: Date;
+};
 
 const createCustomerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -61,6 +74,40 @@ export const GET = requireAdminSimple(async (request) => {
       Customer.countDocuments(filter),
       Customer.estimatedDocumentCount(),
     ]);
+
+    // Enrich customers with order aggregates (count, totalSpent, lastOrderDate)
+    if (customers.length > 0) {
+      const ids = customers.map((c) => c._id);
+      const aggregates = await Order.aggregate([
+        { $match: { customerId: { $in: ids } } },
+        {
+          $group: {
+            _id: '$customerId',
+            totalOrders: { $sum: 1 },
+            totalSpent: { $sum: '$total' },
+            lastOrderDate: { $max: '$createdAt' },
+          },
+        },
+      ]);
+      const aggMap = new Map<string, { totalOrders: number; totalSpent: number; lastOrderDate: Date }>();
+      for (const a of aggregates) {
+        aggMap.set(String(a._id), {
+          totalOrders: a.totalOrders || 0,
+          totalSpent: a.totalSpent || 0,
+          lastOrderDate: a.lastOrderDate,
+        });
+      }
+      for (let i = 0; i < customers.length; i++) {
+        const c = customers[i] as unknown as CustomerAgg;
+        const agg = aggMap.get(String(c._id));
+        if (agg) {
+          c.totalOrders = agg.totalOrders;
+          c.totalSpent = agg.totalSpent;
+          c.lastOrderDate = agg.lastOrderDate;
+        }
+        customers[i] = c as unknown as typeof customers[number];
+      }
+    }
 
     // If the Customer collection is empty, fall back to Users with role "customer"
   if (globalTotal === 0) {
