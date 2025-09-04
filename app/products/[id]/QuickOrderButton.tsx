@@ -48,40 +48,16 @@ export const QuickOrderButton: FC<IQuickOrderButtonProps> = (props) => {
         phone: ra.phoneNumber,
       };
 
-      setSubmitting(true);
-
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          userId: user._id,
-          items: [
-            {
-              productId: product.sku, // accepts _id/sku/slug
-              quantity: quantity,
-            },
-          ],
-          shippingAddress,
-          notes: "Quick order",
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.error || "Failed to place order");
-      }
-
-      toast.success("Order placed successfully");
-      const orderId = data.data?._id || data.data?.id;
-      if (orderId) {
-        router.push(`/orders/${orderId}`);
-      }
+  // Redirect to checkout with a quick-order prefill (product sku + qty). Checkout will use the bag/order flow.
+  const q = new URLSearchParams();
+  q.set("quickSku", String(product.sku));
+  q.set("qty", String(quantity));
+  router.push(`/checkout?${q.toString()}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to place order";
       toast.error(msg);
     } finally {
-      setSubmitting(false);
+  setSubmitting(false);
     }
   };
   return (

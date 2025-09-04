@@ -84,7 +84,7 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
 });
 
 // PATCH - quick actions: cancel (owner), mark-status (admin)
-export const PATCH = requireAuth<{ params: { id: string } }>(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const PATCH = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
   try {
     await connectDB();
     const id = context?.params?.id;
@@ -113,6 +113,11 @@ export const PATCH = requireAuth<{ params: { id: string } }>(async (request: Nex
         }
       }));
       order.status = 'cancelled';
+      // If this was a recurring order, also end the schedule so it no longer counts as active
+      if (order.isRecurring) {
+        order.scheduleStatus = 'ended';
+        order.nextDeliveryAt = undefined as unknown as Date | undefined;
+      }
       await order.save();
       const populated = await EnhancedOrderModel.findById(order._id)
         .populate({ path: 'items.productId', model: 'EnhancedProduct', select: 'name price images stockQty sku' });
@@ -137,7 +142,7 @@ export const PATCH = requireAuth<{ params: { id: string } }>(async (request: Nex
 });
 
 // DELETE - admin hard delete (restores stock if not shipped/delivered)
-export const DELETE = requireAuth<{ params: { id: string } }>(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const DELETE = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
   try {
     await connectDB();
     const id = context?.params?.id;

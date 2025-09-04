@@ -122,7 +122,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
     }
 
     // Handle items update and totals
-    if (data.items) {
+  if (data.items) {
       update.items = data.items.map(it => ({
         productId: new mongoose.Types.ObjectId(it.productId),
         sku: it.sku,
@@ -155,6 +155,11 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
       if (typeof data.shipping === 'number') update.shipping = data.shipping;
       if (typeof data.discount === 'number') update.discount = data.discount;
       if (typeof data.total === 'number') update.total = data.total;
+    }
+    // If admin cancels an order that was recurring, end the schedule and clear nextDeliveryAt
+    if (before.isRecurring && data.status === 'cancelled') {
+      update.scheduleStatus = 'ended';
+      update.nextDeliveryAt = undefined;
     }
     
     // Handle recurrence updates

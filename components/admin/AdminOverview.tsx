@@ -59,7 +59,7 @@ export function AdminOverview() {
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+  const fetchStats = async () => {
       try {
         const response = await fetch('/api/admin/analytics/overview', {
           credentials: 'include',
@@ -155,6 +155,12 @@ export function AdminOverview() {
     fetchStats();
     fetchRecentCustomers();
     fetchRecentActivities();
+
+    // Lightweight polling so dashboard reflects recent order cancellations/updates
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 30000); // 30s
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

@@ -7,6 +7,8 @@ import Customer from '@/lib/models/Customer';
 import User from '@/lib/models/User';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
+export const dynamic = 'force-dynamic';
+
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
   limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),

@@ -6,6 +6,9 @@ import Product from '@/lib/models/EnhancedProduct';
 import Order from '@/lib/models/EnhancedOrder';
 import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
+// Ensure this route is always dynamic (no static caching) so dashboard reflects recent changes
+export const dynamic = 'force-dynamic';
+
 // GET /api/admin/analytics/overview
 export const GET = requireAdminSimple(async () => {
   try {
@@ -35,8 +38,9 @@ export const GET = requireAdminSimple(async () => {
     ] = await Promise.all([
       Product.countDocuments({ archived: false }),
       Order.countDocuments(),
+      // Revenue should be based on delivered orders or any order with paymentStatus=paid
       Order.aggregate([
-        { $match: { status: { $in: ['delivered', 'paid'] } } },
+        { $match: { $or: [ { status: 'delivered' }, { paymentStatus: 'paid' } ] } },
         { $group: { _id: null, total: { $sum: '$total' } } }
       ]),
       Product.countDocuments({ 
@@ -55,7 +59,7 @@ export const GET = requireAdminSimple(async () => {
       }),
       // Revenue from recurring orders (delivered or marked paid)
       Order.aggregate([
-        { $match: { isRecurring: true, status: { $in: ['delivered', 'paid'] } } },
+        { $match: { isRecurring: true, $or: [ { status: 'delivered' }, { paymentStatus: 'paid' } ] } },
         { $group: { _id: null, total: { $sum: '$total' } } }
       ]),
       // Next 10 upcoming recurring deliveries in next 14 days
