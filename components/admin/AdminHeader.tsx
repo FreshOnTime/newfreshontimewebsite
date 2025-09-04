@@ -8,11 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Search, User } from 'lucide-react';
+import { Search, User, Home } from 'lucide-react';
 import NotificationsBell from './NotificationsBell';
+import { useRouter } from 'next/navigation';
 
 export function AdminHeader() {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
@@ -27,6 +29,16 @@ export function AdminHeader() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
+            <div className="mr-4">
+              <Button
+                variant="ghost"
+                className="flex items-center space-x-2"
+                onClick={() => router.push('/')}
+              >
+                <Home className="h-5 w-5" />
+                <span className="hidden sm:inline">Home</span>
+              </Button>
+            </div>
             <div className="flex-shrink-0">
               <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
             </div>

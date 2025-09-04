@@ -74,12 +74,14 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
 });
 
 // POST - Create a new order
-export async function POST(request: NextRequest) {
+export const POST = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
   try {
     await connectDB();
-    
+
   const body = await request.json();
-  const { userId, items, shippingAddress, paymentMethod, notes, discount = 0, bagId, bagName, useRegisteredAddress } = body;
+  const { items, shippingAddress, paymentMethod, notes, discount = 0, bagId, bagName, useRegisteredAddress } = body;
+  const authUser = request.user;
+  const effectiveUserId = authUser?.mongoId || authUser?.userId;
   // Accept isRecurring/recurrence from client, but also infer recurring when recurrence content is present
   const rawIsRecurring = body.isRecurring;
   const recurrence = body.recurrence as {
@@ -102,15 +104,15 @@ export async function POST(request: NextRequest) {
   );
   const isRecurring = Boolean(rawIsRecurring) || hasRecurrenceSignals;
 
-    if (!userId || !items || !Array.isArray(items) || items.length === 0) {
+    if (!effectiveUserId || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: 'User ID and items are required' },
+        { error: 'Authentication and items are required' },
         { status: 400 }
       );
     }
 
   // Load user (for optional address mapping), best-effort
-  const userDoc = (await User.findById(userId).lean().catch(() => null)) as (null | {
+  const userDoc = (await User.findById(effectiveUserId).lean().catch(() => null)) as (null | {
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
@@ -248,7 +250,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If still no shipping address, block order creation
+  // If still no shipping address, block order creation
     if (!resolvedShipping) {
       return NextResponse.json({ error: 'Shipping address is required' }, { status: 400 });
     }
@@ -257,7 +259,7 @@ export async function POST(request: NextRequest) {
       orderNumber,
       bagId: bagId && mongoose.Types.ObjectId.isValid(bagId) ? new mongoose.Types.ObjectId(bagId) : undefined,
       bagName,
-      customerId: userId,
+      customerId: effectiveUserId,
       items: validatedItems,
       subtotal,
       tax,
@@ -297,4 +299,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
