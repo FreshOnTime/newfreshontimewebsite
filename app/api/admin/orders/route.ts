@@ -4,6 +4,7 @@ import connectDB from '@/lib/database';
 import mongoose from 'mongoose';
 import Order from '@/lib/models/EnhancedOrder';
 import Customer from '@/lib/models/Customer';
+import User from '@/lib/models/User';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const querySchema = z.object({
@@ -15,6 +16,7 @@ const querySchema = z.object({
   scheduleStatus: z.enum(['active','paused','ended']).optional(),
   sort: z.enum(['created-desc','created-asc','next-asc','next-desc']).optional(),
   customerId: z.string().optional(),
+  userId: z.string().optional(),
 });
 
 export const GET = requireAdminSimple(async (request) => {
@@ -33,12 +35,40 @@ export const GET = requireAdminSimple(async (request) => {
   if (query.isRecurring === 'true') filter.isRecurring = true;
   if (query.isRecurring === 'false') filter.isRecurring = { $in: [false, undefined] };
   if (query.scheduleStatus) filter.scheduleStatus = query.scheduleStatus;
-  if (query.customerId) {
+
+  // Filtering logic supporting both stored Customer._id and (legacy) User._id in orders
+  if (query.customerId || query.userId) {
+    const ids: mongoose.Types.ObjectId[] = [];
+    if (query.userId) {
+      if (!mongoose.Types.ObjectId.isValid(query.userId)) {
+        return NextResponse.json({ error: 'Invalid userId' }, { status: 400 });
+      }
+      ids.push(new mongoose.Types.ObjectId(query.userId));
+    }
+    if (query.customerId) {
       if (!mongoose.Types.ObjectId.isValid(query.customerId)) {
         return NextResponse.json({ error: 'Invalid customerId' }, { status: 400 });
       }
-      filter.customerId = new mongoose.Types.ObjectId(query.customerId);
+      const custId = new mongoose.Types.ObjectId(query.customerId);
+      ids.push(custId);
+      // Try map to a related User._id via email/phone
+      try {
+        const customerDoc = await Customer.findById(custId, { email: 1, phone: 1 }).lean<{ _id: mongoose.Types.ObjectId; email?: string; phone?: string } | null>();
+        if (customerDoc) {
+          const orConditions: Array<Record<string, unknown>> = [];
+          if (customerDoc.email) orConditions.push({ email: customerDoc.email.toLowerCase() });
+          if (customerDoc.phone) orConditions.push({ phoneNumber: customerDoc.phone });
+          const userMatch = await User.findOne({ $or: orConditions }, { _id: 1 }).lean<{ _id: mongoose.Types.ObjectId } | null>();
+          if (userMatch?._id) ids.push(userMatch._id);
+        }
+      } catch {
+        // non-fatal
+      }
     }
+    if (ids.length > 0) {
+      filter.customerId = ids.length === 1 ? ids[0] : { $in: ids };
+    }
+  }
 
     const page = query.page;
     const limit = query.limit;
@@ -65,16 +95,25 @@ export const GET = requireAdminSimple(async (request) => {
       Order.countDocuments(filter),
     ]);
 
-    // Optionally enrich with customer name
+    // Enrich with customer name (from Customer) or fallback to User name if orders used User _id
     const customerIds = Array.from(new Set(orders.map(o => o.customerId?.toString()).filter(Boolean)));
-    const customers = await Customer.find({ _id: { $in: customerIds } }, { name: 1 }).lean();
-    const customerMap = new Map<string, string>(
-      customers.map((c: unknown) => {
-        const anyC = c as { _id?: unknown; name?: unknown };
-        return [String(anyC._id ?? ''), String(anyC.name ?? '')];
-      })
-    );
-    const results = orders.map(o => ({ ...o, customerName: customerMap.get(o.customerId?.toString() || '') || '' }));
+    const customers = await Customer.find({ _id: { $in: customerIds } }, { name: 1 }).lean<{ _id: mongoose.Types.ObjectId; name?: string }[]>();
+    const knownCustomerIds = new Set(customers.map(c => String(c._id)));
+    const missingIds = customerIds.filter(id => !knownCustomerIds.has(id));
+    const users = missingIds.length > 0
+      ? await User.find({ _id: { $in: missingIds } }, { firstName: 1, lastName: 1 }).lean<{ _id: mongoose.Types.ObjectId; firstName?: string; lastName?: string }[]>()
+      : [];
+
+    const nameMap = new Map<string, string>();
+    for (const c of customers) {
+      nameMap.set(String(c._id), String(c.name || ''));
+    }
+    for (const u of users) {
+      const full = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+      nameMap.set(String(u._id), full || '');
+    }
+
+    const results = orders.map(o => ({ ...o, customerName: nameMap.get(o.customerId?.toString() || '') || '' }));
 
     return NextResponse.json({ orders: results, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
   } catch (error) {
