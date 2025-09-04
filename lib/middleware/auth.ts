@@ -10,7 +10,7 @@ export interface AuthenticatedRequest extends NextRequest {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteHandler = (req: AuthenticatedRequest, context?: any) => Promise<NextResponse>;
 
-export async function withAuth(
+export function withAuth(
   handler: RouteHandler,
   options: { 
     requiredRoles?: string[]; 

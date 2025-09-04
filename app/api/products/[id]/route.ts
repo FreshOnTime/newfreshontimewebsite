@@ -9,12 +9,11 @@ import { sendSuccess, sendNotFound, sendInternalError, sendBadRequest } from '@/
 // GET /api/products/[id] - Get a single product
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-
-    const id = params.id;
+    const id = (await params).id;
     
     if (!id) {
       return sendBadRequest('Product ID is required');
@@ -122,7 +121,6 @@ async function handleUpdateProduct(
 ) {
   try {
     await connectDB();
-
     const id = (await context.params).id;
     if (!id) return sendBadRequest('Product ID is required');
 
@@ -146,7 +144,6 @@ async function handleDeleteProduct(
 ) {
   try {
     await connectDB();
-
     const id = (await context.params).id;
     if (!id) return sendBadRequest('Product ID is required');
 

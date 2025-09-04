@@ -9,12 +9,12 @@ const productService = new ProductService();
 // DELETE /api/products/[id]/permanent - Permanently delete a product (admin only)
 export const DELETE = requireRoles(['admin'])(async (
   req: AuthenticatedRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) => {
   try {
     await connectDB();
 
-    const id = (await params).id;
+    const id = params.id;
     
     if (!id) {
       return sendBadRequest('Product ID is required');

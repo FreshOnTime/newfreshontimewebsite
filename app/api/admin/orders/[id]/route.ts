@@ -5,6 +5,7 @@ import connectDB from '@/lib/database';
 import Order from '@/lib/models/EnhancedOrder';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
+// Accept partial updates; addresses allow undefined keys (we'll sanitize/merge later)
 const updateSchema = z.object({
   status: z.enum(['pending','confirmed','processing','shipped','delivered','cancelled','refunded']).optional(),
   paymentStatus: z.enum(['pending','paid','failed','refunded']).optional(),
@@ -25,22 +26,22 @@ const updateSchema = z.object({
   discount: z.number().min(0).optional(),
   total: z.number().min(0).optional(),
   shippingAddress: z.object({
-    name: z.string(),
-    street: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zipCode: z.string(),
-    country: z.string(),
+    name: z.string().optional(),
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    country: z.string().optional(),
     phone: z.string().optional(),
-  }).optional(),
+  }).partial().optional(),
   billingAddress: z.object({
-    name: z.string(),
-    street: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zipCode: z.string(),
-    country: z.string(),
-  }).optional(),
+    name: z.string().optional(),
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    country: z.string().optional(),
+  }).partial().optional(),
   // Recurring controls
   scheduleStatus: z.enum(['active','paused','ended']).optional(),
   nextDeliveryAt: z.string().datetime().optional(),
@@ -56,13 +57,14 @@ const updateSchema = z.object({
   }).optional(),
 });
 
-export const GET = requireAdmin(async (_request, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (_request, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+  const { id } = await params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
-    const order = await Order.findById(params.id);
+  const order = await Order.findById(id);
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
@@ -73,15 +75,16 @@ export const GET = requireAdmin(async (_request, { params }: { params: { id: str
   }
 });
 
-export const PUT = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+  const { id } = await params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
     const body = await request.json();
   const data = updateSchema.parse(body);
-    const before = await Order.findById(params.id);
+  const before = await Order.findById(id);
     if (!before) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
@@ -94,9 +97,29 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
     if (data.nextDeliveryAt) {
       update.nextDeliveryAt = new Date(data.nextDeliveryAt);
     }
+    // Helper to remove undefined fields from a partial object
+    const stripUndefined = <T extends Record<string, unknown>>(obj: T | undefined): Partial<T> | undefined => {
+      if (!obj || typeof obj !== 'object') return undefined;
+      const entries = Object.entries(obj).filter(([, v]) => typeof v !== 'undefined' && v !== null);
+      if (entries.length === 0) return undefined;
+      return Object.fromEntries(entries) as Partial<T>;
+    };
 
-  if (data.shippingAddress) update.shippingAddress = data.shippingAddress;
-  if (data.billingAddress) update.billingAddress = data.billingAddress;
+    // Merge partial address updates with existing values to satisfy schema required fields
+    const mergeAddress = (prev: Record<string, unknown> | undefined, partial: Record<string, unknown> | undefined) => {
+      const clean = stripUndefined(partial);
+      if (!clean) return undefined; // ignore empty objects
+      return { ...(prev || {}), ...clean };
+    };
+
+    if (typeof data.shippingAddress !== 'undefined') {
+      const merged = mergeAddress((before.shippingAddress as unknown as Record<string, unknown>), data.shippingAddress as unknown as Record<string, unknown>);
+      if (merged) update.shippingAddress = merged;
+    }
+    if (typeof data.billingAddress !== 'undefined') {
+      const merged = mergeAddress((before.billingAddress as unknown as Record<string, unknown>), data.billingAddress as unknown as Record<string, unknown>);
+      if (merged) update.billingAddress = merged;
+    }
 
     // Handle items update and totals
     if (data.items) {
@@ -172,12 +195,12 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
         ...recurrenceUpdate,
       };
     }
-    const updated = await Order.findByIdAndUpdate(params.id, { $set: update }, { new: true, runValidators: true });
+    const updated = await Order.findByIdAndUpdate(id, { $set: update }, { new: true, runValidators: true });
     await logAuditAction(
       request.user!.userId,
       'update',
       'order',
-      params.id,
+      id,
       (before.toObject() as unknown) as Record<string, unknown>,
       (updated!.toObject() as unknown) as Record<string, unknown>,
       request
@@ -192,19 +215,20 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
   }
 });
 
-export const DELETE = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+  const { id } = await params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
-    const before = await Order.findById(params.id).lean();
+  const before = await Order.findById(id).lean();
     if (!before) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    await Order.findByIdAndDelete(params.id);
-    await logAuditAction(request.user!.userId, 'delete', 'order', params.id, before, undefined, request);
+  await Order.findByIdAndDelete(id);
+  await logAuditAction(request.user!.userId, 'delete', 'order', id, before, undefined, request);
 
     return NextResponse.json({ success: true });
   } catch (error) {

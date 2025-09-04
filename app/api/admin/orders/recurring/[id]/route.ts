@@ -42,22 +42,22 @@ const adminUpdateRecurringOrderSchema = z.object({
   
   // Address updates
   shippingAddress: z.object({
-    name: z.string(),
-    street: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zipCode: z.string(),
-    country: z.string(),
+  name: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().optional(),
     phone: z.string().optional(),
   }).optional(),
   
   billingAddress: z.object({
-    name: z.string(),
-    street: z.string(),
-    city: z.string(),
-    state: z.string(),
-    zipCode: z.string(),
-    country: z.string(),
+  name: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().optional(),
   }).optional(),
   
   // Delivery fields
@@ -73,10 +73,10 @@ const adminUpdateRecurringOrderSchema = z.object({
 });
 
 // GET - fetch single recurring order (admin)
-export const GET = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (request: NextRequest, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    const { id } = params;
+  const { id } = await params;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
@@ -131,10 +131,10 @@ export const GET = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // PUT - comprehensive update of recurring order (admin)
-export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    const { id } = params;
+  const { id } = await params;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
@@ -156,7 +156,7 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     }
 
     // Store before state for audit log
-    const beforeState = order.toObject();
+  const beforeState = order.toObject() as unknown as Record<string, unknown>;
 
     // Prepare update object
     const update: Record<string, unknown> = {};
@@ -184,9 +184,26 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     if (data.scheduleStatus) update.scheduleStatus = data.scheduleStatus;
     if (data.nextDeliveryAt) update.nextDeliveryAt = new Date(data.nextDeliveryAt);
 
-    // Address updates
-    if (data.shippingAddress) update.shippingAddress = data.shippingAddress;
-    if (data.billingAddress) update.billingAddress = data.billingAddress;
+    // Address updates (merge partials to satisfy required fields)
+    const stripUndefined = <T extends Record<string, unknown>>(obj: T | undefined): Partial<T> | undefined => {
+      if (!obj || typeof obj !== 'object') return undefined;
+      const entries = Object.entries(obj).filter(([, v]) => typeof v !== 'undefined' && v !== null);
+      if (entries.length === 0) return undefined;
+      return Object.fromEntries(entries) as Partial<T>;
+    };
+    const mergeAddr = (prev: Record<string, unknown> | undefined, partial: Record<string, unknown> | undefined) => {
+      const clean = stripUndefined(partial);
+      if (!clean) return undefined;
+      return { ...(prev || {}), ...clean };
+    };
+    if (typeof data.shippingAddress !== 'undefined') {
+      const merged = mergeAddr(order.shippingAddress as unknown as Record<string, unknown>, data.shippingAddress as unknown as Record<string, unknown>);
+      if (merged) update.shippingAddress = merged;
+    }
+    if (typeof data.billingAddress !== 'undefined') {
+      const merged = mergeAddr(order.billingAddress as unknown as Record<string, unknown>, data.billingAddress as unknown as Record<string, unknown>);
+      if (merged) update.billingAddress = merged;
+    }
 
     // Delivery dates
     if (data.estimatedDelivery) update.estimatedDelivery = new Date(data.estimatedDelivery);
@@ -307,7 +324,7 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
       'order',
       id,
       beforeState,
-      updatedOrder?.toObject(),
+  (updatedOrder?.toObject() as unknown) as Record<string, unknown> | undefined,
       request
     );
 
@@ -331,10 +348,10 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // DELETE - delete recurring order (admin only)
-export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    const { id } = params;
+  const { id } = await params;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
@@ -351,7 +368,7 @@ export const DELETE = requireAdmin(async (request: NextRequest, { params }: { pa
     }
 
     // Store before state for audit log
-    const beforeState = order.toObject();
+  const beforeState = order.toObject() as unknown as Record<string, unknown>;
 
     // Restore stock for items if order is not delivered
     const shouldRestoreStock = !['delivered', 'shipped'].includes(order.status || '');
@@ -381,7 +398,7 @@ export const DELETE = requireAdmin(async (request: NextRequest, { params }: { pa
     await Order.findByIdAndDelete(id);
 
     // Log audit action
-    await logAuditAction(
+  await logAuditAction(
       (request as AuthenticatedRequest).user.userId,
       'delete',
       'order',
@@ -404,10 +421,10 @@ export const DELETE = requireAdmin(async (request: NextRequest, { params }: { pa
 });
 
 // PATCH - admin quick actions and special operations
-export const PATCH = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PATCH = requireAdmin(async (request: NextRequest, { params }: { params: Promise<Record<string, string>> }) => {
   try {
     await connectDB();
-    const { id } = params;
+  const { id } = await params;
     
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
@@ -432,7 +449,7 @@ export const PATCH = requireAdmin(async (request: NextRequest, { params }: { par
       return NextResponse.json({ error: 'Order is not a recurring order' }, { status: 400 });
     }
 
-    const beforeState = order.toObject();
+  const beforeState = order.toObject() as unknown as Record<string, unknown>;
     let update: Record<string, unknown> = {};
     let message = '';
     let newOrder = null;
@@ -513,7 +530,7 @@ export const PATCH = requireAdmin(async (request: NextRequest, { params }: { par
           'order',
           id,
           beforeState,
-          populatedNewOrder?.toObject(),
+          (populatedNewOrder?.toObject() as unknown) as Record<string, unknown> | undefined,
           request
         );
 
@@ -546,8 +563,8 @@ export const PATCH = requireAdmin(async (request: NextRequest, { params }: { par
       action,
       'order',
       id,
-      beforeState.toObject(),
-      updatedOrder?.toObject() as unknown as Record<string, unknown>,
+      beforeState,
+  (updatedOrder?.toObject() as unknown) as Record<string, unknown> | undefined,
       request
     );
 

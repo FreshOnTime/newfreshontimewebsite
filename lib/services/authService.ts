@@ -3,6 +3,7 @@ import { signAccessToken, signRefreshToken, hashRefreshToken, verifyToken } from
 import connectDB from '@/lib/database';
 import User, { IUser } from '@/lib/models/User';
 import crypto from 'crypto';
+import Customer from '@/lib/models/Customer';
 
 export interface SignupData {
   firstName: string;
@@ -103,6 +104,43 @@ export class AuthService {
 
     const savedUser = await user.save();
 
+    // Ensure a corresponding Customer document exists for customer-role users
+    try {
+      if (savedUser.role === 'customer') {
+        const fullName = `${savedUser.firstName} ${savedUser.lastName || ''}`.trim();
+        const customerAddress = savedUser.registrationAddress
+          ? {
+              street: [
+                savedUser.registrationAddress.streetAddress,
+                savedUser.registrationAddress.streetAddress2,
+              ]
+                .filter(Boolean)
+                .join(', '),
+              city:
+                savedUser.registrationAddress.city ||
+                savedUser.registrationAddress.town,
+              state: savedUser.registrationAddress.state,
+              zipCode: savedUser.registrationAddress.postalCode,
+              country: savedUser.registrationAddress.countryCode,
+            }
+          : undefined;
+
+        const emailForCustomer = savedUser.email || `${savedUser.userId}@placeholder.local`;
+        const existingCustomer = await Customer.findOne({ email: emailForCustomer });
+        if (!existingCustomer) {
+          await Customer.create({
+            name: fullName || savedUser.phoneNumber,
+            email: emailForCustomer,
+            phone: savedUser.phoneNumber,
+            address: customerAddress,
+          });
+        }
+      }
+    } catch (e) {
+      // Do not block signup on Customer creation failures; log for later inspection
+      console.error('Customer sync on signup failed:', e);
+    }
+
     // Generate tokens
     const tokenPayload = {
       userId: savedUser.userId,
@@ -181,9 +219,15 @@ export class AuthService {
     });
 
     // Clean up expired refresh tokens
-    user.refreshTokens = user.refreshTokens.filter(
-      token => token.expiresAt > new Date()
-    );
+    interface RefreshToken {
+      hashedToken: string;
+      expiresAt: Date;
+      createdAt: Date;
+    }
+
+        user.refreshTokens = user.refreshTokens.filter(
+          (token: RefreshToken) => token.expiresAt > new Date()
+        );
 
     await user.save();
 
@@ -219,8 +263,14 @@ export class AuthService {
     }
 
     // Remove the used refresh token
+    interface RefreshTokenFilter {
+      hashedToken: string;
+      expiresAt: Date;
+      createdAt: Date;
+    }
+
     user.refreshTokens = user.refreshTokens?.filter(
-      token => token.hashedToken !== hashedToken
+      (token: RefreshTokenFilter) => token.hashedToken !== hashedToken
     ) || [];
 
     // Generate new tokens
