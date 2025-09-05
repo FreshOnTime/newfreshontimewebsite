@@ -225,7 +225,7 @@ export default function Home() {
             </div>
 
             <motion.h1
-              className={`${antonFont.className} text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-orange-400 via-orange-500 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg`}
+              className={`${antonFont.className} text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-6 text-white md:bg-gradient-to-r md:from-orange-400 md:via-orange-500 md:to-yellow-300 md:bg-clip-text md:text-transparent drop-shadow-lg`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
@@ -240,9 +240,9 @@ export default function Home() {
             >
               The freshest groceries delivered to your door.
               <br />
-              <span className="text-orange-200">
-                Quality you can trust, convenience you&apos;ll love.
-              </span>
+                <span className="text-white md:text-orange-200">
+                  Quality you can trust, convenience you&apos;ll love.
+                </span>
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-xl mx-auto"
