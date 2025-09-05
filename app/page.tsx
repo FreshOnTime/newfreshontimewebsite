@@ -29,7 +29,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import BannerGrid from "@/components/home/BannerGrid";
 import FeaturesStrip from "@/components/home/FeaturesStrip";
-import BrandsStrip from "@/components/home/BrandsStrip";
+
 import Testimonials from "@/components/home/Testimonials";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
 
@@ -526,8 +526,7 @@ export default function Home() {
       {/* Value Props Strip */}
       <FeaturesStrip />
 
-      {/* Brands */}
-      <BrandsStrip />
+ 
 
       {/* Testimonials */}
       <Testimonials />
