@@ -26,7 +26,7 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { Product } from "@/models/product";
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
-import TrustBar from "@/components/home/TrustBar";
+
 import BannerGrid from "@/components/home/BannerGrid";
 import FeaturesStrip from "@/components/home/FeaturesStrip";
 import BrandsStrip from "@/components/home/BrandsStrip";
@@ -273,7 +273,7 @@ export default function Home() {
       </section>
 
       {/* Trust Bar */}
-      <TrustBar />
+ 
 
           {/* Promotional carousel using bannermaterial images */}
           <section className="py-10 bg-gray-50">

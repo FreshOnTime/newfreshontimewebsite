@@ -10,8 +10,8 @@ const features = [
   },
   {
     icon: Truck,
-    title: "Same-day Delivery",
-    desc: "Get it fast to your doorstep",
+    title: "Scheduled Delivery",
+    desc: "Delivered to your doorstep at your convenience",
   },
   {
     icon: Timer,
