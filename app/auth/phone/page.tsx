@@ -177,7 +177,7 @@ export default function PhoneAuthPage() {
             src="/fresh-pick.svg"
             alt="Fresh vegetables background"
             width={160}
-            height={28.5}
+            height={48.5}
             className="object-cover"
             priority
           />

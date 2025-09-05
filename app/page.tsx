@@ -25,7 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductCard } from "@/components/products/ProductCard";
 import { Product } from "@/models/product";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import TrustBar from "@/components/home/TrustBar";
 import BannerGrid from "@/components/home/BannerGrid";
 import FeaturesStrip from "@/components/home/FeaturesStrip";
@@ -58,11 +58,76 @@ const categoryIcons: Record<string, React.ElementType> = {
 type UiCategory = { name: string; slug: string; imageUrl?: string; description?: string };
 
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  // carousel removed; showing static promotional images instead
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [dealProducts, setDealProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<UiCategory[]>([]);
+
+  const promoImages = [
+    "/bannermaterial/1.png",
+    "/bannermaterial/2.png",
+    "/bannermaterial/3.png",
+    "/bannermaterial/4.png",
+  ];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchCurrentX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const t = setInterval(() => {
+      setCurrentIndex((i) => (i + 1) % promoImages.length);
+    }, 4000);
+    return () => clearInterval(t);
+  }, [isPaused, promoImages.length]);
+
+  const prevPromo = useCallback(() => {
+    setCurrentIndex((i) => (i - 1 + promoImages.length) % promoImages.length);
+    setIsPaused(true);
+    setTimeout(() => setIsPaused(false), 2000);
+  }, [promoImages.length]);
+
+  const nextPromo = useCallback(() => {
+    setCurrentIndex((i) => (i + 1) % promoImages.length);
+    setIsPaused(true);
+    setTimeout(() => setIsPaused(false), 2000);
+  }, [promoImages.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') prevPromo();
+      if (e.key === 'ArrowRight') nextPromo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [prevPromo, nextPromo]);
+
+  // Touch handlers for swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchCurrentX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchCurrentX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current == null || touchCurrentX.current == null) return;
+    const dx = touchCurrentX.current - touchStartX.current;
+    const threshold = 50; // px to qualify as swipe
+    if (dx > threshold) {
+      // swiped right -> previous
+      prevPromo();
+    } else if (dx < -threshold) {
+      // swiped left -> next
+      nextPromo();
+    }
+    touchStartX.current = null;
+    touchCurrentX.current = null;
+  };
 
   useEffect(() => {
     async function fetchProducts() {
@@ -128,79 +193,12 @@ export default function Home() {
     };
   }, []);
 
-  // Carousel data
-  const carouselSlides = [
-    {
-      id: 1,
-      title: "Sign up for FreshPass perks:",
-      features: [
-        "Unlimited free delivery",
-        "Timeslot reservations",
-        "Exclusive offers",
-      ],
-      buttonText: "Learn more",
-      buttonColor: "bg-orange-500 hover:bg-orange-600",
-      gradient: "from-blue-100 to-green-50",
-      textColor: "text-green-600",
-      badge: "freshpick",
-    },
-    {
-      id: 2,
-      title: "100% Organic & Fresh",
-      features: ["Farm to table", "Pesticide-free", "Quality guaranteed"],
-      buttonText: "Shop Organic",
-      buttonColor: "bg-green-600 hover:bg-green-700",
-      gradient: "from-green-100 to-teal-50",
-      textColor: "text-green-700",
-      badge: "🌱 Organic",
-    },
-    {
-      id: 3,
-      title: "Weekly Super Deals",
-      features: ["Up to 50% off", "New deals weekly", "Limited time only"],
-      buttonText: "View Deals",
-      buttonColor: "bg-purple-500 hover:bg-purple-600",
-      gradient: "from-purple-100 to-pink-50",
-      textColor: "text-purple-600",
-      badge: "🏷️ 50% OFF",
-    },
-    {
-      id: 4,
-      title: "Local Sri Lankan Specialties",
-      features: ["Traditional foods", "Local spices", "Authentic flavors"],
-      buttonText: "Explore Local",
-      buttonColor: "bg-yellow-500 hover:bg-yellow-600",
-      gradient: "from-yellow-100 to-orange-50",
-      textColor: "text-yellow-600",
-      badge: "🇱🇰 Local",
-    },
-  ];
-
-  // Auto-advance carousel (pausable)
-  useEffect(() => {
-    const interval = 5000;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => {
-        return isPaused ? prev : (prev + 1) % carouselSlides.length;
-      });
-    }, interval);
-    return () => clearInterval(timer);
-  }, [carouselSlides.length, isPaused]);
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length
-    );
-  };
+  // carousel removed; no slide state or controls needed
 
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+  <section className="relative min-h-[60vh] md:min-h-[90vh] lg:min-h-[120vh] flex items-center justify-center overflow-hidden py-8 md:py-12">
         <div className="absolute inset-0 -z-10">
           <Image
             src="/bgs/landing-page-bg-1.jpg"
@@ -212,14 +210,22 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/20"></div>
         </div>
 
+        {/* decorative soft color blobs for depth */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-orange-500/10 blur-3xl pointer-events-none -z-0" />
+        <div className="absolute -bottom-24 -right-20 w-96 h-96 rounded-full bg-yellow-400/6 blur-3xl pointer-events-none -z-0" />
+
         <div className="container mx-auto px-4 text-center text-white">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
+            <div className="flex justify-center">
+              <span className="inline-block bg-white/10 text-white/90 px-3 py-1 rounded-full mb-4 text-sm uppercase tracking-wider">Fresh & Local</span>
+            </div>
+
             <motion.h1
-              className={`${antonFont.className} text-6xl md:text-8xl font-bold mb-6`}
+              className={`${antonFont.className} text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-orange-400 via-orange-500 to-yellow-300 bg-clip-text text-transparent drop-shadow-lg`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
@@ -227,19 +233,19 @@ export default function Home() {
               Fresh Pick
             </motion.h1>
             <motion.p
-              className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed"
+              className="text-lg sm:text-xl md:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               The freshest groceries delivered to your door.
               <br />
-              <span className="text-green-300">
+              <span className="text-orange-200">
                 Quality you can trust, convenience you&apos;ll love.
               </span>
             </motion.p>
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -247,7 +253,7 @@ export default function Home() {
               <Button
                 asChild
                 size="lg"
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all"
+                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
               >
                 <Link href="/products">
                   Shop Now
@@ -257,7 +263,7 @@ export default function Home() {
               <Button
                 asChild
                 size="lg"
-                className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 text-lg backdrop-blur-sm border-0"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg backdrop-blur-sm border-0 w-full sm:w-auto"
               >
                 <Link href="/categories">View Categories</Link>
               </Button>
@@ -269,152 +275,47 @@ export default function Home() {
       {/* Trust Bar */}
       <TrustBar />
 
-      {/* Modern Promotional Carousel */}
-      <section className="py-10 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="relative rounded-2xl"
-          >
-            {/* Progress bar */}
-            <div className="h-1 bg-white/30 rounded-full overflow-hidden mb-4">
+          {/* Promotional carousel using bannermaterial images */}
+          <section className="py-10 bg-gray-50">
+            <div className="container mx-auto px-4">
               <div
-                aria-hidden
-                style={{
-                  width: `${
-                    ((currentSlide + 1) / carouselSlides.length) * 100
-                  }%`,
-                }}
-                className="h-1 bg-gradient-to-r from-green-400 to-teal-400 transition-all duration-500"
-              />
-            </div>
-
-            <div
-              className="relative flex items-center justify-center min-h-[220px] md:min-h-[260px]"
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
-              onFocus={() => setIsPaused(true)}
-              onBlur={() => setIsPaused(false)}
-              role="region"
-              aria-label="Promotional carousel"
-            >
-              {/* Slides */}
-              <div className="w-full max-w-4xl">
-                {carouselSlides.map((slide, index) => (
-                  <motion.div
-                    key={slide.id}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={
-                      index === currentSlide
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0, scale: 0.98 }
-                    }
-                    transition={{ duration: 0.6 }}
-                    className={`absolute inset-0 flex items-center justify-center p-6 md:p-10 transition-all pointer-events-${
-                      index === currentSlide ? "auto" : "none"
-                    }`}
-                    aria-hidden={index === currentSlide ? "false" : "true"}
-                  >
-                    <div className="w-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6">
-                      <div className="flex-1 text-left">
-                        <h3
-                          className={`text-2xl md:text-4xl font-bold mb-3 ${slide.textColor}`}
-                        >
-                          {slide.title}
-                        </h3>
-                        <ul className="text-gray-700 space-y-2 mb-6">
-                          {slide.features.map((f, i) => (
-                            <li key={i} className="flex items-start gap-3">
-                              <span className="text-green-500 text-lg leading-none">
-                                •
-                              </span>
-                              <span className="font-medium">{f}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="flex items-center gap-4">
-                          <Button
-                            className={`${slide.buttonColor} text-white px-6 py-2 rounded-full shadow-md`}
-                          >
-                            {slide.buttonText}
-                          </Button>
-                          <Link
-                            href="/about"
-                            className="text-sm text-gray-600 hover:underline"
-                          >
-                            Learn more
-                          </Link>
-                        </div>
-                      </div>
-
-                      {/* Optional badge / image */}
-                      <div className="hidden md:flex flex-shrink-0 items-center justify-center w-48 h-32">
-                        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-white to-gray-100 flex items-center justify-center">
-                          <span className="text-xl font-semibold">
-                            {slide.badge}
-                          </span>
-                        </div>
-                      </div>
+                className="relative rounded-2xl overflow-hidden"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div className="w-full h-56 sm:h-72 md:h-[32rem] lg:h-[40rem] relative">
+                  {promoImages.map((src, i) => (
+                    <div
+                      key={src}
+                      className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                    >
+                      <Image src={src} alt={`Promo ${i+1}`} fill className="object-cover" priority={i===0} />
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+                  ))}
+                </div>
 
-            {/* Controls */}
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {carouselSlides.map((s, i) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      setCurrentSlide(i);
-                      setIsPaused(true);
-                      setTimeout(() => setIsPaused(false), 2500);
-                    }}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                      i === currentSlide
-                        ? "bg-green-600 text-white"
-                        : "bg-white/60 text-gray-700"
-                    }`}
-                    aria-pressed={i === currentSlide}
-                    aria-label={`Show slide ${i + 1}: ${s.title}`}
-                  >
-                    {s.title}
+                {/* Controls */}
+                <div className="absolute inset-0 flex items-center justify-between px-4">
+                  <button onClick={prevPromo} aria-label="Previous" className="bg-white/80 p-2 rounded-full shadow hover:bg-white">
+                    <ArrowRight className="w-5 h-5 rotate-180 text-gray-800" />
                   </button>
-                ))}
-              </div>
+                  <button onClick={nextPromo} aria-label="Next" className="bg-white/80 p-2 rounded-full shadow hover:bg-white">
+                    <ArrowRight className="w-5 h-5 text-gray-800" />
+                  </button>
+                </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    prevSlide();
-                    setIsPaused(true);
-                    setTimeout(() => setIsPaused(false), 1200);
-                  }}
-                  className="bg-white px-3 py-2 rounded-lg shadow hover:shadow-md"
-                  aria-label="Previous slide"
-                >
-                  <ArrowRight className="w-5 h-5 rotate-180 text-gray-700" />
-                </button>
-                <button
-                  onClick={() => {
-                    nextSlide();
-                    setIsPaused(true);
-                    setTimeout(() => setIsPaused(false), 1200);
-                  }}
-                  className="bg-white px-3 py-2 rounded-lg shadow hover:shadow-md"
-                  aria-label="Next slide"
-                >
-                  <ArrowRight className="w-5 h-5 text-gray-700" />
-                </button>
+                {/* Indicators */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {promoImages.map((_, i) => (
+                    <button key={i} onClick={() => setCurrentIndex(i)} aria-label={`Show promo ${i+1}`} className={`w-3 h-3 rounded-full ${i===currentIndex ? 'bg-white' : 'bg-white/60'}`} />
+                  ))}
+                </div>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </section>
 
       {/* Lifestyle Banners */}
       <BannerGrid />
@@ -426,18 +327,18 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 text-gray-900">
               Shop by Category
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
               Discover fresh products in every category, carefully selected for
               quality and freshness
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {categories.map((category, index) => {
               const Icon =
                 categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
