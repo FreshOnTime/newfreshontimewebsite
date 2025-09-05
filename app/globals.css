@@ -69,6 +69,24 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Use the provided background image from /public/background image/1.png */
+    background-image: url("/background image/1.png");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    /* keep content readable by blending a subtle overlay color */
+    background-color: rgba(255,255,255,0.5);
+    background-blend-mode: multiply;
+    /* On large screens a fixed background looks nice; on mobile avoid fixed attachment for performance */
+    background-attachment: fixed;
+  }
+
+  /* Mobile devices: avoid background-attachment: fixed which can be janky; keep cover and center */
+  @media (max-width: 640px) {
+    body {
+      background-attachment: scroll;
+      background-size: cover;
+    }
   }
 }
 

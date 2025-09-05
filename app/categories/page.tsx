@@ -40,7 +40,11 @@ export default function CategoriesIndex() {
       <SectionHeader title="Categories" subtitle="Browse by aisle" />
       <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {cats.map((c) => (
-          <Link key={c.slug} href={`/categories/${c.slug}`} className="border rounded p-4 hover:bg-gray-50">
+          <Link
+            key={c.slug}
+            href={`/categories/${c.slug}`}
+            className="border rounded-lg p-4 bg-white dark:bg-card hover:bg-primary hover:text-primary-foreground"
+          >
             {c.name}
           </Link>
         ))}

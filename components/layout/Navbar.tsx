@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBag } from "@/contexts/BagContext";
 
 interface NavCategory {
   name: string;
@@ -67,6 +68,8 @@ export function Navbar() {
   const [navCategories, setNavCategories] = useState<NavCategory[]>([]);
   const { user, logout } = useAuth();
   const cartItemCount = 0; // This would come from your cart context/state
+  const { bags } = useBag();
+  const bagCount = bags?.length || 0;
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -161,23 +164,25 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Search bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <form onSubmit={handleSearch} className="w-full relative">
+          {/* Search bar - Desktop (improved spacing & visuals) */}
+          <div className="hidden md:flex flex-1 max-w-2xl mx-8">
+            <form onSubmit={handleSearch} className="w-full relative" aria-label="Site search">
               <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search for products, brands, categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-full focus:border-green-500 focus:ring-0"
+                  className="w-full pl-12 pr-28 py-3 border border-gray-200 rounded-full shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden />
                 <Button
                   type="submit"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 rounded-full px-6"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 rounded-full px-4 py-2 flex items-center gap-2"
+                  aria-label="Search"
                 >
-                  Search
+                  <Search className="w-4 h-4 text-white" />
+                  <span className="hidden sm:inline text-sm text-white">Search</span>
                 </Button>
               </div>
             </form>
@@ -255,6 +260,11 @@ export function Navbar() {
                     {cartItemCount}
                   </Badge>
                 )}
+                {bagCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-1 py-0.5 rounded-full min-w-[18px] h-4 flex items-center justify-center">
+                    {bagCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
 
@@ -275,23 +285,23 @@ export function Navbar() {
 
         {/* Categories navigation - Desktop */}
         <div className="hidden md:block border-t border-gray-100">
-          <nav className="flex items-center space-x-6 py-3 overflow-x-auto">
+          <nav className="flex items-center space-x-3 py-3 overflow-x-auto no-scrollbar">
             <Link
               href="/products"
-              className="text-gray-900 font-semibold hover:text-green-600 whitespace-nowrap py-2 text-sm transition-colors flex items-center gap-2"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition flex items-center gap-2 shadow-sm"
             >
               <ShoppingBasket className="w-4 h-4" />
               All Products
             </Link>
             <Link
               href="/deals"
-              className="text-red-600 font-semibold hover:text-red-700 whitespace-nowrap py-2 text-sm transition-colors"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition font-semibold"
             >
               Hot Deals
             </Link>
             <Link
               href="/categories"
-              className="text-gray-700 hover:text-green-600 whitespace-nowrap py-2 text-sm transition-colors"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition"
             >
               Categories
             </Link>
@@ -302,7 +312,7 @@ export function Navbar() {
                 <Link
                   key={category.slug}
                   href={`/categories/${category.slug}`}
-                  className="text-gray-700 hover:text-green-600 whitespace-nowrap py-2 text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                  className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition duration-200 flex items-center gap-2 shadow-sm"
                 >
                   <Icon className="w-4 h-4" />
                   {category.name}
@@ -311,7 +321,7 @@ export function Navbar() {
             })}
             <Link
               href="/orders"
-              className="text-gray-700 hover:text-green-600 whitespace-nowrap py-2 text-sm transition-colors"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition"
             >
               Orders
             </Link>
