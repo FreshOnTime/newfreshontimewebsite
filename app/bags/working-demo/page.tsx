@@ -223,7 +223,7 @@ export default function BagPage() {
                         {bag.items.length} items
                       </p>
                       <p className="text-lg font-bold text-green-600">
-                        ${bag.totalAmount.toFixed(2)}
+                        Rs {bag.totalAmount.toFixed(2)}
                       </p>
                       {currentBag?.id === bag.id && (
                         <Badge variant="secondary" className="mt-2">
@@ -260,7 +260,7 @@ export default function BagPage() {
                     />
                     <h3 className="font-semibold mb-1">{product.name}</h3>
                     <p className="text-lg font-bold text-green-600 mb-3">
-                      ${product.price}
+                      Rs {product.price}
                     </p>
                     <Button
                       onClick={() => addToBag(product)}
@@ -280,9 +280,9 @@ export default function BagPage() {
         {/* Current Bag Details */}
         {currentBag && (
           <Card>
-            <CardHeader>
+              <CardHeader>
               <CardTitle>
-                {currentBag.name} - ${currentBag.totalAmount.toFixed(2)}
+                {currentBag.name} - Rs {currentBag.totalAmount.toFixed(2)}
               </CardTitle>
               <CardDescription>
                 {currentBag.items.length} {currentBag.items.length === 1 ? 'item' : 'items'}
@@ -308,7 +308,7 @@ export default function BagPage() {
                         <div>
                           <h4 className="font-medium">{item.name}</h4>
                           <p className="text-sm text-gray-600">
-                            ${item.price} each
+                            Rs {item.price} each
                           </p>
                         </div>
                       </div>
@@ -334,7 +334,7 @@ export default function BagPage() {
                         </div>
                         <div className="text-right">
                           <p className="font-medium">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            Rs {(item.price * item.quantity).toFixed(2)}
                           </p>
                         </div>
                         <Button
@@ -353,7 +353,7 @@ export default function BagPage() {
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>Total:</span>
                       <span className="text-green-600">
-                        ${currentBag.totalAmount.toFixed(2)}
+                        Rs {currentBag.totalAmount.toFixed(2)}
                       </span>
                     </div>
                     <Button className="w-full mt-4" size="lg">

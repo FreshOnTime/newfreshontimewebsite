@@ -214,7 +214,7 @@ export function AdminOverview() {
     },
     {
       title: 'Total Revenue',
-      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+      value: `Rs ${(stats?.totalRevenue || 0).toLocaleString()}`,
       icon: DollarSign,
       description: 'All time revenue',
       color: 'text-emerald-600',
@@ -256,7 +256,7 @@ export function AdminOverview() {
     },
     {
       title: 'Recurring Revenue',
-      value: `$${(stats?.recurringRevenue || 0).toLocaleString()}`,
+      value: `Rs ${(stats?.recurringRevenue || 0).toLocaleString()}`,
       icon: TrendingUp,
       description: 'Revenue from recurring orders',
       color: 'text-teal-600',
@@ -425,7 +425,7 @@ export function AdminOverview() {
                     </div>
                   </div>
                   <div className="text-sm font-semibold text-green-600">
-                    ${Number(u.total || 0).toFixed(2)}
+                    Rs {Number(u.total || 0).toFixed(2)}
                   </div>
                 </div>
               ))}

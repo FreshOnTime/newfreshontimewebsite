@@ -18,6 +18,8 @@ function BagDemo() {
   const [products, setProducts] = useState<Product[]>([]);
   const [newBagName, setNewBagName] = useState('');
 
+  type Priceable = { price?: number };
+
   // Mock products for demo
   useEffect(() => {
     setProducts([
@@ -116,7 +118,7 @@ function BagDemo() {
                   {bag.items.length} items
                 </p>
                 <p className="text-sm font-medium">
-                  Total: ${bag.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0).toFixed(2)}
+                  Total: Rs {bag.items.reduce((sum, item) => sum + (((item.product as Priceable).price || 0) * item.quantity), 0).toFixed(2)}
                 </p>
               </div>
             ))}
@@ -137,7 +139,7 @@ function BagDemo() {
               />
               <h3 className="font-semibold">{product.name}</h3>
               <p className="text-sm text-gray-600 mb-2">{product.description}</p>
-              <p className="text-lg font-bold mb-3">${product.price}</p>
+              <p className="text-lg font-bold mb-3">Rs {(product as Priceable).price}</p>
               <button
                 onClick={() => handleAddToBag(product)}
                 disabled={loading || !currentBag}
@@ -171,13 +173,13 @@ function BagDemo() {
                     <div>
                       <h4 className="font-medium">{item.product.name}</h4>
                       <p className="text-sm text-gray-600">
-                        ${item.product.price} x {item.quantity}
+                        Rs {(item.product as Priceable).price} x {item.quantity}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="font-medium">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      Rs {(((item.product as Priceable).price || 0) * item.quantity).toFixed(2)}
                     </span>
                     <button
                       onClick={() => removeFromBag(currentBag.id, item.product._id)}
@@ -192,7 +194,7 @@ function BagDemo() {
                 <div className="flex justify-between items-center font-bold text-lg">
                   <span>Total:</span>
                   <span>
-                    ${currentBag.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0).toFixed(2)}
+                    Rs {currentBag.items.reduce((sum, item) => sum + (((item.product as Priceable).price || 0) * item.quantity), 0).toFixed(2)}
                   </span>
                 </div>
               </div>

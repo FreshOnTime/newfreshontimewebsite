@@ -54,10 +54,10 @@ export default function AnalyticsPage() {
 
       {/* Top cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[{title:'Customers',value:stats?.totalCustomers||0,icon:Users,color:'text-blue-600',bg:'bg-blue-50'},
+          {[{title:'Customers',value:stats?.totalCustomers||0,icon:Users,color:'text-blue-600',bg:'bg-blue-50'},
           {title:'Products',value:stats?.totalProducts||0,icon:Package,color:'text-green-600',bg:'bg-green-50'},
           {title:'Orders',value:stats?.totalOrders||0,icon:ShoppingCart,color:'text-purple-600',bg:'bg-purple-50'},
-          {title:'Revenue',value:`$${(stats?.totalRevenue||0).toLocaleString()}`,icon:DollarSign,color:'text-emerald-600',bg:'bg-emerald-50'}]
+          {title:'Revenue',value:`Rs ${(stats?.totalRevenue||0).toLocaleString()}`,icon:DollarSign,color:'text-emerald-600',bg:'bg-emerald-50'}]
         .map((c) => {
           const Icon: React.ComponentType<{ className?: string }> = c.icon as unknown as React.ComponentType<{ className?: string }>;
           return (
@@ -94,7 +94,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm">Recurring Revenue</CardTitle></CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${(stats?.recurringRevenue || 0).toLocaleString()}</div>
+                <div className="text-2xl font-bold">Rs {(stats?.recurringRevenue || 0).toLocaleString()}</div>
               </CardContent>
             </Card>
           </div>
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
                       <TableRow key={u.orderNumber}>
                         <TableCell>{u.orderNumber}</TableCell>
                         <TableCell>{u.nextDeliveryAt ? new Date(u.nextDeliveryAt).toLocaleDateString() : '—'}</TableCell>
-                        <TableCell className="text-right">${Number(u.total || 0).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">Rs {Number(u.total || 0).toFixed(2)}</TableCell>
                       </TableRow>
                     ))
                   )}
