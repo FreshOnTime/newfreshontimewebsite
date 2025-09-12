@@ -44,6 +44,12 @@ const productSchema: Schema = new Schema<IProduct>(
       ref: "Brand",
       required: [true, "Product: Brand is required"],
     },
+    // Optional supplier reference — not mandatory so admin can create products without supplier
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
+      required: false,
+    },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ProductCategory",
