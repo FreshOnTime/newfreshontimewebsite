@@ -41,7 +41,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface Order { _id?: string; status: FormData['status']; paymentStatus: FormData['paymentStatus']; trackingNumber?: string; notes?: string; orderNumber?: string; total?: number; isRecurring?: boolean; scheduleStatus?: 'active'|'paused'|'ended'; nextDeliveryAt?: string; bagId?: string; bagName?: string; items?: Array<{ productId?: string; sku?: string; name?: string; qty: number; price: number; total?: number }>; shippingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; phone?: string; }; billingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; }; recurrence?: { startDate?: string; endDate?: string; daysOfWeek?: number[]; includeDates?: string[]; excludeDates?: string[]; selectedDates?: string[]; }; }
+interface Order { _id?: string; status: FormData['status']; paymentStatus: FormData['paymentStatus']; trackingNumber?: string; notes?: string; orderNumber?: string; total?: number; isRecurring?: boolean; scheduleStatus?: 'active'|'paused'|'ended'; nextDeliveryAt?: string; bagId?: string; bagName?: string; shipping?: number; tax?: number; discount?: number; items?: Array<{ productId?: string; sku?: string; name?: string; qty: number; price: number; total?: number }>; shippingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; phone?: string; }; billingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; }; recurrence?: { startDate?: string; endDate?: string; daysOfWeek?: number[]; includeDates?: string[]; excludeDates?: string[]; selectedDates?: string[]; notes?: string; }; }
 
 export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boolean; onOpenChange: (o: boolean) => void; order?: Order | null; onSave: () => void; }) {
   const isEditing = !!order?._id;
@@ -333,6 +333,12 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                         )}
                       </div>
                     </div>
+                    {order.recurrence?.notes && (
+                      <div>
+                        <div className="font-medium mb-1">Notes</div>
+                        <div className="text-sm text-gray-700">{order.recurrence.notes}</div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

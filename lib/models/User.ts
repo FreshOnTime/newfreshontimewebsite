@@ -16,8 +16,10 @@ export interface IUser extends Document {
   passwordHash?: string; // For email/password authentication
   addresses: IAddress[];
   registrationAddress: IAddress;
+  supplierId?: mongoose.Types.ObjectId;
   role:
     | "customer"
+    | "supplier"
     | "admin"
     | "manager"
     | "delivery_staff"
@@ -27,6 +29,7 @@ export interface IUser extends Document {
     | "inventory_manager";
   secondaryRoles?:
     | "customer"
+  | "supplier"
     | "delivery_staff"
     | "customer_support"
     | "order_processor"
@@ -97,6 +100,7 @@ const userSchema: Schema = new Schema<IUser>(
       enum: {
         values: [
           "customer",
+          "supplier",
           "admin",
           "manager",
           "delivery_staff",

@@ -34,6 +34,10 @@ interface AuthContextType {
   refreshAuth: () => Promise<void>;
 }
 
+export interface ServerError extends Error {
+  fieldErrors?: Record<string, string[]>;
+}
+
 interface SignupData {
   firstName: string;
   lastName?: string;
@@ -171,8 +175,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         setUser(responseData.user);
       } else {
-        setError(responseData.error || 'Signup failed');
-        throw new Error(responseData.error || 'Signup failed');
+          // If backend returned validation details, include them on the thrown error
+          const err = new Error(responseData.error || 'Signup failed') as ServerError;
+          if (responseData.details) {
+            err.fieldErrors = responseData.details;
+          }
+          // Sometimes backend returns nested errors or arrays
+          if (responseData.errors) {
+            err.fieldErrors = { ...(err.fieldErrors || {}), ...responseData.errors };
+          }
+          setError(responseData.error || 'Signup failed');
+          throw err;
       }
     } catch (error) {
       console.error('Signup error:', error);

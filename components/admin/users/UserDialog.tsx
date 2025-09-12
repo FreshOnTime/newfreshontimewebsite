@@ -73,7 +73,7 @@ export function UserDialog({ open, onOpenChange, user, onSave, readOnly }: { ope
   }, [user, open]);
 
   const roles = useMemo(() => [
-    'customer', 'admin', 'manager', 'delivery_staff', 'customer_support', 'marketing_specialist', 'order_processor', 'inventory_manager'
+  'customer', 'supplier', 'admin', 'manager', 'delivery_staff', 'customer_support', 'marketing_specialist', 'order_processor', 'inventory_manager'
   ], []);
 
   const submit = async () => {

@@ -16,11 +16,11 @@ export function Footer() {
               <Image
                 src="/fresh-pick.svg"
                 alt="Fresh Pick"
-                width={32}
-                height={32}
+                width={180}
+                height={180}
                 className="text-white"
               />
-              <span className="text-xl font-bold">Fresh Pick</span>
+            
             </div>
             <p className="text-gray-400 text-sm">
               The freshest groceries delivered to your door. Quality you can trust, 

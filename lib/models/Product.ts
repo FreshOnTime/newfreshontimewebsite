@@ -5,6 +5,7 @@ export interface IProduct extends Document {
   name: string;
   image: IImage;
   brand: mongoose.Types.ObjectId;
+  supplier?: mongoose.Types.ObjectId;
   category: mongoose.Types.ObjectId;
   description: string;
   ingredients?: string;
@@ -43,6 +44,12 @@ const productSchema: Schema = new Schema<IProduct>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
       required: [true, "Product: Brand is required"],
+    },
+    // Optional supplier reference — not mandatory so admin can create products without supplier
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
+      required: false,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
