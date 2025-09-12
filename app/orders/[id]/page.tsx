@@ -90,6 +90,63 @@ export default function OrderDetailPage() {
 
   if (!loading && !order) return notFound();
 
+  const stages = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+
+  function Stepper({ status }: { status: string }) {
+    // normalize incoming status (accept both 'canceled' and 'cancelled')
+    const s = (status || '').toLowerCase();
+    const idx = stages.indexOf(s);
+    const isKnownStage = idx >= 0;
+
+    return (
+      <div className="my-4">
+        <ol className="flex items-center justify-between w-full text-xs" aria-label="Order progress">
+          {stages.map((stage, i) => {
+            // mark a step done only when the stage index is strictly less than the current known index
+            const done = isKnownStage ? i < idx : false;
+            const isCurrent = isKnownStage ? i === idx : false;
+
+            return (
+              <li key={stage} className="flex-1 flex items-center relative">
+                <div className="flex items-center w-full">
+                  <div className="relative flex items-center">
+                    <div
+                      aria-hidden
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-500 ${done ? 'bg-green-600 text-white' : 'bg-white text-gray-500 border'} ${isCurrent ? 'ring-2 ring-green-300 animate-pulse' : ''}`}
+                    >
+                      <span className="text-[11px] font-semibold">{i + 1}</span>
+                    </div>
+                  </div>
+
+                  {i < stages.length - 1 && (
+                    <div className={`h-1 flex-1 mx-3 rounded ${isKnownStage && i < idx ? 'bg-green-500' : 'bg-gray-200'} transition-colors duration-500`} />
+                  )}
+                </div>
+
+                <div className="absolute mt-10 w-24 text-center text-[11px] text-gray-600 transform -translate-x-1/2 left-1/2">
+                  {/* simple label under each step - visually aligned using CSS flow */}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* If the status is not a known stage, show it explicitly so it's not mistaken for 'pending' */}
+        {!isKnownStage && s && (
+          <div className="mt-2 text-sm font-medium text-red-600">Status: {status}</div>
+        )}
+
+        <div className="flex justify-between mt-2 text-[11px] text-gray-600">
+          {stages.map((st) => (
+            <div key={st} className="w-1/5 text-center first:text-left last:text-right">
+              {st.charAt(0).toUpperCase() + st.slice(1)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const doRecurringAction = async (action: 'pause'|'resume'|'end') => {
     if (!order?._id) return;
     setSaving(true);
@@ -241,9 +298,23 @@ export default function OrderDetailPage() {
               {order.bagName && (
                 <div className="text-sm text-gray-600">From bag: <span className="font-medium">{order.bagName}</span></div>
               )}
+              {/* Stepper shows order progression visually */}
+              <Stepper status={order.status} />
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-xs px-2 py-1 rounded ${order.status === 'delivered' ? 'bg-green-100 text-green-700' : order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>{order.status}</span>
+              {/** normalize status for class mapping (accept both 'canceled' & 'cancelled') */}
+              {(() => {
+                const s = (order.status || '').toLowerCase();
+                const badgeClass = s === 'delivered'
+                  ? 'bg-green-100 text-green-700'
+                  : s === 'pending'
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : s === 'cancelled' || s === 'canceled' || s === 'refunded'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-gray-100 text-gray-700';
+                return <span className={`text-xs px-2 py-1 rounded ${badgeClass}`}>{order.status}</span>;
+              })()}
+
               {user && (order.status === 'pending' || order.status === 'confirmed' || order.status === 'processing') && (
                 <Button variant="outline" size="sm" onClick={cancelOrder} disabled={saving}>Cancel</Button>
               )}
@@ -395,7 +466,17 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button type="submit" disabled={saving || addressSaved}>Save address</Button>
+                        <Button
+                          type="submit"
+                          disabled={
+                            saving ||
+                            addressSaved ||
+                            ['cancelled', 'canceled', 'shipped'].includes((order.status || '').toLowerCase())
+                          }
+                          title={['cancelled', 'canceled', 'shipped'].includes((order.status || '').toLowerCase()) ? 'Cannot save address for cancelled or shipped orders' : undefined}
+                        >
+                          Save address
+                        </Button>
                       </div>
                     </form>
                   </CardContent>
