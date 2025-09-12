@@ -53,6 +53,14 @@ export default function OrderDetailPage() {
   const didFetch = useRef(false);
   const { user } = useAuth();
 
+  // recurrence UI state
+  const [recurrenceFreq, setRecurrenceFreq] = useState<'weekly'|'monthly'|'quarterly'>('weekly');
+  const [recurrenceInterval, setRecurrenceInterval] = useState<number>(1);
+  const [monthlyMode, setMonthlyMode] = useState<'bymonthday'|'byweekday'>('bymonthday');
+  const [monthlyDay, setMonthlyDay] = useState<number | ''>('');
+  const [monthlyNth, setMonthlyNth] = useState<number>(1); // 1..4 or -1 for last
+  const [monthlyWeekday, setMonthlyWeekday] = useState<number>(0); // 0=Sun..6=Sat
+
   useEffect(() => {
     if (didFetch.current) return; // Avoid double-run in React Strict Mode
     didFetch.current = true;
@@ -88,7 +96,7 @@ export default function OrderDetailPage() {
     load();
   }, [id, router]);
 
-  if (!loading && !order) return notFound();
+  
 
   const stages = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
@@ -206,6 +214,22 @@ export default function OrderDetailPage() {
     };
     return isos.map(toYmd).filter(Boolean).join(', ');
   };
+
+  // initialize recurrence UI values when order loads
+  useEffect(() => {
+    if (!order || !order.recurrence) return;
+    // default weekly when daysOfWeek present
+    if (Array.isArray(order.recurrence.daysOfWeek) && order.recurrence.daysOfWeek.length) {
+      setRecurrenceFreq('weekly');
+      setRecurrenceInterval(1);
+    }
+    // if recurrence includes explicit dates or startDate looks monthly, try to infer
+    if (order.recurrence.startDate) {
+      // keep existing defaults; more advanced inference can be added later
+    }
+  }, [order]);
+
+  if (!loading && !order) return notFound();
 
   const saveRecurrence = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -390,17 +414,78 @@ export default function OrderDetailPage() {
                           <Input type="date" name="recurrence_end" defaultValue={formatDateInput(order.recurrence?.endDate)} />
                         </div>
                       </div>
-                      <div>
-                        <Label className="text-xs text-gray-600 mb-1">Days of week</Label>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          {[0,1,2,3,4,5,6].map((d) => (
-                            <label key={d} className="inline-flex items-center gap-1 border rounded px-2 py-1">
-                              <input type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} />
-                              <span>{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}</span>
-                            </label>
-                          ))}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-gray-600">Frequency</Label>
+                          <select name="recurrence_freq" value={recurrenceFreq} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRecurrenceFreq(e.target.value as 'weekly'|'monthly'|'quarterly')} className="w-full border rounded px-2 py-1 text-sm">
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-gray-600">Interval</Label>
+                          <Input name="recurrence_interval" type="number" min={1} value={recurrenceInterval} onChange={(e) => setRecurrenceInterval(Number(e.target.value || 1))} />
                         </div>
                       </div>
+
+                      {/* Weekly selection: days of week */}
+                      {recurrenceFreq === 'weekly' && (
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1">Days of week</Label>
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            {[0,1,2,3,4,5,6].map((d) => (
+                              <label key={d} className="inline-flex items-center gap-1 border rounded px-2 py-1">
+                                <input type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} />
+                                <span>{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Monthly / Quarterly options */}
+                      {(recurrenceFreq === 'monthly' || recurrenceFreq === 'quarterly') && (
+                        <div className="space-y-2">
+                          <Label className="text-xs text-gray-600 mb-1">Monthly options</Label>
+                          <div className="flex items-center gap-3 text-xs">
+                            <label className="inline-flex items-center gap-2">
+                              <input type="radio" name="recurrence_monthly_mode" value="bymonthday" checked={monthlyMode === 'bymonthday'} onChange={() => setMonthlyMode('bymonthday')} />
+                              <span>Day of month</span>
+                            </label>
+                            <label className="inline-flex items-center gap-2">
+                              <input type="radio" name="recurrence_monthly_mode" value="byweekday" checked={monthlyMode === 'byweekday'} onChange={() => setMonthlyMode('byweekday')} />
+                              <span>Nth weekday</span>
+                            </label>
+                          </div>
+
+                          {monthlyMode === 'bymonthday' && (
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs text-gray-600">Day</Label>
+                              <Input name="recurrence_monthday" type="number" min={1} max={31} value={monthlyDay} onChange={(e) => setMonthlyDay(e.target.value ? Number(e.target.value) : '')} className="w-28" />
+                              <span className="text-xs text-gray-500">(e.g. 15)</span>
+                            </div>
+                          )}
+
+                          {monthlyMode === 'byweekday' && (
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs text-gray-600">Which</Label>
+                              <select name="recurrence_month_nth" value={monthlyNth} onChange={(e) => setMonthlyNth(Number(e.target.value))} className="border rounded px-2 py-1 text-sm">
+                                <option value={1}>1st</option>
+                                <option value={2}>2nd</option>
+                                <option value={3}>3rd</option>
+                                <option value={4}>4th</option>
+                                <option value={-1}>Last</option>
+                              </select>
+                              <select name="recurrence_month_weekday" value={monthlyWeekday} onChange={(e) => setMonthlyWeekday(Number(e.target.value))} className="border rounded px-2 py-1 text-sm">
+                                {[0,1,2,3,4,5,6].map((d) => (
+                                  <option key={d} value={d}>{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div>
                         <Label className="text-xs text-gray-600 mb-1">Include dates (YYYY-MM-DD, comma-separated)</Label>
                         <textarea name="recurrence_include" className="w-full border rounded px-3 py-2 text-sm" rows={2} defaultValue={formatDateList(order.recurrence?.includeDates)} placeholder="2025-09-10, 2025-10-01"></textarea>
