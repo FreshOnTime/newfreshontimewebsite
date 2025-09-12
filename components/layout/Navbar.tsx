@@ -155,13 +155,11 @@ export function Navbar() {
             <Image
               src="/fresh-pick.svg"
               alt="Fresh Pick"
-              width={40}
-              height={40}
+              width={180}
+              height={180}
               className="text-green-600"
             />
-            <span className="text-2xl font-bold text-green-700">
-              Fresh Pick
-            </span>
+          
           </Link>
 
           {/* Search bar - Desktop (improved spacing & visuals) */}

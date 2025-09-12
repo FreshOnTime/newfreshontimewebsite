@@ -5,6 +5,7 @@ export interface IProduct extends Document {
   name: string;
   image: IImage;
   brand: mongoose.Types.ObjectId;
+  supplier?: mongoose.Types.ObjectId;
   category: mongoose.Types.ObjectId;
   description: string;
   ingredients?: string;

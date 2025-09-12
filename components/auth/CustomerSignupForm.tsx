@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import type { ServerError } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,8 @@ export function CustomerSignupForm() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
   const router = useRouter();
   const { signup } = useAuth();
 
@@ -51,6 +54,8 @@ export function CustomerSignupForm() {
 
     try {
       setIsLoading(true);
+      setServerError(null);
+      setFieldErrors(null);
 
       await signup({
         firstName: formData.firstName,
@@ -64,6 +69,12 @@ export function CustomerSignupForm() {
       router.push('/');
     } catch (e) {
       console.error('Customer signup failed', e);
+      // Surface structured server errors
+      if (e && typeof e === 'object') {
+        const err = e as ServerError;
+        if (err.fieldErrors) setFieldErrors(err.fieldErrors);
+        if (err.message) setServerError(err.message || null);
+      }
       // Let AuthContext surface errors to the UI via its error state
     } finally {
       setIsLoading(false);
@@ -136,6 +147,12 @@ export function CustomerSignupForm() {
           </div>
 
           <Button type="submit" disabled={isLoading} className="w-full">{isLoading ? 'Registering…' : 'Register'}</Button>
+          {serverError && <p className="text-sm text-red-600 mt-2">{serverError}</p>}
+          {fieldErrors && Object.keys(fieldErrors).map((k) => (
+            <div key={k} className="text-sm text-red-600">
+              {k}: {fieldErrors[k].join(', ')}
+            </div>
+          ))}
         </form>
       </CardContent>
     </Card>

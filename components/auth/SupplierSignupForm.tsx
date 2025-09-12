@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import type { ServerError } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -27,8 +28,10 @@ export function SupplierSignupForm() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
   const router = useRouter();
-  const { signup } = useAuth();
+  const { signup, refreshAuth } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -51,7 +54,9 @@ export function SupplierSignupForm() {
 
     // Reuse signup API for creating user account; supplier-specific data will be sent to supplier API after account created
     try {
-      setIsLoading(true);
+  setIsLoading(true);
+  setServerError(null);
+  setFieldErrors(null);
       const signupData = {
         firstName: formData.contactName,
         lastName: undefined,
@@ -61,12 +66,13 @@ export function SupplierSignupForm() {
         registrationAddress: formData.registrationAddress
       };
 
-      await signup(signupData);
+  await signup(signupData);
 
       // After signup, call supplier API to create supplier profile
       try {
         await fetch('/api/suppliers/register', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             companyName: formData.companyName,
@@ -76,12 +82,24 @@ export function SupplierSignupForm() {
             phone: formData.phoneNumber
           })
         });
+        // Refresh auth so navbar and user role are updated
+        try {
+          await refreshAuth();
+        } catch (refreshErr) {
+          console.warn('Failed to refresh auth after supplier register', refreshErr);
+        }
       } catch (e) {
         // Non-blocking: supplier creation can be completed later in admin
         console.error('Supplier profile creation failed', e);
       }
-
       router.push('/dashboard');
+    } catch (e) {
+      console.error('Supplier signup failed', e);
+      if (e && typeof e === 'object') {
+        const err = e as ServerError;
+        if (err.fieldErrors) setFieldErrors(err.fieldErrors);
+        if (err.message) setServerError(err.message || null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -157,6 +175,12 @@ export function SupplierSignupForm() {
           </div>
 
           <Button type="submit" disabled={isLoading} className="w-full">{isLoading ? 'Registering…' : 'Register as Supplier'}</Button>
+          {serverError && <p className="text-sm text-red-600 mt-2">{serverError}</p>}
+          {fieldErrors && Object.keys(fieldErrors).map((k) => (
+            <div key={k} className="text-sm text-red-600">
+              {k}: {fieldErrors[k].join(', ')}
+            </div>
+          ))}
         </form>
       </CardContent>
     </Card>
