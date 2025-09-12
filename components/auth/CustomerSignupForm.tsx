@@ -118,9 +118,19 @@ export function CustomerSignupForm() {
                 <Label htmlFor="addressLine1">Address Line 1 *</Label>
                 <Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required />
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="province">Province *</Label>
+                  <Input id="province" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required />
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
-                <Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required />
+                <Label htmlFor="postalCode">Postal Code *</Label>
+                <Input id="postalCode" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required />
               </div>
             </div>
           </div>

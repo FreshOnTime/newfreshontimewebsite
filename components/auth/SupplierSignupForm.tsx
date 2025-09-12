@@ -134,10 +134,20 @@ export function SupplierSignupForm() {
                 <Label>Address Line 1 *</Label>
                 <Input value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required />
               </div>
-              <div className="space-y-2">
-                <Label>City *</Label>
-                <Input value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required />
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>City *</Label>
+                    <Input value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Province *</Label>
+                    <Input value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Postal Code *</Label>
+                  <Input value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required />
+                </div>
             </div>
           </div>
 
