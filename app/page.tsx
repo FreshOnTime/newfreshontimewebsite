@@ -211,8 +211,8 @@ export default function Home() {
         </div>
 
         {/* decorative soft color blobs for depth */}
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-orange-500/10 blur-3xl pointer-events-none -z-0" />
-        <div className="absolute -bottom-24 -right-20 w-96 h-96 rounded-full bg-yellow-400/6 blur-3xl pointer-events-none -z-0" />
+  <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-green-500/8 blur-3xl pointer-events-none -z-0" />
+  <div className="absolute -bottom-24 -right-20 w-96 h-96 rounded-full bg-green-400/6 blur-3xl pointer-events-none -z-0" />
 
         <div className="container mx-auto px-4 text-center text-white">
           <motion.div
@@ -253,7 +253,7 @@ export default function Home() {
               <Button
                 asChild
                 size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
               >
                 <Link href="/products">
                   Shop Now
@@ -263,7 +263,7 @@ export default function Home() {
               <Button
                 asChild
                 size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg backdrop-blur-sm border-0 w-full sm:w-auto"
+                className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 text-lg backdrop-blur-sm border-0 w-full sm:w-auto"
               >
                 <Link href="/categories">View Categories</Link>
               </Button>

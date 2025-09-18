@@ -15,7 +15,7 @@ interface SectionHeaderProps {
 
 const accentMap: Record<NonNullable<SectionHeaderProps["accent"]>, string> = {
   green: "text-green-600 border-green-500 hover:bg-green-500 hover:text-white",
-  orange: "text-orange-600 border-orange-500 hover:bg-orange-500 hover:text-white",
+  orange: "text-green-600 border-green-500 hover:bg-green-500 hover:text-white",
   purple: "text-purple-600 border-purple-500 hover:bg-purple-500 hover:text-white",
   red: "text-red-600 border-red-500 hover:bg-red-500 hover:text-white",
   blue: "text-blue-600 border-blue-500 hover:bg-blue-500 hover:text-white",
