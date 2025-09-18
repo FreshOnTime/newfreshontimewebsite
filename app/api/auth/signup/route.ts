@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authService } from '@/lib/services/authService';
 import { signupSchema, validateInput } from '@/lib/utils/validation';
 import { setAuthCookies } from '@/lib/utils/cookies';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import EmailToken from '@/lib/models/EmailToken';
+import { sendVerificationEmail } from '@/lib/services/mailService';
 import { withRateLimit } from '@/lib/utils/rateLimit';
 
 async function handleSignup(request: NextRequest) {
@@ -35,6 +39,25 @@ async function handleSignup(request: NextRequest) {
 
     // Set auth cookies
     setAuthCookies(response, result.accessToken, result.refreshToken);
+
+    try {
+      // create verification token
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = await bcrypt.hash(rawToken, 10);
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
+
+      await EmailToken.create({
+        userId: result.user._id,
+        tokenHash,
+        type: 'verify',
+        expiresAt,
+      });
+
+      // send verification email (non-blocking)
+      sendVerificationEmail(result.user.email, rawToken).catch((e) => console.error('sendVerificationEmail error', e));
+    } catch (e) {
+      console.error('Failed to create/send verification token', e);
+    }
 
     return response;
   } catch (error) {

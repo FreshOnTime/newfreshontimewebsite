@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, UserCog, CheckCircle, AlertCircle } from "lucide-react";
 import { AdminOverview } from "@/components/admin/AdminOverview";
+import SupplierUploadsList from '@/components/admin/SupplierUploadsList';
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(false);
@@ -58,7 +59,7 @@ export default function AdminPage() {
       {/* Dashboard Overview */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-gray-600 mb-6">Overview of your store performance and key metrics</p>
+          {/* Make User Admin Card */}
         <AdminOverview />
       </div>
 
@@ -116,7 +117,15 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
-          {/* (Removed Seed Database tool) */}
+          {/* Supplier Uploads */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Supplier Uploads</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SupplierUploadsList />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,0 +1,9 @@
+sku,name,description,price,pricePerBaseQuantity,baseMeasurementQuantity,measurementUnit,stockQty,categorySlug,tags,supplierSku
+SKU12345,Fresh Banana,Yellow ripe bananas,2.50,2.50,1,kg,100,produce,"fruit,banana",BN-001
+SKU12346,Organic Milk,Full fat organic milk,3.80,3.80,1,l,200,dairy,"milk,organic",ML-010
+
+# Notes: 
+# - `measurementUnit` should be one of: g, kg, ml, l, ea
+# - `price` and `pricePerBaseQuantity` are numbers (use dot for decimals)
+# - `baseMeasurementQuantity` is the quantity that `pricePerBaseQuantity` refers to (e.g., 1 for 1kg)
+# - `supplierSku` is optional external supplier code

@@ -23,6 +23,7 @@ const navigation = [
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
+  { name: 'Supplier Uploads', href: '/admin/supplier-uploads', icon: FileText },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
@@ -100,7 +101,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
                   <Link
                     href={item.href}
                     className={cn(
-                      pathname === item.href
+                      pathname?.startsWith(item.href)
                         ? 'bg-gray-50 text-blue-600'
                         : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50',
                       'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
@@ -108,7 +109,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
                   >
                     <item.icon
                       className={cn(
-                        pathname === item.href ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600',
+                        pathname?.startsWith(item.href) ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600',
                         'h-6 w-6 shrink-0'
                       )}
                     />

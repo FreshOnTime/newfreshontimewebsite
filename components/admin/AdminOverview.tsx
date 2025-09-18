@@ -264,6 +264,16 @@ export function AdminOverview() {
       href: '/admin/analytics?type=recurring',
       viewText: 'View Analytics'
     },
+    {
+      title: 'Supplier Uploads',
+      value: '',
+      icon: Package2,
+      description: 'Files uploaded by suppliers',
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+      href: '/admin/supplier-uploads',
+      viewText: 'View Uploads'
+    },
   ];
 
   return (

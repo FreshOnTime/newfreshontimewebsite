@@ -236,6 +236,17 @@ export function Navbar() {
                         </DropdownMenuItem>
                       </>
                     )}
+                    {user.role === "supplier" && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard">
+                            <Settings className="w-4 h-4 mr-2" />
+                            Supplier Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
@@ -382,6 +393,15 @@ export function Navbar() {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Dashboard
+                      </Link>
+                    )}
+                    {user.role === "supplier" && (
+                      <Link
+                        href="/dashboard"
+                        className="block text-gray-600 hover:text-green-600"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Supplier Dashboard
                       </Link>
                     )}
                     <button

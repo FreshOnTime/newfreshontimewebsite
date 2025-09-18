@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import Order from '@/lib/models/EnhancedOrder';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
+import { sendOrderEmail } from '@/lib/services/mailService';
+import User from '@/lib/models/User';
 
 export interface RecurringOrderPattern {
   orderId: string;
@@ -202,6 +204,34 @@ export class RecurringOrderService {
         scheduleStatus: followingDelivery ? 'active' : 'ended',
       });
 
+      // Attempt to send order confirmation email to customer (non-blocking)
+      try {
+        // Try to resolve customer email from recurringOrder or by loading the user
+        let customerEmail: string | null = null;
+        const ro = recurringOrder as unknown as { customerId?: string; customerEmail?: string };
+        if (ro.customerEmail) customerEmail = ro.customerEmail as unknown as string;
+        if (!customerEmail && ro.customerId) {
+          const fullUser = await User.findById(ro.customerId).lean().catch(() => null) as (null | { email?: string; phoneNumber?: string });
+          if (fullUser?.email) customerEmail = fullUser.email;
+          else if (fullUser?.phoneNumber) customerEmail = fullUser.phoneNumber;
+        }
+
+        if (customerEmail) {
+          const orderObj = newOrder.toObject ? newOrder.toObject() : newOrder;
+          if (orderObj) {
+            const mailOrder = {
+              _id: orderObj._id ? String(orderObj._id) : undefined,
+              total: typeof orderObj.total === 'number'
+                ? orderObj.total
+                : (typeof orderObj.subtotal === 'number' ? orderObj.subtotal : undefined),
+            };
+            sendOrderEmail(customerEmail, mailOrder).catch(e => console.error('sendOrderEmail error', e));
+          }
+        }
+      } catch (e) {
+        console.error('Recurring order email error:', e);
+      }
+
       return newOrder;
     } catch (error) {
       console.error('Error creating next order instance:', error);
@@ -235,12 +265,14 @@ export class RecurringOrderService {
 
       for (const order of dueOrders) {
         try {
-          const newOrder = await this.createNextOrderInstance(order._id.toString());
+          const orderId = (order as any)._id;
+          const newOrder = await this.createNextOrderInstance(String(orderId));
           if (newOrder) {
             results.created++;
           }
         } catch (error) {
-          results.errors.push(`Order ${order._id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          const idStr = (order as any)._id ? String((order as any)._id) : 'unknown';
+          results.errors.push(`Order ${idStr}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
     } catch (error) {
