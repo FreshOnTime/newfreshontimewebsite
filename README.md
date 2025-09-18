@@ -85,7 +85,29 @@ OPENAI_API_KEY=your_openai_api_key
 5. **Access the application**
    Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## 📝 Available Scripts
+## � Email testing
+
+Set the SendGrid env vars (`SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL`, `FRONTEND_URL`) before testing email flows.
+
+During development you can trigger a test email using:
+
+PowerShell (session-only):
+```powershell
+$env:SENDGRID_API_KEY = 'SG.<your-key>'
+$env:SENDGRID_FROM_EMAIL = 'freshpicksllk@gmail.com'
+$env:FRONTEND_URL = 'http://localhost:3000'
+npm run dev
+# Then POST to the test endpoint
+Invoke-RestMethod -Uri http://localhost:3000/api/dev/send-test-email -Method POST -Body (@{ to = 'you@domain.com' } | ConvertTo-Json) -ContentType 'application/json' -Headers @{ 'x-dev-email-secret' = $env:DEV_EMAIL_SECRET }
+```
+
+Or use the built-in flows:
+- Signup sends a verification email
+- Use `/auth/forgot` page to request a password reset
+- Password reset link uses `/auth/reset-password?token=...`
+
+
+## �📝 Available Scripts
 
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production

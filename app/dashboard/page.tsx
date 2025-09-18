@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import UploadProducts from '@/components/supplier/UploadProducts';
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
@@ -87,6 +88,11 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      {user.role === 'supplier' && (
+        <div className="mt-6">
+          <UploadProducts />
+        </div>
+      )}
     </div>
   );
 }

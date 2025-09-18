@@ -49,6 +49,11 @@ export default function ProfilePage() {
     return null; // Will redirect to login
   }
 
+  // Defensive role handling: backend may momentarily return no role on refresh
+  const role = typeof user.role === 'string' && user.role ? user.role : 'customer';
+  // local alias to access possibly-absent fields without changing global types
+  const u = user as { isEmailVerified?: boolean; isPhoneVerified?: boolean };
+
   const handleEdit = () => {
     setIsEditing(true);
   };
@@ -74,6 +79,8 @@ export default function ProfilePage() {
     switch (role) {
       case 'admin':
         return 'bg-red-100 text-red-800';
+      case 'supplier':
+        return 'bg-green-100 text-green-800';
       case 'manager':
         return 'bg-blue-100 text-blue-800';
       case 'customer':
@@ -197,8 +204,8 @@ export default function ProfilePage() {
                 <div>
                   <Label>Account Role</Label>
                   <div className="mt-1">
-                    <Badge className={getRoleBadgeColor(user.role)}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    <Badge className={getRoleBadgeColor(role)}>
+                      {String(role).charAt(0).toUpperCase() + String(role).slice(1)}
                     </Badge>
                   </div>
                 </div>
@@ -225,7 +232,7 @@ export default function ProfilePage() {
                     Manage Addresses
                   </Button>
                 </Link>
-                {(user.role === 'admin' || user.role === 'manager') && (
+                {(role === 'admin' || role === 'manager') && (
                   <Link href="/dashboard" className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <User className="w-4 h-4 mr-2" />
@@ -244,14 +251,14 @@ export default function ProfilePage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Email Verified</span>
-                  <Badge variant={user.isEmailVerified ? "default" : "secondary"}>
-                    {user.isEmailVerified ? "Verified" : "Not Verified"}
+                  <Badge variant={u?.isEmailVerified ? "default" : "secondary"}>
+                    {u?.isEmailVerified ? "Verified" : "Not Verified"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Phone Verified</span>
-                  <Badge variant={user.isPhoneVerified ? "default" : "secondary"}>
-                    {user.isPhoneVerified ? "Verified" : "Not Verified"}
+                  <Badge variant={u?.isPhoneVerified ? "default" : "secondary"}>
+                    {u?.isPhoneVerified ? "Verified" : "Not Verified"}
                   </Badge>
                 </div>
               </CardContent>

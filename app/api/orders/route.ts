@@ -5,6 +5,7 @@ import EnhancedProduct, { IProduct } from '@/lib/models/EnhancedProduct';
 import mongoose from 'mongoose';
 import User from '@/lib/models/User';
 import { requireAuth } from '@/lib/auth';
+import { sendOrderEmail } from '@/lib/services/mailService';
 
 // GET - Fetch all orders for a user
 export const GET = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
@@ -115,6 +116,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
   const userDoc = (await User.findById(effectiveUserId).lean().catch(() => null)) as (null | {
     firstName?: string;
     lastName?: string;
+    email?: string;
     phoneNumber?: string;
     registrationAddress?: {
       recipientName?: string;
@@ -287,6 +289,33 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     
     const populatedOrder = await EnhancedOrderModel.findById(savedOrder._id)
       .populate({ path: 'items.productId', model: 'EnhancedProduct', select: 'name price images stockQty sku' });
+
+    // send order confirmation email to customer (non-blocking)
+    try {
+      // Try to get an email address for the customer. If not available from userDoc, try loading full user record.
+      let customerEmail: string | null = null;
+  if (userDoc && userDoc.email) customerEmail = userDoc.email;
+      if (!customerEmail) {
+        const fullUser = await User.findById(effectiveUserId).lean().catch(() => null) as (null | { email?: string; phoneNumber?: string });
+        if (fullUser?.email) customerEmail = fullUser.email;
+        else if (fullUser?.phoneNumber) customerEmail = fullUser.phoneNumber;
+      }
+
+      if (customerEmail) {
+        const orderObj = populatedOrder?.toObject ? populatedOrder.toObject() : populatedOrder;
+        // Ensure we never pass null or a complex mongoose document to sendOrderEmail;
+        // build a minimal plain object with the fields the mail service expects.
+        if (orderObj) {
+          const mailOrder = {
+            _id: orderObj._id ? String(orderObj._id) : undefined,
+            total: (typeof orderObj.total === 'number' ? orderObj.total : (typeof orderObj.subtotal === 'number' ? orderObj.subtotal : undefined))
+          };
+          sendOrderEmail(customerEmail, mailOrder).catch(e => console.error('sendOrderEmail error', e));
+        }
+      }
+    } catch (e) {
+      console.error('Order email error:', e);
+    }
 
     return NextResponse.json({
       success: true,

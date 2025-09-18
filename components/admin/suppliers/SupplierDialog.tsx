@@ -34,6 +34,8 @@ interface Supplier { _id?: string; name: string; contactName: string; email: str
 export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly = false }: { open: boolean; onOpenChange: (o: boolean) => void; supplier?: Partial<Supplier> | null; onSave: () => void; readOnly?: boolean; }) {
   const isEditing = !!supplier?._id;
   const [loading, setLoading] = useState(false);
+  type UploadRow = { _id: string; filename: string; originalName?: string; path?: string; createdAt: string };
+  const [uploads, setUploads] = useState<UploadRow[] | null>(null);
   const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'active' } });
 
   useEffect(() => {
@@ -42,7 +44,22 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
     } else {
       form.reset({ name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'active' });
     }
-  }, [supplier, form]);
+    if (readOnly && supplier?._id) {
+      // fetch uploads for this supplier
+      (async () => {
+        try {
+          const res = await fetch(`/api/admin/supplier-uploads/by-supplier/${supplier!._id}`, { credentials: 'include' });
+          if (!res.ok) return setUploads([]);
+          const j = await res.json();
+          setUploads(j.data || []);
+        } catch {
+          setUploads([]);
+        }
+      })();
+    } else {
+      setUploads(null);
+    }
+  }, [supplier, form, readOnly]);
 
   const submit = async (data: FormData) => {
     try {
@@ -134,6 +151,37 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
             </DialogFooter>
           </form>
         </Form>
+        {readOnly && (
+          <div className="mt-6">
+            <h4 className="text-sm font-medium mb-2">Supplier Uploads</h4>
+            {uploads === null ? (
+              <div className="text-sm text-gray-500">Loading uploads...</div>
+            ) : uploads.length === 0 ? (
+              <div className="text-sm text-gray-500">No uploads found for this supplier.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left">File</th>
+                      <th className="text-left">Uploaded</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {uploads.map((u: UploadRow) => (
+                      <tr key={u._id} className="border-t">
+                        <td className="py-2">{u.originalName || u.filename}</td>
+                        <td className="py-2">{new Date(u.createdAt).toLocaleString()}</td>
+                        <td className="py-2"><a className="text-blue-600" href={u.path} download>Download</a></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
