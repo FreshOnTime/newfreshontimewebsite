@@ -121,19 +121,21 @@ export function Navbar() {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      {/* Top bar with delivery info */}
+      {/* Top announcement bar */}
       <div className="bg-green-50 border-b border-green-100">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center text-green-700">
-                <MapPin className="w-4 h-4 mr-1" />
-                <span>Delivering around colombo</span>
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="flex items-center text-green-800 shrink-0">
+                <MapPin className="w-4 h-4 mr-2" aria-hidden />
               </div>
-              <span className="text-gray-600">|</span>
-              <span className="text-green-700 font-medium">
-                Scheduled delivery available
-              </span>
+              <div className="flex-1 truncate text-green-800 font-medium">
+                <span className="block truncate">Delivering around Colombo</span>
+                <span className="block text-xs text-green-700 font-normal">
+                  Scheduled delivery available — choose your preferred slot at
+                  checkout
+                </span>
+              </div>
             </div>
             <div className="hidden md:flex items-center space-x-4 text-gray-600">
               <Link href="/help" className="hover:text-green-600">
@@ -142,6 +144,9 @@ export function Navbar() {
               <Link href="/about" className="hover:text-green-600">
                 About Us
               </Link>
+            </div>
+            <div className="flex md:hidden items-center text-green-700 ml-4">
+              <span className="text-xs font-medium">Scheduled delivery</span>
             </div>
           </div>
         </div>

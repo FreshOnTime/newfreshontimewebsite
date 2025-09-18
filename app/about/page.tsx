@@ -10,7 +10,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold mb-4">About Fresh Pick</h1>
-            <p className="text-gray-700 mb-4">Fresh Pick started with a simple idea: make fresh, high-quality groceries available to every doorstep. We partner with local farmers and trusted suppliers to bring produce, staples, and specialty items to your kitchen.</p>
+            <p className="text-gray-700 mb-4">Freshpick.lk is an innovative online grocery platform that caters to the needs of Sri Lankan consumers by offering a convenient and efficient way to shop for groceries from the comfort of their homes. It provides a wide range of products, from fresh produce and dairy items to pantry staples and household essentials, ensuring that customers have access to everything they need for their daily lives. With an intuitive and user-friendly website, Freshpick.lk makes it easy for users to browse through categories, select their desired items, and have them delivered directly to their doorstep. This service not only saves time but also aids in maintaining social distancing practices, making it an ideal choice for those seeking safety and convenience. By focusing on quality, variety, and customer satisfaction, Freshpick.lk is redefining the grocery shopping experience in Sri Lanka.</p>
             <ul className="list-disc pl-5 text-gray-700 space-y-2 mb-4">
               <li>Locally sourced ingredients</li>
               <li>Strict quality checks</li>
