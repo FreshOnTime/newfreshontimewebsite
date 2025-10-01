@@ -214,7 +214,7 @@ export function AdminOverview() {
     },
     {
       title: 'Total Revenue',
-      value: `Rs ${(stats?.totalRevenue || 0).toLocaleString()}`,
+      value: `Rs. ${(Number(stats?.totalRevenue || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: DollarSign,
       description: 'All time revenue',
       color: 'text-emerald-600',
@@ -256,7 +256,7 @@ export function AdminOverview() {
     },
     {
       title: 'Recurring Revenue',
-      value: `Rs ${(stats?.recurringRevenue || 0).toLocaleString()}`,
+      value: `Rs. ${(Number(stats?.recurringRevenue || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: TrendingUp,
       description: 'Revenue from recurring orders',
       color: 'text-teal-600',
@@ -435,7 +435,7 @@ export function AdminOverview() {
                     </div>
                   </div>
                   <div className="text-sm font-semibold text-green-600">
-                    Rs {Number(u.total || 0).toFixed(2)}
+                    Rs. {Number(u.total || 0).toFixed(2)}
                   </div>
                 </div>
               ))}
