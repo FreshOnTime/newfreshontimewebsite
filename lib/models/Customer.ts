@@ -60,8 +60,6 @@ const customerSchema = new Schema<ICustomer>({
   timestamps: true,
 });
 
-// Indexes
-customerSchema.index({ email: 1 });
 customerSchema.index({ createdAt: -1 });
 customerSchema.index({ name: 1 });
 
