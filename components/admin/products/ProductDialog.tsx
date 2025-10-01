@@ -122,13 +122,19 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
     try {
       setLoading(true);
   const body: Record<string, unknown> = {
-        ...data,
+        name: data.name,
+        sku: data.sku,
         slug: data.slug && data.slug.trim().length > 0 ? data.slug.trim() : undefined,
+        description: data.description,
         price: Number(data.price),
         costPrice: Number(data.costPrice),
+        categoryId: data.categoryId,
+        supplierId: data.supplierId,
         stockQty: Number(data.stockQty),
         minStockLevel: Number(data.minStockLevel),
-        ...(Array.isArray(data.unitOptions) && data.unitOptions.length > 0 ? { unitOptions: data.unitOptions } : {}),
+        attributes: {
+          ...(Array.isArray(data.unitOptions) && data.unitOptions.length > 0 ? { unitOptions: data.unitOptions } : {}),
+        },
       };
 
       // Optional image handling: prefer uploaded file, else URL, else none

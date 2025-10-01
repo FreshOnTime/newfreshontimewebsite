@@ -7,6 +7,8 @@ import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const updateProductSchema = z.object({
   name: z.string().min(1).max(200).optional(),
+  sku: z.string().min(1).max(100).optional(),
+  slug: z.string().optional(),
   description: z.string().max(2000).optional(),
   price: z.number().nonnegative().optional(),
   costPrice: z.number().nonnegative().optional(),
@@ -21,13 +23,14 @@ const updateProductSchema = z.object({
   archived: z.boolean().optional(),
 });
 
-export const GET = requireAdmin(async (_request, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (_request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
     }
-  const product = await EnhancedProduct.findById(params.id);
+  const product = await EnhancedProduct.findById(id);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
@@ -38,27 +41,28 @@ export const GET = requireAdmin(async (_request, { params }: { params: { id: str
   }
 });
 
-export const PUT = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
     }
     const body = await request.json();
     const data = updateProductSchema.parse(body);
 
-  const before = await EnhancedProduct.findById(params.id);
+  const before = await EnhancedProduct.findById(id);
     if (!before) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
   const updated = await EnhancedProduct.findByIdAndUpdate(
-      params.id,
+      id,
       { $set: data },
       { new: true, runValidators: true }
     );
 
-    await logAuditAction(request.user!.userId, 'update', 'product', params.id, before.toObject(), updated!.toObject(), request);
+    await logAuditAction(request.user!.userId, 'update', 'product', id, before.toObject(), updated!.toObject(), request);
 
     return NextResponse.json({ product: updated });
   } catch (error) {
@@ -70,18 +74,19 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
   }
 });
 
-export const DELETE = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
     }
-  const before = await EnhancedProduct.findById(params.id);
+  const before = await EnhancedProduct.findById(id);
     if (!before) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
-  await EnhancedProduct.findByIdAndDelete(params.id);
-    await logAuditAction(request.user!.userId, 'delete', 'product', params.id, before.toObject(), undefined, request);
+  await EnhancedProduct.findByIdAndDelete(id);
+    await logAuditAction(request.user!.userId, 'delete', 'product', id, before.toObject(), undefined, request);
     return NextResponse.json({ message: 'Product deleted' });
   } catch (error) {
     console.error('Delete product error:', error);
