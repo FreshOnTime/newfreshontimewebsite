@@ -62,60 +62,47 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       return NextResponse.json({ error: 'User is not linked to a supplier account' }, { status: 403 });
     }
 
-    // Try to parse incoming multipart/form-data.
-    let form: FormData | null = null;
-    try {
-      const reqWithForm = request as NextRequest & { formData?: () => Promise<FormData> };
-      if (typeof reqWithForm.formData !== 'function') {
-        console.error('[ERROR] /api/suppliers/upload - request.formData not available');
-        return NextResponse.json({ error: 'multipart/form-data not supported by this runtime' }, { status: 400 });
-      }
-      form = await reqWithForm.formData();
-    } catch (err) {
-      console.error('[ERROR] /api/suppliers/upload - formData() failed', err);
-      return NextResponse.json(
-        { error: 'Failed to parse multipart form data. Ensure the request is a multipart/form-data upload.' },
-        { status: 400 }
-      );
-    }
-
     // Support two upload modes:
-    // 1) multipart/form-data with a `file` field (preferred)
-    // 2) JSON body containing { fileName, fileData } where fileData is base64 (fallback)
+    // 1) JSON body containing { fileName, fileData } where fileData is base64 (recommended for all runtimes)
+    // 2) multipart/form-data with a `file` field (legacy, may not work in all environments)
+    
+    const contentType = request.headers.get('content-type') || '';
     let file: File | (Blob & { name?: string; type?: string }) | null = null;
-    if (form) {
+
+    // Try JSON first (recommended path)
+    if (contentType.includes('application/json')) {
       try {
-        file = (form.get('file') as unknown) as File | (Blob & { name?: string; type?: string }) | null;
+        const bodyJson = await request.json();
+        const maybeData = bodyJson?.fileData || bodyJson?.data || bodyJson?.file;
+        const maybeName = bodyJson?.fileName || bodyJson?.originalName || bodyJson?.name;
+        if (typeof maybeData === 'string' && maybeData.length > 0) {
+          // Expect a base64 string (possibly with data:<mime>;base64,...)
+          const base64 = maybeData.replace(/^data:.*;base64,/, '');
+          const buf = Buffer.from(base64, 'base64');
+          // Build a minimal file-like object
+          file = new Blob([buf]) as unknown as Blob & { name?: string; type?: string };
+          file.name = typeof maybeName === 'string' && maybeName.trim() ? maybeName.trim() : `upload-${Date.now()}`;
+          // Attempt to set a best-effort type from provided value
+          if (typeof bodyJson?.mimeType === 'string') {
+            file = Object.assign(file as Blob & Record<string, unknown>, { type: bodyJson.mimeType }) as Blob & { name?: string; type?: string };
+          }
+        }
       } catch (e) {
-        console.warn('[WARN] /api/suppliers/upload - form.get("file") threw', e);
-        file = null;
+        console.warn('[WARN] /api/suppliers/upload - parsing JSON base64 failed', e);
       }
     }
-
-    // If formData isn't available or no file field, try JSON base64 fallback.
-    if (!file || typeof (file as Blob).arrayBuffer !== 'function') {
-      const contentType = request.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        try {
-          const bodyJson = await request.json();
-          const maybeData = bodyJson?.fileData || bodyJson?.data || bodyJson?.file;
-          const maybeName = bodyJson?.fileName || bodyJson?.originalName || bodyJson?.name;
-          if (typeof maybeData === 'string' && maybeData.length > 0) {
-            // Expect a base64 string (possibly with data:<mime>;base64,...)
-            const base64 = maybeData.replace(/^data:.*;base64,/, '');
-            const buf = Buffer.from(base64, 'base64');
-            // Build a minimal file-like object
-            file = new Blob([buf]) as unknown as Blob & { name?: string; type?: string };
-            file.name = typeof maybeName === 'string' && maybeName.trim() ? maybeName.trim() : `upload-${Date.now()}`;
-            // Attempt to set a best-effort type from provided value
-            if (typeof bodyJson?.mimeType === 'string') {
-              // Object.assign to add a writable `type` property in a typed-safe way
-              file = Object.assign(file as Blob & Record<string, unknown>, { type: bodyJson.mimeType }) as Blob & { name?: string; type?: string };
-            }
-          }
-        } catch (e) {
-          console.warn('[WARN] /api/suppliers/upload - parsing JSON base64 fallback failed', e);
+    // Fallback: try multipart/form-data if JSON didn't work
+    else if (contentType.includes('multipart/form-data')) {
+      try {
+        const reqWithForm = request as NextRequest & { formData?: () => Promise<FormData> };
+        if (typeof reqWithForm.formData === 'function') {
+          const form = await reqWithForm.formData();
+          file = (form.get('file') as unknown) as File | (Blob & { name?: string; type?: string }) | null;
+        } else {
+          console.warn('[WARN] /api/suppliers/upload - formData() not available in this runtime');
         }
+      } catch (err) {
+        console.warn('[WARN] /api/suppliers/upload - formData() parsing failed', err);
       }
     }
 
