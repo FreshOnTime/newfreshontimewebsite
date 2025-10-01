@@ -1,10 +1,11 @@
 import ProductGrid from "@/components/products/ProductGrid";
 import SectionHeader from "@/components/home/SectionHeader";
 import { PageContainer } from "@/components/templates/PageContainer";
-import ProductsFilterBar from "../../components/products/ProductsFilterBar";
+import ProductsFilterBar from "@/components/products/ProductsFilterBar";
+import ProductsPagination from "@/components/products/ProductsPagination";
 
 import connectDB from '@/lib/database';
-import EnhancedProduct from '@/lib/models/EnhancedProduct';
+import EnhancedProduct, { type IProduct } from '@/lib/models/EnhancedProduct';
 import Category from '@/lib/models/Category';
 
 // Read directly from the database in server components to avoid relying on internal API fetch
@@ -13,8 +14,11 @@ async function getProducts(query: string) {
     await connectDB();
 
     const urlParams = new URLSearchParams(query);
-    const page = parseInt(urlParams.get('page') || '1');
-    const limit = parseInt(urlParams.get('limit') || '12');
+    const pageParam = parseInt(urlParams.get('page') || '1', 10);
+    const limitParam = parseInt(urlParams.get('limit') || '24', 10);
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const limitBase = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 24;
+    const limit = Math.min(Math.max(limitBase, 1), 60);
     const search = urlParams.get('search');
     const categoryId = urlParams.get('categoryId');
     const supplierId = urlParams.get('supplierId');
@@ -45,22 +49,35 @@ async function getProducts(query: string) {
     if (Object.keys(priceFilter).length) filter.price = priceFilter;
     if (inStockParam === 'true') filter.stockQty = { $gt: 0 };
 
-    const skip = (page - 1) * limit;
     let sort: Record<string, 1 | -1> = { createdAt: -1 };
     if (sortParam === 'price-asc') sort = { price: 1 };
     else if (sortParam === 'price-desc') sort = { price: -1 };
     else if (sortParam === 'newest') sort = { createdAt: -1 };
     else if (sortParam === 'oldest') sort = { createdAt: 1 };
 
-    const [rawProducts] = await Promise.all([
-      EnhancedProduct.find(filter).sort(sort).skip(skip).limit(limit).lean(),
-    ]);
+    const totalCount = await EnhancedProduct.countDocuments(filter);
+    const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / limit);
+    const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
+    const skip = totalPages === 0 ? 0 : (currentPage - 1) * limit;
 
-    const categoryIds = Array.from(
-      new Set(
+    const rawProducts = await EnhancedProduct.find<IProduct>(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    interface CategoryIdentifiable {
+      categoryId?: unknown;
+    }
+
+    const categoryIds: string[] = Array.from<string>(
+      new Set<string>(
         rawProducts
-          .map((p) => (p as unknown as { categoryId?: unknown }).categoryId)
-          .filter((id): id is string => typeof id === 'string')
+          .map((product) => {
+            const id = (product as CategoryIdentifiable)?.categoryId;
+            return id ? String(id) : null;
+          })
+          .filter((id): id is string => Boolean(id))
       )
     );
     const categories = categoryIds.length
@@ -72,13 +89,11 @@ async function getProducts(query: string) {
       categoryMap.set(id, { name: c.name || '', slug: c.slug || '' });
     }
 
-    const products = rawProducts.map((p) => {
-      const single = (p as unknown as { image?: string }).image;
-      const first = Array.isArray((p as unknown as { images?: string[] }).images)
-        ? ((p as unknown as { images?: string[] }).images![0])
-        : undefined;
+    const products = rawProducts.map((product) => {
+      const single = product.image;
+      const first = Array.isArray(product.images) ? product.images[0] : undefined;
       const img = single || first || '/placeholder.svg';
-      const attrs = (p as unknown as { attributes?: Record<string, unknown> }).attributes || {};
+      const attrs = (product.attributes ?? {}) as Record<string, unknown>;
       const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
       const unitOptions = Array.isArray(maybeUnitOptions)
         ? maybeUnitOptions
@@ -95,38 +110,50 @@ async function getProducts(query: string) {
             })
             .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g'|'kg'|'ml'|'l'|'ea'|'lb'; price: number }>
         : undefined;
+      const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
+
       return ({
-        sku: String((p as any).sku || (p as any)._id),
-        name: (p as any).name || '',
-        image: { url: String(img), filename: '', contentType: '', path: String(img), alt: (p as any).name || undefined },
-        description: (p as any).description || '',
-        category: (p as any).categoryId
+        sku: product.sku || String(product._id),
+        name: product.name || '',
+        image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
+        description: product.description || '',
+        category: categoryIdValue
           ? (() => {
-              const id = String((p as any).categoryId);
-              const meta = categoryMap.get(id);
-              return { id, name: meta?.name || '', slug: meta?.slug || '' };
+              const meta = categoryMap.get(categoryIdValue);
+              return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
             })()
           : undefined,
         baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: Number((p as any).price ?? 0),
+        pricePerBaseQuantity: Number(product.price ?? 0),
         measurementUnit: 'ea',
         isSoldAsUnit: true,
         minOrderQuantity: 1,
         maxOrderQuantity: 9999,
         stepQuantity: 1,
-        stockQuantity: Number((p as any).stockQty ?? 0),
-        isOutOfStock: Number((p as any).stockQty ?? 0) <= 0,
+        stockQuantity: Number(product.stockQty ?? 0),
+        isOutOfStock: Number(product.stockQty ?? 0) <= 0,
         totalSales: 0,
         isFeatured: false,
         discountPercentage: 0,
-        lowStockThreshold: Number((p as any).minStockLevel ?? 0),
-        createdAt: (p as any).createdAt as unknown as Date | undefined,
-        updatedAt: (p as any).updatedAt as unknown as Date | undefined,
+        lowStockThreshold: Number(product.minStockLevel ?? 0),
+        createdAt: product.createdAt as Date | undefined,
+        updatedAt: product.updatedAt as Date | undefined,
         unitOptions,
       });
     });
 
-    return products;
+    return {
+      products,
+      pagination: {
+        page: currentPage,
+        limit,
+        total: totalCount,
+        totalPages,
+        count: products.length,
+        hasNext: totalPages > 0 && currentPage < totalPages,
+        hasPrev: currentPage > 1,
+      },
+    };
   } catch (error) {
     console.error('Failed to get products from DB:', error);
     // Fallback: attempt internal API fetch (absolute with withBase then relative)
@@ -139,13 +166,36 @@ async function getProducts(query: string) {
       }
       if (resp.ok) {
         const data = await resp.json();
-        return data.data?.products || [];
+        const fallbackProducts = data.data?.products || [];
+        return {
+          products: fallbackProducts,
+          pagination: {
+            page: 1,
+            limit: Math.max(1, fallbackProducts.length || 1),
+            total: fallbackProducts.length,
+            totalPages: fallbackProducts.length > 0 ? 1 : 0,
+            count: fallbackProducts.length,
+            hasNext: false,
+            hasPrev: false,
+          },
+        };
       }
       console.error('Fallback API fetch failed with status', resp.status);
     } catch (err) {
       console.error('Fallback API fetch error:', err);
     }
-    return [];
+    return {
+      products: [],
+      pagination: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        totalPages: 0,
+        count: 0,
+        hasNext: false,
+        hasPrev: false,
+      },
+    };
   }
 }
 
@@ -162,8 +212,9 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
       sp.set(key, String(val));
     }
   }
-  const products = await getProducts(sp.toString());
-  console.log('ProductsIndex - normalized query:', sp.toString());
+  const { products, pagination } = await getProducts(sp.toString());
+  const start = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
+  const end = pagination.total === 0 ? 0 : start + products.length - 1;
 
   return (
     <PageContainer>
@@ -171,8 +222,24 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
         title="All Products"
         subtitle="Explore our complete range of fresh groceries"
       />
-  <ProductsFilterBar />
-  <ProductGrid products={products} />
+      <ProductsFilterBar />
+      {pagination.total > 0 && (
+        <div className="mb-4 text-sm text-muted-foreground">
+          Showing {start}-{end} of {pagination.total} products
+        </div>
+      )}
+      <ProductGrid products={products} />
+      {products.length > 0 && (
+        <ProductsPagination
+          page={pagination.page}
+          limit={pagination.limit}
+          total={pagination.total}
+          currentCount={products.length}
+          hasPrev={pagination.hasPrev}
+          hasNext={pagination.hasNext}
+          totalPages={pagination.totalPages}
+        />
+      )}
     </PageContainer>
   );
 }
