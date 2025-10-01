@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.freshdirect.com",
       },
+      // Allow common external image CDNs used in content (Unsplash, Imgix, etc.)
+      {
+        protocol: 'https',
+        hostname: '**.images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
     ],
   },
   typescript: {

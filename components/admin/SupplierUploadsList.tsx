@@ -55,19 +55,28 @@ export default function SupplierUploadsList() {
   return (
     <div className="bg-white rounded shadow p-4">
       <h3 className="font-semibold mb-3">Supplier Uploads</h3>
-      <table className="w-full text-sm">
-        <thead>
-          <tr>
-            <th className="text-left">Supplier</th>
-            <th className="text-left">Company</th>
-           
-            <th className="text-left">File</th>
-            <th className="text-left">Uploaded</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data.data as unknown[]).map((uRaw) => {
+      <div className="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[70vh]">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col style={{ width: '22%' }} />
+            <col style={{ width: '18%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '20%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th className="text-left sticky top-0 bg-white/95 backdrop-blur z-10">Supplier</th>
+              <th className="text-left sticky top-0 bg-white/95 backdrop-blur z-10">Company</th>
+              <th className="text-left sticky top-0 bg-white/95 backdrop-blur z-10">Email</th>
+              <th className="text-left sticky top-0 bg-white/95 backdrop-blur z-10">Phone</th>
+              <th className="text-left sticky top-0 bg-white/95 backdrop-blur z-10">Status</th>
+              <th className="text-left sticky top-0 bg-white/95 backdrop-blur z-10">File / Uploaded</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(data.data as unknown[]).map((uRaw) => {
             const u = uRaw as Record<string, unknown>;
             const supplierName = u['supplierName'] as string | undefined;
             const rawSupplierId = u['supplierId'] as unknown;
@@ -84,29 +93,32 @@ export default function SupplierUploadsList() {
             const createdAt = u['createdAt'] as string | number | Date | undefined;
             const path = u['path'] as string | undefined;
             const id = u['_id'] as string | undefined;
-            return (
-              <tr key={id} className="border-t">
-                <td className="py-2">
-                  <div className="text-sm font-medium">{supplierName || supplierId}</div>
-                  {supplierName ? <div className="text-xs text-gray-500">{supplierId}</div> : null}
-                </td>
-                <td className="py-2 text-sm text-gray-600">{supplierCompany || <span className="text-gray-400">—</span>}</td>
-                <td className="py-2 text-sm text-gray-600">{(u['supplierEmail'] as string) || <span className="text-gray-400">—</span>}</td>
-                <td className="py-2 text-sm text-gray-600">{(u['supplierPhone'] as string) || <span className="text-gray-400">—</span>}</td>
-                <td className="py-2 text-sm text-gray-600">{(u['supplierStatus'] as string) || <span className="text-gray-400">—</span>}</td>
-                <td className="py-2">{originalName || filename}</td>
-                <td className="py-2">{createdAt ? new Date(createdAt as string).toLocaleString() : ''}</td>
-                <td className="flex gap-2">
-                  <a className="text-blue-600" href={path} download>Download</a>
-                  <button onClick={() => doImport(id!)} className="text-green-600">Import</button>
-                  {!supplierName && <button onClick={() => doResolve(id)} className="text-amber-600">Resolve</button>}
-                  <button onClick={() => doDelete(id)} className="text-red-600">Delete</button>
-                </td>
-              </tr>
-            );
+              return (
+                <tr key={id} className="border-t align-top">
+                  <td className="py-2">
+                    <div className="text-sm font-medium truncate max-w-full">{supplierName || supplierId}</div>
+                    {supplierName ? <div className="text-xs text-gray-500 truncate max-w-full">{supplierId}</div> : null}
+                  </td>
+                  <td className="py-2 text-sm text-gray-600 truncate max-w-full">{supplierCompany || <span className="text-gray-400">—</span>}</td>
+                  <td className="py-2 text-sm text-gray-600 truncate max-w-full">{(u['supplierEmail'] as string) || <span className="text-gray-400">—</span>}</td>
+                  <td className="py-2 text-sm text-gray-600 truncate max-w-full">{(u['supplierPhone'] as string) || <span className="text-gray-400">—</span>}</td>
+                  <td className="py-2 text-sm text-gray-600 truncate max-w-full">{(u['supplierStatus'] as string) || <span className="text-gray-400">—</span>}</td>
+                  <td className="py-2">
+                    <div className="truncate max-w-full">{originalName || filename}</div>
+                    <div className="text-xs text-gray-500">{createdAt ? new Date(createdAt as string).toLocaleString() : ''}</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <a className="text-blue-600 truncate" href={path} download>Download</a>
+                      <button onClick={() => doImport(id!)} className="text-green-600 truncate">Import</button>
+                      {!supplierName && <button onClick={() => doResolve(id)} className="text-amber-600 truncate">Resolve</button>}
+                      <button onClick={() => doDelete(id)} className="text-red-600 truncate">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              );
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
