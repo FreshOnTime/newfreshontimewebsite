@@ -126,7 +126,23 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     const mimeType = typeof fileLike?.type === 'string' && fileLike.type.trim()
       ? fileLike.type
       : '';
-    const detectedMimeType = mimeType || (safeOriginalName.toLowerCase().endsWith('.csv') ? 'text/csv' : 'application/octet-stream');
+    
+    // Detect MIME type from extension if not provided
+    let detectedMimeType = mimeType;
+    if (!detectedMimeType) {
+      const lowerName = safeOriginalName.toLowerCase();
+      if (lowerName.endsWith('.csv')) {
+        detectedMimeType = 'text/csv';
+      } else if (lowerName.endsWith('.xlsx')) {
+        detectedMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      } else if (lowerName.endsWith('.xls')) {
+        detectedMimeType = 'application/vnd.ms-excel';
+      } else {
+        detectedMimeType = 'application/octet-stream';
+      }
+    }
+    
+    console.log('[INFO] /api/suppliers/upload - File:', originalName, 'MIME:', detectedMimeType, 'Size:', buffer.length);
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const filename = `${uniqueSuffix}-${safeOriginalName}`;
     const destPath = path.join(uploadsDir, filename);
@@ -135,18 +151,33 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     // parse preview depending on file type
     let previewRows: unknown[] = [];
     try {
-      const isCsv = detectedMimeType === 'text/csv' || safeOriginalName.toLowerCase().endsWith('.csv');
+      const lowerName = safeOriginalName.toLowerCase();
+      const isCsv = detectedMimeType === 'text/csv' || lowerName.endsWith('.csv');
+      const isExcel = detectedMimeType.includes('spreadsheet') || detectedMimeType.includes('excel') || lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls');
+      
+      console.log('[INFO] /api/suppliers/upload - Parsing preview. isCsv:', isCsv, 'isExcel:', isExcel);
+      
       if (isCsv) {
         const text = buffer.toString('utf8');
         const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
         previewRows = parsed.data as unknown[];
-      } else {
+        console.log('[INFO] /api/suppliers/upload - CSV parsed, rows:', previewRows.length);
+      } else if (isExcel) {
         const wb = XLSX.read(buffer, { type: 'buffer' });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        previewRows = XLSX.utils.sheet_to_json(sheet, { defval: '' }) as unknown[];
+        if (!wb.SheetNames || wb.SheetNames.length === 0) {
+          console.warn('[WARN] /api/suppliers/upload - Excel file has no sheets');
+          previewRows = [];
+        } else {
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          previewRows = XLSX.utils.sheet_to_json(sheet, { defval: '' }) as unknown[];
+          console.log('[INFO] /api/suppliers/upload - Excel parsed, rows:', previewRows.length);
+        }
+      } else {
+        console.warn('[WARN] /api/suppliers/upload - Unknown file type, skipping preview');
+        previewRows = [];
       }
     } catch (e) {
-      console.warn('Failed to parse preview', e);
+      console.error('[ERROR] /api/suppliers/upload - Failed to parse preview:', e);
       previewRows = [];
     }
 
@@ -206,9 +237,14 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       console.warn('Notify admin error', e);
     }
 
+    console.log('[INFO] /api/suppliers/upload - Upload successful, ID:', uploadDoc._id);
     return NextResponse.json({ success: true, upload: uploadDoc }, { status: 201 });
   } catch (error) {
-    console.error('Supplier upload error', error);
-    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+    console.error('[ERROR] /api/suppliers/upload - Upload failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+    return NextResponse.json({ 
+      error: 'Failed to upload file', 
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined 
+    }, { status: 500 });
   }
 });
