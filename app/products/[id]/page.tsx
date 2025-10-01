@@ -12,6 +12,7 @@ import Link from "next/link";
 import connectDB from '@/lib/database';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
 import Category from '@/lib/models/Category';
+import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct';
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -19,12 +20,12 @@ async function getProduct(id: string): Promise<Product | null> {
     await connectDB();
     // Support finding by _id, sku or slug in the DB
     const mongoose = await import('mongoose');
-    let p: any = null;
+    let p: Partial<IEnhancedProduct> | null = null;
     if (mongoose.Types.ObjectId.isValid(id)) {
-      p = await EnhancedProduct.findById(id).lean();
+      p = await EnhancedProduct.findById(id).lean() as Partial<IEnhancedProduct> | null;
     }
     if (!p) {
-      p = await EnhancedProduct.findOne({ $or: [{ sku: id }, { slug: id }] }).lean();
+      p = await EnhancedProduct.findOne({ $or: [{ sku: id }, { slug: id }] }).lean() as Partial<IEnhancedProduct> | null;
     }
     if (!p) {
       console.log('ProductPage - product not found in DB for id:', id);
@@ -32,9 +33,9 @@ async function getProduct(id: string): Promise<Product | null> {
     }
 
     let categoryMeta: { id: string; name: string; slug: string } | undefined;
-    if (p.categoryId) {
+    if (p?.categoryId) {
       try {
-        const cat = await Category.findById(p.categoryId).select('name slug').lean();
+        const cat = await Category.findById(p.categoryId).select('name slug').lean() as { name?: string; slug?: string } | null;
         if (cat) categoryMeta = { id: String(p.categoryId), name: cat.name || '', slug: cat.slug || '' };
       } catch {}
     }
@@ -43,7 +44,7 @@ async function getProduct(id: string): Promise<Product | null> {
     const maybeUnitOptions = attrs.unitOptions;
     const unitOptions = Array.isArray(maybeUnitOptions)
       ? maybeUnitOptions
-          .map((o: any) => {
+          .map((o: { unit?: string; quantity?: number; price?: number; label?: string }) => {
             const unit = typeof o.unit === 'string' && ['g','kg','ml','l','ea','lb'].includes(o.unit) ? o.unit : undefined;
             const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
             const price = typeof o.price === 'number' ? o.price : undefined;
@@ -109,9 +110,9 @@ async function getProduct(id: string): Promise<Product | null> {
 export default async function ProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const productId = params.id;
+  const { id: productId } = await params;
   const product = await getProduct(productId);
 
   if (!product) {

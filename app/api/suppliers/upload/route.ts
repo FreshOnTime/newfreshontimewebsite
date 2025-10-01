@@ -79,9 +79,49 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       );
     }
 
-    const file = (form.get('file') as unknown) as File | (Blob & { name?: string; type?: string }) | null;
+    // Support two upload modes:
+    // 1) multipart/form-data with a `file` field (preferred)
+    // 2) JSON body containing { fileName, fileData } where fileData is base64 (fallback)
+    let file: File | (Blob & { name?: string; type?: string }) | null = null;
+    if (form) {
+      try {
+        file = (form.get('file') as unknown) as File | (Blob & { name?: string; type?: string }) | null;
+      } catch (e) {
+        console.warn('[WARN] /api/suppliers/upload - form.get("file") threw', e);
+        file = null;
+      }
+    }
+
+    // If formData isn't available or no file field, try JSON base64 fallback.
     if (!file || typeof (file as Blob).arrayBuffer !== 'function') {
-      return NextResponse.json({ error: 'File is required (field name should be "file")' }, { status: 400 });
+      const contentType = request.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        try {
+          const bodyJson = await request.json();
+          const maybeData = bodyJson?.fileData || bodyJson?.data || bodyJson?.file;
+          const maybeName = bodyJson?.fileName || bodyJson?.originalName || bodyJson?.name;
+          if (typeof maybeData === 'string' && maybeData.length > 0) {
+            // Expect a base64 string (possibly with data:<mime>;base64,...)
+            const base64 = maybeData.replace(/^data:.*;base64,/, '');
+            const buf = Buffer.from(base64, 'base64');
+            // Build a minimal file-like object
+            file = new Blob([buf]) as unknown as Blob & { name?: string; type?: string };
+            file.name = typeof maybeName === 'string' && maybeName.trim() ? maybeName.trim() : `upload-${Date.now()}`;
+            // Attempt to set a best-effort type from provided value
+            if (typeof bodyJson?.mimeType === 'string') {
+              // Object.assign to add a writable `type` property in a typed-safe way
+              file = Object.assign(file as Blob & Record<string, unknown>, { type: bodyJson.mimeType }) as Blob & { name?: string; type?: string };
+            }
+          }
+        } catch (e) {
+          console.warn('[WARN] /api/suppliers/upload - parsing JSON base64 fallback failed', e);
+        }
+      }
+    }
+
+    if (!file || typeof (file as Blob).arrayBuffer !== 'function') {
+      console.error('[ERROR] /api/suppliers/upload - No usable file found in request. content-type:', request.headers.get('content-type'));
+      return NextResponse.json({ error: 'File is required (field name should be "file"). If your runtime does not support multipart/form-data, POST JSON with { fileName, fileData (base64) }.' }, { status: 400 });
     }
 
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
