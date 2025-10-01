@@ -72,23 +72,35 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     // Try JSON first (recommended path)
     if (contentType.includes('application/json')) {
       try {
+        console.log('[DEBUG] /api/suppliers/upload - Parsing JSON body');
         const bodyJson = await request.json();
         const maybeData = bodyJson?.fileData || bodyJson?.data || bodyJson?.file;
         const maybeName = bodyJson?.fileName || bodyJson?.originalName || bodyJson?.name;
+        const maybeMimeType = bodyJson?.mimeType || bodyJson?.type || '';
+        
+        console.log('[DEBUG] /api/suppliers/upload - File name:', maybeName, 'has data:', !!maybeData);
+        
         if (typeof maybeData === 'string' && maybeData.length > 0) {
           // Expect a base64 string (possibly with data:<mime>;base64,...)
           const base64 = maybeData.replace(/^data:.*;base64,/, '');
           const buf = Buffer.from(base64, 'base64');
-          // Build a minimal file-like object
-          file = new Blob([buf]) as unknown as Blob & { name?: string; type?: string };
-          file.name = typeof maybeName === 'string' && maybeName.trim() ? maybeName.trim() : `upload-${Date.now()}`;
-          // Attempt to set a best-effort type from provided value
-          if (typeof bodyJson?.mimeType === 'string') {
-            file = Object.assign(file as Blob & Record<string, unknown>, { type: bodyJson.mimeType }) as Blob & { name?: string; type?: string };
-          }
+          
+          console.log('[DEBUG] /api/suppliers/upload - Decoded buffer size:', buf.length);
+          
+          // Create a file-like object that works in Node.js (no Blob constructor in Node)
+          // Instead, create an object with the properties we need
+          file = {
+            name: typeof maybeName === 'string' && maybeName.trim() ? maybeName.trim() : `upload-${Date.now()}`,
+            type: maybeMimeType,
+            buffer: buf, // Store the buffer directly
+            arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+          } as unknown as Blob & { name?: string; type?: string; buffer?: Buffer };
+          
+          console.log('[DEBUG] /api/suppliers/upload - File object created:', file.name, file.type);
         }
       } catch (e) {
-        console.warn('[WARN] /api/suppliers/upload - parsing JSON base64 failed', e);
+        console.error('[ERROR] /api/suppliers/upload - parsing JSON base64 failed:', e);
+        throw e; // Re-throw to see the actual error
       }
     }
     // Fallback: try multipart/form-data if JSON didn't work
@@ -106,16 +118,30 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       }
     }
 
-    if (!file || typeof (file as Blob).arrayBuffer !== 'function') {
+    if (!file) {
       console.error('[ERROR] /api/suppliers/upload - No usable file found in request. content-type:', request.headers.get('content-type'));
       return NextResponse.json({ error: 'File is required (field name should be "file"). If your runtime does not support multipart/form-data, POST JSON with { fileName, fileData (base64) }.' }, { status: 400 });
     }
 
+    console.log('[DEBUG] /api/suppliers/upload - File object type check:', typeof file);
+
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
     await fs.promises.mkdir(uploadsDir, { recursive: true });
 
-    const arrayBuffer = await (file as Blob).arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // Get buffer - either from our custom object or from Blob's arrayBuffer
+    let buffer: Buffer;
+    const fileWithBuffer = file as { buffer?: Buffer };
+    if (fileWithBuffer.buffer && Buffer.isBuffer(fileWithBuffer.buffer)) {
+      console.log('[DEBUG] /api/suppliers/upload - Using direct buffer');
+      buffer = fileWithBuffer.buffer;
+    } else if (typeof (file as Blob).arrayBuffer === 'function') {
+      console.log('[DEBUG] /api/suppliers/upload - Using arrayBuffer method');
+      const arrayBuffer = await (file as Blob).arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
+    } else {
+      console.error('[ERROR] /api/suppliers/upload - File object has no buffer or arrayBuffer method');
+      return NextResponse.json({ error: 'Invalid file object' }, { status: 400 });
+    }
 
     const fileLike = file as File | (Blob & { name?: string; type?: string });
     const rawOriginalName = typeof fileLike?.name === 'string' && fileLike.name.trim()
@@ -146,7 +172,14 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const filename = `${uniqueSuffix}-${safeOriginalName}`;
     const destPath = path.join(uploadsDir, filename);
-    await fs.promises.writeFile(destPath, buffer);
+    
+    try {
+      await fs.promises.writeFile(destPath, buffer);
+      console.log('[DEBUG] /api/suppliers/upload - File written to:', destPath);
+    } catch (writeErr) {
+      console.error('[ERROR] /api/suppliers/upload - Failed to write file:', writeErr);
+      throw new Error('Failed to write file to disk: ' + (writeErr instanceof Error ? writeErr.message : String(writeErr)));
+    }
 
     // parse preview depending on file type
     let previewRows: unknown[] = [];
