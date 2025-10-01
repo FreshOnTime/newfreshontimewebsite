@@ -151,7 +151,7 @@ export default function BagsPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-green-600">
-                        ${bag.items?.reduce((total, item) => total + (item.product.price * item.quantity), 0).toFixed(2) || '0.00'}
+                        Rs. {(bag.items?.reduce((total, item) => total + (item.product.price * item.quantity), 0) || 0).toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-500">
                         {bag.items?.length || 0} item{(bag.items?.length || 0) !== 1 ? 's' : ''}
@@ -190,7 +190,7 @@ export default function BagsPage() {
                         <div className="flex-grow">
                           <h4 className="font-medium text-gray-900 text-sm">{item.product.name}</h4>
                           <p className="text-sm text-gray-600">
-                            ${item.product.price.toFixed(2)} / {item.product.unit || 'unit'}
+                            Rs. {item.product.price.toFixed(2)} / {item.product.unit || 'unit'}
                           </p>
                         </div>
 

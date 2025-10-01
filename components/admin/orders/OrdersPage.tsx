@@ -95,7 +95,7 @@ export function OrdersPage() {
     }
   };
 
-  const currency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+  const currency = (v: number) => `Rs. ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)}`;
 
   return (
     <div className="space-y-6">
