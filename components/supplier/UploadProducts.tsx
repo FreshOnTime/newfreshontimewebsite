@@ -19,20 +19,37 @@ export default function UploadProducts() {
     setLoading(true);
     setMessage(null);
     setError(null);
-    const fd = new FormData();
-    fd.append('file', file);
     try {
-      const res = await fetch('/api/suppliers/upload', { method: 'POST', body: fd, credentials: 'include' });
+      // Build a base64 Data URL from the file and send JSON fallback which the server supports.
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+
+      const payload = {
+        fileName: file.name,
+        fileData: dataUrl,
+        mimeType: file.type || undefined,
+      };
+
+      const res = await fetch('/api/suppliers/upload', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
       const json = await res.json();
-      if (json.success) {
+      if (json && json.success) {
         setMessage('File uploaded — admin will review it shortly.');
         setFile(null);
       } else {
-        setError(json.error || 'Upload failed');
+        setError(json?.error || 'Upload failed');
       }
     } catch (err) {
-      // log for debugging and show friendly message
-  console.error('UploadProducts upload error:', err);
+      console.error('UploadProducts upload error:', err);
       setError('Upload error');
     } finally {
       setLoading(false);
