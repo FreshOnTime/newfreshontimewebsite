@@ -17,76 +17,99 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
   try {
     await connectDB();
 
-  // Determine supplierId from the authenticated user record
-  const authUser = request.user;
-  if (!authUser) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-  // Debug: log auth info to diagnose supplier linkage issues
-  console.log('[DEBUG] /api/suppliers/upload - authUser:', authUser);
+    // Determine supplierId from the authenticated user record
+    const authUser = request.user;
+    if (!authUser) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 
-  const userDoc = authUser.mongoId
-    ? await User.findById(authUser.mongoId).lean() as Partial<IUser> | null
-    : await User.findOne({ userId: authUser.userId }).lean() as Partial<IUser> | null;
+    const userDoc = (authUser.mongoId
+      ? await User.findById(authUser.mongoId).lean()
+      : await User.findOne({ userId: authUser.userId }).lean()) as Partial<IUser> | null;
 
-  console.log('[DEBUG] /api/suppliers/upload - userDoc _id:', userDoc?._id?.toString?.(), ' userDoc.supplierId:', userDoc?.supplierId?.toString?.());
+    let resolvedSupplierId = userDoc?.supplierId?.toString?.() || null;
 
-  const supplierIdFromUser = userDoc?.supplierId?.toString?.() || null;
-  console.log('[DEBUG] /api/suppliers/upload - supplierIdFromUser:', supplierIdFromUser);
+    // Fallback: if the User record doesn't have supplierId, try to auto-link by email or phone
+    if (!resolvedSupplierId) {
+      try {
+        const maybeEmail = userDoc?.email as string | undefined;
+        const maybePhone = userDoc?.phoneNumber as string | undefined;
+        let foundSupplier: Partial<ISupplier> | null = null;
 
-  // Fallback: if the User record doesn't have supplierId, try to auto-link by email or phone
-  let resolvedSupplierId = supplierIdFromUser;
-  if (!resolvedSupplierId) {
-    try {
-      const maybeEmail = userDoc?.email as string | undefined;
-      const maybePhone = userDoc?.phoneNumber as string | undefined;
-      console.log('[DEBUG] /api/suppliers/upload - attempting fallback link using email/phone:', maybeEmail, maybePhone);
-      let foundSupplier = null as Partial<ISupplier> | null;
-      if (maybeEmail) {
-        foundSupplier = await Supplier.findOne({ email: maybeEmail }).lean() as Partial<ISupplier> | null;
-      }
-      if (!foundSupplier && maybePhone) {
-        foundSupplier = await Supplier.findOne({ phone: maybePhone }).lean() as Partial<ISupplier> | null;
-      }
-
-      if (foundSupplier && foundSupplier._id) {
-        resolvedSupplierId = foundSupplier._id.toString();
-        // Persist the link on the user record for future requests
-        try {
-          await User.updateOne({ _id: userDoc?._id }, { $set: { supplierId: foundSupplier._id, role: 'supplier' } });
-          console.log('[DEBUG] /api/suppliers/upload - auto-linked user to supplier:', resolvedSupplierId);
-        } catch (linkErr) {
-          console.warn('[WARN] /api/suppliers/upload - failed to persist auto-link on user:', linkErr);
+        if (maybeEmail) {
+          foundSupplier = (await Supplier.findOne({ email: maybeEmail }).lean()) as Partial<ISupplier> | null;
         }
+        if (!foundSupplier && maybePhone) {
+          foundSupplier = (await Supplier.findOne({ phone: maybePhone }).lean()) as Partial<ISupplier> | null;
+        }
+
+        if (foundSupplier && foundSupplier._id) {
+          resolvedSupplierId = foundSupplier._id.toString();
+          // Persist the link on the user record for future requests
+          try {
+            await User.updateOne(
+              { _id: userDoc?._id },
+              { $set: { supplierId: foundSupplier._id, role: 'supplier' } }
+            );
+          } catch (linkErr) {
+            console.warn('[WARN] /api/suppliers/upload - failed to persist auto-link on user:', linkErr);
+          }
+        }
+      } catch (e) {
+        console.warn('[WARN] /api/suppliers/upload - fallback link attempt failed', e);
       }
-    } catch (e) {
-      console.warn('[WARN] /api/suppliers/upload - fallback link attempt failed', e);
-    }
-  }
-
-  if (!resolvedSupplierId) return NextResponse.json({ error: 'User is not linked to a supplier account' }, { status: 403 });
-
-    const contentType = request.headers.get('content-type') || '';
-    if (!contentType.includes('multipart/form-data')) {
-      return NextResponse.json({ error: 'Content-Type must be multipart/form-data' }, { status: 400 });
     }
 
-    // Use the Request.formData() browser API available in Next edge/node runtimes
-    const form = await request.formData();
-    const file = form.get('file') as unknown as File | null;
-    if (!file) return NextResponse.json({ error: 'File is required' }, { status: 400 });
+    if (!resolvedSupplierId) {
+      return NextResponse.json({ error: 'User is not linked to a supplier account' }, { status: 403 });
+    }
+
+    // Try to parse incoming multipart/form-data.
+    let form: FormData | null = null;
+    try {
+      const reqWithForm = request as NextRequest & { formData?: () => Promise<FormData> };
+      if (typeof reqWithForm.formData !== 'function') {
+        console.error('[ERROR] /api/suppliers/upload - request.formData not available');
+        return NextResponse.json({ error: 'multipart/form-data not supported by this runtime' }, { status: 400 });
+      }
+      form = await reqWithForm.formData();
+    } catch (err) {
+      console.error('[ERROR] /api/suppliers/upload - formData() failed', err);
+      return NextResponse.json(
+        { error: 'Failed to parse multipart form data. Ensure the request is a multipart/form-data upload.' },
+        { status: 400 }
+      );
+    }
+
+    const file = (form.get('file') as unknown) as File | (Blob & { name?: string; type?: string }) | null;
+    if (!file || typeof (file as Blob).arrayBuffer !== 'function') {
+      return NextResponse.json({ error: 'File is required (field name should be "file")' }, { status: 400 });
+    }
 
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
     await fs.promises.mkdir(uploadsDir, { recursive: true });
 
-    const arrayBuffer = await file.arrayBuffer();
+    const arrayBuffer = await (file as Blob).arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
+
+    const fileLike = file as File | (Blob & { name?: string; type?: string });
+    const rawOriginalName = typeof fileLike?.name === 'string' && fileLike.name.trim()
+      ? fileLike.name.trim()
+      : `upload-${Date.now()}`;
+    const originalName = path.basename(rawOriginalName);
+    const safeOriginalName = originalName.replace(/[^a-zA-Z0-9.\-]+/g, '_');
+    const mimeType = typeof fileLike?.type === 'string' && fileLike.type.trim()
+      ? fileLike.type
+      : '';
+    const detectedMimeType = mimeType || (safeOriginalName.toLowerCase().endsWith('.csv') ? 'text/csv' : 'application/octet-stream');
+    const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const filename = `${uniqueSuffix}-${safeOriginalName}`;
     const destPath = path.join(uploadsDir, filename);
     await fs.promises.writeFile(destPath, buffer);
 
     // parse preview depending on file type
-  let previewRows: unknown[] = [];
+    let previewRows: unknown[] = [];
     try {
-      if (file.name.endsWith('.csv') || file.type === 'text/csv') {
+      const isCsv = detectedMimeType === 'text/csv' || safeOriginalName.toLowerCase().endsWith('.csv');
+      if (isCsv) {
         const text = buffer.toString('utf8');
         const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
         previewRows = parsed.data as unknown[];
@@ -109,7 +132,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     let supplierStatus: string | null = null;
     try {
       const finalSupplierId = resolvedSupplierId;
-      const s = finalSupplierId ? await Supplier.findById(finalSupplierId).lean() as Partial<ISupplier> | null : null;
+      const s = finalSupplierId
+        ? ((await Supplier.findById(finalSupplierId).lean()) as (Partial<ISupplier> & { companyName?: string | null }) | null)
+        : null;
       supplierName = s?.name || s?.companyName || null;
       supplierCompany = s?.companyName || s?.name || null;
       supplierEmail = s?.email || null;
@@ -134,8 +159,8 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       supplierContactName,
       supplierStatus,
       filename,
-      originalName: file.name,
-      mimeType: file.type,
+      originalName,
+      mimeType: detectedMimeType,
       size: buffer.length,
       path: `/uploads/supplier-uploads/${filename}`,
       preview: previewRows.slice(0, 20)
@@ -145,7 +170,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     try {
       const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
       if (adminEmail) {
-        const html = `<p>Supplier uploaded product file: <strong>${file.name}</strong></p><p>Preview rows: ${JSON.stringify(previewRows.slice(0,3))}</p><p><a href="${process.env.FRONTEND_URL}/admin">Open admin dashboard</a></p>`;
+        const html = `<p>Supplier uploaded product file: <strong>${originalName}</strong></p><p>Preview rows: ${JSON.stringify(
+          previewRows.slice(0, 3)
+        )}</p><p><a href="${process.env.FRONTEND_URL}/admin">Open admin dashboard</a></p>`;
         sendEmail(adminEmail, 'Supplier Product Upload', html).catch(err => console.error('admin notification error', err));
       }
     } catch (e) {

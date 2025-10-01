@@ -73,8 +73,6 @@ const supplierSchema = new Schema<ISupplier>({
   timestamps: true,
 });
 
-// Indexes
-supplierSchema.index({ email: 1 });
 supplierSchema.index({ name: 1 });
 supplierSchema.index({ status: 1 });
 supplierSchema.index({ createdAt: -1 });
