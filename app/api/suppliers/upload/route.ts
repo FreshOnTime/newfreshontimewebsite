@@ -241,21 +241,28 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       supplierStatus = null;
     }
 
-    const uploadDoc = await SupplierUpload.create({
-      supplierId: resolvedSupplierId,
-      supplierName,
-      supplierCompany,
-      supplierEmail,
-      supplierPhone,
-      supplierContactName,
-      supplierStatus,
-      filename,
-      originalName,
-      mimeType: detectedMimeType,
-      size: buffer.length,
-      path: `/uploads/supplier-uploads/${filename}`,
-      preview: previewRows.slice(0, 20)
-    });
+  let uploadDoc: unknown = null;
+    try {
+      uploadDoc = await SupplierUpload.create({
+        supplierId: resolvedSupplierId,
+        supplierName,
+        supplierCompany,
+        supplierEmail,
+        supplierPhone,
+        supplierContactName,
+        supplierStatus,
+        filename,
+        originalName,
+        mimeType: detectedMimeType,
+        size: buffer.length,
+        path: `/uploads/supplier-uploads/${filename}`,
+        preview: previewRows.slice(0, 20)
+      });
+    } catch (dbErr) {
+      console.error('[ERROR] /api/suppliers/upload - Failed to create DB record:', dbErr);
+      const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+      return NextResponse.json({ error: 'Failed to save upload record', details: process.env.NODE_ENV === 'development' ? msg : undefined }, { status: 500 });
+    }
 
     // Notify admin(s)
     try {
@@ -270,7 +277,11 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       console.warn('Notify admin error', e);
     }
 
-    console.log('[INFO] /api/suppliers/upload - Upload successful, ID:', uploadDoc._id);
+    try {
+      console.log('[INFO] /api/suppliers/upload - Upload successful, doc:', JSON.stringify(uploadDoc));
+    } catch {
+      console.log('[INFO] /api/suppliers/upload - Upload successful (could not stringify uploadDoc)');
+    }
     return NextResponse.json({ success: true, upload: uploadDoc }, { status: 201 });
   } catch (error) {
     console.error('[ERROR] /api/suppliers/upload - Upload failed:', error);
