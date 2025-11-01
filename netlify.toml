@@ -13,3 +13,10 @@
 # Ensure the Next.js Runtime is enabled
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Increase function timeout and payload size for file uploads
+[functions]
+  # Increase timeout to 60 seconds for file processing
+  timeout = 60
+  # Allow larger payloads for Excel files (10MB)
+  payload_timeout = 60

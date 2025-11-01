@@ -10,6 +10,10 @@ import { requireAuth } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 
+// Configure API route to handle larger payloads (10MB for Excel files)
+export const maxDuration = 60; // 60 seconds timeout
+export const dynamic = 'force-dynamic';
+
 // Note: Next API routes with multipart parsing require custom handling.
 // Here we rely on a simple stream-based save for small files from the client.
 
@@ -126,7 +130,20 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     console.log('[DEBUG] /api/suppliers/upload - File object type check:', typeof file);
 
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
-    await fs.promises.mkdir(uploadsDir, { recursive: true });
+    
+    // Ensure upload directory exists with proper error handling
+    try {
+      await fs.promises.mkdir(uploadsDir, { recursive: true });
+      // Verify directory is writable
+      await fs.promises.access(uploadsDir, fs.constants.W_OK);
+      console.log('[INFO] /api/suppliers/upload - Upload directory ready:', uploadsDir);
+    } catch (dirErr) {
+      console.error('[ERROR] /api/suppliers/upload - Failed to create/access upload directory:', dirErr);
+      return NextResponse.json({ 
+        error: 'Upload directory not accessible. Please contact administrator.',
+        details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined 
+      }, { status: 500 });
+    }
 
     // Get buffer - either from our custom object or from Blob's arrayBuffer
     let buffer: Buffer;

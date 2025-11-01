@@ -8,9 +8,9 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
-    "build-skip-types": "SKIP_TYPE_CHECK=true next build",
-    "start": "next start",
+    "build": "node scripts/init-uploads.js && next build",
+    "build-skip-types": "node scripts/init-uploads.js && SKIP_TYPE_CHECK=true next build",
+    "start": "node scripts/init-uploads.js && next start",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
