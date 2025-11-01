@@ -1,7 +1,5 @@
 [build]
   command = "npm run build"
-  # For Next.js on Netlify, the plugin handles functions and routing.
-  # The publish directory is the Next.js build output.
   publish = ".next"
 
 [build.environment]
@@ -10,13 +8,10 @@
   SKIP_TYPE_CHECK = "true"
   NODE_OPTIONS = "--max-old-space-size=4096"
 
-# Ensure the Next.js Runtime is enabled
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Increase function timeout and payload size for file uploads
 [functions]
-  # Increase timeout to 60 seconds for file processing
-  timeout = 60
-  # Allow larger payloads for Excel files (10MB)
-  payload_timeout = 60
+  # Increase timeout to 60 seconds for file processing (Netlify Pro: up to 26 seconds, Business: up to 60 seconds)
+  # Note: The Next.js plugin manages most settings automatically
+  node_bundler = "esbuild"
