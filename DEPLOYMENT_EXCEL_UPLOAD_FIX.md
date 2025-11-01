@@ -3,27 +3,63 @@
 ## Problem
 Supplier Excel file uploads were failing in the deployed environment with various errors including:
 - 500 Internal Server Error
+- "Upload directory not accessible. Please contact administrator."
 - File write permission errors
 - Directory not found errors
 - Request timeout errors
 
 ## Root Causes Identified
 
-### 1. Directory Permissions in Docker
+### 1. Serverless File System Limitations (PRIMARY ISSUE)
+In serverless environments like Netlify, the file system is **READ-ONLY** except for the `/tmp` directory. Attempting to write to `public/uploads` fails with permission errors.
+
+### 2. Directory Permissions in Docker
 The Docker container runs as a non-root user (`nextjs`) but the upload directories weren't created with proper permissions before switching users.
 
-### 2. Missing Directory Structure
+### 3. Missing Directory Structure
 The uploads directory structure wasn't guaranteed to exist in production builds, especially in containerized deployments.
 
-### 3. File Size Limits
+### 4. File Size Limits
 Default API route configurations had limited timeout and payload size, causing uploads to fail for larger Excel files.
 
-### 4. Runtime Environment Differences
+### 5. Runtime Environment Differences
 The Blob constructor issue was already fixed, but additional runtime-specific issues existed in production.
 
 ## Solutions Implemented
 
-### 1. Fixed Dockerfile (✅ COMPLETED)
+### 1. Adaptive Storage Strategy (✅ COMPLETED - CRITICAL FIX)
+**Files**: 
+- `app/api/suppliers/upload/route.ts`
+- `lib/models/SupplierUpload.ts`
+
+**Changes**:
+The upload route now automatically detects the deployment environment and adapts:
+
+**For Serverless Environments (Netlify, Vercel, AWS Lambda)**:
+- Uses `/tmp` directory (the only writable location)
+- Stores complete file data as base64 in MongoDB
+- Sets `path: null` in database (no persistent file path)
+
+**For Containerized/Traditional Deployments (Docker, VPS)**:
+- Uses `public/uploads/supplier-uploads` directory
+- Stores only the file path in MongoDB
+- Files are accessible via public URL
+
+**Detection Logic**:
+```typescript
+const isServerless = process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+```
+
+**Fallback Mechanism**:
+If writing to `public/uploads` fails, automatically tries `/tmp` as fallback.
+
+**Database Schema Update**:
+Added `fileData` field to store base64-encoded files in serverless environments:
+```typescript
+fileData: { type: String } // Base64 encoded file data (for serverless)
+```
+
+### 2. Fixed Dockerfile (✅ COMPLETED)
 **File**: `Dockerfile`
 
 **Changes**:

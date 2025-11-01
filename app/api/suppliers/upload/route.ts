@@ -129,7 +129,23 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
 
     console.log('[DEBUG] /api/suppliers/upload - File object type check:', typeof file);
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
+    // Determine upload directory based on environment
+    // In serverless environments (Netlify, Vercel), use /tmp directory which is writable
+    // In containerized environments, use public/uploads
+    const isServerless = process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+    let uploadsDir: string;
+    let shouldStoreInDB = false;
+    
+    if (isServerless) {
+      // Use /tmp in serverless environments (writable)
+      uploadsDir = path.join('/tmp', 'uploads', 'supplier-uploads');
+      shouldStoreInDB = true; // Store file data in DB since /tmp is ephemeral
+      console.log('[INFO] /api/suppliers/upload - Using serverless tmp directory');
+    } else {
+      // Use public directory in containerized/traditional deployments
+      uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
+      console.log('[INFO] /api/suppliers/upload - Using persistent public directory');
+    }
     
     // Ensure upload directory exists with proper error handling
     try {
@@ -139,10 +155,32 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       console.log('[INFO] /api/suppliers/upload - Upload directory ready:', uploadsDir);
     } catch (dirErr) {
       console.error('[ERROR] /api/suppliers/upload - Failed to create/access upload directory:', dirErr);
-      return NextResponse.json({ 
-        error: 'Upload directory not accessible. Please contact administrator.',
-        details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined 
-      }, { status: 500 });
+      console.error('[ERROR] /api/suppliers/upload - Environment:', { 
+        cwd: process.cwd(), 
+        isServerless,
+        tmpExists: fs.existsSync('/tmp')
+      });
+      // Last resort: try /tmp if not already using it
+      if (!isServerless) {
+        try {
+          uploadsDir = path.join('/tmp', 'uploads', 'supplier-uploads');
+          await fs.promises.mkdir(uploadsDir, { recursive: true });
+          await fs.promises.access(uploadsDir, fs.constants.W_OK);
+          shouldStoreInDB = true;
+          console.log('[INFO] /api/suppliers/upload - Fallback to /tmp successful');
+        } catch (tmpErr) {
+          console.error('[ERROR] /api/suppliers/upload - /tmp fallback also failed:', tmpErr);
+          return NextResponse.json({ 
+            error: 'Upload directory not accessible. File system is read-only.',
+            details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined 
+          }, { status: 500 });
+        }
+      } else {
+        return NextResponse.json({ 
+          error: 'Upload directory not accessible. Please contact administrator.',
+          details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined 
+        }, { status: 500 });
+      }
     }
 
     // Get buffer - either from our custom object or from Blob's arrayBuffer
@@ -260,7 +298,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
 
   let uploadDoc: unknown = null;
     try {
-      uploadDoc = await SupplierUpload.create({
+      const uploadData: Record<string, unknown> = {
         supplierId: resolvedSupplierId,
         supplierName,
         supplierCompany,
@@ -272,9 +310,22 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
         originalName,
         mimeType: detectedMimeType,
         size: buffer.length,
-        path: `/uploads/supplier-uploads/${filename}`,
         preview: previewRows.slice(0, 20)
-      });
+      };
+      
+      // In serverless environments, store file data in DB since file system is ephemeral
+      // In persistent environments, store file path
+      if (shouldStoreInDB) {
+        console.log('[INFO] /api/suppliers/upload - Storing file data in database (serverless environment)');
+        uploadData.fileData = buffer.toString('base64');
+        uploadData.path = null; // No persistent path available
+      } else {
+        console.log('[INFO] /api/suppliers/upload - Storing file path (persistent environment)');
+        uploadData.path = `/uploads/supplier-uploads/${filename}`;
+        uploadData.fileData = null; // No need to store data in DB
+      }
+      
+      uploadDoc = await SupplierUpload.create(uploadData);
     } catch (dbErr) {
       console.error('[ERROR] /api/suppliers/upload - Failed to create DB record:', dbErr);
       const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);

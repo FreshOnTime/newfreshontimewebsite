@@ -12,7 +12,8 @@ const SupplierUploadSchema = new mongoose.Schema({
   originalName: { type: String },
   mimeType: { type: String },
   size: { type: Number },
-  path: { type: String },
+  path: { type: String }, // Path to file in persistent storage (null in serverless)
+  fileData: { type: String }, // Base64 encoded file data (for serverless environments)
   preview: { type: Array, default: [] },
   createdAt: { type: Date, default: () => new Date() }
 });
