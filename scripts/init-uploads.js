@@ -3,11 +3,15 @@
  * This script ensures all necessary upload directories exist with proper permissions
  */
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path');
 
 const uploadsDirectories = [
   'public/uploads/supplier-uploads',
+  'public/uploads/product-images',
+  'public/uploads/banner-images',
   'public/uploads/products',
   'public/uploads',
 ];
