@@ -16,7 +16,9 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 
 # Create uploads directories with proper permissions before switching to non-root user
-RUN mkdir -p /app/public/uploads/supplier-uploads && \
+RUN mkdir -p /app/public/uploads/supplier-uploads \
+             /app/public/uploads/product-images \
+             /app/public/uploads/banner-images && \
     chmod -R 755 /app/public/uploads
 
 RUN npm install --production

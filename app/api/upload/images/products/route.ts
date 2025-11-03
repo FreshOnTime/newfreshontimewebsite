@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
-import { getProductImageStorage } from "@/lib/storage/azureStorage";
+import { getProductImageStorage } from "@/lib/storage/localStorage";
 import { parseMultipartForm, validateImageFile, generateUniqueFileName, FileUpload } from "@/lib/utils/multipartParser";
 import { sendSuccess, sendInternalError, sendBadRequest } from "@/lib/utils/apiResponses";
+
+// Configure route for file uploads
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
 // Disable Next.js body parser for this route
 export const config = {
@@ -33,13 +37,19 @@ export async function POST(req: NextRequest) {
     // Generate unique filename
     const uniqueFileName = generateUniqueFileName(imageFile.filename);
     
-    // Upload to Azure Storage
+    // Upload to Local/Serverless Storage
     const storageService = getProductImageStorage();
     const imageUrl = await storageService.uploadFile(
       uniqueFileName,
       imageFile.buffer,
       imageFile.type
     );
+
+    console.log('[INFO] Product image uploaded:', {
+      fileName: uniqueFileName,
+      size: imageFile.size,
+      isServerless: storageService.isServerlessEnvironment()
+    });
 
     return sendSuccess("Image uploaded successfully", {
       url: imageUrl,
@@ -53,11 +63,11 @@ export async function POST(req: NextRequest) {
     console.error("Upload error:", error);
     
     if (error instanceof Error) {
-      if (error.message.includes('AZURE_STORAGE_CONNECTION_STRING')) {
-        return sendInternalError("Storage configuration error");
-      }
       if (error.message.includes('multipart/form-data')) {
         return sendBadRequest("Invalid request format. Use multipart/form-data");
+      }
+      if (error.message.includes('EACCES') || error.message.includes('permission')) {
+        return sendInternalError("Storage permission error. Check file system permissions.");
       }
     }
     
