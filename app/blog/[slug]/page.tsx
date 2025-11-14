@@ -1,42 +1,52 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { BlogPost } from '@/components/blog/BlogPost';
+import connectDB from '@/lib/database';
+import Blog from '@/lib/models/Blog';
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug } = await params;
   
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/blogs/${slug}`, { 
-      cache: 'no-store' 
-    });
+    await connectDB();
+    const blog = await Blog.findOne({ 
+      slug, 
+      isDeleted: false,
+      published: true,
+    })
+    .populate('author', 'firstName lastName email')
+    .lean();
     
-    if (!res.ok) {
+    if (!blog) {
       return {
         title: 'Blog Post Not Found',
       };
     }
-    
-    const { blog } = await res.json();
+
+    // Type assertion for the blog object
+    const blogData = blog as any;
     
     return {
-      title: blog.metaTitle || blog.title,
-      description: blog.metaDescription || blog.excerpt,
-      keywords: blog.metaKeywords,
+      title: blogData.metaTitle || blogData.title,
+      description: blogData.metaDescription || blogData.excerpt,
+      keywords: blogData.metaKeywords,
       openGraph: {
-        title: blog.title,
-        description: blog.excerpt,
+        title: blogData.title,
+        description: blogData.excerpt,
         type: 'article',
-        publishedTime: blog.publishedAt,
-        authors: [blog.authorName],
-        images: blog.featuredImage ? [blog.featuredImage.url] : [],
+        publishedTime: blogData.publishedAt?.toISOString?.() || blogData.publishedAt,
+        authors: [blogData.authorName],
+        images: blogData.featuredImage ? [blogData.featuredImage.url] : [],
       },
     };
-  } catch {
+  } catch (error) {
+    console.error('Error fetching blog metadata:', error);
     return {
       title: 'Blog Post',
     };
@@ -46,22 +56,45 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
 export default async function BlogPostPage({ params }: BlogPageProps) {
   const { slug } = await params;
   
-  let blog;
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/blogs/${slug}`, { 
-      cache: 'no-store' 
-    });
+    await connectDB();
+    const blog = await Blog.findOne({ 
+      slug, 
+      isDeleted: false,
+      published: true,
+    })
+    .populate('author', 'firstName lastName email')
+    .lean();
     
-    if (!res.ok) {
+    if (!blog) {
       notFound();
     }
+
+    // Type assertion for the blog object
+    const blogData = blog as any;
+
+    // Increment view count
+    await Blog.findOneAndUpdate(
+      { slug, isDeleted: false, published: true },
+      { $inc: { views: 1 } }
+    );
+
+    // Convert to plain object and serialize dates
+    const serializedBlog = {
+      ...blogData,
+      _id: blogData._id?.toString?.() || blogData._id,
+      createdAt: blogData.createdAt?.toISOString?.() || blogData.createdAt,
+      updatedAt: blogData.updatedAt?.toISOString?.() || blogData.updatedAt,
+      publishedAt: blogData.publishedAt?.toISOString?.() || blogData.publishedAt,
+      author: blogData.author ? {
+        ...blogData.author,
+        _id: blogData.author._id?.toString?.() || blogData.author._id,
+      } : undefined,
+    };
     
-    const data = await res.json();
-    blog = data.blog;
-  } catch {
+    return <BlogPost blog={serializedBlog} />;
+  } catch (error) {
+    console.error('Error fetching blog:', error);
     notFound();
   }
-  
-  return <BlogPost blog={blog} />;
 }
