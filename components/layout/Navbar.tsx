@@ -339,6 +339,12 @@ export function Navbar() {
             >
               Orders
             </Link>
+            <Link
+              href="/blog"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition"
+            >
+              Blog
+            </Link>
           </nav>
         </div>
 
@@ -492,6 +498,13 @@ export function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Orders
+              </Link>
+              <Link
+                href="/blog"
+                className="block text-gray-600 hover:text-green-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Blog
               </Link>
               <Link
                 href="/help"
