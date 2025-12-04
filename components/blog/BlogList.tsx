@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Calendar, Eye, ArrowRight } from 'lucide-react';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 
 interface Blog {
   _id: string;
@@ -37,17 +38,16 @@ export function BlogList() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 0 });
 
-  useEffect(() => {
-    fetchBlogs();
-  }, [page, search]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Debounce search to reduce API calls
+  const debouncedSearch = useDebounce(search, 300);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async (searchTerm: string, pageNum: number) => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: String(page),
+        page: String(pageNum),
         limit: '12',
-        ...(search && { search }),
+        ...(searchTerm && { search: searchTerm }),
       });
       
       const res = await fetch(`/api/blogs?${params}`);
@@ -61,7 +61,11 @@ export function BlogList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchBlogs(debouncedSearch, page);
+  }, [page, debouncedSearch, fetchBlogs]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -97,8 +101,25 @@ export function BlogList() {
 
       {/* Blog Grid */}
       {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="flex flex-col animate-pulse">
+              <div className="w-full h-48 bg-gray-200 rounded-t-lg" />
+              <CardHeader>
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-2" />
+                <div className="h-6 bg-gray-200 rounded w-3/4" />
+              </CardHeader>
+              <CardContent className="flex-1">
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                </div>
+              </CardContent>
+              <CardFooter className="border-t pt-4">
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       ) : blogs.length === 0 ? (
         <div className="text-center py-20">
@@ -118,6 +139,8 @@ export function BlogList() {
                       alt={blog.featuredImage.alt || blog.title}
                       fill
                       className="object-cover"
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   </div>
                 )}
