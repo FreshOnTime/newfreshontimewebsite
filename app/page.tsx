@@ -25,13 +25,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductCard } from "@/components/products/ProductCard";
 import { Product } from "@/models/product";
 import Link from "next/link";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 import BannerGrid from "@/components/home/BannerGrid";
 import FeaturesStrip from "@/components/home/FeaturesStrip";
 
 import Testimonials from "@/components/home/Testimonials";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
+import { useLocalStorageCache, CACHE_TTL } from "@/lib/hooks/useLocalStorageCache";
 
 const antonFont = Anton({
   weight: "400",
@@ -58,10 +59,65 @@ const categoryIcons: Record<string, React.ElementType> = {
 type UiCategory = { name: string; slug: string; imageUrl?: string; description?: string };
 
 export default function Home() {
-  // carousel removed; showing static promotional images instead
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [dealProducts, setDealProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<UiCategory[]>([]);
+  // Cached products fetching
+  const { data: productsData } = useLocalStorageCache<Product[]>(
+    "home_products",
+    async () => {
+      const response = await fetch("/api/products");
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.data?.products || [];
+    },
+    { ttl: CACHE_TTL.MEDIUM } // 5 minutes
+  );
+
+  // Cached categories fetching
+  const { data: categoriesData } = useLocalStorageCache<UiCategory[]>(
+    "home_categories",
+    async () => {
+      const res = await fetch("/api/categories");
+      if (!res.ok) return [];
+      const json = await res.json();
+      const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
+      return items
+        .map((c) => {
+          if (typeof c === "object" && c && "name" in c && "slug" in c) {
+            const cc = c as {
+              name?: unknown;
+              slug?: unknown;
+              imageUrl?: unknown;
+              description?: unknown;
+            };
+            return {
+              name: String(cc.name ?? ""),
+              slug: String(cc.slug ?? ""),
+              imageUrl: cc.imageUrl ? String(cc.imageUrl) : undefined,
+              description: cc.description ? String(cc.description) : undefined,
+            };
+          }
+          return { name: "", slug: "" };
+        })
+        .filter((c) => c.name && c.slug);
+    },
+    { ttl: CACHE_TTL.LONG } // 15 minutes
+  );
+
+  // Derived data from cached products
+  const featuredProducts = useMemo(
+    () => (productsData || []).slice(0, 10),
+    [productsData]
+  );
+  
+  const dealProducts = useMemo(
+    () =>
+      (productsData || []).filter(
+        (product: Product) =>
+          product.discountPercentage && product.discountPercentage > 0
+      ),
+    [productsData]
+  );
+
+  const categories = categoriesData || [];
 
   const promoImages = [
     "/bannermaterial/1.png",
@@ -128,70 +184,6 @@ export default function Home() {
     touchStartX.current = null;
     touchCurrentX.current = null;
   };
-
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const response = await fetch("/api/products");
-        if (response.ok) {
-          const data = await response.json();
-          const allProducts: Product[] = data.data?.products || [];
-
-          setFeaturedProducts(allProducts.slice(0, 10));
-          setDealProducts(
-            allProducts.filter(
-              (product: Product) =>
-                product.discountPercentage && product.discountPercentage > 0
-            )
-          );
-        }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      }
-    }
-
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    let ignore = false;
-    async function fetchCategories() {
-      try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) return;
-        const json = await res.json();
-        const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
-        const mapped: UiCategory[] = items
-          .map((c) => {
-            if (typeof c === "object" && c && "name" in c && "slug" in c) {
-              const cc = c as {
-                name?: unknown;
-                slug?: unknown;
-                imageUrl?: unknown;
-                description?: unknown;
-              };
-              return {
-                name: String(cc.name ?? ""),
-                slug: String(cc.slug ?? ""),
-                imageUrl: cc.imageUrl ? String(cc.imageUrl) : undefined,
-                description: cc.description
-                  ? String(cc.description)
-                  : undefined,
-              };
-            }
-            return { name: "", slug: "" };
-          })
-          .filter((c) => c.name && c.slug);
-        if (!ignore) setCategories(mapped);
-      } catch {
-        // non-fatal for homepage
-      }
-    }
-    fetchCategories();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   // carousel removed; no slide state or controls needed
 

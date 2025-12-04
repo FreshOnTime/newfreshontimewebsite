@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -39,6 +39,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBag } from "@/contexts/BagContext";
+import { useLocalStorageCache, CACHE_TTL } from "@/lib/hooks/useLocalStorageCache";
 
 interface NavCategory {
   name: string;
@@ -65,12 +66,35 @@ const categoryIcons: Record<string, React.ElementType> = {
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [navCategories, setNavCategories] = useState<NavCategory[]>([]);
   const { user, logout } = useAuth();
   const cartItemCount = 0; // This would come from your cart context/state
   const { bags } = useBag();
   const bagCount = bags?.length || 0;
   const router = useRouter();
+
+  // Use cached categories - refreshes every 15 minutes
+  const { data: navCategories } = useLocalStorageCache<NavCategory[]>(
+    "navbar_categories",
+    async () => {
+      const res = await fetch("/api/categories");
+      if (!res.ok) return [];
+      const json = await res.json();
+      const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
+      return items
+        .map((c) => {
+          if (typeof c === "object" && c && "name" in c && "slug" in c) {
+            const cc = c as { name?: unknown; slug?: unknown };
+            return {
+              name: String(cc.name ?? ""),
+              slug: String(cc.slug ?? ""),
+            };
+          }
+          return { name: "", slug: "" };
+        })
+        .filter((c) => Boolean(c.name) && Boolean(c.slug));
+    },
+    { ttl: CACHE_TTL.LONG }
+  );
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,37 +111,6 @@ export function Navbar() {
       console.error("Logout error:", error);
     }
   };
-
-  useEffect(() => {
-    let ignore = false;
-    async function loadCategories() {
-      try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) return;
-        const json = await res.json();
-        const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
-        const mapped: NavCategory[] = items
-          .map((c) => {
-            if (typeof c === "object" && c && "name" in c && "slug" in c) {
-              const cc = c as { name?: unknown; slug?: unknown };
-              return {
-                name: String(cc.name ?? ""),
-                slug: String(cc.slug ?? ""),
-              };
-            }
-            return { name: "", slug: "" };
-          })
-          .filter((c) => Boolean(c.name) && Boolean(c.slug));
-        if (!ignore) setNavCategories(mapped);
-      } catch {
-        console.warn("Failed to load categories for navbar");
-      }
-    }
-    loadCategories();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -319,7 +312,7 @@ export function Navbar() {
             >
               Categories
             </Link>
-            {navCategories.map((category) => {
+            {(navCategories || []).map((category) => {
               const Icon =
                 categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
               return (
@@ -450,7 +443,7 @@ export function Navbar() {
             <div className="border-b border-gray-200 pb-4 mb-4">
               <h3 className="font-medium mb-3">Categories</h3>
               <div className="space-y-2">
-                {navCategories.map((category) => {
+                {(navCategories || []).map((category) => {
                   const Icon =
                     categoryIcons[category.slug?.toLowerCase()] ||
                     ShoppingBasket;
