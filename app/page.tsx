@@ -190,8 +190,8 @@ export default function Home() {
   return (
     <div className="bg-white">
       {/* Hero Section - Premium FreshDirect-inspired design */}
-      <section className="relative min-h-[70vh] md:min-h-[85vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 -z-10">
+      <section className="relative min-h-[70vh] md:min-h-[85vh] flex items-center overflow-hidden bg-gray-900">
+        <div className="absolute inset-0">
           <Image
             src="/bgs/landing-page-bg-1.jpg"
             alt="Fresh vegetables background"
@@ -202,13 +202,9 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
         </div>
 
-        <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10">
           <div className="max-w-2xl">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+            <div>
               <span className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-100 px-4 py-2 rounded-full mb-6 text-sm font-medium backdrop-blur-sm border border-emerald-400/30">
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
                 Fresh & Local Delivery
@@ -245,7 +241,7 @@ export default function Home() {
                   <Link href="/categories">Browse Categories</Link>
                 </Button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 

@@ -65,38 +65,42 @@ export function ProductCard({
   });
 
   return (
-    <Card className="w-full max-w-[260px] overflow-hidden border-none cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white rounded-xl">
-      <div className="relative overflow-hidden rounded-t-xl">
-        <div className="aspect-square relative">
-          <Link href={`/products/${sku}`} className="block">
-            <ProductImage src={imageUrl} alt={name} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <Card className="w-full max-w-[280px] overflow-hidden border border-gray-100 cursor-pointer bg-white rounded-xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group">
+      <div className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+        <div className="aspect-square relative p-4">
+          <Link href={`/products/${sku}`} className="block h-full">
+            <div className="relative h-full transform transition-transform duration-500 ease-out group-hover:scale-105">
+              <ProductImage src={imageUrl} alt={name} />
+            </div>
           </Link>
         </div>
         {showDiscountBadge && (
-          <Badge className="absolute right-3 top-3 font-bold text-xs bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 z-10 shadow-lg px-2 py-1 rounded-full">
-            -{discountPercentage}%
+          <Badge className="absolute left-3 top-3 font-semibold text-xs bg-red-500 text-white hover:bg-red-600 z-10 px-2.5 py-1 rounded-full shadow-sm">
+            {discountPercentage}% OFF
           </Badge>
         )}
       </div>
-      <CardContent className="p-3">
+      <CardContent className="p-4 pt-3 border-t border-gray-50">
         <Link href={`/products/${sku}`} className="block">
-          <h3 className="mb-2 text-gray-800 line-clamp-2 font-semibold text-sm group-hover:text-green-600 transition-colors duration-200 leading-tight min-h-[2.5rem]">
+          <h3 className="text-gray-800 line-clamp-2 font-medium text-sm leading-snug min-h-[2.5rem] group-hover:text-emerald-600 transition-colors duration-200">
             {name}
           </h3>
         </Link>
-        <PriceDisplay
-          price={pricePerBaseQuantityWithDiscount}
-          isDiscreteItem={isDiscreteItem}
-          baseMeasurementQuantity={baseMeasurementQuantity}
-          measurementType={measurementType}
-        />
-        {!isDiscreteItem && (
-          <p className="text-xs text-gray-500 mt-1">
-            Rs. {formatPrice(pricePerMeasurement)}/{measurementType}
-          </p>
-        )}
-        <div className="mt-3">
+        <div className="mt-3 mb-3">
+          <PriceDisplay
+            price={pricePerBaseQuantityWithDiscount}
+            originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
+            isDiscreteItem={isDiscreteItem}
+            baseMeasurementQuantity={baseMeasurementQuantity}
+            measurementType={measurementType}
+          />
+          {!isDiscreteItem && (
+            <p className="text-xs text-gray-400 mt-1 font-medium">
+              Rs. {formatPrice(pricePerMeasurement)}/{measurementType}
+            </p>
+          )}
+        </div>
+        <div className="pt-2 border-t border-gray-50">
           <AddToBagButton product={buildProductForBag()} quantity={1} />
         </div>
       </CardContent>
@@ -106,22 +110,29 @@ export function ProductCard({
 
 function PriceDisplay({
   price,
+  originalPrice,
   isDiscreteItem,
   baseMeasurementQuantity,
   measurementType,
 }: {
   price: number;
+  originalPrice?: number;
   isDiscreteItem: boolean;
   baseMeasurementQuantity: number;
   measurementType: string;
 }) {
   return (
-    <div className="flex items-baseline space-x-1">
-      <p className="text-lg font-bold text-green-600">
+    <div className="flex items-baseline gap-2 flex-wrap">
+      <p className="text-lg font-bold text-gray-900">
         Rs. {formatPrice(price)}
       </p>
+      {originalPrice && (
+        <p className="text-sm text-gray-400 line-through">
+          Rs. {formatPrice(originalPrice)}
+        </p>
+      )}
       {!isDiscreteItem && (
-        <span className="text-xs font-medium text-gray-500">
+        <span className="text-xs font-medium text-gray-400">
           /{baseMeasurementQuantity !== 1 && `${baseMeasurementQuantity}`}
           {measurementType}
         </span>
