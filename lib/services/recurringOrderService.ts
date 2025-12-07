@@ -22,6 +22,7 @@ export interface RecurringOrderPattern {
     includeDates?: Date[];
     excludeDates?: Date[];
     selectedDates?: Date[];
+    rruleString?: string;
     notes?: string;
   };
   shippingAddress: Record<string, unknown>;
@@ -40,33 +41,57 @@ export class RecurringOrderService {
    * Calculate the next delivery date based on recurrence pattern
    */
   static calculateNextDelivery(
-    pattern: RecurringOrderPattern, 
+    pattern: RecurringOrderPattern,
     currentDate: Date = new Date()
   ): Date | null {
     const { recurrence } = pattern;
-    
+
     // If end date is passed, no more deliveries
     if (recurrence.endDate && currentDate > recurrence.endDate) {
       return null;
     }
+
+    // 1. Try standardized RRULE
+    if (recurrence.rruleString) {
+      try {
+        const { rrulestr } = require('rrule');
+        const rule = rrulestr(recurrence.rruleString);
+
+        // If we have strict start/end dates in rule, they apply. 
+        // Also respect recurrence.endDate if clearer override.
+
+        const next = rule.after(currentDate);
+
+        if (next) {
+          if (recurrence.endDate && next > recurrence.endDate) return null;
+          return next;
+        }
+        return null;
+      } catch (e) {
+        console.error('Error parsing RRULE:', e);
+        // Fallback or assume failed if invalid
+      }
+    }
+
+    // 2. Legacy/Custom Schema Logic (Backward Compatibility)
 
     // If specific dates are selected, find the next one
     if (recurrence.selectedDates && recurrence.selectedDates.length > 0) {
       const futureSelectedDates = recurrence.selectedDates
         .filter(date => date > currentDate)
         .sort((a, b) => a.getTime() - b.getTime());
-      
+
       if (futureSelectedDates.length > 0) {
         return futureSelectedDates[0];
       }
       return null; // No more selected dates
     }
 
-    // If days of week are specified
+    // If days of week are specified (Legacy "Weekly" style)
     if (recurrence.daysOfWeek && recurrence.daysOfWeek.length > 0) {
       const today = new Date(currentDate);
       const currentDayOfWeek = today.getDay();
-      
+
       // Find next occurrence
       let daysToAdd = 1;
       for (let i = 0; i < 7; i++) {
@@ -74,25 +99,25 @@ export class RecurringOrderService {
         if (recurrence.daysOfWeek.includes(checkDay)) {
           const nextDate = new Date(today);
           nextDate.setDate(today.getDate() + daysToAdd);
-          
+
           // Check if this date is excluded
-          if (recurrence.excludeDates && 
-              recurrence.excludeDates.some(excludeDate => 
-                excludeDate.toDateString() === nextDate.toDateString())) {
+          if (recurrence.excludeDates &&
+            recurrence.excludeDates.some(excludeDate =>
+              excludeDate.toDateString() === nextDate.toDateString())) {
             daysToAdd++;
             continue;
           }
-          
+
           // Check if within date range
           if (recurrence.startDate && nextDate < recurrence.startDate) {
             daysToAdd++;
             continue;
           }
-          
+
           if (recurrence.endDate && nextDate > recurrence.endDate) {
             return null;
           }
-          
+
           return nextDate;
         }
         daysToAdd++;
@@ -104,7 +129,7 @@ export class RecurringOrderService {
       const futureIncludeDates = recurrence.includeDates
         .filter(date => date > currentDate)
         .sort((a, b) => a.getTime() - b.getTime());
-      
+
       if (futureIncludeDates.length > 0) {
         return futureIncludeDates[0];
       }
@@ -157,7 +182,7 @@ export class RecurringOrderService {
       );
 
       const outOfStock = availabilityChecks.filter(check => !check.available);
-      
+
       // Create new order instance
       const newOrderData = {
         ...recurringOrder.toObject(),
@@ -167,7 +192,7 @@ export class RecurringOrderService {
         estimatedDelivery: nextDelivery,
         createdAt: new Date(),
         updatedAt: new Date(),
-        notes: outOfStock.length > 0 
+        notes: outOfStock.length > 0
           ? `Auto-generated from recurring order. Some items may be out of stock: ${outOfStock.map(i => i.productId).join(', ')}`
           : 'Auto-generated from recurring order',
       };
@@ -371,10 +396,10 @@ export class RecurringOrderService {
         scheduleStatus: 'active',
         nextDeliveryAt: { $gte: new Date() },
       })
-      .select('_id orderNumber customerId nextDeliveryAt total')
-      .sort({ nextDeliveryAt: 1 })
-      .limit(10)
-      .lean()
+        .select('_id orderNumber customerId nextDeliveryAt total')
+        .sort({ nextDeliveryAt: 1 })
+        .limit(10)
+        .lean()
     ]);
 
     const stats = totalStats[0] || {

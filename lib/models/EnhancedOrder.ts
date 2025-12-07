@@ -53,6 +53,7 @@ export interface IOrder extends Document {
     includeDates?: Date[];
     excludeDates?: Date[];
     selectedDates?: Date[]; // concrete delivery dates generated/selected
+    rruleString?: string; // Standard RRULE string
     notes?: string;
   };
   nextDeliveryAt?: Date;
@@ -64,7 +65,7 @@ export interface IOrder extends Document {
 const orderItemSchema = new Schema<IOrderItem>({
   productId: {
     type: Schema.Types.ObjectId,
-  ref: 'EnhancedProduct',
+    ref: 'EnhancedProduct',
     required: true,
   },
   sku: {
@@ -187,6 +188,7 @@ const orderSchema = new Schema<IOrder>({
     includeDates: { type: [Date], default: undefined },
     excludeDates: { type: [Date], default: undefined },
     selectedDates: { type: [Date], default: undefined },
+    rruleString: { type: String },
     notes: { type: String, maxlength: 1000 },
   },
   nextDeliveryAt: Date,
