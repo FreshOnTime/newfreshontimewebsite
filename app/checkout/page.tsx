@@ -22,7 +22,7 @@ export default function CheckoutPage() {
   const bagId = params.get("bagId");
   const quickSku = params.get("quickSku");
   const quickQty = Number(params.get("qty") || '1');
-  const { bags, currentBag } = useBag();
+  const { bags, currentBag, removeFromBag, updateBagItem } = useBag();
   const { user } = useAuth(); // Restore usage
 
   const bag = useMemo(() => {
@@ -76,7 +76,7 @@ export default function CheckoutPage() {
     let mounted = true;
     async function loadQuick() {
       if (!quickSku) return;
-      if (bag && bag.items && bag.items.length > 0) return; // prefer real bag
+      // if (bag && bag.items && bag.items.length > 0) return; // REMOVED: Allow quick order even if bag exists
       try {
         const absolute = `/api/products/${encodeURIComponent(quickSku)}`;
         const resp = await fetch(absolute);
@@ -102,10 +102,13 @@ export default function CheckoutPage() {
     }
     loadQuick();
     return () => { mounted = false; };
-  }, [quickSku, quickQty, bag]);
+  }, [quickSku, quickQty]); // Removed 'bag' dependency to avoid re-triggering loop if bag changes
 
   // Build a normalized list of items for rendering/ordering without using 'any'
   const effectiveItems: EffectiveItem[] = useMemo(() => {
+    // Priority: Preview Bag (Quick Order) > Current Bag
+    if (previewBag) return previewBag.items.map((i) => ({ product: i.product, quantity: i.quantity }));
+
     if (bag && bag.items && bag.items.length > 0) {
       return bag.items.map((it: Bag['items'][number]) => ({
         product: {
@@ -118,12 +121,12 @@ export default function CheckoutPage() {
         quantity: it.quantity,
       }));
     }
-    if (previewBag) return previewBag.items.map((i) => ({ product: i.product, quantity: i.quantity }));
     return [];
   }, [bag, previewBag]);
 
-  const effectiveBagId = bag?.id || previewBag?.id;
-  const effectiveBagName = bag?.name || previewBag?.name;
+  // If using preview bag, do NOT associate with the existing bag ID to avoid overwriting/mixing
+  const effectiveBagId = previewBag ? undefined : bag?.id;
+  const effectiveBagName = previewBag?.name || bag?.name;
   const hasEffectiveBag = Boolean(effectiveItems.length > 0);
 
   const total = useMemo(() => (
@@ -209,265 +212,496 @@ export default function CheckoutPage() {
   };
 
   if (!hasEffectiveBag) {
-    return <div className="max-w-3xl mx-auto p-6">No bag selected.</div>;
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900">Your bag is empty</h2>
+        <p className="text-gray-500 mt-2 max-w-sm">Looks like you haven't added anything to your bag yet.</p>
+        <Link href="/" className="mt-6 px-6 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-colors">
+          Start Shopping
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+    <div className="bg-gray-50/50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
-            <h1 className="text-3xl font-semibold">Checkout</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">Checkout</h1>
             {effectiveBagName && (
-              <p className="text-gray-600 mt-1">Bag: <span className="font-medium">{effectiveBagName}</span>{typeof itemCount === 'number' && itemCount > 0 ? ` • ${itemCount} item${itemCount > 1 ? 's' : ''}` : ''}</p>
+              <p className="text-gray-600 mt-2 text-lg">
+                Ordering <span className="font-medium text-primary">{effectiveBagName}</span>
+                {typeof itemCount === 'number' && itemCount > 0 ? (
+                  <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                    {itemCount} item{itemCount > 1 ? 's' : ''}
+                  </span>
+                ) : ''}
+              </p>
             )}
           </div>
-
-          <Card className="shadow-lg">
-            <CardContent>
-              {bag?.name && (
-                <div className="pb-2 mb-4 border-b">
-                  <h2 className="text-sm font-medium text-gray-700">Items in {bag.name}</h2>
-                </div>
-              )}
-              <div className="space-y-3">
-                {effectiveItems.map((it, idx) => (
-                  <div key={`${effectiveBagId || 'bag'}-${it.product.id}-${idx}`} className="flex items-center justify-between text-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-500">Img</div>
-                      <div>
-                        <div className="font-medium">{it.product.name}</div>
-                        <div className="text-xs text-gray-500">Qty: {it.quantity}</div>
-                      </div>
-                    </div>
-                    <div className="font-semibold">Rs. {(Number(it.product.price || 0) * it.quantity).toFixed(2)}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between pt-4 border-t mt-4 font-semibold text-lg">
-                <span>Total</span>
-                <span>Rs. {total.toFixed(2)}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recurring schedule */}
-          <Card className="shadow">
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-sm font-medium text-gray-700">Recurring order</h2>
-                  <p className="text-xs text-gray-500">Schedule recurring deliveries with flexible rules.</p>
-                </div>
-                <label className="inline-flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />
-                  Enable
-                </label>
-              </div>
-
-              {isRecurring && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Start date</label>
-                    <Input type="date" value={startDate} onChange={(e: ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)} className="w-full" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">End date (optional)</label>
-                    <Input type="date" value={endDate} onChange={(e: ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)} className="w-full" />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-600 mb-1">Frequency</label>
-                    <div className="flex gap-2">
-                      {[
-                        { label: 'Weekly', val: RRule.WEEKLY },
-                        { label: 'Monthly', val: RRule.MONTHLY },
-                        { label: 'Daily', val: RRule.DAILY }
-                      ].map(opt => (
-                        <button
-                          key={opt.label}
-                          type="button"
-                          onClick={() => setRecurrenceFreq(opt.val)}
-                          className={`px-4 py-2 rounded border text-sm transition-colors ${recurrenceFreq === opt.val ? 'bg-green-100 border-green-500 text-green-800' : 'bg-white border-gray-200 text-gray-700'}`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Interval */}
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Repeat every</label>
-                    <div className="flex items-center gap-2">
-                      <Input type="number" min={1} value={recurrenceInterval} onChange={(e) => setRecurrenceInterval(Number(e.target.value))} className="w-20" />
-                      <span className="text-sm text-gray-600">
-                        {recurrenceFreq === RRule.WEEKLY ? 'week(s)' : recurrenceFreq === RRule.MONTHLY ? 'month(s)' : 'day(s)'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Frequency Specific Options */}
-                  {recurrenceFreq === RRule.WEEKLY && (
-                    <div className="md:col-span-2">
-                      <label className="block text-xs text-gray-600 mb-1">On days</label>
-                      <div className="flex flex-wrap gap-2 text-sm">
-                        {[
-                          { l: 'Mon', v: RRule.MO },
-                          { l: 'Tue', v: RRule.TU },
-                          { l: 'Wed', v: RRule.WE },
-                          { l: 'Thu', v: RRule.TH },
-                          { l: 'Fri', v: RRule.FR },
-                          { l: 'Sat', v: RRule.SA },
-                          { l: 'Sun', v: RRule.SU },
-                        ].map((d) => (
-                          <button
-                            key={d.l}
-                            type="button"
-                            onClick={() => {
-                              // types/rrule outdated, weekday prop exists at runtime
-                              const val = (d.v as any).weekday;
-                              const isSelected = recurrenceByWeekday.some(w => w === val);
-                              if (isSelected) {
-                                setRecurrenceByWeekday(prev => prev.filter(w => w !== val));
-                              } else {
-                                setRecurrenceByWeekday(prev => [...prev, val]);
-                              }
-                            }}
-                            className={`px-3 py-1 rounded-full border transition-colors text-sm ${recurrenceByWeekday.includes((d.v as any).weekday) ? 'bg-green-50 border-green-500 text-green-700' : 'bg-white border-gray-200 text-gray-700'}`}
-                          >
-                            {d.l}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <MultiDateSelector
-                        label="Extra include dates"
-                        helperText="One-off extra deliveries"
-                        values={includeDates}
-                        onChange={setIncludeDates}
-                      />
-                    </div>
-                    <div>
-                      <MultiDateSelector
-                        label="Exclude dates"
-                        helperText="Skip specific dates"
-                        values={excludeDates}
-                        onChange={setExcludeDates}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-600 mb-1">Notes (optional)</label>
-                    <textarea className="w-full border rounded px-3 py-2 text-sm" rows={3}
-                      value={recurrenceNotes} onChange={(e) => setRecurrenceNotes(e.target.value)} />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <button type="button" className="text-xs underline" onClick={() => {
-                      try {
-                        const rule = new RRule({
-                          freq: recurrenceFreq,
-                          interval: recurrenceInterval,
-                          byweekday: recurrenceFreq === RRule.WEEKLY ? recurrenceByWeekday.map(d => d) : undefined,
-                          dtstart: new Date(startDate || new Date()),
-                          until: endDate ? new Date(endDate) : undefined,
-                        });
-                        const next = rule.after(new Date());
-                        setNextPreview(next ? next.toISOString() : 'No upcoming date found');
-                      } catch (e) { console.error(e); setNextPreview('Invalid configuration'); }
-                    }}>Preview next delivery date</button>
-                    {nextPreview && (
-                      <div className="text-xs text-gray-600 mt-2">Next delivery preview: <span className="font-medium">{nextPreview.includes('-') ? new Date(nextPreview).toLocaleDateString() : nextPreview}</span></div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Delivery address */}
-          <Card className="shadow">
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-sm font-medium text-gray-700">Delivery address</h2>
-                  <p className="text-xs text-gray-500">Use account address or enter a different shipping address.</p>
-                </div>
-                <label className="inline-flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={useAccountAddress} onChange={(e) => setUseAccountAddress(e.target.checked)} />
-                  Use account address
-                </label>
-              </div>
-              {!useAccountAddress && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Recipient name</label>
-                    <Input type="text" value={shipName} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipName(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Phone</label>
-                    <Input type="text" value={shipPhone} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipPhone(e.target.value)} />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-600 mb-1">Street</label>
-                    <Input type="text" value={shipStreet} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipStreet(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">City</label>
-                    <Input type="text" value={shipCity} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipCity(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">State</label>
-                    <Input type="text" value={shipState} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipState(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Postal Code</label>
-                    <Input type="text" value={shipZip} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipZip(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Country</label>
-                    <Input type="text" value={shipCountry} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipCountry(e.target.value)} />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {error && <p className="text-red-600">{error}</p>}
+          <Link href="/bags" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+            Continue Shopping
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </Link>
         </div>
 
-        {/* Right summary column */}
-        <div className="lg:col-span-1">
-          <div className="lg:sticky lg:top-24">
-            <Card className="shadow-lg">
-              <CardContent>
-                <h3 className="text-lg font-medium mb-2">Order Summary</h3>
-                <div className="space-y-2 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-x-12">
+          {/* Main Content Column */}
+          <div className="lg:col-span-7 space-y-8">
+
+            {/* Order Items */}
+            <Card className="shadow-premium border-none ring-1 ring-black/5 overflow-hidden">
+              <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                  Order Items
+                </h2>
+                {effectiveBagName && !previewBag && <span className="text-sm text-gray-500 font-medium">{effectiveBagName}</span>}
+                {previewBag && <span className="text-sm text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Quick Order</span>}
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-6">
                   {effectiveItems.map((it, idx) => (
-                    <div key={`sum-${idx}`} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">{it.product.name} x {it.quantity}</span>
-                      <span className="font-medium">Rs. {(Number(it.product.price || 0) * it.quantity).toFixed(2)}</span>
+                    <div key={`${effectiveBagId || 'bag'}-${it.product.id}-${idx}`} className="flex gap-4 group">
+                      <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shadow-sm flex-shrink-0 relative group-hover:ring-2 group-hover:ring-primary/20 transition-all">
+                        {it.product.images?.[0]?.url ? (
+                          <img src={it.product.images[0].url} alt={it.product.images[0].alt || it.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <h3 className="font-semibold text-gray-900 truncate">{it.product.name}</h3>
+                          <button
+                            onClick={() => {
+                              if (previewBag) {
+                                setPreviewBag(null);
+                                // Optional: clear query param?
+                              } else if (bag) {
+                                removeFromBag(bag.id, it.product.id);
+                              }
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                            title="Remove item"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8">
+                            <button
+                              type="button"
+                              className="w-8 h-full flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors rounded-l-lg disabled:opacity-50"
+                              disabled={it.quantity <= 1}
+                              onClick={() => {
+                                const newQty = it.quantity - 1;
+                                if (previewBag) {
+                                  setPreviewBag(prev => prev ? {
+                                    ...prev,
+                                    items: prev.items.map(pi => pi.product.id === it.product.id ? { ...pi, quantity: newQty } : pi)
+                                  } : null);
+                                } else if (bag) {
+                                  updateBagItem(bag.id, it.product.id, newQty);
+                                }
+                              }}
+                            >
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                            </button>
+                            <input
+                              type="number"
+                              className="w-10 text-center text-sm font-medium text-gray-900 border-none p-0 focus:ring-0 appearance-none bg-transparent"
+                              value={it.quantity}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                if (!isNaN(val) && val > 0) {
+                                  if (previewBag) {
+                                    setPreviewBag(prev => prev ? {
+                                      ...prev,
+                                      items: prev.items.map(pi => pi.product.id === it.product.id ? { ...pi, quantity: val } : pi)
+                                    } : null);
+                                  } else if (bag) {
+                                    updateBagItem(bag.id, it.product.id, val);
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="w-8 h-full flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors rounded-r-lg"
+                              onClick={() => {
+                                const newQty = it.quantity + 1;
+                                if (previewBag) {
+                                  setPreviewBag(prev => prev ? {
+                                    ...prev,
+                                    items: prev.items.map(pi => pi.product.id === it.product.id ? { ...pi, quantity: newQty } : pi)
+                                  } : null);
+                                } else if (bag) {
+                                  updateBagItem(bag.id, it.product.id, newQty);
+                                }
+                              }}
+                            >
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                            </button>
+                          </div>
+                          <div className="font-semibold text-gray-900">Rs. {(Number(it.product.price || 0) * it.quantity).toFixed(2)}</div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center border-t pt-3 mb-4">
-                  <span className="text-sm text-gray-600">Total</span>
-                  <span className="text-lg font-semibold">Rs. {total.toFixed(2)}</span>
+                <div className="mt-6 pt-6 border-t border-dashed border-gray-200">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-base font-medium text-gray-600">Subtotal</span>
+                    <span className="text-xl font-bold text-gray-900">Rs. {total.toFixed(2)}</span>
+                  </div>
                 </div>
-
-                <Button variant="ghost" onClick={placeOrder} disabled={submitting || (!useAccountAddress && (!shipName || !shipStreet || !shipCity || !shipZip))} className="w-full">
-                  {submitting ? "Placing..." : "Pay on delivery"}
-                </Button>
               </CardContent>
             </Card>
-            <div className="text-xs text-gray-500 mt-3">
-              By placing an order you agree to our <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.
+
+            {/* Recurring schedule */}
+            <Card className={`shadow-premium border-none ring-1 ring-black/5 transition-all duration-300 ${isRecurring ? 'bg-white' : 'bg-gray-50/50'}`}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      Recurring Order
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">Subscribe and save yourself the hassle of reordering.</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-medium ${isRecurring ? 'text-primary' : 'text-gray-500'}`}>{isRecurring ? 'Enabled' : 'Disabled'}</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className="sr-only peer" />
+                      <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={`grid transition-all duration-300 ease-in-out ${isRecurring ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-50 select-none grayscale'}`}>
+                  <div className="overflow-hidden">
+                    <div className="space-y-8 pt-2">
+                      {/* Dates */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                          <Input
+                            type="date"
+                            value={startDate}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)}
+                            className="bg-white border-gray-200 focus:border-primary focus:ring-primary h-11"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">End Date <span className="text-gray-400 font-normal">(Optional)</span></label>
+                          <Input
+                            type="date"
+                            value={endDate}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)}
+                            className="bg-white border-gray-200 focus:border-primary focus:ring-primary h-11"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Frequency */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Delivery Frequency</label>
+                        <div className="grid grid-cols-3 gap-4">
+                          {[
+                            { label: 'Weekly', val: RRule.WEEKLY, sub: 'Best for groceries' },
+                            { label: 'Monthly', val: RRule.MONTHLY, sub: 'Best for staples' },
+                            { label: 'Daily', val: RRule.DAILY, sub: 'For high usage' }
+                          ].map(opt => (
+                            <button
+                              key={opt.label}
+                              type="button"
+                              onClick={() => setRecurrenceFreq(opt.val)}
+                              className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${recurrenceFreq === opt.val
+                                ? 'border-primary bg-primary/5 text-primary shadow-sm'
+                                : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200 hover:bg-gray-50'}`}
+                            >
+                              <span className="font-semibold">{opt.label}</span>
+                              <span className={`text-xs mt-1 ${recurrenceFreq === opt.val ? 'text-primary/70' : 'text-gray-400'}`}>{opt.sub}</span>
+                              {recurrenceFreq === opt.val && (
+                                <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Interval */}
+                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-center gap-4">
+                        <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Repeat every:</label>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            type="number"
+                            min={1}
+                            value={recurrenceInterval}
+                            onChange={(e) => setRecurrenceInterval(Number(e.target.value))}
+                            className="w-24 text-center h-10 bg-white"
+                          />
+                          <span className="text-sm text-gray-600 font-medium">
+                            {recurrenceFreq === RRule.WEEKLY ? 'Week(s)' : recurrenceFreq === RRule.MONTHLY ? 'Month(s)' : 'Day(s)'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Frequency Specific Options */}
+                      {recurrenceFreq === RRule.WEEKLY && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-3">Deliver on these days</label>
+                          <div className="flex flex-wrap gap-3">
+                            {[
+                              { l: 'Mon', v: RRule.MO },
+                              { l: 'Tue', v: RRule.TU },
+                              { l: 'Wed', v: RRule.WE },
+                              { l: 'Thu', v: RRule.TH },
+                              { l: 'Fri', v: RRule.FR },
+                              { l: 'Sat', v: RRule.SA },
+                              { l: 'Sun', v: RRule.SU },
+                            ].map((d) => (
+                              <button
+                                key={d.l}
+                                type="button"
+                                onClick={() => {
+                                  // types/rrule outdated
+                                  const val = (d.v as any).weekday;
+                                  const isSelected = recurrenceByWeekday.some(w => w === val);
+                                  if (isSelected) {
+                                    setRecurrenceByWeekday(prev => prev.filter(w => w !== val));
+                                  } else {
+                                    setRecurrenceByWeekday(prev => [...prev, val]);
+                                  }
+                                }}
+                                className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all ${recurrenceByWeekday.includes((d.v as any).weekday)
+                                  ? 'bg-primary text-white shadow-md shadow-primary/25 scale-105'
+                                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                                  }`}
+                              >
+                                {d.l}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                        <div>
+                          <MultiDateSelector
+                            label="Extra Include Dates"
+                            helperText="Add specific dates for extra one-off deliveries"
+                            values={includeDates}
+                            onChange={setIncludeDates}
+                          />
+                        </div>
+                        <div>
+                          <MultiDateSelector
+                            label="Exclude Dates"
+                            helperText="Skip specific dates (holidays, vacation)"
+                            values={excludeDates}
+                            onChange={setExcludeDates}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                        <textarea
+                          className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none shadow-sm"
+                          rows={3}
+                          placeholder="Any special instructions for the recurring schedule?"
+                          value={recurrenceNotes}
+                          onChange={(e) => setRecurrenceNotes(e.target.value)}
+                        />
+                      </div>
+
+                      {/* Preview Box */}
+                      <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+                        <div className="flex items-center justify-between">
+                          <button
+                            type="button"
+                            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                            onClick={() => {
+                              try {
+                                const rule = new RRule({
+                                  freq: recurrenceFreq,
+                                  interval: recurrenceInterval,
+                                  byweekday: recurrenceFreq === RRule.WEEKLY ? recurrenceByWeekday.map(d => d) : undefined,
+                                  dtstart: new Date(startDate || new Date()),
+                                  until: endDate ? new Date(endDate) : undefined,
+                                });
+                                const next = rule.after(new Date());
+                                setNextPreview(next ? next.toISOString() : 'No upcoming date found');
+                              } catch (e) { console.error(e); setNextPreview('Check configuration'); }
+                            }}
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Refresh Preview
+                          </button>
+                          {nextPreview && (
+                            <div className="text-sm">
+                              Next delivery expected: <span className="font-bold text-gray-900">{nextPreview.includes('-') ? new Date(nextPreview).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : nextPreview}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Delivery address */}
+            <Card className="shadow-premium border-none ring-1 ring-black/5">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      Delivery Address
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">Where should we send your order?</p>
+                  </div>
+                  <label className="inline-flex items-center gap-2 text-sm bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                    <input type="checkbox" checked={useAccountAddress} onChange={(e) => setUseAccountAddress(e.target.checked)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                    Use account address
+                  </label>
+                </div>
+
+                {!useAccountAddress && (
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-up">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Recipient Name</label>
+                      <Input type="text" value={shipName} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipName(e.target.value)} className="h-11" placeholder="John Doe" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <Input type="text" value={shipPhone} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipPhone(e.target.value)} className="h-11" placeholder="+94 77 123 4567" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                      <Input type="text" value={shipStreet} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipStreet(e.target.value)} className="h-11" placeholder="123 Main St, Apt 4B" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <Input type="text" value={shipCity} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipCity(e.target.value)} className="h-11" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">State / Province</label>
+                        <Input type="text" value={shipState} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipState(e.target.value)} className="h-11" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                        <Input type="text" value={shipZip} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipZip(e.target.value)} className="h-11" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                        <Input type="text" value={shipCountry} onChange={(e: ChangeEvent<HTMLInputElement>) => setShipCountry(e.target.value)} className="h-11" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {useAccountAddress && (
+                  <div className="mt-4 p-4 bg-gray-50 border border-gray-100 rounded-lg flex gap-4 text-sm text-gray-600">
+                    <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div>
+                      <p className="font-medium text-gray-900">Using Registered Address</p>
+                      <p className="mt-1">{user?.registrationAddress?.recipientName || user?.firstName}</p>
+                      <p>{user?.registrationAddress?.streetAddress} {user?.registrationAddress?.city}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {error && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-center gap-3 text-red-700 animate-fade-up">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="font-medium">{error}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Right summary column */}
+          <div className="lg:col-span-5 relative">
+            <div className="lg:sticky lg:top-8 space-y-6">
+              <Card className="shadow-premium-lg border-none ring-1 ring-black/5 overflow-hidden">
+                <div className="bg-primary/5 px-6 py-4 border-b border-primary/10 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-primary">Order Summary</h3>
+                  <svg className="w-5 h-5 text-primary/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-4 mb-6">
+                    {effectiveItems.map((it, idx) => (
+                      <div key={`sum-${idx}`} className="flex items-center justify-between text-sm group">
+                        <span className="text-gray-600 group-hover:text-gray-900 transition-colors max-w-[70%] truncate">{it.quantity} x {it.product.name}</span>
+                        <span className="font-medium text-gray-900">Rs. {(Number(it.product.price || 0) * it.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    <div className="pt-4 mt-4 border-t border-dashed border-gray-200 space-y-2">
+                      <div className="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span>Rs. {total.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Delivery</span>
+                        <span className="text-emerald-600 font-medium">Free</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-gray-100 pt-4 mb-6">
+                    <div>
+                      <span className="text-sm text-gray-500">Total Amount</span>
+                      <div className="text-2xl font-bold text-gray-900">Rs. {total.toFixed(2)}</div>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="lg"
+                    onClick={placeOrder}
+                    disabled={submitting || (!useAccountAddress && (!shipName || !shipStreet || !shipCity || !shipZip))}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-14 text-lg shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all rounded-xl"
+                  >
+                    {submitting ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Processing...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        Place Order (Cash on Delivery)
+                        <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                      </span>
+                    )}
+                  </Button>
+
+                  <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    Secure Checkout
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="text-center">
+                <p className="text-xs text-gray-500">
+                  By placing an order you agree to our <Link href="/terms" className="underline hover:text-gray-800">Terms</Link> and <Link href="/privacy" className="underline hover:text-gray-800">Privacy Policy</Link>.
+                </p>
+              </div>
             </div>
           </div>
         </div>

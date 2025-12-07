@@ -115,31 +115,37 @@ export function Navbar() {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       {/* Top announcement bar */}
-      <div className="bg-green-50 border-b border-green-100">
-        <div className="container mx-auto px-4 py-2">
+      <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-b border-emerald-100/50">
+        <div className="container mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-3 min-w-0">
-              <div className="flex items-center text-green-800 shrink-0">
-                <MapPin className="w-4 h-4 mr-2" aria-hidden />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100/50 text-emerald-700 shrink-0">
+                <MapPin className="w-4 h-4" aria-hidden />
               </div>
-              <div className="flex-1 truncate text-green-800 font-medium">
-                <span className="block truncate">Delivering around Colombo</span>
-                <span className="block text-xs text-green-700 font-normal">
-                  Scheduled delivery available — choose your preferred slot at
-                  checkout
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-900 tracking-tight leading-none flex items-center gap-2">
+                  Delivering around Colombo
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider">Now Active</span>
+                </span>
+                <span className="text-xs text-emerald-600/80 font-medium truncate mt-0.5">
+                  Scheduled delivery available — choose slot at checkout
                 </span>
               </div>
             </div>
-            <div className="hidden md:flex items-center space-x-4 text-gray-600">
-              <Link href="/help" className="hover:text-green-600">
-                Help
+
+            <div className="hidden md:flex items-center gap-6">
+              <Link href="/help" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-emerald-700 transition-colors uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-emerald-500 transition-colors"></span>
+                Help Center
               </Link>
-              <Link href="/about" className="hover:text-green-600">
+              <Link href="/about" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-emerald-700 transition-colors uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-emerald-500 transition-colors"></span>
                 About Us
               </Link>
             </div>
-            <div className="flex md:hidden items-center text-green-700 ml-4">
-              <span className="text-xs font-medium">Scheduled delivery</span>
+
+            <div className="flex md:hidden items-center text-emerald-700 ml-4">
+              <span className="text-xs font-semibold bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">Delivery Available</span>
             </div>
           </div>
         </div>
@@ -157,7 +163,7 @@ export function Navbar() {
               height={180}
               className="text-green-600"
             />
-          
+
           </Link>
 
           {/* Search bar - Desktop (improved spacing & visuals) */}
