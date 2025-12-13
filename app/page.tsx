@@ -61,7 +61,7 @@ type UiCategory = { name: string; slug: string; imageUrl?: string; description?:
 export default function Home() {
   // Cached products fetching
   const { data: productsData } = useLocalStorageCache<Product[]>(
-    "home_products",
+    "home_products_v2",
     async () => {
       const response = await fetch("/api/products");
       if (!response.ok) return [];
@@ -73,7 +73,7 @@ export default function Home() {
 
   // Cached categories fetching
   const { data: categoriesData } = useLocalStorageCache<UiCategory[]>(
-    "home_categories",
+    "home_categories_v2",
     async () => {
       const res = await fetch("/api/categories");
       if (!res.ok) return [];
