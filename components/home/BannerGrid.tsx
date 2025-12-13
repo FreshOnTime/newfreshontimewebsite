@@ -16,26 +16,28 @@ export default function BannerGrid() {
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {banners.map((b) => (
-            <Link key={b.title} href={b.href} className="group relative h-64 rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+            <Link key={b.title} href={b.href} className="group relative h-72 rounded-[2rem] overflow-hidden bg-zinc-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
               <Image
                 src={b.image}
                 alt={b.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className={`absolute inset-0 bg-gradient-to-t ${b.accent} via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity`} />
-              <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-white/95 via-white/80 to-transparent backdrop-blur-[2px]">
-                <p className={`text-xs font-bold tracking-wider uppercase mb-1 ${b.textAccent}`}>{b.sub}</p>
-                <h3 className="text-gray-900 text-xl font-bold leading-tight mb-2 group-hover:text-emerald-700 transition-colors">{b.title}</h3>
-                <span className="inline-flex items-center text-sm font-medium text-gray-700 group-hover:translate-x-1 transition-transform">
-                  Shop now
-                  <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+              <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                <p className="text-xs font-bold tracking-widest uppercase mb-2 text-emerald-400 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  {b.sub}
+                </p>
+                <h3 className="text-white text-2xl font-serif font-bold leading-tight mb-4 group-hover:translate-x-1 transition-transform duration-500">{b.title}</h3>
+                <span className="inline-flex items-center text-sm font-medium text-white/90 group-hover:text-white group-hover:translate-x-1 transition-all">
+                  Shop Collection
+                  <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </span>
               </div>
             </Link>
           ))}
         </div>
-      </div>
-    </section>
+      </div >
+    </section >
   );
 }

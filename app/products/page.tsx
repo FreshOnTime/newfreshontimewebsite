@@ -1,6 +1,7 @@
 import ProductGrid from "@/components/products/ProductGrid";
-import SectionHeader from "@/components/home/SectionHeader";
-import { PageContainer } from "@/components/templates/PageContainer";
+// import SectionHeader from "@/components/home/SectionHeader"; 
+// import { PageContainer } from "@/components/templates/PageContainer";
+import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import ProductsFilterBar from "@/components/products/ProductsFilterBar";
 import ProductsPagination from "@/components/products/ProductsPagination";
 
@@ -97,18 +98,18 @@ async function getProducts(query: string) {
       const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
       const unitOptions = Array.isArray(maybeUnitOptions)
         ? maybeUnitOptions
-            .map((opt) => {
-              const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
-              const unit = typeof o.unit === 'string' && ['g','kg','ml','l','ea','lb'].includes(o.unit)
-                ? (o.unit as 'g'|'kg'|'ml'|'l'|'ea'|'lb')
-                : undefined;
-              const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
-              const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
-              const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
-              if (!unit || !quantity || price === undefined) return null;
-              return { label: label || `${quantity}${unit}`, quantity, unit, price };
-            })
-            .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g'|'kg'|'ml'|'l'|'ea'|'lb'; price: number }>
+          .map((opt) => {
+            const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
+            const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
+              ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
+              : undefined;
+            const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
+            const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
+            const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
+            if (!unit || !quantity || price === undefined) return null;
+            return { label: label || `${quantity}${unit}`, quantity, unit, price };
+          })
+          .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
         : undefined;
       const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
 
@@ -119,9 +120,9 @@ async function getProducts(query: string) {
         description: product.description || '',
         category: categoryIdValue
           ? (() => {
-              const meta = categoryMap.get(categoryIdValue);
-              return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
-            })()
+            const meta = categoryMap.get(categoryIdValue);
+            return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
+          })()
           : undefined,
         baseMeasurementQuantity: 1,
         pricePerBaseQuantity: Number(product.price ?? 0),
@@ -203,7 +204,7 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
   const spObj = await searchParams;
   // Normalize to query string
   const sp = new URLSearchParams();
-  const allowed = ['search','categoryId','supplierId','minPrice','maxPrice','inStock','sort','page','limit'];
+  const allowed = ['search', 'categoryId', 'supplierId', 'minPrice', 'maxPrice', 'inStock', 'sort', 'page', 'limit'];
   for (const key of allowed) {
     const val = spObj[key];
     if (Array.isArray(val)) {
@@ -217,29 +218,47 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
   const end = pagination.total === 0 ? 0 : start + products.length - 1;
 
   return (
-    <PageContainer>
-      <SectionHeader
+    <>
+      <PremiumPageHeader
         title="All Products"
-        subtitle="Explore our complete range of fresh groceries"
+        subtitle="Explore our curated selection of premium groceries, fresh from the source to your table."
+        backgroundImage="https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=2670&auto=format&fit=crop"
+        count={pagination.total}
       />
-      <ProductsFilterBar />
-      {pagination.total > 0 && (
-        <div className="mb-4 text-sm text-muted-foreground">
-          Showing {start}-{end} of {pagination.total} products
+      <div className="container mx-auto px-4 md:px-8 pb-24">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Sticky Filter Sidebar (Desktop) would go here if we separate it, 
+                 for now assuming ProductsFilterBar handles it or is a top bar. 
+                 Based on file name it seems like a bar. Let's keep it simple first. */}
+
+          <div className="w-full space-y-8">
+            <ProductsFilterBar />
+
+            {pagination.total > 0 && (
+              <div className="flex items-center justify-between text-sm text-zinc-500 border-b border-zinc-100 pb-4">
+                <span>Showing {start}-{end} of {pagination.total} products</span>
+                {/* Add sort dropdown here if distinct from filter bar later */}
+              </div>
+            )}
+
+            <ProductGrid products={products} />
+
+            {products.length > 0 && (
+              <div className="pt-12 border-t border-zinc-100">
+                <ProductsPagination
+                  page={pagination.page}
+                  limit={pagination.limit}
+                  total={pagination.total}
+                  currentCount={products.length}
+                  hasPrev={pagination.hasPrev}
+                  hasNext={pagination.hasNext}
+                  totalPages={pagination.totalPages}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      )}
-      <ProductGrid products={products} />
-      {products.length > 0 && (
-        <ProductsPagination
-          page={pagination.page}
-          limit={pagination.limit}
-          total={pagination.total}
-          currentCount={products.length}
-          hasPrev={pagination.hasPrev}
-          hasNext={pagination.hasNext}
-          totalPages={pagination.totalPages}
-        />
-      )}
-    </PageContainer>
+      </div>
+    </>
   );
 }

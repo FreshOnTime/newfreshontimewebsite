@@ -8,7 +8,7 @@ import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? Math.max(parseInt(v), 1) : 1)),
   limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),
-  resourceType: z.enum(['user','customer','supplier','category','product','order','auth']).optional(),
+  resourceType: z.enum(['user', 'customer', 'supplier', 'category', 'product', 'order', 'auth']).optional(),
   action: z.string().optional(),
   userId: z.string().optional(),
   from: z.string().datetime().optional(),
@@ -54,12 +54,12 @@ export const GET = requireAdminSimple(async (request) => {
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-  const filter: Record<string, unknown> = {};
+    const filter: Record<string, any> = {};
     if (query.resourceType) filter.resourceType = query.resourceType;
     if (query.action) filter.action = { $regex: query.action, $options: 'i' };
     if (query.userId) filter.userId = query.userId;
 
-  const timeRange: Record<string, unknown> = {};
+    const timeRange: Record<string, unknown> = {};
     if (query.from) timeRange.$gte = new Date(query.from);
     if (query.to) timeRange.$lte = new Date(query.to);
     if (Object.keys(timeRange).length) filter.timestamp = timeRange;

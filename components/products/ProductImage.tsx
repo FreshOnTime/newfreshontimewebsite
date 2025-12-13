@@ -1,15 +1,28 @@
 import Image from "next/image";
 
 function ProductImage({ src, alt }: { src: string; alt: string }) {
+  if (!src) {
+    return (
+      <div className="relative aspect-square overflow-hidden bg-zinc-50">
+        <Image
+          src="https://images.unsplash.com/photo-1588964895597-a2dd25035548?q=80&w=2574&auto=format&fit=crop"
+          alt="Fresh product"
+          fill
+          className="object-cover transition-transform duration-700 hover:scale-110 opacity-90 grayscale-[0.2] hover:grayscale-0"
+          sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 300px"
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="relative aspect-square overflow-hidden bg-zinc-50">
       <Image
-        src={src || "/placeholder.svg"}
+        src={src}
         alt={alt}
         fill
-        className="object-cover transition-transform duration-500 hover:scale-110"
+        className="object-cover transition-transform duration-700 hover:scale-110"
         sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 300px"
-        priority
       />
     </div>
   );

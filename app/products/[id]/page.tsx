@@ -16,7 +16,7 @@ import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct'
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
-  console.log('ProductPage - getProduct id:', id);
+    console.log('ProductPage - getProduct id:', id);
     await connectDB();
     // Support finding by _id, sku or slug in the DB
     const mongoose = await import('mongoose');
@@ -37,24 +37,25 @@ async function getProduct(id: string): Promise<Product | null> {
       try {
         const cat = await Category.findById(p.categoryId).select('name slug').lean() as { name?: string; slug?: string } | null;
         if (cat) categoryMeta = { id: String(p.categoryId), name: cat.name || '', slug: cat.slug || '' };
-      } catch {}
+      } catch { }
     }
 
     const attrs = p.attributes || {};
     const maybeUnitOptions = attrs.unitOptions;
     const unitOptions = Array.isArray(maybeUnitOptions)
       ? maybeUnitOptions
-          .map((o: { unit?: string; quantity?: number; price?: number; label?: string }) => {
-            const unit = typeof o.unit === 'string' && ['g','kg','ml','l','ea','lb'].includes(o.unit) ? o.unit : undefined;
-            const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
-            const price = typeof o.price === 'number' ? o.price : undefined;
-            if (!unit || !quantity || price === undefined) return null;
-            return { label: o.label || `${quantity}${unit}`, quantity, unit, price };
-          })
-          .filter(Boolean)
+        .map((o: { unit?: string; quantity?: number; price?: number; label?: string }) => {
+          const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit) ? o.unit : undefined;
+          const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
+          const price = typeof o.price === 'number' ? o.price : undefined;
+          if (!unit || !quantity || price === undefined) return null;
+          return { label: o.label || `${quantity}${unit}`, quantity, unit, price };
+        })
+        .filter(Boolean)
       : undefined;
 
     const product = {
+      _id: String(p._id),
       sku: String(p.sku || p._id),
       name: p.name || '',
       image: {
@@ -121,66 +122,74 @@ export default async function ProductPage({
 
   const pricePerBaseQuantityWithDiscount = product.discountPercentage
     ? product.pricePerBaseQuantity -
-      (product.pricePerBaseQuantity * (product.discountPercentage || 0)) / 100
+    (product.pricePerBaseQuantity * (product.discountPercentage || 0)) / 100
     : product.pricePerBaseQuantity;
   const pricePerMeasurement =
     pricePerBaseQuantityWithDiscount / product.baseMeasurementQuantity;
 
   return (
-    <PageContainer>
-      <div className="grid gap-8 md:grid-cols-12">
-        <div className="md:col-span-6">
-          <ProductImage src={product.image.url} alt={product.name} />
-        </div>
-        <div className="flex md:col-span-6 flex-col space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {product.name}
-            </h1>
-            {product.category?.slug && (
-              <div className="text-sm text-gray-600">
-                Category: <Link href={`/categories/${product.category.slug}`} className="text-green-600 hover:underline">{product.category.name || 'View'}</Link>
-              </div>
-            )}
-            <div className="space-y-1">
-              <p className="text-xl font-semibold text-gray-900">
-                Rs. {pricePerBaseQuantityWithDiscount.toFixed(2)}
-                {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
-                  <span className="text-lg text-gray-600">
-                    /{product.baseMeasurementQuantity}
-                    {product.measurementUnit}
-                  </span>
-                )}
-                {product.discountPercentage && (
-                  <span className="ml-2 text-lg text-gray-500 line-through">
-                    Rs. {product.pricePerBaseQuantity.toFixed(2)}
-                  </span>
-                )}
-              </p>
-              {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
-                <p className="text-sm text-gray-600">
-                  Rs. {pricePerMeasurement.toFixed(2)}/{product.measurementUnit}
-                </p>
-              )}
+    <div className="bg-white min-h-screen pb-20 pt-32 md:pt-40">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="grid gap-12 lg:gap-24 md:grid-cols-12 items-start">
+          <div className="md:col-span-6 lg:col-span-7 sticky top-32">
+            <div className="border-0 rounded-[3rem] overflow-hidden bg-zinc-50 shadow-sm ring-1 ring-zinc-100">
+              <ProductImage src={product.image.url} alt={product.name} />
             </div>
           </div>
-          <Separator />
+          <div className="md:col-span-6 lg:col-span-5 flex flex-col space-y-8 animate-fade-up">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium uppercase tracking-wider">
+                {product.category?.slug && (
+                  <Link href={`/categories/${product.category.slug}`} className="hover:text-emerald-800 transition-colors">
+                    {product.category.name}
+                  </Link>
+                )}
+                <span>•</span>
+                <span>{product.sku}</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 leading-tight">
+                {product.name}
+              </h1>
+              <div className="space-y-1">
+                <p className="text-xl font-semibold text-gray-900">
+                  Rs. {pricePerBaseQuantityWithDiscount.toFixed(2)}
+                  {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
+                    <span className="text-lg text-gray-600">
+                      /{product.baseMeasurementQuantity}
+                      {product.measurementUnit}
+                    </span>
+                  )}
+                  {product.discountPercentage && (
+                    <span className="ml-2 text-lg text-gray-500 line-through">
+                      Rs. {product.pricePerBaseQuantity.toFixed(2)}
+                    </span>
+                  )}
+                </p>
+                {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
+                  <p className="text-sm text-gray-600">
+                    Rs. {pricePerMeasurement.toFixed(2)}/{product.measurementUnit}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Separator />
 
-          <div className="space-y-4">
-            {product.description && (
-              <Suspense fallback={<div className="text-gray-600">Loading...</div>}>
-                <Markdown
-                  rehypePlugins={[rehypeSanitize]}
-                  className="text-gray-600 leading-relaxed prose"
-                >
-                  {product.description}
-                </Markdown>
-              </Suspense>
-            )}
-            <ProductControls product={product} />
+            <div className="space-y-4">
+              {product.description && (
+                <Suspense fallback={<div className="text-gray-600">Loading...</div>}>
+                  <Markdown
+                    rehypePlugins={[rehypeSanitize]}
+                    className="text-gray-600 leading-relaxed prose"
+                  >
+                    {product.description}
+                  </Markdown>
+                </Suspense>
+              )}
+              <ProductControls product={product} />
+            </div>
           </div>
         </div>
       </div>
-    </PageContainer>
+    </div>
   );
 }

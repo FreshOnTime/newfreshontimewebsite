@@ -20,18 +20,19 @@ const updateCustomerSchema = z.object({
 });
 
 // GET /api/admin/customers/[id]
-export const GET = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   try {
     await connectDB();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid customer ID' },
         { status: 400 }
       );
     }
 
-    const customer = await Customer.findById(params.id);
+    const customer = await Customer.findById(id);
     if (!customer) {
       return NextResponse.json(
         { error: 'Customer not found' },
@@ -50,11 +51,12 @@ export const GET = requireAdmin(async (request, { params }: { params: { id: stri
 });
 
 // PUT /api/admin/customers/[id]
-export const PUT = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   try {
     await connectDB();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid customer ID' },
         { status: 400 }
@@ -65,7 +67,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
     const data = updateCustomerSchema.parse(body);
 
     // Get original customer for audit log
-    const originalCustomer = await Customer.findById(params.id);
+    const originalCustomer = await Customer.findById(id);
     if (!originalCustomer) {
       return NextResponse.json(
         { error: 'Customer not found' },
@@ -75,9 +77,9 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
 
     // Check if email already exists (if being updated)
     if (data.email && data.email !== originalCustomer.email) {
-      const existingCustomer = await Customer.findOne({ 
-        email: data.email, 
-        _id: { $ne: params.id } 
+      const existingCustomer = await Customer.findOne({
+        email: data.email,
+        _id: { $ne: id }
       });
       if (existingCustomer) {
         return NextResponse.json(
@@ -89,7 +91,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
 
     // Update customer
     const updatedCustomer = await Customer.findByIdAndUpdate(
-      params.id,
+      id,
       { $set: data },
       { new: true, runValidators: true }
     );
@@ -99,7 +101,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
       request.user!.userId,
       'update',
       'customer',
-      params.id,
+      id,
       originalCustomer.toObject(),
       updatedCustomer!.toObject(),
       request
@@ -123,11 +125,12 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
 });
 
 // DELETE /api/admin/customers/[id]
-export const DELETE = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   try {
     await connectDB();
 
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid customer ID' },
         { status: 400 }
@@ -135,7 +138,7 @@ export const DELETE = requireAdmin(async (request, { params }: { params: { id: s
     }
 
     // Get customer for audit log
-    const customer = await Customer.findById(params.id);
+    const customer = await Customer.findById(id);
     if (!customer) {
       return NextResponse.json(
         { error: 'Customer not found' },
@@ -144,14 +147,14 @@ export const DELETE = requireAdmin(async (request, { params }: { params: { id: s
     }
 
     // Delete customer
-    await Customer.findByIdAndDelete(params.id);
+    await Customer.findByIdAndDelete(id);
 
     // Log audit action
     await logAuditAction(
       request.user!.userId,
       'delete',
       'customer',
-      params.id,
+      id,
       customer.toObject(),
       undefined,
       request

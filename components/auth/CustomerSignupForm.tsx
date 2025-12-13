@@ -82,79 +82,98 @@ export function CustomerSignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Create a Customer Account</CardTitle>
-        <CardDescription>Sign up to start shopping</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="w-full min-h-screen grid lg:grid-cols-2 bg-white dark:bg-zinc-900">
+      {/* Left Side - Visual */}
+      <div className="relative hidden lg:block h-full bg-zinc-900 sticky top-0 h-screen">
+        <div className="absolute inset-0 bg-[url('/bgs/landing-page-bg-1.jpg')] bg-cover bg-center opacity-60 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="relative h-full flex flex-col justify-end p-16 text-white">
+          <h2 className="text-5xl font-serif font-bold mb-6">
+            Join <span className="text-emerald-400">Fresh On Time</span>
+          </h2>
+          <p className="text-zinc-300 text-xl leading-relaxed max-w-md">
+            Create your customer account to unlock exclusive deals, track your orders, and schedule fresh deliveries.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - Form */}
+      <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 w-full max-w-2xl mx-auto">
+        <div className="mb-8 text-center lg:text-left">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Create Account</h1>
+          <p className="text-zinc-500 dark:text-zinc-400">Fill in your details to get started.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
-              <Input id="firstName" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} required />
+              <Label htmlFor="firstName" className="text-zinc-700 dark:text-zinc-300">First Name *</Label>
+              <Input id="firstName" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
+              <Label htmlFor="lastName" className="text-zinc-700 dark:text-zinc-300">Last Name</Label>
+              <Input id="lastName" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+              <Label htmlFor="email" className="text-zinc-700 dark:text-zinc-300">Email</Label>
+              <Input id="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number *</Label>
-              <Input id="phone" value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required />
+              <Label htmlFor="phone" className="text-zinc-700 dark:text-zinc-300">Phone Number *</Label>
+              <Input id="phone" value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <Input id="password" type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required />
+              <Label htmlFor="password" className="text-zinc-700 dark:text-zinc-300">Password *</Label>
+              <Input id="password" type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password *</Label>
-              <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required />
+              <Label htmlFor="confirmPassword" className="text-zinc-700 dark:text-zinc-300">Confirm Password *</Label>
+              <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
             </div>
           </div>
 
-          <div className="border-t pt-4">
-            <h3 className="text-lg font-medium mb-3">Address</h3>
+          <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+            <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-4">Delivery Address</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="addressLine1">Address Line 1 *</Label>
-                <Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required />
+                <Label htmlFor="addressLine1" className="text-zinc-700 dark:text-zinc-300">Address Line 1 *</Label>
+                <Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
-                  <Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required />
+                  <Label htmlFor="city" className="text-zinc-700 dark:text-zinc-300">City *</Label>
+                  <Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="province">Province *</Label>
-                  <Input id="province" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required />
+                  <Label htmlFor="province" className="text-zinc-700 dark:text-zinc-300">Province *</Label>
+                  <Input id="province" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal Code *</Label>
-                <Input id="postalCode" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required />
+                <Label htmlFor="postalCode" className="text-zinc-700 dark:text-zinc-300">Postal Code *</Label>
+                <Input id="postalCode" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required className="bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 focus:ring-emerald-500 rounded-xl" />
               </div>
             </div>
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full">{isLoading ? 'Registering…' : 'Register'}</Button>
-          {serverError && <p className="text-sm text-red-600 mt-2">{serverError}</p>}
+          <Button type="submit" disabled={isLoading} className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02]">
+            {isLoading ? 'Registering...' : 'Complete Registration'}
+          </Button>
+
+          {serverError && <p className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-lg">{serverError}</p>}
           {fieldErrors && Object.keys(fieldErrors).map((k) => (
-            <div key={k} className="text-sm text-red-600">
+            <div key={k} className="text-sm text-red-600 text-center">
               {k}: {fieldErrors[k].join(', ')}
             </div>
           ))}
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

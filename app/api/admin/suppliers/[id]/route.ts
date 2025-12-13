@@ -22,13 +22,14 @@ const updateSchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-export const GET = requireAdmin(async (_request, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (_request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid supplier ID' }, { status: 400 });
     }
-    const supplier = await Supplier.findById(params.id);
+    const supplier = await Supplier.findById(id);
     if (!supplier) {
       return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
@@ -39,27 +40,28 @@ export const GET = requireAdmin(async (_request, { params }: { params: { id: str
   }
 });
 
-export const PUT = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid supplier ID' }, { status: 400 });
     }
     const body = await request.json();
     const data = updateSchema.parse(body);
-    const before = await Supplier.findById(params.id);
+    const before = await Supplier.findById(id);
     if (!before) {
       return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
     // Ensure unique email if changed
     if (data.email && data.email !== before.email) {
-      const exists = await Supplier.findOne({ email: data.email, _id: { $ne: params.id } });
+      const exists = await Supplier.findOne({ email: data.email, _id: { $ne: id } });
       if (exists) {
         return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
       }
     }
-    const updated = await Supplier.findByIdAndUpdate(params.id, { $set: data }, { new: true, runValidators: true });
-    await logAuditAction(request.user!.userId, 'update', 'supplier', params.id, before.toObject(), updated!.toObject(), request);
+    const updated = await Supplier.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
+    await logAuditAction(request.user!.userId, 'update', 'supplier', id, before.toObject(), updated!.toObject(), request);
     return NextResponse.json({ supplier: updated });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -70,18 +72,19 @@ export const PUT = requireAdmin(async (request, { params }: { params: { id: stri
   }
 });
 
-export const DELETE = requireAdmin(async (request, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   try {
     await connectDB();
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid supplier ID' }, { status: 400 });
     }
-    const before = await Supplier.findById(params.id);
+    const before = await Supplier.findById(id);
     if (!before) {
       return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
-    await Supplier.findByIdAndDelete(params.id);
-    await logAuditAction(request.user!.userId, 'delete', 'supplier', params.id, before.toObject(), undefined, request);
+    await Supplier.findByIdAndDelete(id);
+    await logAuditAction(request.user!.userId, 'delete', 'supplier', id, before.toObject(), undefined, request);
     return NextResponse.json({ message: 'Supplier deleted' });
   } catch (error) {
     console.error('Delete supplier error:', error);

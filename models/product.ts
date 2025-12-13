@@ -1,6 +1,7 @@
 import { Image } from "./image";
 
 export interface Product {
+  _id?: string; // Mongo ID
   sku: string;
   name: string;
   image: Image;

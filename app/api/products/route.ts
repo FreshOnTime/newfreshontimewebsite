@@ -10,16 +10,16 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
 
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '12');
-  const search = searchParams.get('search');
-  const categoryId = searchParams.get('categoryId');
-  const supplierId = searchParams.get('supplierId');
-  const archivedParam = searchParams.get('archived');
-  const minPriceParam = searchParams.get('minPrice');
-  const maxPriceParam = searchParams.get('maxPrice');
-  const inStockParam = searchParams.get('inStock');
-  const sortParam = searchParams.get('sort'); // 'price-asc' | 'price-desc' | 'newest' | 'oldest'
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12');
+    const search = searchParams.get('search');
+    const categoryId = searchParams.get('categoryId');
+    const supplierId = searchParams.get('supplierId');
+    const archivedParam = searchParams.get('archived');
+    const minPriceParam = searchParams.get('minPrice');
+    const maxPriceParam = searchParams.get('maxPrice');
+    const inStockParam = searchParams.get('inStock');
+    const sortParam = searchParams.get('sort'); // 'price-asc' | 'price-desc' | 'newest' | 'oldest'
 
     const filter: Record<string, unknown> = {};
     // Only non-archived by default
@@ -85,8 +85,8 @@ export async function GET(req: NextRequest) {
     );
     const categories = categoryIds.length
       ? await Category.find({ _id: { $in: categoryIds } })
-          .select('name slug')
-          .lean()
+        .select('name slug')
+        .lean()
       : [];
     const categoryMap = new Map<string, { name: string; slug: string }>();
     for (const c of categories as Array<{ _id: unknown; name?: string; slug?: string }>) {
@@ -105,58 +105,59 @@ export async function GET(req: NextRequest) {
       const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
       const unitOptions = Array.isArray(maybeUnitOptions)
         ? maybeUnitOptions
-            .map((opt) => {
-              const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
-              const unit = typeof o.unit === 'string' && ['g','kg','ml','l','ea','lb'].includes(o.unit)
-                ? (o.unit as 'g'|'kg'|'ml'|'l'|'ea'|'lb')
-                : undefined;
-              const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
-              const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
-              const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
-              if (!unit || !quantity || price === undefined) return null;
-              return { label: label || `${quantity}${unit}`, quantity, unit, price };
-            })
-            .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g'|'kg'|'ml'|'l'|'ea'|'lb'; price: number }>
+          .map((opt) => {
+            const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
+            const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
+              ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
+              : undefined;
+            const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
+            const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
+            const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
+            if (!unit || !quantity || price === undefined) return null;
+            return { label: label || `${quantity}${unit}`, quantity, unit, price };
+          })
+          .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
         : undefined;
-  return ({
-      sku: String(p.sku || p._id),
-      name: p.name || '',
-      image: {
-        url: String(img),
-        filename: '',
-        contentType: '',
-        path: String(img),
-        alt: p.name || undefined,
-      },
-  description: (p as unknown as { description?: string }).description || '',
-  category: (p as unknown as { categoryId?: unknown }).categoryId
-        ? (() => {
+      return ({
+        _id: String(p._id), // Ensure _id is passed to frontend
+        sku: String(p.sku || p._id),
+        name: p.name || '',
+        image: {
+          url: String(img),
+          filename: '',
+          contentType: '',
+          path: String(img),
+          alt: p.name || undefined,
+        },
+        description: (p as unknown as { description?: string }).description || '',
+        category: (p as unknown as { categoryId?: unknown }).categoryId
+          ? (() => {
             const id = String((p as unknown as { categoryId?: unknown }).categoryId);
             const meta = categoryMap.get(id);
             return { id, name: meta?.name || '', slug: meta?.slug || '' };
           })()
-        : undefined,
-      // EnhancedProduct does not track measurements; default to each item
-      baseMeasurementQuantity: 1,
-      pricePerBaseQuantity: Number(p.price ?? 0),
-  measurementUnit: 'ea',
-      isSoldAsUnit: true,
-      minOrderQuantity: 1,
-      maxOrderQuantity: 9999,
-      stepQuantity: 1,
-      stockQuantity: Number(p.stockQty ?? 0),
-      isOutOfStock: Number(p.stockQty ?? 0) <= 0,
-      totalSales: 0,
-      isFeatured: false,
-      discountPercentage: 0,
-      lowStockThreshold: Number(p.minStockLevel ?? 0),
-      createdAt: p.createdAt as unknown as Date | undefined,
-      createdBy: undefined,
-      updatedAt: p.updatedAt as unknown as Date | undefined,
-      updatedBy: undefined,
-      ingredients: undefined,
-  nutritionFacts: undefined,
-  unitOptions,
+          : undefined,
+        // EnhancedProduct does not track measurements; default to each item
+        baseMeasurementQuantity: 1,
+        pricePerBaseQuantity: Number(p.price ?? 0),
+        measurementUnit: 'ea',
+        isSoldAsUnit: true,
+        minOrderQuantity: 1,
+        maxOrderQuantity: 9999,
+        stepQuantity: 1,
+        stockQuantity: Number(p.stockQty ?? 0),
+        isOutOfStock: Number(p.stockQty ?? 0) <= 0,
+        totalSales: 0,
+        isFeatured: false,
+        discountPercentage: 0,
+        lowStockThreshold: Number(p.minStockLevel ?? 0),
+        createdAt: p.createdAt as unknown as Date | undefined,
+        createdBy: undefined,
+        updatedAt: p.updatedAt as unknown as Date | undefined,
+        updatedBy: undefined,
+        ingredients: undefined,
+        nutritionFacts: undefined,
+        unitOptions,
       });
     });
     return NextResponse.json({

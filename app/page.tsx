@@ -29,6 +29,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 import BannerGrid from "@/components/home/BannerGrid";
 import FeaturesStrip from "@/components/home/FeaturesStrip";
+import InfiniteMarquee from "@/components/ui/infinite-marquee";
+import CategoryBento from "@/components/home/CategoryBento";
 
 import Testimonials from "@/components/home/Testimonials";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
@@ -61,7 +63,7 @@ type UiCategory = { name: string; slug: string; imageUrl?: string; description?:
 export default function Home() {
   // Cached products fetching
   const { data: productsData } = useLocalStorageCache<Product[]>(
-    "home_products",
+    "home_products_v2",
     async () => {
       const response = await fetch("/api/products");
       if (!response.ok) return [];
@@ -73,7 +75,7 @@ export default function Home() {
 
   // Cached categories fetching
   const { data: categoriesData } = useLocalStorageCache<UiCategory[]>(
-    "home_categories",
+    "home_categories_v2",
     async () => {
       const res = await fetch("/api/categories");
       if (!res.ok) return [];
@@ -107,7 +109,7 @@ export default function Home() {
     () => (productsData || []).slice(0, 10),
     [productsData]
   );
-  
+
   const dealProducts = useMemo(
     () =>
       (productsData || []).filter(
@@ -189,187 +191,122 @@ export default function Home() {
 
   return (
     <div className="bg-white">
-      {/* Hero Section - Premium FreshDirect-inspired design */}
-      <section className="relative min-h-[70vh] md:min-h-[85vh] flex items-center overflow-hidden bg-gray-900">
-        <div className="absolute inset-0">
+      {/* Hero Section - Billion Dollar Aesthetic */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
+        <div className="absolute inset-0 z-0">
           <Image
             src="/bgs/landing-page-bg-1.jpg"
             alt="Fresh vegetables background"
             fill
-            className="object-cover"
+            className="object-cover opacity-80"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90"></div>
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
         </div>
 
-        <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10">
-          <div className="max-w-2xl">
-            <div>
-              <span className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-100 px-4 py-2 rounded-full mb-6 text-sm font-medium backdrop-blur-sm border border-emerald-400/30">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                Fresh & Local Delivery
-              </span>
+        <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-sm font-medium tracking-widest uppercase mb-6">
+              The Future of Freshness
+            </span>
+            <h1 className="text-5xl md:text-7xl lg:text-9xl font-serif font-bold text-white mb-6 tracking-tight leading-[0.9]">
+              Taste the <br />
+              <span className="text-emerald-400 italic">Extraordinary</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-zinc-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+              Premium artisanal groceries, sourced from the world's finest growers, delivered to your doorstep within hours.
+            </p>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-                Fresh groceries,
-                <br />
-                <span className="text-emerald-400">delivered fresh.</span>
-              </h1>
-              
-              <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed max-w-lg">
-                Premium quality produce and groceries delivered right to your door. 
-                Experience the convenience of farm-fresh food.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 text-base font-semibold shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all rounded-full"
+            <div className="flex flex-col sm:flex-row gap-5 justify-center">
+              <Button
+                asChild
+                size="lg"
+                className="bg-emerald-500 hover:bg-emerald-400 text-black px-10 py-7 text-lg font-bold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)]"
+              >
+                <Link href="/products">
+                  Shop Experience
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="bg-transparent border-white/30 text-white hover:bg-white/10 px-10 py-7 text-lg font-medium rounded-full backdrop-blur-sm transition-all"
+              >
+                <Link href="/categories">View Collections</Link>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-white/50">
+          <span className="text-xs tracking-widest uppercase">Scroll to Discover</span>
+        </div>
+      </section>
+
+      {/* Infinite Marquee */}
+      <InfiniteMarquee />
+
+      {/* Trust Bar */}
+
+
+      {/* Promotional carousel using bannermaterial images */}
+      <section className="py-12 md:py-16 bg-gray-50/50">
+        <div className="container mx-auto px-4 md:px-8">
+          <div
+            className="relative rounded-2xl overflow-hidden shadow-lg"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="w-full h-48 sm:h-64 md:h-[28rem] lg:h-[32rem] relative">
+              {promoImages.map((src, i) => (
+                <div
+                  key={src}
+                  className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                 >
-                  <Link href="/products">
-                    Start Shopping
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-6 text-base font-medium backdrop-blur-sm rounded-full"
-                >
-                  <Link href="/categories">Browse Categories</Link>
-                </Button>
-              </div>
+                  <Image src={src} alt={`Promo ${i + 1}`} fill className="object-cover" priority={i === 0} />
+                </div>
+              ))}
+            </div>
+
+            {/* Controls - Premium styled */}
+            <div className="absolute inset-0 flex items-center justify-between px-4 md:px-6">
+              <button onClick={prevPromo} aria-label="Previous" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
+                <ArrowRight className="w-5 h-5 rotate-180 text-gray-700" />
+              </button>
+              <button onClick={nextPromo} aria-label="Next" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
+                <ArrowRight className="w-5 h-5 text-gray-700" />
+              </button>
+            </div>
+
+            {/* Indicators - Premium styled */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {promoImages.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  aria-label={`Show promo ${i + 1}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-white w-6' : 'bg-white/50 w-2 hover:bg-white/70'}`}
+                />
+              ))}
             </div>
           </div>
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
       </section>
-
-      {/* Trust Bar */}
- 
-
-          {/* Promotional carousel using bannermaterial images */}
-          <section className="py-12 md:py-16 bg-gray-50/50">
-            <div className="container mx-auto px-4 md:px-8">
-              <div
-                className="relative rounded-2xl overflow-hidden shadow-lg"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <div className="w-full h-48 sm:h-64 md:h-[28rem] lg:h-[32rem] relative">
-                  {promoImages.map((src, i) => (
-                    <div
-                      key={src}
-                      className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                    >
-                      <Image src={src} alt={`Promo ${i+1}`} fill className="object-cover" priority={i===0} />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Controls - Premium styled */}
-                <div className="absolute inset-0 flex items-center justify-between px-4 md:px-6">
-                  <button onClick={prevPromo} aria-label="Previous" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
-                    <ArrowRight className="w-5 h-5 rotate-180 text-gray-700" />
-                  </button>
-                  <button onClick={nextPromo} aria-label="Next" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
-                    <ArrowRight className="w-5 h-5 text-gray-700" />
-                  </button>
-                </div>
-
-                {/* Indicators - Premium styled */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {promoImages.map((_, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => setCurrentIndex(i)} 
-                      aria-label={`Show promo ${i+1}`} 
-                      className={`h-2 rounded-full transition-all duration-300 ${i===currentIndex ? 'bg-white w-6' : 'bg-white/50 w-2 hover:bg-white/70'}`} 
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
 
       {/* Lifestyle Banners */}
       <BannerGrid />
 
-      {/* Categories Section - Premium redesign */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <span className="text-emerald-600 text-sm font-semibold tracking-wider uppercase mb-3 block">Explore</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-gray-900 tracking-tight">
-              Shop by Category
-            </h2>
-            <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto">
-              Discover fresh products in every category, carefully selected for quality and freshness
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-            {categories.map((category, index) => {
-              const Icon =
-                categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
-              return (
-                <motion.div
-                  key={category.slug}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                >
-                  <Link href={`/categories/${category.slug}`}>
-                    <Card className="group hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-gray-100 shadow-sm hover:shadow-lg overflow-hidden bg-white">
-                      <CardContent className="p-0">
-                        <div className="relative h-36 md:h-44 overflow-hidden flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
-                          {category.imageUrl && (
-                            <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-                              <Image
-                                src={category.imageUrl}
-                                alt={category.name}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          )}
-
-                          <div className="relative z-10 flex flex-col items-center text-center px-3">
-                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 group-hover:scale-110 transition-all duration-300">
-                              <Icon className="w-7 h-7 md:w-8 md:h-8 text-emerald-600" />
-                            </div>
-
-                            <h3 className="font-semibold text-sm md:text-base text-gray-800 group-hover:text-emerald-600 transition-colors">
-                              {category.name}
-                            </h3>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
-              );
-            })}
-            {categories.length === 0 && (
-              <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6 text-center text-gray-400 py-12">
-                No categories available yet.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* Categories Section - Premium Bento Grid */}
+      <CategoryBento categories={categories} />
 
       {/* Hot Deals Section - Premium redesign */}
       {dealProducts.length > 0 && (
@@ -411,6 +348,7 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: index * 0.08 }}
                 >
                   <ProductCard
+                    id={product._id || ''}
                     sku={product.sku}
                     name={product.name}
                     image={product.image.url}
@@ -419,12 +357,12 @@ export default function Home() {
                     pricePerBaseQuantity={product.pricePerBaseQuantity}
                     measurementType={
                       product.measurementUnit as
-                        | "g"
-                        | "kg"
-                        | "ml"
-                        | "l"
-                        | "ea"
-                        | "lb"
+                      | "g"
+                      | "kg"
+                      | "ml"
+                      | "l"
+                      | "ea"
+                      | "lb"
                     }
                     isDiscreteItem={product.isSoldAsUnit}
                   />
@@ -474,6 +412,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: index * 0.08 }}
               >
                 <ProductCard
+                  id={product._id || ''}
                   sku={product.sku}
                   name={product.name}
                   image={product.image.url}
@@ -482,12 +421,12 @@ export default function Home() {
                   pricePerBaseQuantity={product.pricePerBaseQuantity}
                   measurementType={
                     product.measurementUnit as
-                      | "g"
-                      | "kg"
-                      | "ml"
-                      | "l"
-                      | "ea"
-                      | "lb"
+                    | "g"
+                    | "kg"
+                    | "ml"
+                    | "l"
+                    | "ea"
+                    | "lb"
                   }
                   isDiscreteItem={product.isSoldAsUnit}
                 />
@@ -500,7 +439,7 @@ export default function Home() {
       {/* Value Props Strip */}
       <FeaturesStrip />
 
- 
+
 
       {/* Testimonials */}
       <Testimonials />
@@ -513,7 +452,7 @@ export default function Home() {
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-        
+
         <div className="container mx-auto px-4 md:px-8 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
