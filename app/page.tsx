@@ -107,7 +107,7 @@ export default function Home() {
     () => (productsData || []).slice(0, 10),
     [productsData]
   );
-  
+
   const dealProducts = useMemo(
     () =>
       (productsData || []).filter(
@@ -215,12 +215,12 @@ export default function Home() {
                 <br />
                 <span className="text-emerald-400">delivered fresh.</span>
               </h1>
-              
+
               <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed max-w-lg">
-                Premium quality produce and groceries delivered right to your door. 
+                Premium quality produce and groceries delivered right to your door.
                 Experience the convenience of farm-fresh food.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   asChild
@@ -250,54 +250,54 @@ export default function Home() {
       </section>
 
       {/* Trust Bar */}
- 
 
-          {/* Promotional carousel using bannermaterial images */}
-          <section className="py-12 md:py-16 bg-gray-50/50">
-            <div className="container mx-auto px-4 md:px-8">
-              <div
-                className="relative rounded-2xl overflow-hidden shadow-lg"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <div className="w-full h-48 sm:h-64 md:h-[28rem] lg:h-[32rem] relative">
-                  {promoImages.map((src, i) => (
-                    <div
-                      key={src}
-                      className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                    >
-                      <Image src={src} alt={`Promo ${i+1}`} fill className="object-cover" priority={i===0} />
-                    </div>
-                  ))}
-                </div>
 
-                {/* Controls - Premium styled */}
-                <div className="absolute inset-0 flex items-center justify-between px-4 md:px-6">
-                  <button onClick={prevPromo} aria-label="Previous" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
-                    <ArrowRight className="w-5 h-5 rotate-180 text-gray-700" />
-                  </button>
-                  <button onClick={nextPromo} aria-label="Next" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
-                    <ArrowRight className="w-5 h-5 text-gray-700" />
-                  </button>
+      {/* Promotional carousel using bannermaterial images */}
+      <section className="py-12 md:py-16 bg-gray-50/50">
+        <div className="container mx-auto px-4 md:px-8">
+          <div
+            className="relative rounded-2xl overflow-hidden shadow-lg"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="w-full h-48 sm:h-64 md:h-[28rem] lg:h-[32rem] relative">
+              {promoImages.map((src, i) => (
+                <div
+                  key={src}
+                  className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                >
+                  <Image src={src} alt={`Promo ${i + 1}`} fill className="object-cover" priority={i === 0} />
                 </div>
-
-                {/* Indicators - Premium styled */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {promoImages.map((_, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => setCurrentIndex(i)} 
-                      aria-label={`Show promo ${i+1}`} 
-                      className={`h-2 rounded-full transition-all duration-300 ${i===currentIndex ? 'bg-white w-6' : 'bg-white/50 w-2 hover:bg-white/70'}`} 
-                    />
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
-          </section>
+
+            {/* Controls - Premium styled */}
+            <div className="absolute inset-0 flex items-center justify-between px-4 md:px-6">
+              <button onClick={prevPromo} aria-label="Previous" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
+                <ArrowRight className="w-5 h-5 rotate-180 text-gray-700" />
+              </button>
+              <button onClick={nextPromo} aria-label="Next" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all">
+                <ArrowRight className="w-5 h-5 text-gray-700" />
+              </button>
+            </div>
+
+            {/* Indicators - Premium styled */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {promoImages.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  aria-label={`Show promo ${i + 1}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-white w-6' : 'bg-white/50 w-2 hover:bg-white/70'}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Lifestyle Banners */}
       <BannerGrid />
@@ -411,6 +411,7 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: index * 0.08 }}
                 >
                   <ProductCard
+                    id={product._id || ''}
                     sku={product.sku}
                     name={product.name}
                     image={product.image.url}
@@ -419,12 +420,12 @@ export default function Home() {
                     pricePerBaseQuantity={product.pricePerBaseQuantity}
                     measurementType={
                       product.measurementUnit as
-                        | "g"
-                        | "kg"
-                        | "ml"
-                        | "l"
-                        | "ea"
-                        | "lb"
+                      | "g"
+                      | "kg"
+                      | "ml"
+                      | "l"
+                      | "ea"
+                      | "lb"
                     }
                     isDiscreteItem={product.isSoldAsUnit}
                   />
@@ -474,6 +475,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: index * 0.08 }}
               >
                 <ProductCard
+                  id={product._id || ''}
                   sku={product.sku}
                   name={product.name}
                   image={product.image.url}
@@ -482,12 +484,12 @@ export default function Home() {
                   pricePerBaseQuantity={product.pricePerBaseQuantity}
                   measurementType={
                     product.measurementUnit as
-                      | "g"
-                      | "kg"
-                      | "ml"
-                      | "l"
-                      | "ea"
-                      | "lb"
+                    | "g"
+                    | "kg"
+                    | "ml"
+                    | "l"
+                    | "ea"
+                    | "lb"
                   }
                   isDiscreteItem={product.isSoldAsUnit}
                 />
@@ -500,7 +502,7 @@ export default function Home() {
       {/* Value Props Strip */}
       <FeaturesStrip />
 
- 
+
 
       {/* Testimonials */}
       <Testimonials />
@@ -513,7 +515,7 @@ export default function Home() {
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-        
+
         <div className="container mx-auto px-4 md:px-8 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
