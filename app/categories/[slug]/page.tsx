@@ -1,6 +1,7 @@
 import ProductGrid from "@/components/products/ProductGrid";
-import { PageContainer } from "@/components/templates/PageContainer";
-import SectionHeader from "@/components/home/SectionHeader";
+// import { PageContainer } from "@/components/templates/PageContainer"; 
+// import SectionHeader from "@/components/home/SectionHeader";
+import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { Product } from "@/models/product";
 
 import connectDB from '@/lib/database';
@@ -56,15 +57,32 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const name = slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
   const products = await getCategoryProductsBySlug(slug);
 
+  // Determine background image (use first product image or fallback if category has no image)
+  // Since we don't have category image in this fetch, we'll try to use a nice broad fallback or maybe the first product's image if suitable? 
+  // Actually, let's use a specific fresh produce Unsplash image as a safe high-quality default.
+  // Or better, we can assume we might add category images later. For now, a targeted Unsplash URL is best.
+  const bgImage = "https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=2670&auto=format&fit=crop";
+
   return (
-    <PageContainer>
-      <SectionHeader
+    <>
+      <PremiumPageHeader
         title={name}
-        subtitle={`Browse ${name} from our selection`}
-        ctaHref="/products"
-        ctaLabel="All products"
+        subtitle={`Explore our fresh selection of ${name.toLowerCase()}.`}
+        backgroundImage={bgImage}
+        count={products.length}
       />
-      <ProductGrid products={products} />
-    </PageContainer>
+      <div className="container mx-auto px-4 md:px-8 pb-24">
+        <ProductGrid products={products} />
+
+        {products.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-xl text-zinc-400 font-serif">No products found in this category.</p>
+            <div className="mt-6">
+              <a href="/products" className="text-emerald-600 hover:underline">View all products</a>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
