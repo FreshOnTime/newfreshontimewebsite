@@ -26,6 +26,7 @@ export default function ProductGrid({
         <div key={p.sku} className="group">
           <div className="transform group-hover:scale-105 transition-transform duration-300">
             <ProductCard
+              id={p._id || ''}
               sku={p.sku}
               name={p.name}
               image={p.image.url}

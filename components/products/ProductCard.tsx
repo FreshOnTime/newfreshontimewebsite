@@ -9,6 +9,7 @@ import AddToBagButton from "@/app/products/[id]/AddToBagButton";
 import type { Product } from "@/models/product";
 
 interface ProductCardProps {
+  id: string; // Added Mongo ID
   sku: string;
   name: string;
   image: string;
@@ -26,6 +27,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
 
 export function ProductCard({
+  id,
   sku,
   name,
   image: imageUrl,
@@ -50,13 +52,8 @@ export function ProductCard({
   const showDiscountBadge = discountPercentage > DISCOUNT_THRESHOLD;
 
   const productForWishlist: Product = {
-    _id: sku, // Ideally this should be the mongo ID but based on card props we might only have SKU. Wait, ProductCardProps uses SKU. The backend wishlist uses mongo ID.
-    // IF sku is actually the _id (sometimes used interchangeably in frontend props if simpler), it works.
-    // IF not, we might have an issue. The ProductCard usually receives an ID as well?
-    // Looking at ProductCardProps: interface ProductCardProps { sku: string; ... }
-    // In this codebase, let's verify if SKU is unique string or ObjectId.
-    // For now, I'll assume SKU is usable or I need to update ProductCard to accept ID.
-    // Let's check where ProductCard is used.
+    _id: id,
+    sku,
     name,
     image: imageUrl
       ? { url: imageUrl, filename: '', contentType: '', path: imageUrl, alt: name }
@@ -64,7 +61,7 @@ export function ProductCard({
     description: "",
     baseMeasurementQuantity,
     pricePerBaseQuantity: pricePerBaseQuantityWithDiscount,
-    measurementType: measurementType as any, // Cast for simplicity due to loose types here
+    measurementType: measurementType as any,
     isSoldAsUnit: isDiscreteItem,
     minOrderQuantity: 1,
     maxOrderQuantity: 9999,
@@ -74,22 +71,15 @@ export function ProductCard({
     totalSales: 0,
     lowStockThreshold: 0,
     unitOptions: [],
-  } as unknown as Product; // Heavy casting because we are reconstructing object from props
+  } as unknown as Product;
 
-  // BUT: The wishlist requires the PRODUCT OBJECT ID.
-  // If `sku` prop passed to ProductCard is actually the `_id` (common in Next.js listings to use standard prop names), we are good.
-  // If `sku` is the actual stock keeping unit string (e.g. "BANANA-001"), then `wishlist` backend (which expects ObjectId ref) will fail or we need to look up product by SKU.
-  // Backend `Wishlist` schema defines products as `[{ type: Schema.Types.ObjectId, ref: 'Product' }]`.
-  // So we MUST send a valid Mongo ObjectId.
-  // I should update ProductCard to receive `id` (the Mongo _id) explicitly to be safe.
-
-  const isWishlisted = isInWishlist(sku); // Assuming sku prop holds the ID for now, or we will fix calling code.
+  const isWishlisted = isInWishlist(id);
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isWishlisted) {
-      removeFromWishlist(sku);
+      removeFromWishlist(id);
     } else {
       addToWishlist(productForWishlist);
     }

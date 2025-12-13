@@ -16,7 +16,7 @@ import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct'
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
-  console.log('ProductPage - getProduct id:', id);
+    console.log('ProductPage - getProduct id:', id);
     await connectDB();
     // Support finding by _id, sku or slug in the DB
     const mongoose = await import('mongoose');
@@ -37,24 +37,25 @@ async function getProduct(id: string): Promise<Product | null> {
       try {
         const cat = await Category.findById(p.categoryId).select('name slug').lean() as { name?: string; slug?: string } | null;
         if (cat) categoryMeta = { id: String(p.categoryId), name: cat.name || '', slug: cat.slug || '' };
-      } catch {}
+      } catch { }
     }
 
     const attrs = p.attributes || {};
     const maybeUnitOptions = attrs.unitOptions;
     const unitOptions = Array.isArray(maybeUnitOptions)
       ? maybeUnitOptions
-          .map((o: { unit?: string; quantity?: number; price?: number; label?: string }) => {
-            const unit = typeof o.unit === 'string' && ['g','kg','ml','l','ea','lb'].includes(o.unit) ? o.unit : undefined;
-            const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
-            const price = typeof o.price === 'number' ? o.price : undefined;
-            if (!unit || !quantity || price === undefined) return null;
-            return { label: o.label || `${quantity}${unit}`, quantity, unit, price };
-          })
-          .filter(Boolean)
+        .map((o: { unit?: string; quantity?: number; price?: number; label?: string }) => {
+          const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit) ? o.unit : undefined;
+          const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
+          const price = typeof o.price === 'number' ? o.price : undefined;
+          if (!unit || !quantity || price === undefined) return null;
+          return { label: o.label || `${quantity}${unit}`, quantity, unit, price };
+        })
+        .filter(Boolean)
       : undefined;
 
     const product = {
+      _id: String(p._id),
       sku: String(p.sku || p._id),
       name: p.name || '',
       image: {
@@ -121,7 +122,7 @@ export default async function ProductPage({
 
   const pricePerBaseQuantityWithDiscount = product.discountPercentage
     ? product.pricePerBaseQuantity -
-      (product.pricePerBaseQuantity * (product.discountPercentage || 0)) / 100
+    (product.pricePerBaseQuantity * (product.discountPercentage || 0)) / 100
     : product.pricePerBaseQuantity;
   const pricePerMeasurement =
     pricePerBaseQuantityWithDiscount / product.baseMeasurementQuantity;
