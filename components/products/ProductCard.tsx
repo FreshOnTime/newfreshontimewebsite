@@ -109,39 +109,39 @@ export function ProductCard({
   } as unknown as Product);
 
   return (
-    <Card className="w-full max-w-[280px] overflow-hidden border border-gray-100 cursor-pointer bg-white rounded-xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group">
-      <div className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
-        <div className="aspect-square relative p-4">
+    <Card className="w-full max-w-[280px] overflow-hidden border-0 bg-white rounded-3xl transition-all duration-300 ease-out hover:shadow-xl group ring-1 ring-zinc-100">
+      <div className="relative overflow-hidden bg-zinc-50">
+        <div className="aspect-square relative p-6">
           <Link href={`/products/${sku}`} className="block h-full">
-            <div className="relative h-full transform transition-transform duration-500 ease-out group-hover:scale-105">
+            <div className="relative h-full transform transition-transform duration-700 ease-out group-hover:scale-110">
               <ProductImage src={imageUrl} alt={name} />
             </div>
           </Link>
           <Button
             size="icon"
-            variant="secondary"
-            className={`absolute top-3 right-3 h-8 w-8 rounded-full shadow-sm transition-colors duration-200 z-10 ${isWishlisted
-              ? "bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600"
-              : "bg-white/80 hover:bg-white text-gray-400 hover:text-gray-600 backdrop-blur-sm"
+            variant="ghost"
+            className={`absolute top-4 right-4 h-9 w-9 rounded-full transition-all duration-300 z-10 ${isWishlisted
+              ? "bg-red-50 text-red-500 shadow-sm"
+              : "bg-white/50 text-zinc-400 hover:bg-white hover:text-red-500 backdrop-blur-sm"
               }`}
             onClick={handleWishlistClick}
           >
-            <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+            <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
           </Button>
         </div>
         {showDiscountBadge && (
-          <Badge className="absolute left-3 top-3 font-semibold text-xs bg-red-500 text-white hover:bg-red-600 z-10 px-2.5 py-1 rounded-full shadow-sm">
-            {discountPercentage}% OFF
+          <Badge className="absolute left-4 top-4 font-bold text-[10px] tracking-wider uppercase bg-zinc-900/90 text-white backdrop-blur-sm px-2.5 py-1 rounded-sm">
+            -{discountPercentage}%
           </Badge>
         )}
       </div>
-      <CardContent className="p-4 pt-3 border-t border-gray-50">
+      <CardContent className="p-5">
         <Link href={`/products/${sku}`} className="block">
-          <h3 className="text-gray-800 line-clamp-2 font-medium text-sm leading-snug min-h-[2.5rem] group-hover:text-emerald-600 transition-colors duration-200">
+          <h3 className="text-zinc-900 font-serif text-lg leading-tight min-h-[3rem] group-hover:text-emerald-700 transition-colors duration-300 line-clamp-2">
             {name}
           </h3>
         </Link>
-        <div className="mt-3 mb-3">
+        <div className="mt-4 space-y-3">
           <PriceDisplay
             price={pricePerBaseQuantityWithDiscount}
             originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
@@ -149,13 +149,7 @@ export function ProductCard({
             baseMeasurementQuantity={baseMeasurementQuantity}
             measurementType={measurementType}
           />
-          {!isDiscreteItem && (
-            <p className="text-xs text-gray-400 mt-1 font-medium">
-              Rs. {formatPrice(pricePerMeasurement)}/{measurementType}
-            </p>
-          )}
-        </div>
-        <div className="pt-2 border-t border-gray-50">
+
           <AddToBagButton product={buildProductForBag()} quantity={1} />
         </div>
       </CardContent>
