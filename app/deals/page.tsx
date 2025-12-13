@@ -4,9 +4,11 @@ import { PageContainer } from "@/components/templates/PageContainer";
 import { Product } from "@/models/product";
 import { withBase } from "@/lib/serverUrl";
 
+export const dynamic = 'force-dynamic';
+
 async function getDealProducts() {
   try {
-  const response = await fetch(withBase('/api/products'), {
+    const response = await fetch(withBase('/api/products'), {
       cache: 'no-store'
     });
     if (response.ok) {

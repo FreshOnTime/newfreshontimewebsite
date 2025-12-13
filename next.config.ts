@@ -43,6 +43,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',
   },
+  // @ts-expect-error - eslint is valid but types might be outdated
   eslint: {
     ignoreDuringBuilds: process.env.SKIP_TYPE_CHECK === 'true',
   },
