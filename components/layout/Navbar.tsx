@@ -64,13 +64,16 @@ const categoryIcons: Record<string, React.ElementType> = {
   snacks: Candy,
 };
 
+import { CartDrawer } from "@/components/cart/CartDrawer";
+
+// ... existing imports
+
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { user, logout } = useAuth();
-  const cartItemCount = 0; // This would come from your cart context/state
-  const { bags } = useBag();
-  const bagCount = bags?.length || 0;
+  const { currentBag, getTotalItems } = useBag();
   const router = useRouter();
 
   // Use cached categories - refreshes every 15 minutes
@@ -273,21 +276,20 @@ export function Navbar() {
             </Link>
 
             {/* Shopping cart */}
-            <Link href="/bags">
-              <Button variant="ghost" className="relative">
-                <ShoppingCart className="w-6 h-6" />
-                {cartItemCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center">
-                    {cartItemCount}
-                  </Badge>
-                )}
-                {bagCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-1 py-0.5 rounded-full min-w-[18px] h-4 flex items-center justify-center">
-                    {bagCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+            {/* <Link href="/bags"> */}
+            <Button
+              variant="ghost"
+              className="relative"
+              onClick={() => setIsCartOpen(true)}
+            >
+              <ShoppingCart className="w-6 h-6" />
+              {getTotalItems(currentBag?.id || '') > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                  {getTotalItems(currentBag?.id || '')}
+                </Badge>
+              )}
+            </Button>
+            {/* </Link> */}
 
             {/* Mobile menu button */}
             <Button
@@ -303,6 +305,9 @@ export function Navbar() {
             </Button>
           </div>
         </div>
+
+        {/* Cart Drawer */}
+        <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
         {/* Categories navigation - Desktop */}
         <div className="hidden md:block border-t border-gray-100">
