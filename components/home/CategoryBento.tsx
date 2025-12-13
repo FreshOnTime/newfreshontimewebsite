@@ -70,22 +70,16 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400">
-                                                <div className="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center mb-2">
-                                                    <Image
-                                                        src="/logo-placeholder.png"
-                                                        width={24}
-                                                        height={24}
-                                                        alt="icon"
-                                                        className="opacity-20"
-                                                    />
-                                                </div>
-                                                <span className="text-sm font-medium tracking-widest uppercase opacity-50">Coming Soon</span>
-                                            </div>
+                                            <Image
+                                                src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"
+                                                alt={category.name}
+                                                fill
+                                                className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 grayscale group-hover:grayscale-0"
+                                            />
                                         )}
                                     </div>
 
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-50 transition-opacity duration-500" />
 
                                     <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
                                         <span className="text-xs font-bold tracking-widest uppercase mb-2 text-emerald-400 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
