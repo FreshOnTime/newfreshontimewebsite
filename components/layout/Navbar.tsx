@@ -25,6 +25,7 @@ import {
   Carrot,
   IceCream2,
   Package,
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -263,6 +264,13 @@ export function Navbar() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Wishlist */}
+            <Link href="/wishlist">
+              <Button variant="ghost" className="relative hidden md:flex">
+                <Heart className="w-6 h-6" />
+              </Button>
+            </Link>
 
             {/* Shopping cart */}
             <Link href="/bags">

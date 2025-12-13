@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CheckCircle2, Clock, Home, Package, Truck } from "lucide-react";
 
 type ApiOrderItem = {
   productId?: { _id: string; name: string } | null;
@@ -54,9 +55,9 @@ export default function OrderDetailPage() {
   const { user } = useAuth();
 
   // recurrence UI state
-  const [recurrenceFreq, setRecurrenceFreq] = useState<'weekly'|'monthly'|'quarterly'>('weekly');
+  const [recurrenceFreq, setRecurrenceFreq] = useState<'weekly' | 'monthly' | 'quarterly'>('weekly');
   const [recurrenceInterval, setRecurrenceInterval] = useState<number>(1);
-  const [monthlyMode, setMonthlyMode] = useState<'bymonthday'|'byweekday'>('bymonthday');
+  const [monthlyMode, setMonthlyMode] = useState<'bymonthday' | 'byweekday'>('bymonthday');
   const [monthlyDay, setMonthlyDay] = useState<number | ''>('');
   const [monthlyNth, setMonthlyNth] = useState<number>(1); // 1..4 or -1 for last
   const [monthlyWeekday, setMonthlyWeekday] = useState<number>(0); // 0=Sun..6=Sat
@@ -96,66 +97,76 @@ export default function OrderDetailPage() {
     load();
   }, [id, router]);
 
-  
+
 
   const stages = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
   function Stepper({ status }: { status: string }) {
-    // normalize incoming status (accept both 'canceled' and 'cancelled')
+    // normalize incoming status
     const s = (status || '').toLowerCase();
     const idx = stages.indexOf(s);
     const isKnownStage = idx >= 0;
 
+    const icons = [
+      <Clock key="pending" className="w-5 h-5" />,
+      <CheckCircle2 key="confirmed" className="w-5 h-5" />,
+      <Package key="processing" className="w-5 h-5" />,
+      <Truck key="shipped" className="w-5 h-5" />,
+      <Home key="delivered" className="w-5 h-5" />
+    ];
+
+    const labels = ["Pending", "Confirmed", "Packing", "Shipped", "Delivered"];
+
     return (
-      <div className="my-4">
-        <ol className="flex items-center justify-between w-full text-xs" aria-label="Order progress">
+      <div className="w-full py-6">
+        <div className="flex items-center justify-between relative">
+          {/* Connecting Line background */}
+          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10" />
+
+          {/* Active Line */}
+          <div
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-emerald-500 rounded-full -z-10 transition-all duration-1000 ease-out"
+            style={{ width: `${Math.max(0, (idx / (stages.length - 1)) * 100)}%` }}
+          />
+
           {stages.map((stage, i) => {
-            // mark a step done only when the stage index is strictly less than the current known index
-            const done = isKnownStage ? i < idx : false;
-            const isCurrent = isKnownStage ? i === idx : false;
+            const isCompleted = isKnownStage && i <= idx;
+            const isCurrent = isKnownStage && i === idx;
 
             return (
-              <li key={stage} className="flex-1 flex items-center relative">
-                <div className="flex items-center w-full">
-                  <div className="relative flex items-center">
-                    <div
-                      aria-hidden
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-500 ${done ? 'bg-green-600 text-white' : 'bg-white text-gray-500 border'} ${isCurrent ? 'ring-2 ring-green-300 animate-pulse' : ''}`}
-                    >
-                      <span className="text-[11px] font-semibold">{i + 1}</span>
-                    </div>
-                  </div>
-
-                  {i < stages.length - 1 && (
-                    <div className={`h-1 flex-1 mx-3 rounded ${isKnownStage && i < idx ? 'bg-green-500' : 'bg-gray-200'} transition-colors duration-500`} />
-                  )}
+              <div key={stage} className="flex flex-col items-center gap-2 relative group">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 z-10 border-4 
+                    ${isCompleted
+                      ? 'bg-emerald-500 border-white text-white shadow-lg scale-110'
+                      : 'bg-white border-gray-100 text-gray-300'
+                    }
+                    ${isCurrent ? 'ring-4 ring-emerald-100' : ''}
+                    `}
+                >
+                  {isCompleted ? icons[i] : <div className="w-3 h-3 rounded-full bg-gray-200" />}
                 </div>
-
-                <div className="absolute mt-10 w-24 text-center text-[11px] text-gray-600 transform -translate-x-1/2 left-1/2">
-                  {/* simple label under each step - visually aligned using CSS flow */}
-                </div>
-              </li>
+                <span className={`text-xs font-semibold transition-colors duration-300 absolute -bottom-8 whitespace-nowrap ${isCompleted ? 'text-emerald-700' : 'text-gray-400'}`}>
+                  {labels[i]}
+                </span>
+              </div>
             );
           })}
-        </ol>
-
-        {/* If the status is not a known stage, show it explicitly so it's not mistaken for 'pending' */}
-        {!isKnownStage && s && (
-          <div className="mt-2 text-sm font-medium text-red-600">Status: {status}</div>
-        )}
-
-        <div className="flex justify-between mt-2 text-[11px] text-gray-600">
-          {stages.map((st) => (
-            <div key={st} className="w-1/5 text-center first:text-left last:text-right">
-              {st.charAt(0).toUpperCase() + st.slice(1)}
-            </div>
-          ))}
         </div>
+
+        {/* Fallback for unknown status */}
+        {!isKnownStage && s && (
+          <div className="mt-8 text-center">
+            <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium border border-red-100">
+              Current Status: {status}
+            </span>
+          </div>
+        )}
       </div>
     );
   }
 
-  const doRecurringAction = async (action: 'pause'|'resume'|'end') => {
+  const doRecurringAction = async (action: 'pause' | 'resume' | 'end') => {
     if (!order?._id) return;
     setSaving(true);
     try {
@@ -238,12 +249,12 @@ export default function OrderDetailPage() {
     const startDate = String(fd.get('recurrence_start') || '');
     const endDate = String(fd.get('recurrence_end') || '');
     const notes = String(fd.get('recurrence_notes') || '');
-  const dows = fd.getAll('recurrence_dow').map(v => Number(v)).filter(v => !Number.isNaN(v));
-  const includeCSV = String(fd.get('recurrence_include') || '').trim();
-  const excludeCSV = String(fd.get('recurrence_exclude') || '').trim();
-  const toList = (csv: string) => csv.split(',').map(s => s.trim()).filter(Boolean);
-  const includeDates = toList(includeCSV);
-  const excludeDates = toList(excludeCSV);
+    const dows = fd.getAll('recurrence_dow').map(v => Number(v)).filter(v => !Number.isNaN(v));
+    const includeCSV = String(fd.get('recurrence_include') || '').trim();
+    const excludeCSV = String(fd.get('recurrence_exclude') || '').trim();
+    const toList = (csv: string) => csv.split(',').map(s => s.trim()).filter(Boolean);
+    const includeDates = toList(includeCSV);
+    const excludeDates = toList(excludeCSV);
 
     const body: { recurrence: { startDate?: string; endDate?: string; daysOfWeek?: number[]; includeDates?: string[]; excludeDates?: string[]; notes?: string } } = {
       recurrence: {
@@ -286,13 +297,13 @@ export default function OrderDetailPage() {
     const form = e.currentTarget as HTMLFormElement;
     const fd = new FormData(form);
     const shippingAddress = {
-      name: String(fd.get('name')||''),
-      street: String(fd.get('street')||''),
-      city: String(fd.get('city')||''),
-      state: String(fd.get('state')||''),
-      zipCode: String(fd.get('zip')||''),
-      country: String(fd.get('country')||'LK'),
-      phone: String(fd.get('phone')||''),
+      name: String(fd.get('name') || ''),
+      street: String(fd.get('street') || ''),
+      city: String(fd.get('city') || ''),
+      state: String(fd.get('state') || ''),
+      zipCode: String(fd.get('zip') || ''),
+      country: String(fd.get('country') || 'LK'),
+      phone: String(fd.get('phone') || ''),
     };
     setSaving(true);
     try {
@@ -417,7 +428,7 @@ export default function OrderDetailPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <Label className="text-xs text-gray-600">Frequency</Label>
-                          <select name="recurrence_freq" value={recurrenceFreq} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRecurrenceFreq(e.target.value as 'weekly'|'monthly'|'quarterly')} className="w-full border rounded px-2 py-1 text-sm">
+                          <select name="recurrence_freq" value={recurrenceFreq} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRecurrenceFreq(e.target.value as 'weekly' | 'monthly' | 'quarterly')} className="w-full border rounded px-2 py-1 text-sm">
                             <option value="weekly">Weekly</option>
                             <option value="monthly">Monthly</option>
                             <option value="quarterly">Quarterly</option>
@@ -434,10 +445,10 @@ export default function OrderDetailPage() {
                         <div>
                           <Label className="text-xs text-gray-600 mb-1">Days of week</Label>
                           <div className="flex flex-wrap gap-2 text-xs">
-                            {[0,1,2,3,4,5,6].map((d) => (
+                            {[0, 1, 2, 3, 4, 5, 6].map((d) => (
                               <label key={d} className="inline-flex items-center gap-1 border rounded px-2 py-1">
                                 <input type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} />
-                                <span>{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}</span>
+                                <span>{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]}</span>
                               </label>
                             ))}
                           </div>
@@ -478,8 +489,8 @@ export default function OrderDetailPage() {
                                 <option value={-1}>Last</option>
                               </select>
                               <select name="recurrence_month_weekday" value={monthlyWeekday} onChange={(e) => setMonthlyWeekday(Number(e.target.value))} className="border rounded px-2 py-1 text-sm">
-                                {[0,1,2,3,4,5,6].map((d) => (
-                                  <option key={d} value={d}>{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}</option>
+                                {[0, 1, 2, 3, 4, 5, 6].map((d) => (
+                                  <option key={d} value={d}>{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]}</option>
                                 ))}
                               </select>
                             </div>

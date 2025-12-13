@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BagProvider } from "@/contexts/BagContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 
 const defaultFont = Inter({
@@ -28,12 +30,60 @@ export default function RootLayout({
   return (
     <AuthProvider>
       <BagProvider>
-        <html lang="en">
-          <body className={`${defaultFont.className} antialiased`}>
-            <AdminChromeGuard>{children}</AdminChromeGuard>
-            <Toaster />
-          </body>
-        </html>
+        <WishlistProvider>
+          <html lang="en">
+            <body className={`${defaultFont.className} antialiased`}>
+              <AdminChromeGuard>{children}</AdminChromeGuard>
+              <Toaster />
+              {process.env.NEXT_PUBLIC_GA_ID && (
+                <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
+              )}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "GroceryStore",
+                    "name": "Fresh Pick",
+                    "image": "https://freshpick.lk/logo.png",
+                    "description": "Freshest groceries delivered to your doorstep in Colombo.",
+                    "address": {
+                      "@type": "PostalAddress",
+                      "streetAddress": "Colombo",
+                      "addressLocality": "Colombo",
+                      "addressRegion": "Western",
+                      "postalCode": "00100",
+                      "addressCountry": "LK"
+                    },
+                    "geo": {
+                      "@type": "GeoCoordinates",
+                      "latitude": 6.9271,
+                      "longitude": 79.8612
+                    },
+                    "url": "https://freshpick.lk",
+                    "telephone": "+94770000000",
+                    "openingHoursSpecification": [
+                      {
+                        "@type": "OpeningHoursSpecification",
+                        "dayOfWeek": [
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                          "Sunday"
+                        ],
+                        "opens": "08:00",
+                        "closes": "22:00"
+                      }
+                    ]
+                  })
+                }}
+              />
+            </body>
+          </html>
+        </WishlistProvider>
       </BagProvider>
     </AuthProvider>
   );

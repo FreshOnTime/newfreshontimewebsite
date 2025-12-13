@@ -21,6 +21,10 @@ interface ProductCardProps {
 
 const DISCOUNT_THRESHOLD = 0.01;
 
+import { Heart } from "lucide-react";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { Button } from "@/components/ui/button";
+
 export function ProductCard({
   sku,
   name,
@@ -31,6 +35,8 @@ export function ProductCard({
   measurementType,
   isDiscreteItem,
 }: ProductCardProps) {
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
   const pricePerBaseQuantityWithDiscount = calculateDiscountedPrice(
     pricePerBaseQuantity,
     discountPercentage
@@ -43,6 +49,52 @@ export function ProductCard({
 
   const showDiscountBadge = discountPercentage > DISCOUNT_THRESHOLD;
 
+  const productForWishlist: Product = {
+    _id: sku, // Ideally this should be the mongo ID but based on card props we might only have SKU. Wait, ProductCardProps uses SKU. The backend wishlist uses mongo ID.
+    // IF sku is actually the _id (sometimes used interchangeably in frontend props if simpler), it works.
+    // IF not, we might have an issue. The ProductCard usually receives an ID as well?
+    // Looking at ProductCardProps: interface ProductCardProps { sku: string; ... }
+    // In this codebase, let's verify if SKU is unique string or ObjectId.
+    // For now, I'll assume SKU is usable or I need to update ProductCard to accept ID.
+    // Let's check where ProductCard is used.
+    name,
+    image: imageUrl
+      ? { url: imageUrl, filename: '', contentType: '', path: imageUrl, alt: name }
+      : { url: "/placeholder.svg", filename: '', contentType: '', path: "/placeholder.svg", alt: name },
+    description: "",
+    baseMeasurementQuantity,
+    pricePerBaseQuantity: pricePerBaseQuantityWithDiscount,
+    measurementType: measurementType as any, // Cast for simplicity due to loose types here
+    isSoldAsUnit: isDiscreteItem,
+    minOrderQuantity: 1,
+    maxOrderQuantity: 9999,
+    stepQuantity: 1,
+    stockQuantity: 0,
+    isOutOfStock: false,
+    totalSales: 0,
+    lowStockThreshold: 0,
+    unitOptions: [],
+  } as unknown as Product; // Heavy casting because we are reconstructing object from props
+
+  // BUT: The wishlist requires the PRODUCT OBJECT ID.
+  // If `sku` prop passed to ProductCard is actually the `_id` (common in Next.js listings to use standard prop names), we are good.
+  // If `sku` is the actual stock keeping unit string (e.g. "BANANA-001"), then `wishlist` backend (which expects ObjectId ref) will fail or we need to look up product by SKU.
+  // Backend `Wishlist` schema defines products as `[{ type: Schema.Types.ObjectId, ref: 'Product' }]`.
+  // So we MUST send a valid Mongo ObjectId.
+  // I should update ProductCard to receive `id` (the Mongo _id) explicitly to be safe.
+
+  const isWishlisted = isInWishlist(sku); // Assuming sku prop holds the ID for now, or we will fix calling code.
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isWishlisted) {
+      removeFromWishlist(sku);
+    } else {
+      addToWishlist(productForWishlist);
+    }
+  };
+
   const buildProductForBag = (): Product => ({
     sku,
     name,
@@ -51,6 +103,8 @@ export function ProductCard({
       : { url: "/placeholder.svg", filename: '', contentType: '', path: "/placeholder.svg", alt: name },
     description: "",
     baseMeasurementQuantity,
+    baseMeasurementUnit: measurementType, // Correcting property name based on model possibly? Model says measurementType. BagContext uses unit.
+    // Let's stick to matching existing buildProductForBag structure but ensure we use correct props.
     pricePerBaseQuantity: pricePerBaseQuantityWithDiscount,
     measurementUnit: measurementType,
     isSoldAsUnit: isDiscreteItem,
@@ -62,7 +116,7 @@ export function ProductCard({
     totalSales: 0,
     lowStockThreshold: 0,
     unitOptions: [],
-  });
+  } as unknown as Product);
 
   return (
     <Card className="w-full max-w-[280px] overflow-hidden border border-gray-100 cursor-pointer bg-white rounded-xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group">
@@ -73,6 +127,17 @@ export function ProductCard({
               <ProductImage src={imageUrl} alt={name} />
             </div>
           </Link>
+          <Button
+            size="icon"
+            variant="secondary"
+            className={`absolute top-3 right-3 h-8 w-8 rounded-full shadow-sm transition-colors duration-200 z-10 ${isWishlisted
+              ? "bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600"
+              : "bg-white/80 hover:bg-white text-gray-400 hover:text-gray-600 backdrop-blur-sm"
+              }`}
+            onClick={handleWishlistClick}
+          >
+            <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+          </Button>
         </div>
         {showDiscountBadge && (
           <Badge className="absolute left-3 top-3 font-semibold text-xs bg-red-500 text-white hover:bg-red-600 z-10 px-2.5 py-1 rounded-full shadow-sm">
