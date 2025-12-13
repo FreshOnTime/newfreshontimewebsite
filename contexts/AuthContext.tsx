@@ -175,17 +175,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok) {
         setUser(responseData.user);
       } else {
-          // If backend returned validation details, include them on the thrown error
-          const err = new Error(responseData.error || 'Signup failed') as ServerError;
-          if (responseData.details) {
-            err.fieldErrors = responseData.details;
-          }
-          // Sometimes backend returns nested errors or arrays
-          if (responseData.errors) {
-            err.fieldErrors = { ...(err.fieldErrors || {}), ...responseData.errors };
-          }
-          setError(responseData.error || 'Signup failed');
-          throw err;
+        // If backend returned validation details, include them on the thrown error
+        const err = new Error(responseData.error || 'Signup failed') as ServerError;
+        if (responseData.details) {
+          err.fieldErrors = responseData.details;
+        }
+        // Sometimes backend returns nested errors or arrays
+        if (responseData.errors) {
+          err.fieldErrors = { ...(err.fieldErrors || {}), ...responseData.errors };
+        }
+        setError(responseData.error || 'Signup failed');
+        throw err;
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -213,7 +213,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const value = {
+  const value = React.useMemo(() => ({
     user,
     loading,
     error,
@@ -221,7 +221,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signup,
     logout,
     refreshAuth
-  };
+  }), [user, loading, error, refreshAuth]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

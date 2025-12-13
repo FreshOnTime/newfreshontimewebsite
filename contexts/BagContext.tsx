@@ -53,7 +53,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const [currentBag, setCurrentBag] = useState<Bag | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { user } = useAuth();
   // Use authenticated user ObjectId for database queries; don't fallback to a hardcoded id
   const userId = user?._id;
@@ -69,7 +69,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       }
       const response = await fetch(`/api/bags?userId=${userId}`);
       const data = await response.json();
-      
+
       if (data.success) {
         const normalizeBag = (bag: ApiBag): Bag => ({
           id: bag._id,
@@ -139,7 +139,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         const mappedBag = {
           ...data.data,
@@ -178,7 +178,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         const normalize = (bag: ApiBag): Bag => ({
           id: bag._id,
@@ -224,7 +224,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         const normalize = (bag: ApiBag): Bag => ({
           id: bag._id,
@@ -271,7 +271,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     // In a real implementation, you might want a dedicated update endpoint
     const bag = bags.find(b => b.id === bagId);
     const item = bag?.items.find(i => i.product.id === productId);
-    
+
     if (item) {
       await removeFromBag(bagId, productId);
       await addToBag(bagId, item.product, quantity);
@@ -287,10 +287,10 @@ export function BagProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setBags(prev => prev.filter(bag => bag.id !== bagId));
-        
+
         if (currentBag?.id === bagId) {
           const remainingBags = bags.filter(bag => bag.id !== bagId);
           setCurrentBag(remainingBags.length > 0 ? remainingBags[0] : null);
