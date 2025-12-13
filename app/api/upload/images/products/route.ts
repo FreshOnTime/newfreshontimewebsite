@@ -8,17 +8,13 @@ export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 // Disable Next.js body parser for this route
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 export async function POST(req: NextRequest) {
   try {
     // Parse multipart form data
     const fields = await parseMultipartForm(req);
-    
+
     // Get the image file from the form data
     const imageField = fields['image'];
     if (!imageField || typeof imageField === 'string') {
@@ -26,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const imageFile = imageField as FileUpload;
-    
+
     // Validate the image file
     try {
       validateImageFile(imageFile);
@@ -36,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Generate unique filename
     const uniqueFileName = generateUniqueFileName(imageFile.filename);
-    
+
     // Upload to Local/Serverless Storage
     const storageService = getProductImageStorage();
     const imageUrl = await storageService.uploadFile(
@@ -61,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error("Upload error:", error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('multipart/form-data')) {
         return sendBadRequest("Invalid request format. Use multipart/form-data");
@@ -70,7 +66,7 @@ export async function POST(req: NextRequest) {
         return sendInternalError("Storage permission error. Check file system permissions.");
       }
     }
-    
+
     return sendInternalError("Failed to upload image");
   }
 }
