@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Twitter, Instagram, Mail, MapPin } from "lucide-react";
 
 export function Footer() {
   return (
@@ -20,10 +20,10 @@ export function Footer() {
                 height={180}
                 className="text-white"
               />
-            
+
             </div>
             <p className="text-gray-400 text-sm">
-              The freshest groceries delivered to your door. Quality you can trust, 
+              The freshest groceries delivered to your door. Quality you can trust,
               convenience you&apos;ll love.
             </p>
             <div className="flex space-x-4">
@@ -133,18 +133,10 @@ export function Footer() {
                   hello@freshpick.lk
                 </a>
               </li>
-              <li className="flex items-center text-gray-400">
-                <Phone className="w-4 h-4 mr-2" />
-                <a href="tel:+94112345678" className="hover:text-white transition-colors">
-                  +94 11 234 5678
-                </a>
-              </li>
               <li className="flex items-start text-gray-400">
                 <MapPin className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
                 <span>
-                  123 Galle Road,<br />
-                  Colombo 03,<br />
-                  Sri Lanka
+                  Headquarters: Colombo, Sri Lanka
                 </span>
               </li>
             </ul>

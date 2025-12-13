@@ -1,76 +1,63 @@
-import BreadcrumbGenerator from "@/components/BreadcrumbGenerator";
-import { PageContainer } from "@/components/templates/PageContainer";
-import Markdown from "react-markdown";
-import rehypeSanitize from "rehype-sanitize";
+"use client";
 
-const privacyPolicyContent = `
-# Privacy Policy for Fresh Pick
+import React from "react";
+import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 
-*Last Updated: March 20, 2025*
-
-## 1. Introduction
-Fresh Pick is a grocery delivery service committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you join our waitlist. We are currently in a pre-launch phase, and this policy applies to our "coming soon" page.
-
-## 2. Information We Collect
-
-### Personal Information:
-When you join our waitlist, we collect:
-- Email address (required)
-- Full name (required)
-- City (optional)
-- Grocery delivery preferences (optional)
-
-### Automatically Collected Information:
-We may collect your IP address, browser type, and device information through Firebase for security and analytics purposes.
-
-## 3. How We Use Your Information
-- To notify you about our launch (email)
-- To personalize communication (name)
-- To plan delivery logistics (city)
-- To understand user preferences (opinion)
-
-## 4. How We Share Your Information
-We use Firebase (Google) to store your data. Firebase may process your data on our behalf, subject to their privacy practices.
-
-We do not share your data with others unless required by law.
-
-## 5. How We Store and Secure Your Data
-Your data is stored securely in Firebase Firestore, which uses encryption and access controls.
-
-We retain your data until our launch or until you request deletion, whichever comes first.
-
-## 6. Your Rights
-You can access, update, or delete your data by emailing hello@freshpick.lk.
-
-You can unsubscribe from emails at any time using the link in our emails.
-
-## 7. Cookies and Tracking
-We currently do not use cookies or third-party analytics tools on our "coming soon" page. If this changes, we will update this policy and seek your consent if required.
-
-## 8. Children's Privacy
-Our service is not intended for children under 13. We do not knowingly collect data from children.
-
-## 9. Changes to This Policy
-We may update this policy as our services expand, such as when we launch our full website and begin offering grocery delivery. We will notify you of changes via email or a notice on our website.
-
-## 10. Contact Us
-If you have questions, contact us at [hello@freshpick.lk](mailto:hello@freshpick.lk).
-`;
-
-export default function PrivacyPolicy() {
+export default function PrivacyPage() {
   return (
-    <PageContainer>
-      <div className="max-w-3xl mx-auto py-12 px-4">
-        <div className="mb-8">
-          <BreadcrumbGenerator />
+    <div className="bg-white min-h-screen">
+      <PremiumPageHeader
+        title="Privacy Policy"
+        subtitle="We value your trust and are committed to protecting your privacy."
+        backgroundImage="https://images.unsplash.com/photo-1633265486064-086b219458ec?q=80&w=2670&auto=format&fit=crop"
+      />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="prose prose-emerald max-w-none">
+          <p className="font-medium text-gray-500 mb-8">Effective Date: December 2025</p>
+
+          <p className="text-lg text-gray-600 leading-relaxed mb-8">
+            At <strong>Fresh Pick</strong> (freshpick.lk), we value your trust and are committed to protecting your privacy.
+            This policy outlines how we collect, use, and safeguard your personal information.
+          </p>
+
+          <div className="space-y-12">
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Information We Collect</h2>
+              <p className="text-gray-600 mb-4">When you register or place an order, we collect the following details to ensure successful delivery:</p>
+              <ul className="list-disc pl-6 space-y-2 text-gray-600">
+                <li><strong>Personal Identification:</strong> Name, email address, and phone number.</li>
+                <li><strong>Delivery Details:</strong> Physical address and delivery instructions.</li>
+                <li><strong>Order History:</strong> Details of the products you purchase to help us tailor our service to you.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">2. How We Use Your Information</h2>
+              <p className="text-gray-600 mb-4">We use your data solely for the purpose of:</p>
+              <ul className="list-disc pl-6 space-y-2 text-gray-600">
+                <li>Processing and delivering your orders accurately.</li>
+                <li>Communicating with you regarding order updates or delays.</li>
+                <li>Improving our website and product selection based on customer preferences.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Data Security</h2>
+              <p className="text-gray-600">
+                We implement standard security measures to protect your personal information. We do not sell or share your personal data with third-party advertisers.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Contact Us</h2>
+              <p className="text-gray-600">
+                If you have questions about your data or would like to request a deletion of your account, please contact us at <a href="mailto:hello@freshpick.lk" className="text-primary hover:underline font-medium">hello@freshpick.lk</a>.
+              </p>
+            </section>
+          </div>
         </div>
-        <Markdown
-          rehypePlugins={[rehypeSanitize]}
-          className="prose prose-green max-w-none prose-headings:text-gray-900 prose-p:text-gray-700"
-        >
-          {privacyPolicyContent}
-        </Markdown>
       </div>
-    </PageContainer>
+    </div>
   );
 }
