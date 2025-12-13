@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bag } from '@/models/Bag';
 // import { BagItem } from '@/models/BagItem';
@@ -59,7 +59,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const userId = user?._id;
   const router = useRouter();
 
-  const fetchBags = async () => {
+  const fetchBags = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -112,9 +112,9 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, currentBag]);
 
-  const createBag = async (name: string, description?: string) => {
+  const createBag = useCallback(async (name: string, description?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -157,9 +157,9 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, router]);
 
-  const addToBag = async (bagId: string, product: Product, quantity: number) => {
+  const addToBag = useCallback(async (bagId: string, product: Product, quantity: number) => {
     setLoading(true);
     setError(null);
     try {
@@ -213,9 +213,9 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentBag]);
 
-  const removeFromBag = async (bagId: string, productId: string) => {
+  const removeFromBag = useCallback(async (bagId: string, productId: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -259,41 +259,34 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentBag]);
 
-  const updateBagItem = async (bagId: string, productId: string, quantity: number) => {
+  const updateBagItem = useCallback(async (bagId: string, productId: string, quantity: number) => {
     if (quantity <= 0) {
       await removeFromBag(bagId, productId);
       return;
     }
-
-    // For now, we'll remove and add with new quantity
-    // In a real implementation, you might want a dedicated update endpoint
     const bag = bags.find(b => b.id === bagId);
     const item = bag?.items.find(i => i.product.id === productId);
-
     if (item) {
       await removeFromBag(bagId, productId);
       await addToBag(bagId, item.product, quantity);
     }
-  };
+  }, [bags, removeFromBag, addToBag]);
 
-  const deleteBag = async (bagId: string) => {
+  const deleteBag = useCallback(async (bagId: string) => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`/api/bags/${bagId}`, {
         method: 'DELETE',
       });
-
       const data = await response.json();
-
       if (data.success) {
         setBags(prev => prev.filter(bag => bag.id !== bagId));
-
         if (currentBag?.id === bagId) {
-          const remainingBags = bags.filter(bag => bag.id !== bagId);
-          setCurrentBag(remainingBags.length > 0 ? remainingBags[0] : null);
+          setCurrentBag(null);
+          fetchBags();
         }
       } else {
         setError(data.error || 'Failed to delete bag');
@@ -304,47 +297,49 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentBag, fetchBags]);
 
-  const selectBag = (bagId: string) => {
+  const selectBag = useCallback((bagId: string) => {
     const bag = bags.find(b => b.id === bagId);
     if (bag) {
       setCurrentBag(bag);
     }
-  };
+  }, [bags]);
 
-  const getTotalItems = (bagId: string): number => {
+  const getTotalItems = useCallback((bagId: string): number => {
     const bag = bags.find(b => b.id === bagId);
     return bag?.items.reduce((total, item) => total + item.quantity, 0) || 0;
-  };
+  }, [bags]);
 
-  const getTotalPrice = (bagId: string): number => {
+  const getTotalPrice = useCallback((bagId: string): number => {
     const bag = bags.find(b => b.id === bagId);
     return bag?.items.reduce((total, item) => total + (item.product.price * item.quantity), 0) || 0;
-  };
+  }, [bags]);
 
   useEffect(() => {
     fetchBags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  const value = {
+    bags,
+    currentBag,
+    loading,
+    error,
+    createBag,
+    addToBag,
+    removeFromBag,
+    updateBagItem,
+    deleteBag,
+    fetchBags,
+    selectBag,
+    getTotalItems,
+    getTotalPrice,
+  };
+
   return (
     <BagContext.Provider
-      value={{
-        bags,
-        currentBag,
-        loading,
-        error,
-        createBag,
-        addToBag,
-        removeFromBag,
-        updateBagItem,
-        deleteBag,
-        fetchBags,
-        selectBag,
-        getTotalItems,
-        getTotalPrice,
-      }}
+      value={useMemo(() => value, [value])}
     >
       {children}
     </BagContext.Provider>
