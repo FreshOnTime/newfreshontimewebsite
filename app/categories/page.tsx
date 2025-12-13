@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image"; // Added
 import { ArrowRight } from "lucide-react"; // Added
