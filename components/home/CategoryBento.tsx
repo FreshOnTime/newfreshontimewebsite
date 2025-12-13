@@ -70,8 +70,17 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-zinc-300">
-                                                No Image
+                                            <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400">
+                                                <div className="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center mb-2">
+                                                    <Image
+                                                        src="/logo-placeholder.png"
+                                                        width={24}
+                                                        height={24}
+                                                        alt="icon"
+                                                        className="opacity-20"
+                                                    />
+                                                </div>
+                                                <span className="text-sm font-medium tracking-widest uppercase opacity-50">Coming Soon</span>
                                             </div>
                                         )}
                                     </div>
