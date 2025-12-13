@@ -52,7 +52,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         }
 
         // Optimistic update
-        const productId = (product as any)._id || (product as any).id;
+        const productId = product._id || (product as any).id;
+        if (!productId) {
+            console.error("Product has no ID:", product);
+            toast.error("Cannot add to wishlist: Invalid product");
+            return;
+        }
+
         if (isInWishlist(productId)) return;
 
         setWishlistItems(prev => [...prev, product]);

@@ -49,8 +49,14 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { userId, productId } = body;
 
-        if (!userId || !productId) {
-            return NextResponse.json({ success: false, error: 'User ID and Product ID are required' }, { status: 400 });
+        console.log('Wishlist POST received:', { userId, productId, body });
+
+        if (!userId) {
+            return NextResponse.json({ success: false, error: 'User ID is required' }, { status: 400 });
+        }
+
+        if (!productId) {
+            return NextResponse.json({ success: false, error: 'Product ID is required' }, { status: 400 });
         }
 
         let wishlist = await Wishlist.findOne({ user: userId });
