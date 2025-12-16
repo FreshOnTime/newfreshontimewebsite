@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -32,11 +32,11 @@ type OrderSummary = {
 };
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const router = useRouter();
-  const didFetch = useRef(false);
   const hasOrders = useMemo(() => orders.length > 0, [orders]);
 
   const cancelOrder = async (id: string) => {
@@ -59,8 +59,23 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
+    // Wait for auth to complete loading
+    if (authLoading) {
+      return;
+    }
+
+    // If no user after auth loading, redirect to login
+    if (!user?._id) {
+      setLoading(false);
+      return;
+    }
+
+    // Only fetch once per user session
+    if (hasFetched) {
+      return;
+    }
+
     const load = async () => {
-      if (!user?._id) return;
       setLoading(true);
       try {
         let res = await fetch(`/api/orders?limit=50`, { credentials: 'include', cache: 'no-store' });
@@ -73,16 +88,17 @@ export default function OrdersPage() {
           return;
         }
         const data = await res.json();
-        if (res.ok && data.success) setOrders(data.data.orders);
+        if (res.ok && data.success) {
+          setOrders(data.data.orders || []);
+        }
+        setHasFetched(true);
       } finally {
         setLoading(false);
       }
     };
-    if (!didFetch.current) {
-      didFetch.current = true;
-      load();
-    }
-  }, [user?._id, router]);
+
+    load();
+  }, [user?._id, authLoading, router, hasFetched]);
 
   const getStatusIcon = (status: string) => {
     const s = (status || '').toLowerCase();
@@ -183,8 +199,8 @@ export default function OrdersPage() {
                           <RotateCcw className="w-4 h-4 text-blue-600" />
                           <span className="text-sm font-semibold text-blue-700">Recurring Order</span>
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ml-auto ${o.scheduleStatus === 'active' ? 'bg-green-100 text-green-700' :
-                              o.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
-                                'bg-gray-100 text-gray-600'
+                            o.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
+                              'bg-gray-100 text-gray-600'
                             }`}>
                             {o.scheduleStatus || 'active'}
                           </span>

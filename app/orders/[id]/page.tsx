@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,14 +58,14 @@ type ApiOrder = {
 };
 
 export default function OrderDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = params?.id as string | undefined;
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [addressSaved, setAddressSaved] = useState(false);
   const [notFoundError, setNotFoundError] = useState(false);
   const router = useRouter();
-  const didFetch = useRef(false);
   const { user } = useAuth();
 
   // recurrence UI state
@@ -77,9 +77,14 @@ export default function OrderDetailPage() {
   const [monthlyWeekday, setMonthlyWeekday] = useState<number>(0);
 
   useEffect(() => {
-    if (didFetch.current) return;
-    didFetch.current = true;
+    // Wait for id to be available
+    if (!id) {
+      return;
+    }
+
     const load = async () => {
+      setLoading(true);
+      setNotFoundError(false);
       try {
         let res = await fetch(`/api/orders/${id}`, { credentials: 'include', cache: 'no-store' });
 
@@ -476,8 +481,8 @@ export default function OrderDetailPage() {
                       Recurring Schedule
                     </h2>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${order.scheduleStatus === 'active' ? 'bg-green-100 text-green-700' :
-                        order.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
-                          'bg-gray-100 text-gray-700'
+                      order.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-700'
                       }`}>
                       {order.scheduleStatus || 'active'}
                     </span>
