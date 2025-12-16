@@ -222,7 +222,6 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
       <PremiumPageHeader
         title="All Products"
         subtitle="Explore our curated selection of premium groceries, fresh from the source to your table."
-        backgroundImage="https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=2670&auto=format&fit=crop"
         count={pagination.total}
       />
       <div className="container mx-auto px-4 md:px-8 pb-24">

@@ -9,11 +9,45 @@ interface AuthenticatedRequest extends NextRequest {
   user: { userId: string; role: string; mongoId?: string };
 }
 
+// Helper to extract id from various param formats
+function extractId(context: unknown): string | undefined {
+  if (!context) return undefined;
+  const ctx = context as { params?: { id?: string } | Promise<{ id?: string }> };
+
+  // Handle if params is directly available (sync)
+  if (ctx.params && typeof ctx.params === 'object' && 'id' in ctx.params && typeof (ctx.params as { id?: string }).id === 'string') {
+    return (ctx.params as { id: string }).id;
+  }
+
+  return undefined;
+}
+
 // GET - fetch single order (owner or admin)
-export const GET = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const GET = requireAuth(async (request: NextRequest, context?: { params: { id: string } } | { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const id = context?.params?.id;
+
+    // Handle both sync and async params (Next.js 13+ compatibility)
+    let id: string | undefined;
+    if (context?.params) {
+      if (context.params instanceof Promise) {
+        const resolvedParams = await context.params;
+        id = resolvedParams?.id;
+      } else {
+        id = (context.params as { id: string })?.id;
+      }
+    }
+
+    // Also try to extract from URL as fallback
+    if (!id) {
+      const url = new URL(request.url);
+      const pathParts = url.pathname.split('/');
+      const ordersIndex = pathParts.indexOf('orders');
+      if (ordersIndex !== -1 && pathParts[ordersIndex + 1]) {
+        id = pathParts[ordersIndex + 1];
+      }
+    }
+
     if (!id) {
       return NextResponse.json({ error: 'Order ID missing' }, { status: 400 });
     }
@@ -26,10 +60,10 @@ export const GET = requireAuth(async (request: NextRequest, context?: { params: 
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-  const user = (request as AuthenticatedRequest).user;
-  // Allow owner or admin role. Compare to mongoId (User._id) as orders use that in customerId.
-  const ownerId = user.mongoId || user.userId;
-  if (String(order.customerId) !== String(ownerId) && user.role !== 'admin') {
+    const user = (request as AuthenticatedRequest).user;
+    // Allow owner or admin role. Compare to mongoId (User._id) as orders use that in customerId.
+    const ownerId = user.mongoId || user.userId;
+    if (String(order.customerId) !== String(ownerId) && user.role !== 'admin') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -40,11 +74,33 @@ export const GET = requireAuth(async (request: NextRequest, context?: { params: 
   }
 });
 
+
+// Helper to extract order ID from context or URL
+async function getOrderId(request: NextRequest, context?: { params?: { id?: string } | Promise<{ id?: string }> }): Promise<string | undefined> {
+  // Try context params first
+  if (context?.params) {
+    if (context.params instanceof Promise) {
+      const resolved = await context.params;
+      if (resolved?.id) return resolved.id;
+    } else if ((context.params as { id?: string })?.id) {
+      return (context.params as { id: string }).id;
+    }
+  }
+  // Fallback: extract from URL
+  const url = new URL(request.url);
+  const pathParts = url.pathname.split('/');
+  const ordersIndex = pathParts.indexOf('orders');
+  if (ordersIndex !== -1 && pathParts[ordersIndex + 1]) {
+    return pathParts[ordersIndex + 1];
+  }
+  return undefined;
+}
+
 // PUT - update an order (owner or admin). Allows editing shippingAddress and notes while order is not shipped/delivered.
-export const PUT = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const PUT = requireAuth(async (request: NextRequest, context?: { params: { id: string } } | { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const id = context?.params?.id;
+    const id = await getOrderId(request, context as { params?: { id?: string } | Promise<{ id?: string }> });
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
@@ -84,10 +140,10 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
 });
 
 // PATCH - quick actions: cancel (owner), mark-status (admin)
-export const PATCH = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const PATCH = requireAuth(async (request: NextRequest, context?: { params: { id: string } } | { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const id = context?.params?.id;
+    const id = await getOrderId(request, context as { params?: { id?: string } | Promise<{ id?: string }> });
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
@@ -142,10 +198,10 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
 });
 
 // DELETE - admin hard delete (restores stock if not shipped/delivered)
-export const DELETE = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const DELETE = requireAuth(async (request: NextRequest, context?: { params: { id: string } } | { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const id = context?.params?.id;
+    const id = await getOrderId(request, context as { params?: { id?: string } | Promise<{ id?: string }> });
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }

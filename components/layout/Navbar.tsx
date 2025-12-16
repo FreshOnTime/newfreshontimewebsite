@@ -379,7 +379,7 @@ export function Navbar() {
 
       {/* Mobile menu overlay */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div className="md:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-180px)] overflow-y-auto">
           <div className="container mx-auto px-4 py-4">
             {/* Account section */}
             <div className="border-b border-gray-200 pb-4 mb-4">

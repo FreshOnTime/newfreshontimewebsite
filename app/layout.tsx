@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -7,6 +7,8 @@ import { BagProvider } from "@/contexts/BagContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
+import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
+import BottomNav from "@/components/layout/BottomNav";
 
 const defaultFont = Inter({
   subsets: ["latin"],
@@ -83,9 +85,11 @@ export default function RootLayout({
       <BagProvider>
         <WishlistProvider>
           <html lang="en">
-            <body className={`${defaultFont.className} antialiased`}>
+            <body className={`${defaultFont.className} antialiased pb-16 md:pb-0`}>
               <AdminChromeGuard>{children}</AdminChromeGuard>
+              <BottomNav />
               <Toaster />
+              <ServiceWorkerRegistration />
               {process.env.NEXT_PUBLIC_GA_ID && (
                 <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
               )}

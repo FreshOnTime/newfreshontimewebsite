@@ -1,12 +1,33 @@
+import { Metadata } from "next";
 import ProductGrid from "@/components/products/ProductGrid";
 // import { PageContainer } from "@/components/templates/PageContainer"; 
 // import SectionHeader from "@/components/home/SectionHeader";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { Product } from "@/models/product";
+import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 
 import connectDB from '@/lib/database';
 import CategoryModel from '@/lib/models/Category';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
+
+// Helper to get category details
+async function getCategoryBySlug(slug: string) {
+  try {
+    await connectDB();
+    const cat = await CategoryModel.findOne({ slug }).lean();
+    if (!cat) return null;
+    return {
+      id: String((cat as any)._id),
+      name: (cat as any).name || slug,
+      slug: (cat as any).slug || slug,
+      description: (cat as any).description || null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 async function getCategoryProductsBySlug(slug: string): Promise<Product[]> {
   try {
@@ -52,23 +73,78 @@ async function getCategoryProductsBySlug(slug: string): Promise<Product[]> {
   }
 }
 
+// Generate dynamic metadata for category pages
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const category = await getCategoryBySlug(slug);
+  const name = category?.name || slug.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
+
+  const description = category?.description
+    || `Shop fresh ${name.toLowerCase()} online at Fresh Pick. Premium quality groceries delivered to your door in Colombo, Sri Lanka.`;
+
+  const categoryUrl = `${SITE_URL}/categories/${slug}`;
+
+  return {
+    title: `${name} - Fresh Groceries`,
+    description,
+    keywords: [
+      name.toLowerCase(),
+      'fresh groceries',
+      'colombo delivery',
+      'sri lanka',
+      'online grocery',
+      'fresh produce',
+    ].join(', '),
+    alternates: {
+      canonical: categoryUrl,
+    },
+    openGraph: {
+      title: `${name} | Fresh Pick`,
+      description,
+      url: categoryUrl,
+      siteName: 'Fresh Pick',
+      images: [
+        {
+          url: `${SITE_URL}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: `${name} - Fresh Pick`,
+        },
+      ],
+      locale: 'en_LK',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${name} | Fresh Pick`,
+      description,
+      images: [`${SITE_URL}/og-image.jpg`],
+    },
+  };
+}
+
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const name = slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+  const category = await getCategoryBySlug(slug);
+  const name = category?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
   const products = await getCategoryProductsBySlug(slug);
 
-  // Determine background image (use first product image or fallback if category has no image)
-  // Since we don't have category image in this fetch, we'll try to use a nice broad fallback or maybe the first product's image if suitable? 
-  // Actually, let's use a specific fresh produce Unsplash image as a safe high-quality default.
-  // Or better, we can assume we might add category images later. For now, a targeted Unsplash URL is best.
-  const bgImage = "https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=2670&auto=format&fit=crop";
+  const breadcrumbItems = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'Categories', url: `${SITE_URL}/categories` },
+    { name, url: `${SITE_URL}/categories/${slug}` },
+  ];
 
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbItems} />
       <PremiumPageHeader
         title={name}
         subtitle={`Explore our fresh selection of ${name.toLowerCase()}.`}
-        backgroundImage={bgImage}
         count={products.length}
       />
       <div className="container mx-auto px-4 md:px-8 pb-24">
