@@ -6,30 +6,41 @@ import Image from "next/image";
 interface PremiumPageHeaderProps {
     title: string;
     subtitle?: string;
-    backgroundImage?: string;
+    backgroundImage?: string | null;
+    backgroundColor?: string;
     count?: number;
 }
 
 export default function PremiumPageHeader({
     title,
     subtitle,
-    backgroundImage = "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop",
+    backgroundImage,
+    backgroundColor = "bg-emerald-700",
     count
 }: PremiumPageHeaderProps) {
+    const useGradient = !backgroundImage;
+
     return (
-        <section className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden mb-12">
-            {/* Background Image with blur and overlay */}
-            <div className="absolute inset-0 z-0">
-                <Image
-                    src={backgroundImage}
-                    alt={title}
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
-            </div>
+        <section className={`relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden mb-12 ${useGradient ? backgroundColor : ''}`}>
+            {/* Background Image with blur and overlay (only if backgroundImage provided) */}
+            {!useGradient && (
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src={backgroundImage!}
+                        alt={title}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
+                </div>
+            )}
+
+            {/* Smooth fade to white at bottom for solid color bg */}
+            {useGradient && (
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent" />
+            )}
 
             {/* Content */}
             <div className="relative z-10 container mx-auto px-4 text-center">
@@ -42,7 +53,7 @@ export default function PremiumPageHeader({
                         {title}
                     </h1>
                     {subtitle && (
-                        <p className="text-lg md:text-xl text-zinc-200 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
+                        <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
                             {subtitle}
                         </p>
                     )}
@@ -56,3 +67,4 @@ export default function PremiumPageHeader({
         </section>
     );
 }
+

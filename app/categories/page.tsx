@@ -36,7 +36,6 @@ export default function CategoriesIndex() {
       <PremiumPageHeader
         title="Our Collections"
         subtitle="Browse our carefully curated aisles to find exactly what you need."
-        backgroundImage="https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=2574&auto=format&fit=crop"
       />
       <div className="container mx-auto px-4 md:px-8 pb-20">
         {isLoading ? (

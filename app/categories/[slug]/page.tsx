@@ -133,12 +133,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const name = category?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
   const products = await getCategoryProductsBySlug(slug);
 
-  // Determine background image (use first product image or fallback if category has no image)
-  // Since we don't have category image in this fetch, we'll try to use a nice broad fallback or maybe the first product's image if suitable? 
-  // Actually, let's use a specific fresh produce Unsplash image as a safe high-quality default.
-  // Or better, we can assume we might add category images later. For now, a targeted Unsplash URL is best.
-  const bgImage = "https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=2670&auto=format&fit=crop";
-
   const breadcrumbItems = [
     { name: 'Home', url: SITE_URL },
     { name: 'Categories', url: `${SITE_URL}/categories` },
@@ -151,7 +145,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <PremiumPageHeader
         title={name}
         subtitle={`Explore our fresh selection of ${name.toLowerCase()}.`}
-        backgroundImage={bgImage}
         count={products.length}
       />
       <div className="container mx-auto px-4 md:px-8 pb-24">
