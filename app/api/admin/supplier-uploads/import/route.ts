@@ -15,18 +15,18 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
     const upload = await SupplierUpload.findById(uploadId).exec();
     if (!upload) return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
 
-  const rows = Array.isArray(upload.preview) ? upload.preview as unknown[] : [];
-  const results: { created: Array<{ sku: string; id: unknown }>; errors: Array<{ row: number; reason: string }> } = { created: [], errors: [] };
+    const rows = Array.isArray(upload.preview) ? upload.preview as unknown[] : [];
+    const results: { created: Array<{ sku: string; id: unknown }>; errors: Array<{ row: number; reason: string }> } = { created: [], errors: [] };
 
     for (const [i, r] of rows.entries()) {
       // Basic mapping based on template: sku,name,description,price,pricePerBaseQuantity,baseMeasurementQuantity,measurementUnit,stockQty,categorySlug
-  const row = r as Record<string, unknown>;
-  const sku = String(row.sku || row.SKU || '').trim();
-  const name = String(row.name || '').trim();
-  const price = Number(row.price || row.Price || 0);
-  const baseQty = Number(row.baseMeasurementQuantity || row.baseMeasurementQuantity || 1);
-  const measurementUnit = String(row.measurementUnit || row.unit || 'kg');
-  const stockQty = Number(row.stockQty || row.stock || 0);
+      const row = r as Record<string, unknown>;
+      const sku = String(row.sku || row.SKU || '').trim();
+      const name = String(row.name || '').trim();
+      const price = Number(row.price || row.Price || 0);
+      const baseQty = Number(row.baseMeasurementQuantity || row.baseMeasurementQuantity || 1);
+      const measurementUnit = String(row.measurementUnit || row.unit || 'kg');
+      const stockQty = Number(row.stockQty || row.stock || 0);
 
       if (!sku || !name) {
         results.errors.push({ row: i, reason: 'Missing sku or name' });
@@ -35,13 +35,13 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
 
       // For simplicity, create Product with minimal required fields and placeholder refs
       try {
-          const product = new Product({
+        const product = new Product({
           name,
           image: { url: '/placeholder.svg', alt: name },
           brand: undefined,
           category: undefined,
-          description: String(r.description || ''),
-          searchContent: `${name} ${r.description || ''}`,
+          description: String(row.description || ''),
+          searchContent: `${name} ${row.description || ''}`,
           baseMeasurementQuantity: baseQty || 1,
           pricePerBaseQuantity: price || 0,
           measurementType: measurementUnit as string,
@@ -56,9 +56,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
         });
         await product.save();
         results.created.push({ sku, id: product._id });
-        } catch (err) {
-          results.errors.push({ row: i, reason: err instanceof Error ? err.message : 'Save error' });
-        }
+      } catch (err) {
+        results.errors.push({ row: i, reason: err instanceof Error ? err.message : 'Save error' });
+      }
     }
 
     return NextResponse.json({ success: true, results });
