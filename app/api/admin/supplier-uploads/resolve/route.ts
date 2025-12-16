@@ -16,17 +16,17 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
     if (!upload) return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
 
     // Try to resolve supplier info similar to listing logic
-  let supplierName: string | null = (upload as Record<string, unknown>).supplierName as string || null;
+    let supplierName: string | null = (upload as Record<string, unknown>).supplierName as string || null;
     let supplierCompany: string | null = null;
     let supplierEmail: string | null = null;
     let supplierPhone: string | null = null;
     let supplierContactName: string | null = null;
     let supplierStatus: string | null = null;
-  const candidate = (upload as unknown as { supplierId?: unknown }).supplierId;
-  let resolvedSupplierId = typeof candidate === 'string' ? candidate : (candidate && typeof (candidate as { toString?: () => string }).toString === 'function' ? (candidate as { toString: () => string }).toString() : candidate);
+    const candidate = (upload as unknown as { supplierId?: unknown }).supplierId;
+    let resolvedSupplierId = typeof candidate === 'string' ? candidate : (candidate && typeof (candidate as { toString?: () => string }).toString === 'function' ? (candidate as { toString: () => string }).toString() : candidate);
 
     if (!supplierName) {
-  const s = await Supplier.findById((upload as Record<string, unknown>).supplierId as string).lean() as unknown | null;
+      const s = await Supplier.findById((upload as Record<string, unknown>).supplierId as string).lean() as unknown | null;
       if (s) {
         const ss = s as Record<string, unknown>;
         supplierName = (ss.name as string) || (ss.companyName as string) || null;
@@ -38,9 +38,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
         resolvedSupplierId = (ss._id && typeof (ss._id as { toString?: () => string }).toString === 'function') ? (ss._id as { toString: () => string }).toString() : resolvedSupplierId;
       } else {
         const UserModel = (await import('@/lib/models/User')).default;
-  const maybeUser = await UserModel.findById((upload as Record<string, unknown>).supplierId as string).lean() as unknown | null;
+        const maybeUser = await UserModel.findById((upload as Record<string, unknown>).supplierId as string).lean() as unknown | null;
         if (maybeUser && (maybeUser as Record<string, unknown>).supplierId) {
-          const linkedSupplier = await Supplier.findById(((maybeUser as Record<string, unknown>).supplierId as { toString?: () => string }).toString()).lean() as unknown | null;
+          const linkedSupplier = await Supplier.findById(String((maybeUser as Record<string, unknown>).supplierId)).lean() as unknown | null;
           if (linkedSupplier) {
             const ls = linkedSupplier as Record<string, unknown>;
             supplierName = (ls.name as string) || (ls.companyName as string) || null;

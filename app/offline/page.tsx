@@ -1,11 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { WifiOff, RefreshCw, Home } from "lucide-react";
-
-export const metadata = {
-    title: "Offline | Fresh Pick",
-    description: "You appear to be offline. Please check your internet connection.",
-};
 
 export default function OfflinePage() {
     return (

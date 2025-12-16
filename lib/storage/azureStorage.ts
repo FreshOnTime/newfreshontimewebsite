@@ -1,4 +1,4 @@
-import { BlobServiceClient, BlobUploadOptions } from "@azure/storage-blob";
+import { BlobServiceClient, BlockBlobUploadOptions } from "@azure/storage-blob";
 
 export class AzureStorageService {
   private blobServiceClient: BlobServiceClient;
@@ -10,28 +10,28 @@ export class AzureStorageService {
   }
 
   async uploadFile(
-    fileName: string, 
-    fileBuffer: Buffer, 
+    fileName: string,
+    fileBuffer: Buffer,
     mimeType: string
   ): Promise<string> {
     try {
       const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
-      
+
       // Ensure container exists
       await containerClient.createIfNotExists({
         access: 'blob' // Allow public read access to blobs
       });
 
       const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-      
-      const uploadOptions: BlobUploadOptions = {
+
+      const uploadOptions: BlockBlobUploadOptions = {
         blobHTTPHeaders: {
           blobContentType: mimeType,
         },
       };
 
       await blockBlobClient.upload(fileBuffer, fileBuffer.length, uploadOptions);
-      
+
       return blockBlobClient.url;
     } catch (error) {
       console.error('Error uploading file to Azure Storage:', error);
@@ -43,7 +43,7 @@ export class AzureStorageService {
     try {
       const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
       const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-      
+
       await blockBlobClient.deleteIfExists();
     } catch (error) {
       console.error('Error deleting file from Azure Storage:', error);
@@ -55,7 +55,7 @@ export class AzureStorageService {
     try {
       const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
       const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-      
+
       const exists = await blockBlobClient.exists();
       return exists;
     } catch (error) {
@@ -70,7 +70,7 @@ export class AzureStorageService {
       const files: string[] = [];
 
       const listOptions = prefix ? { prefix } : undefined;
-      
+
       for await (const blob of containerClient.listBlobsFlat(listOptions)) {
         files.push(blob.name);
       }

@@ -13,14 +13,14 @@ export const DELETE = requireAdmin(async (request: NextRequest & { user?: { role
     if (!uploadId) return NextResponse.json({ error: 'Missing uploadId' }, { status: 400 });
 
     await connectDB();
-    const upload = await SupplierUpload.findById(uploadId).lean();
+    const upload = await SupplierUpload.findById(uploadId).lean() as { path?: string } | null;
     if (!upload) return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
 
     // remove file from disk if present
     try {
       if (upload.path) {
         const p = path.join(process.cwd(), 'public', upload.path.replace(/^\//, ''));
-        await fs.promises.unlink(p).catch(() => {});
+        await fs.promises.unlink(p).catch(() => { });
       }
     } catch (e) {
       console.warn('Failed to unlink upload file', e);

@@ -17,7 +17,7 @@ async function handleSignup(request: NextRequest) {
     const validation = validateInput(signupSchema, body);
     if (!validation.isValid) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation failed',
           details: validation.errors
         },
@@ -54,7 +54,9 @@ async function handleSignup(request: NextRequest) {
       });
 
       // send verification email (non-blocking)
-      sendVerificationEmail(result.user.email, rawToken).catch((e) => console.error('sendVerificationEmail error', e));
+      if (result.user.email) {
+        sendVerificationEmail(result.user.email, rawToken).catch((e) => console.error('sendVerificationEmail error', e));
+      }
     } catch (e) {
       console.error('Failed to create/send verification token', e);
     }
@@ -62,7 +64,7 @@ async function handleSignup(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Signup error:', error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('already exists')) {
         return NextResponse.json(

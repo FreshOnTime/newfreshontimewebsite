@@ -9,16 +9,16 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { role?: s
   try {
     if (request.user?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     await connectDB();
-  // include uploads where supplierId is the supplier _id OR where supplierId references a User who is linked to this supplier
-  const users = await User.find({ supplierId: params.id }).select('_id').lean();
-  const userIds = users.map(u => u._id.toString());
-  const uploads = await SupplierUpload.find({ $or: [{ supplierId: params.id }, { supplierId: { $in: userIds } }] }).sort({ createdAt: -1 }).lean();
+    // include uploads where supplierId is the supplier _id OR where supplierId references a User who is linked to this supplier
+    const users = await User.find({ supplierId: params.id }).select('_id').lean();
+    const userIds = users.map(u => (u as { _id: { toString(): string } })._id.toString());
+    const uploads = await SupplierUpload.find({ $or: [{ supplierId: params.id }, { supplierId: { $in: userIds } }] }).sort({ createdAt: -1 }).lean();
 
-  // Ensure uploads include a supplierName field (use persisted or fallback to supplier record)
-  const supplier = await Supplier.findById(params.id).lean();
-  const supplierName = supplier?.name || supplier?.companyName || null;
-  type UploadRow = { supplierName?: string } & Record<string, unknown>;
-  const uploadsWithName = uploads.map((u: UploadRow) => ({ ...u, supplierName: u.supplierName || supplierName }));
+    // Ensure uploads include a supplierName field (use persisted or fallback to supplier record)
+    const supplier = await Supplier.findById(params.id).lean() as { name?: string; companyName?: string } | null;
+    const supplierName = supplier?.name || supplier?.companyName || null;
+    type UploadRow = { supplierName?: string } & Record<string, unknown>;
+    const uploadsWithName = uploads.map((u: UploadRow) => ({ ...u, supplierName: u.supplierName || supplierName }));
 
     return NextResponse.json({ success: true, data: uploadsWithName });
   } catch (error) {

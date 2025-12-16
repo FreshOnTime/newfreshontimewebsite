@@ -83,31 +83,31 @@ export async function initializeDefaultData() {
 
     // Get all permissions for role assignment
     const allPermissions = await permissionService.getAllPermissions();
-    const productPermissions = allPermissions.filter(p => 
+    const productPermissions = allPermissions.filter(p =>
       p.resource === 'products' || p.resource === 'brands' || p.resource === 'categories'
     );
-    const contentPermissions = allPermissions.filter(p => 
+    const contentPermissions = allPermissions.filter(p =>
       p.resource === 'products' || p.resource === 'storage'
     );
 
     for (const roleData of defaultRoles) {
       try {
-        let permissions: string[] = [];
+        let permissions: any[] = [];
 
         switch (roleData.name) {
           case 'admin':
-            permissions = allPermissions.map(p => p._id.toString());
+            permissions = allPermissions.map(p => String(p._id));
             break;
           case 'inventory_manager':
-            permissions = productPermissions.map(p => p._id.toString());
+            permissions = productPermissions.map(p => String(p._id));
             break;
           case 'content_creator':
-            permissions = contentPermissions.filter(p => 
+            permissions = contentPermissions.filter(p =>
               p.operation === 'create' || p.operation === 'update' || p.operation === 'read'
-            ).map(p => p._id.toString());
+            ).map(p => String(p._id));
             break;
           case 'customer':
-            permissions = allPermissions.filter(p => p.operation === 'read').map(p => p._id.toString());
+            permissions = allPermissions.filter(p => p.operation === 'read').map(p => String(p._id));
             break;
         }
 

@@ -5,13 +5,13 @@ import { BagProvider, useBag } from '@/contexts/BagContext';
 import { Product } from '@/models/product';
 
 function BagDemo() {
-  const { 
-    bags, 
-    currentBag, 
-    loading, 
-    error, 
-    createBag, 
-    addToBag, 
+  const {
+    bags,
+    currentBag,
+    loading,
+    error,
+    createBag,
+    addToBag,
     removeFromBag
   } = useBag();
 
@@ -47,7 +47,7 @@ function BagDemo() {
         isActive: true,
         tags: ['fresh', 'organic']
       }
-    ] as Product[]);
+    ] as unknown as Product[]);
   }, []);
 
   const handleCreateBag = async () => {
@@ -68,7 +68,7 @@ function BagDemo() {
   return (
     <div className="container mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold">Bag Management Demo</h1>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           {error}
@@ -107,11 +107,10 @@ function BagDemo() {
             {bags.map((bag) => (
               <div
                 key={bag.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  currentBag?.id === bag.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${currentBag?.id === bag.id
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+                  }`}
               >
                 <h3 className="font-semibold">{bag.name}</h3>
                 <p className="text-sm text-gray-600">
@@ -133,7 +132,7 @@ function BagDemo() {
           {products.map((product) => (
             <div key={product._id} className="border border-gray-200 rounded-lg p-4">
               <img
-                src={product.images[0]?.url || '/placeholder.svg'}
+                src={(product as unknown as { images?: Array<{ url?: string }> }).images?.[0]?.url || '/placeholder.svg'}
                 alt={product.name}
                 className="w-full h-32 object-cover rounded-md mb-3"
               />
@@ -182,7 +181,7 @@ function BagDemo() {
                       Rs {(((item.product as Priceable).price || 0) * item.quantity).toFixed(2)}
                     </span>
                     <button
-                      onClick={() => removeFromBag(currentBag.id, item.product._id)}
+                      onClick={() => removeFromBag(currentBag.id, item.product._id || '')}
                       className="text-red-600 hover:text-red-800"
                     >
                       Remove

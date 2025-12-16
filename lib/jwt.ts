@@ -1,13 +1,15 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET_RAW = process.env.JWT_SECRET;
 const JWT_ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '15m';
 const JWT_REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '30d';
 
-if (!JWT_SECRET) {
+if (!JWT_SECRET_RAW) {
   throw new Error('JWT_SECRET environment variable is required');
 }
+
+const JWT_SECRET = JWT_SECRET_RAW;
 
 export interface TokenPayload {
   userId: string;
@@ -26,7 +28,7 @@ export function signAccessToken(payload: Omit<TokenPayload, 'type'>): string {
   return jwt.sign(
     { ...payload, type: 'access' },
     JWT_SECRET,
-    { expiresIn: JWT_ACCESS_EXPIRES }
+    { expiresIn: JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn'] }
   );
 }
 
@@ -34,7 +36,7 @@ export function signRefreshToken(payload: Omit<TokenPayload, 'type'>): RefreshTo
   const token = jwt.sign(
     { ...payload, type: 'refresh' },
     JWT_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES }
+    { expiresIn: JWT_REFRESH_EXPIRES as jwt.SignOptions['expiresIn'] }
   );
 
   // Hash the token for storage in database
