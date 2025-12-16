@@ -46,7 +46,7 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { role?: s
               const UserModel = (await import('@/lib/models/User')).default;
               const maybeUser = idStr ? await UserModel.findById(idStr).lean() as unknown | null : null;
               if (maybeUser && (maybeUser as Record<string, unknown>).supplierId) {
-                const linkedSupplier = await Supplier.findById(((maybeUser as Record<string, unknown>).supplierId as { toString?: () => string }).toString()).lean() as unknown | null;
+                const linkedSupplier = await Supplier.findById(String((maybeUser as Record<string, unknown>).supplierId)).lean() as unknown | null;
                 if (linkedSupplier) {
                   const ls = linkedSupplier as Record<string, unknown>;
                   supplierName = (ls.name as string) || (ls.companyName as string) || null;
@@ -65,16 +65,16 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { role?: s
         } else {
           // ensure supplierId is normalized to a supplier _id string when possible and fetch contact fields
           try {
-              const s = await Supplier.findById(u.supplierId as string).lean() as unknown | null;
-              if (s) {
-                const ss = s as Record<string, unknown>;
-                supplierCompany = (ss.companyName as string) || (ss.name as string) || null;
-                supplierEmail = (ss.email as string) || null;
-                supplierPhone = (ss.phone as string) || null;
-                supplierContactName = (ss.contactName as string) || null;
-                supplierStatus = (ss.status as string) || null;
-                resolvedSupplierId = (ss._id && typeof (ss._id as { toString?: () => string }).toString === 'function') ? (ss._id as { toString: () => string }).toString() : resolvedSupplierId;
-              }
+            const s = await Supplier.findById(u.supplierId as string).lean() as unknown | null;
+            if (s) {
+              const ss = s as Record<string, unknown>;
+              supplierCompany = (ss.companyName as string) || (ss.name as string) || null;
+              supplierEmail = (ss.email as string) || null;
+              supplierPhone = (ss.phone as string) || null;
+              supplierContactName = (ss.contactName as string) || null;
+              supplierStatus = (ss.status as string) || null;
+              resolvedSupplierId = (ss._id && typeof (ss._id as { toString?: () => string }).toString === 'function') ? (ss._id as { toString: () => string }).toString() : resolvedSupplierId;
+            }
           } catch {
             // ignore
           }
