@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import ProductImage from "@/components/products/ProductImage";
 import { Product } from "@/models/product";
 import { Separator } from "@radix-ui/react-separator";
@@ -8,11 +9,15 @@ import { ProductControls } from "./ProductControls";
 import { PageContainer } from "@/components/templates/PageContainer";
 import rehypeSanitize from "rehype-sanitize";
 import Link from "next/link";
+import ProductJsonLd from "@/components/seo/ProductJsonLd";
+import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 
 import connectDB from '@/lib/database';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
 import Category from '@/lib/models/Category';
 import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -108,6 +113,71 @@ async function getProduct(id: string): Promise<Product | null> {
   }
 }
 
+// Generate dynamic metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+      description: 'The product you are looking for could not be found.',
+    };
+  }
+
+  const description = product.description
+    ? product.description.slice(0, 155).replace(/\s+/g, ' ').trim() + (product.description.length > 155 ? '...' : '')
+    : `Buy fresh ${product.name} online at Fresh Pick. Premium quality groceries delivered to your door in Colombo.`;
+
+  const productUrl = `${SITE_URL}/products/${product.sku}`;
+  const imageUrl = product.image?.url?.startsWith('http')
+    ? product.image.url
+    : `${SITE_URL}${product.image?.url || '/og-image.jpg'}`;
+
+  return {
+    title: product.name,
+    description,
+    keywords: [
+      product.name.toLowerCase(),
+      product.category?.name?.toLowerCase() || 'groceries',
+      'fresh',
+      'delivery',
+      'colombo',
+      'sri lanka',
+      'online grocery',
+    ].filter(Boolean).join(', '),
+    alternates: {
+      canonical: productUrl,
+    },
+    openGraph: {
+      title: `${product.name} | Fresh Pick`,
+      description,
+      url: productUrl,
+      siteName: 'Fresh Pick',
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 600,
+          alt: product.name,
+        },
+      ],
+      locale: 'en_LK',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${product.name} | Fresh Pick`,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
+
 export default async function ProductPage({
   params,
 }: {
@@ -127,69 +197,91 @@ export default async function ProductPage({
   const pricePerMeasurement =
     pricePerBaseQuantityWithDiscount / product.baseMeasurementQuantity;
 
-  return (
-    <div className="bg-white min-h-screen pb-20 pt-32 md:pt-40">
-      <div className="container mx-auto px-4 md:px-8">
-        <div className="grid gap-12 lg:gap-24 md:grid-cols-12 items-start">
-          <div className="md:col-span-6 lg:col-span-7 sticky top-32">
-            <div className="border-0 rounded-[3rem] overflow-hidden bg-zinc-50 shadow-sm ring-1 ring-zinc-100">
-              <ProductImage src={product.image.url} alt={product.name} />
-            </div>
-          </div>
-          <div className="md:col-span-6 lg:col-span-5 flex flex-col space-y-8 animate-fade-up">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium uppercase tracking-wider">
-                {product.category?.slug && (
-                  <Link href={`/categories/${product.category.slug}`} className="hover:text-emerald-800 transition-colors">
-                    {product.category.name}
-                  </Link>
-                )}
-                <span>•</span>
-                <span>{product.sku}</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 leading-tight">
-                {product.name}
-              </h1>
-              <div className="space-y-1">
-                <p className="text-xl font-semibold text-gray-900">
-                  Rs. {pricePerBaseQuantityWithDiscount.toFixed(2)}
-                  {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
-                    <span className="text-lg text-gray-600">
-                      /{product.baseMeasurementQuantity}
-                      {product.measurementUnit}
-                    </span>
-                  )}
-                  {product.discountPercentage && (
-                    <span className="ml-2 text-lg text-gray-500 line-through">
-                      Rs. {product.pricePerBaseQuantity.toFixed(2)}
-                    </span>
-                  )}
-                </p>
-                {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
-                  <p className="text-sm text-gray-600">
-                    Rs. {pricePerMeasurement.toFixed(2)}/{product.measurementUnit}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Separator />
+  const breadcrumbItems = [
+    { name: 'Home', url: SITE_URL },
+    ...(product.category?.slug ? [{ name: product.category.name, url: `${SITE_URL}/categories/${product.category.slug}` }] : []),
+    { name: product.name, url: `${SITE_URL}/products/${product.sku}` },
+  ];
 
-            <div className="space-y-4">
-              {product.description && (
-                <Suspense fallback={<div className="text-gray-600">Loading...</div>}>
-                  <Markdown
-                    rehypePlugins={[rehypeSanitize]}
-                    className="text-gray-600 leading-relaxed prose"
-                  >
-                    {product.description}
-                  </Markdown>
-                </Suspense>
-              )}
-              <ProductControls product={product} />
+  return (
+    <>
+      <ProductJsonLd
+        product={{
+          name: product.name,
+          description: product.description,
+          sku: product.sku,
+          image: product.image?.url,
+          price: pricePerBaseQuantityWithDiscount,
+          currency: 'LKR',
+          inStock: !product.isOutOfStock,
+          category: product.category?.name,
+          url: `${SITE_URL}/products/${product.sku}`,
+        }}
+      />
+      <BreadcrumbJsonLd items={breadcrumbItems} />
+      <div className="bg-white min-h-screen pb-20 pt-32 md:pt-40">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="grid gap-12 lg:gap-24 md:grid-cols-12 items-start">
+            <div className="md:col-span-6 lg:col-span-7 sticky top-32">
+              <div className="border-0 rounded-[3rem] overflow-hidden bg-zinc-50 shadow-sm ring-1 ring-zinc-100">
+                <ProductImage src={product.image.url} alt={product.name} />
+              </div>
+            </div>
+            <div className="md:col-span-6 lg:col-span-5 flex flex-col space-y-8 animate-fade-up">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium uppercase tracking-wider">
+                  {product.category?.slug && (
+                    <Link href={`/categories/${product.category.slug}`} className="hover:text-emerald-800 transition-colors">
+                      {product.category.name}
+                    </Link>
+                  )}
+                  <span>•</span>
+                  <span>{product.sku}</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 leading-tight">
+                  {product.name}
+                </h1>
+                <div className="space-y-1">
+                  <p className="text-xl font-semibold text-gray-900">
+                    Rs. {pricePerBaseQuantityWithDiscount.toFixed(2)}
+                    {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
+                      <span className="text-lg text-gray-600">
+                        /{product.baseMeasurementQuantity}
+                        {product.measurementUnit}
+                      </span>
+                    )}
+                    {product.discountPercentage && (
+                      <span className="ml-2 text-lg text-gray-500 line-through">
+                        Rs. {product.pricePerBaseQuantity.toFixed(2)}
+                      </span>
+                    )}
+                  </p>
+                  {!product.isSoldAsUnit && product.baseMeasurementQuantity > 0 && (
+                    <p className="text-sm text-gray-600">
+                      Rs. {pricePerMeasurement.toFixed(2)}/{product.measurementUnit}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Separator />
+
+              <div className="space-y-4">
+                {product.description && (
+                  <Suspense fallback={<div className="text-gray-600">Loading...</div>}>
+                    <Markdown
+                      rehypePlugins={[rehypeSanitize]}
+                      className="text-gray-600 leading-relaxed prose"
+                    >
+                      {product.description}
+                    </Markdown>
+                  </Suspense>
+                )}
+                <ProductControls product={product} />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
