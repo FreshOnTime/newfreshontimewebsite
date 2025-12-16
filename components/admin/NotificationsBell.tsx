@@ -44,7 +44,7 @@ export function NotificationsBell() {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const lastSeenRef = useRef<number>(() => {
+  const lastSeenRef = useRef<number | (() => number)>(() => {
     const raw = typeof window !== 'undefined' ? window.localStorage.getItem(LAST_SEEN_KEY) : null;
     return raw ? Number(raw) : 0;
   });
