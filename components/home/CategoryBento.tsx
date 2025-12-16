@@ -57,7 +57,8 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                                 key={category.slug}
                                 className={`relative group rounded-3xl overflow-hidden ${gridClass}`}
                                 initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 transition={{ delay: index * 0.1 }}
                             >
                                 <Link href={`/categories/${category.slug}`} className="block h-full w-full">
