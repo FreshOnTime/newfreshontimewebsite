@@ -61,8 +61,8 @@ export default function ProductCarousel({
       // Active page calculation normalized within the middle set when looping
       const normalized = loop ? Math.max(0, Math.min(scrollLeft - setWidth, setWidth)) : scrollLeft;
       const ratio = setWidth > clientWidth ? normalized / (setWidth - clientWidth) : 0;
-  const page = Math.round(ratio * (Math.max(1, Math.ceil(products.length / cpv)) - 1));
-  setActivePage(Math.max(0, Math.min(page, Math.max(1, Math.ceil(products.length / cpv)) - 1)));
+      const page = Math.round(ratio * (Math.max(1, Math.ceil(products.length / cpv)) - 1));
+      setActivePage(Math.max(0, Math.min(page, Math.max(1, Math.ceil(products.length / cpv)) - 1)));
     }
 
     if (!loop) {
@@ -264,6 +264,7 @@ export default function ProductCarousel({
               <div key={`${p.sku}-${idx}`} className="snap-start">
                 <div className="w-[220px] sm:w-[240px] md:w-[260px] transition-transform duration-300 hover:scale-[1.02]">
                   <ProductCard
+                    id={p._id || p.sku}
                     sku={p.sku}
                     name={p.name}
                     image={p.image.url}
@@ -305,9 +306,8 @@ export default function ProductCarousel({
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
-                  className={`h-2.5 rounded-full transition-all ${
-                    i === activePage ? "w-6 bg-green-600" : "w-2.5 bg-gray-300 hover:bg-gray-400"
-                  }`}
+                  className={`h-2.5 rounded-full transition-all ${i === activePage ? "w-6 bg-green-600" : "w-2.5 bg-gray-300 hover:bg-gray-400"
+                    }`}
                   onClick={() => {
                     const el = ref.current;
                     const setW = setWidthRef.current || (el ? el.scrollWidth / (loop ? 3 : 1) : 0);
