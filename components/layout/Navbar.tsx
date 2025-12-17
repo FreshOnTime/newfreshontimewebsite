@@ -100,7 +100,7 @@ export function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 

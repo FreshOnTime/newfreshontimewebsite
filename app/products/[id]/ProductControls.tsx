@@ -67,7 +67,7 @@ export const ProductControls = ({ product }: { product: Product }) => {
 
       <div className="space-y-2">
         {product.unitOptions && product.unitOptions.length > 0 && (
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end flex-wrap">
             {product.unitOptions.map((opt, idx) => (
               <button
                 key={idx}
