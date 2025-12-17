@@ -1,13 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import ProductGrid from "@/components/products/ProductGrid";
 import SectionHeader from "@/components/home/SectionHeader";
 import { PageContainer } from "@/components/templates/PageContainer";
 import { Product } from "@/models/product";
 
-export default function SearchPage() {
+function SearchResults() {
   const params = useSearchParams();
   const q = params.get("q")?.toLowerCase() ?? "";
   const [results, setResults] = useState<Product[]>([]);
@@ -59,3 +59,19 @@ export default function SearchPage() {
     </PageContainer>
   );
 }
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <PageContainer>
+        <SectionHeader
+          title="Loading..."
+          subtitle="Please wait"
+        />
+      </PageContainer>
+    }>
+      <SearchResults />
+    </Suspense>
+  );
+}
+

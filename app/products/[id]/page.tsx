@@ -222,14 +222,14 @@ export default async function ProductPage({
       <div className="bg-white min-h-screen pb-20 pt-32 md:pt-40">
         <div className="container mx-auto px-4 md:px-8">
           <div className="grid gap-12 lg:gap-24 md:grid-cols-12 items-start">
-            <div className="md:col-span-6 lg:col-span-7 sticky top-32">
-              <div className="border-0 rounded-[3rem] overflow-hidden bg-zinc-50 shadow-sm ring-1 ring-zinc-100">
+            <div className="md:col-span-6 lg:col-span-7 md:sticky md:top-32">
+              <div className="border-0 rounded-3xl md:rounded-[3rem] overflow-hidden bg-zinc-50 shadow-sm ring-1 ring-zinc-100">
                 <ProductImage src={product.image.url} alt={product.name} />
               </div>
             </div>
             <div className="md:col-span-6 lg:col-span-5 flex flex-col space-y-8 animate-fade-up">
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium uppercase tracking-wider">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-emerald-600 font-medium uppercase tracking-wider">
                   {product.category?.slug && (
                     <Link href={`/categories/${product.category.slug}`} className="hover:text-emerald-800 transition-colors">
                       {product.category.name}
@@ -238,7 +238,7 @@ export default async function ProductPage({
                   <span>•</span>
                   <span>{product.sku}</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 leading-tight">
+                <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 leading-tight">
                   {product.name}
                 </h1>
                 <div className="space-y-1">
