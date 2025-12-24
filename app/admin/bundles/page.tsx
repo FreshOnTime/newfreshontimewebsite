@@ -283,17 +283,15 @@ export default function BundlesPage() {
                             </div>
 
                             {/* Calculated Cost Display */}
-                            {fields.length > 0 && (
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-medium text-gray-700">Total Cost Price:</span>
-                                        <span className="text-lg font-bold text-green-600">
-                                            Rs. {fields.reduce((sum, field) => sum + ((field as any).costPrice || 0) * ((field as any).quantity || 1), 0).toFixed(2)}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">Auto-calculated from products</p>
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-700">Total Cost Price:</span>
+                                    <span className="text-lg font-bold text-green-600">
+                                        Rs. {fields.reduce((sum, field) => sum + ((field as any).costPrice || 0) * ((field as any).quantity || 1), 0).toFixed(2)}
+                                    </span>
                                 </div>
-                            )}
+                                <p className="text-xs text-gray-500 mt-1">Auto-calculated from products</p>
+                            </div>
 
                             <Button
                                 className="w-full bg-green-600 hover:bg-green-700 text-white"
