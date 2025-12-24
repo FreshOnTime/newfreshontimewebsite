@@ -63,7 +63,7 @@ export const GET = requireAdminSimple(async (request) => {
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    const filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = { isBundle: { $ne: true } }; // Exclude bundles
     if (query.search) {
       filter.$or = [
         { name: { $regex: query.search, $options: 'i' } },
