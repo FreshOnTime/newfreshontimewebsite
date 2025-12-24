@@ -139,7 +139,7 @@ export const POST = requireAdminSimple(async (request) => {
 
     await logAuditAction(request.user!.userId, 'create', 'product', product._id.toString(), undefined, product.toObject(), request);
 
-    return NextResponse.json({ product }, { status: 201 });
+    return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });

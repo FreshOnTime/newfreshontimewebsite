@@ -8,7 +8,7 @@ export interface IProduct extends Document {
   price: number;
   costPrice: number;
   categoryId: mongoose.Types.ObjectId;
-  supplierId: mongoose.Types.ObjectId;
+  supplierId?: mongoose.Types.ObjectId;
   stockQty: number;
   minStockLevel?: number;
   // Optional single image convenience alongside array
