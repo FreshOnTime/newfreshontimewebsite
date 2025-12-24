@@ -27,9 +27,9 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Accent: Gold/Amber for CTAs */
-    --accent: 43 96% 56%;
-    --accent-foreground: 222 47% 11%;
+    /* Accent: Emerald Green for CTAs and hovers */
+    --accent: 158 64% 42%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
