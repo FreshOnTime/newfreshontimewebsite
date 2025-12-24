@@ -29,11 +29,16 @@ const createProductSchema = z.object({
       z.object({
         label: z.string().min(1),
         quantity: z.number().positive(),
-        unit: z.enum(['g','kg','ml','l','ea','lb']),
+        unit: z.enum(['g', 'kg', 'ml', 'l', 'ea', 'lb']),
         price: z.number().min(0),
       })
     )
     .optional(),
+  isBundle: z.boolean().optional(),
+  bundleItems: z.array(z.object({
+    product: z.string(),
+    quantity: z.number().positive()
+  })).optional(),
 });
 
 const querySchema = z.object({
@@ -68,8 +73,8 @@ export const GET = requireAdminSimple(async (request) => {
     const skip = (page - 1) * limit;
 
     const [products, total] = await Promise.all([
-  EnhancedProduct.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-  EnhancedProduct.countDocuments(filter),
+      EnhancedProduct.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      EnhancedProduct.countDocuments(filter),
     ]);
 
     return NextResponse.json({
@@ -86,13 +91,13 @@ export const POST = requireAdminSimple(async (request) => {
   try {
     await connectDB();
     const body = await request.json();
-  const data = createProductSchema.parse(body);
+    const data = createProductSchema.parse(body);
 
-  // Normalize SKU for uniqueness (schema uppercases on save)
-  const normalizedSku = data.sku.toUpperCase().trim();
+    // Normalize SKU for uniqueness (schema uppercases on save)
+    const normalizedSku = data.sku.toUpperCase().trim();
 
     // ensure SKU unique
-  const existing = await EnhancedProduct.findOne({ sku: normalizedSku });
+    const existing = await EnhancedProduct.findOne({ sku: normalizedSku });
     if (existing) {
       return NextResponse.json({ error: 'SKU already exists' }, { status: 400 });
     }
@@ -107,22 +112,22 @@ export const POST = requireAdminSimple(async (request) => {
       .replace(/-+/g, '-');
 
     // Ensure slug unique
-  const slugExists = await EnhancedProduct.findOne({ slug });
+    const slugExists = await EnhancedProduct.findOne({ slug });
     if (slugExists) {
       return NextResponse.json({ error: 'Slug already exists' }, { status: 400 });
     }
 
-  // Merge unitOptions into attributes for persistence if provided
-  const attributes = {
-    ...(data.attributes || {}),
-    ...(data.unitOptions ? { unitOptions: data.unitOptions } : {}),
-  } as Record<string, unknown>;
+    // Merge unitOptions into attributes for persistence if provided
+    const attributes = {
+      ...(data.attributes || {}),
+      ...(data.unitOptions ? { unitOptions: data.unitOptions } : {}),
+    } as Record<string, unknown>;
 
-  const rest: Record<string, unknown> = { ...(data as Record<string, unknown>) };
-  delete (rest as Record<string, unknown>)["unitOptions"];
-  delete (rest as Record<string, unknown>)["attributes"];
+    const rest: Record<string, unknown> = { ...(data as Record<string, unknown>) };
+    delete (rest as Record<string, unknown>)["unitOptions"];
+    delete (rest as Record<string, unknown>)["attributes"];
 
-  const product = await EnhancedProduct.create({ ...rest, attributes, sku: normalizedSku, slug });
+    const product = await EnhancedProduct.create({ ...rest, attributes, sku: normalizedSku, slug });
 
     await logAuditAction(request.user!.userId, 'create', 'product', product._id.toString(), undefined, product.toObject(), request);
 
