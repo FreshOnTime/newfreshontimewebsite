@@ -130,8 +130,8 @@ export default function BundlesPage() {
     return (
         <div className="space-y-8 p-8 max-w-5xl mx-auto animate-fade-in-up">
             <div className="flex items-center gap-4 border-b border-gray-100 pb-6">
-                <div className="bg-purple-50 p-3 rounded-2xl">
-                    <Layers className="w-8 h-8 text-purple-600" />
+                <div className="bg-green-50 p-3 rounded-2xl">
+                    <Layers className="w-8 h-8 text-green-600" />
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Bundle Management</h1>
@@ -268,7 +268,7 @@ export default function BundlesPage() {
                             </div>
 
                             <Button
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                className="w-full bg-green-600 hover:bg-green-700 text-white"
                                 onClick={handleSubmit(onSubmit)}
                                 disabled={isSubmitting}
                             >
