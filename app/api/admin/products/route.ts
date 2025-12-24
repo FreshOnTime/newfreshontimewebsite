@@ -17,7 +17,7 @@ const createProductSchema = z.object({
   price: z.number().nonnegative(),
   costPrice: z.number().nonnegative(),
   categoryId: z.string().refine((v) => mongoose.Types.ObjectId.isValid(v), 'Invalid categoryId'),
-  supplierId: z.string().refine((v) => mongoose.Types.ObjectId.isValid(v), 'Invalid supplierId'),
+  supplierId: z.string().optional().refine((v) => !v || mongoose.Types.ObjectId.isValid(v), 'Invalid supplierId'),
   stockQty: z.number().int().nonnegative().default(0),
   minStockLevel: z.number().int().nonnegative().default(5),
   image: z.string().optional(),
@@ -39,6 +39,14 @@ const createProductSchema = z.object({
     product: z.string(),
     quantity: z.number().positive()
   })).optional(),
+}).superRefine((data, ctx) => {
+  if (!data.isBundle && !data.supplierId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Supplier ID is required for non-bundle products",
+      path: ["supplierId"],
+    });
+  }
 });
 
 const querySchema = z.object({

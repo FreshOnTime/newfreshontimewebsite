@@ -71,7 +71,7 @@ const productSchema = new Schema<IProduct>({
   supplierId: {
     type: Schema.Types.ObjectId,
     ref: 'Supplier',
-    required: true,
+    required: false,
   },
   stockQty: {
     type: Number,
