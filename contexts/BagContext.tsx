@@ -34,6 +34,7 @@ interface BagContextType {
   bags: Bag[];
   currentBag: Bag | null;
   loading: boolean;
+  updating: boolean;
   error: string | null;
   createBag: (name: string, description?: string) => Promise<void>;
   addToBag: (bagId: string, product: Product, quantity: number) => Promise<void>;
@@ -51,7 +52,8 @@ const BagContext = createContext<BagContextType | undefined>(undefined);
 export function BagProvider({ children }: { children: ReactNode }) {
   const [bags, setBags] = useState<Bag[]>([]);
   const [currentBag, setCurrentBag] = useState<Bag | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useAuth();
@@ -266,13 +268,40 @@ export function BagProvider({ children }: { children: ReactNode }) {
       await removeFromBag(bagId, productId);
       return;
     }
+
+    // Optimistic update - update UI immediately
     const bag = bags.find(b => b.id === bagId);
     const item = bag?.items.find(i => i.product.id === productId);
-    if (item) {
+    if (!item) return;
+
+    // Store previous state for rollback
+    const previousBags = bags;
+    const previousCurrentBag = currentBag;
+
+    // Optimistically update the quantity in state
+    const updatedBag: Bag = {
+      ...bag!,
+      items: bag!.items.map(i =>
+        i.product.id === productId ? { ...i, quantity } : i
+      )
+    };
+    setBags(prev => prev.map(b => b.id === bagId ? updatedBag : b));
+    if (currentBag?.id === bagId) setCurrentBag(updatedBag);
+
+    // Perform actual API update in background
+    setUpdating(true);
+    try {
       await removeFromBag(bagId, productId);
       await addToBag(bagId, item.product, quantity);
+    } catch (err) {
+      // Rollback on error
+      setBags(previousBags);
+      setCurrentBag(previousCurrentBag);
+      console.error('Error updating quantity:', err);
+    } finally {
+      setUpdating(false);
     }
-  }, [bags, removeFromBag, addToBag]);
+  }, [bags, currentBag, removeFromBag, addToBag]);
 
   const deleteBag = useCallback(async (bagId: string) => {
     setLoading(true);
@@ -325,6 +354,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     bags,
     currentBag,
     loading,
+    updating,
     error,
     createBag,
     addToBag,

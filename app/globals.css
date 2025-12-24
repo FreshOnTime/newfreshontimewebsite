@@ -4,77 +4,77 @@
 
 @layer base {
   :root {
-    /* Premium Fresh Direct inspired color palette */
-    --background: 0 0% 100%;
-    --foreground: 220 13% 13%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 13%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 13%;
-    
-    /* Premium green - more refined, less saturated */
-    --primary: 158 64% 32%;
-    --primary-foreground: 0 0% 100%;
-    
-    /* Sophisticated neutral tones */
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 13% 13%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    
-    /* Elegant accent */
-    --accent: 158 64% 32%;
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    
-    /* Refined borders and inputs */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 158 64% 32%;
-    --radius: 0.5rem;
+    /* Billion Dollar Aesthetic Palette */
+    --background: 0 0% 100%; /* Pure White */
+    --foreground: 222 47% 11%; /* Deep Navy */
 
-    /* Premium category colors */
-    --fruits: 24 95% 53%;
-    --vegetables: 158 64% 32%;
-    --dairy: 45 93% 58%;
-    --meat: 0 84% 60%;
-    --grains: 32 95% 44%;
-    
-    /* Premium gradients */
-    --gradient-fresh: linear-gradient(135deg, hsl(158 64% 32%) 0%, hsl(162 63% 40%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(158 64% 32%) 0%, hsl(158 50% 25%) 100%);
-    --gradient-warm: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(24 80% 60%) 100%);
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary: Deep Luxurious Emerald */
+    --primary: 158 45% 20%; 
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Soft Gold / Champagne */
+    --secondary: 40 30% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Accent: Gold/Amber for CTAs */
+    --accent: 43 96% 56%; 
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 158 45% 20%;
+
+    --radius: 1rem; /* More rounded premium feel */
+
+    /* Category Specifics - Muted/Pastel Premium versions */
+    --fruits: 25 95% 58%;
+    --vegetables: 142 70% 45%;
+    --dairy: 48 95% 60%;
+    --meat: 345 80% 65%;
+    --grains: 30 50% 55%;
   }
 
   .dark {
-    --background: 220 13% 5%;
-    --foreground: 0 0% 98%;
-    --card: 220 13% 8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 220 13% 8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 158 55% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 13% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 13% 15%;
-    --muted-foreground: 220 9% 65%;
-    --accent: 158 55% 45%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 63% 40%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 20%;
-    --input: 220 13% 20%;
-    --ring: 158 55% 45%;
+    /* Rich Dark Mode (Midnight Emerald) */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    /* Dark mode category colors */
-    --fruits: 24 80% 55%;
-    --vegetables: 158 55% 45%;
-    --dairy: 45 80% 65%;
-    --meat: 0 70% 50%;
-    --grains: 32 80% 50%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 158 50% 40%;
+    --primary-foreground: 222 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 43 96% 56%;
+    --accent-foreground: 222 47.4% 11.2%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 158 50% 40%;
   }
 }
 

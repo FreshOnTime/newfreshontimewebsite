@@ -100,7 +100,7 @@ export function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -116,37 +116,37 @@ export function Navbar() {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-b border-emerald-100/50">
+      <div className="bg-gradient-to-r from-primary/5 via-white to-primary/5 border-b border-primary/10">
         <div className="container mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100/50 text-emerald-700 shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary shrink-0">
                 <MapPin className="w-4 h-4" aria-hidden />
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-gray-900 tracking-tight leading-none flex items-center gap-2">
                   Delivering around Colombo
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider">Now Active</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Now Active</span>
                 </span>
-                <span className="text-xs text-emerald-600/80 font-medium truncate mt-0.5">
+                <span className="text-xs text-primary/80 font-medium truncate mt-0.5">
                   Scheduled delivery available — choose slot at checkout
                 </span>
               </div>
             </div>
 
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/help" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-emerald-700 transition-colors uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-emerald-500 transition-colors"></span>
+              <Link href="/help" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-primary transition-colors uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-primary transition-colors"></span>
                 Help Center
               </Link>
-              <Link href="/about" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-emerald-700 transition-colors uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-emerald-500 transition-colors"></span>
+              <Link href="/about" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-primary transition-colors uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-primary transition-colors"></span>
                 About Us
               </Link>
             </div>
 
-            <div className="flex md:hidden items-center text-emerald-700 ml-4">
-              <span className="text-xs font-semibold bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">Delivery Available</span>
+            <div className="flex md:hidden items-center text-primary ml-4">
+              <span className="text-xs font-semibold bg-primary/10 px-2 py-1 rounded-full border border-primary/20">Delivery Available</span>
             </div>
           </div>
         </div>
@@ -162,7 +162,7 @@ export function Navbar() {
               alt="Fresh Pick"
               width={180}
               height={180}
-              className="text-green-600"
+              className="text-primary"
             />
 
           </Link>
@@ -176,12 +176,12 @@ export function Navbar() {
                   placeholder="Search for products, brands, categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-28 py-3 border border-gray-200 rounded-full shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                  className="w-full pl-12 pr-28 py-3 border border-gray-200 rounded-full shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden />
                 <Button
                   type="submit"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 rounded-full px-4 py-2 flex items-center gap-2"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 rounded-full px-4 py-2 flex items-center gap-2"
                   aria-label="Search"
                 >
                   <Search className="w-4 h-4 text-white" />
@@ -200,7 +200,7 @@ export function Navbar() {
                   variant="ghost"
                   className="hidden md:flex items-center space-x-2"
                 >
-                  <User className={`w-5 h-5 ${user ? "text-green-600" : ""}`} />
+                  <User className={`w-5 h-5 ${user ? "text-primary" : ""}`} />
                   <span>{user ? user.firstName : "Account"}</span>
                   {user && (
                     <Badge variant="secondary" className="ml-1 text-xs">
@@ -277,7 +277,7 @@ export function Navbar() {
               <Button variant="ghost" className="relative">
                 <ShoppingCart className="w-6 h-6" />
                 {cartItemCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                  <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center">
                     {cartItemCount}
                   </Badge>
                 )}
@@ -309,7 +309,7 @@ export function Navbar() {
           <nav className="flex items-center space-x-3 py-3 overflow-x-auto no-scrollbar">
             <Link
               href="/products"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition flex items-center gap-2 shadow-sm"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition flex items-center gap-2 shadow-sm"
             >
               <ShoppingBasket className="w-4 h-4" />
               All Products
@@ -322,7 +322,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/categories"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
             >
               Categories
             </Link>
@@ -333,7 +333,7 @@ export function Navbar() {
                 <Link
                   key={category.slug}
                   href={`/categories/${category.slug}`}
-                  className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition duration-200 flex items-center gap-2 shadow-sm"
+                  className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition duration-200 flex items-center gap-2 shadow-sm"
                 >
                   <Icon className="w-4 h-4" />
                   {category.name}
@@ -342,13 +342,13 @@ export function Navbar() {
             })}
             <Link
               href="/orders"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
             >
               Orders
             </Link>
             <Link
               href="/blog"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-green-50 hover:text-green-600 transition"
+              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
             >
               Blog
             </Link>
@@ -363,13 +363,13 @@ export function Navbar() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-20 border-2 border-gray-200 rounded-full focus:border-green-500 focus:ring-0"
+              className="w-full pl-10 pr-20 border-2 border-gray-200 rounded-full focus:border-primary focus:ring-0"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Button
               type="submit"
               size="sm"
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 rounded-full"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 rounded-full"
             >
               Go
             </Button>
@@ -392,14 +392,14 @@ export function Navbar() {
                   <>
                     <Link
                       href="/profile"
-                      className="block text-gray-600 hover:text-green-600"
+                      className="block text-gray-600 hover:text-primary"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {user.firstName || "My Profile"}
                     </Link>
                     <Link
                       href="/orders"
-                      className="block text-gray-600 hover:text-green-600"
+                      className="block text-gray-600 hover:text-primary"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Order History
@@ -407,7 +407,7 @@ export function Navbar() {
                     {(user.role === "admin" || user.role === "manager") && (
                       <Link
                         href="/dashboard"
-                        className="block text-gray-600 hover:text-green-600"
+                        className="block text-gray-600 hover:text-primary"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Dashboard
@@ -416,7 +416,7 @@ export function Navbar() {
                     {user.role === "supplier" && (
                       <Link
                         href="/dashboard"
-                        className="block text-gray-600 hover:text-green-600"
+                        className="block text-gray-600 hover:text-primary"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Supplier Dashboard
@@ -465,7 +465,7 @@ export function Navbar() {
                     <Link
                       key={category.slug}
                       href={`/categories/${category.slug}`}
-                      className="flex items-center gap-3 text-gray-600 hover:text-green-600 py-1"
+                      className="flex items-center gap-3 text-gray-600 hover:text-primary py-1"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <Icon className="w-5 h-5" />
@@ -480,7 +480,7 @@ export function Navbar() {
             <div className="space-y-2">
               <Link
                 href="/products"
-                className="block text-gray-600 hover:text-green-600"
+                className="block text-gray-600 hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 All Products
@@ -494,35 +494,35 @@ export function Navbar() {
               </Link>
               <Link
                 href="/categories"
-                className="block text-gray-600 hover:text-green-600"
+                className="block text-gray-600 hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Categories
               </Link>
               <Link
                 href="/orders"
-                className="block text-gray-600 hover:text-green-600"
+                className="block text-gray-600 hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Orders
               </Link>
               <Link
                 href="/blog"
-                className="block text-gray-600 hover:text-green-600"
+                className="block text-gray-600 hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link
                 href="/help"
-                className="block text-gray-600 hover:text-green-600"
+                className="block text-gray-600 hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Help & Support
               </Link>
               <Link
                 href="/about"
-                className="block text-gray-600 hover:text-green-600"
+                className="block text-gray-600 hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 About Us

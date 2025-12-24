@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  compress: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',
   },

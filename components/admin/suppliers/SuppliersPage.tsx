@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Mail } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { SupplierDialog } from '@/components/admin/suppliers/SupplierDialog';
+import { AdminMessageSender } from '@/components/admin/AdminMessageSender';
 import { toast } from 'sonner';
 
 interface Supplier {
@@ -68,6 +69,10 @@ export function SuppliersPage() {
     }
   };
 
+  const [messageOpen, setMessageOpen] = useState(false);
+
+  const handleMessage = (s: Supplier) => { setEditing(s); setMessageOpen(true); };
+
   const handleSaved = () => { setIsDialogOpen(false); setEditing(null); fetchItems(); };
 
   return (
@@ -77,7 +82,7 @@ export function SuppliersPage() {
           <h1 className="text-3xl font-bold text-gray-900">Suppliers</h1>
           <p className="text-gray-600 mt-2">Manage supplier records</p>
         </div>
-  <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
+        <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />
           Add Supplier
         </Button>
@@ -135,6 +140,9 @@ export function SuppliersPage() {
                             <DropdownMenuItem onClick={() => handleEdit(s)}>
                               <Edit className="h-4 w-4 mr-2" /> Edit
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleMessage(s)}>
+                              <Mail className="h-4 w-4 mr-2" /> Message
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDelete(s._id)} className="text-red-600">
                               <Trash2 className="h-4 w-4 mr-2" /> Delete
                             </DropdownMenuItem>
@@ -164,8 +172,17 @@ export function SuppliersPage() {
         </CardContent>
       </Card>
 
-  <SupplierDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} supplier={editing} onSave={handleSaved} />
-  <SupplierDialog open={isViewOpen} onOpenChange={setIsViewOpen} supplier={editing} onSave={handleSaved} readOnly />
+      <SupplierDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} supplier={editing} onSave={handleSaved} />
+      <SupplierDialog open={isViewOpen} onOpenChange={setIsViewOpen} supplier={editing} onSave={handleSaved} readOnly />
+
+      {editing && (
+        <AdminMessageSender
+          open={messageOpen}
+          onOpenChange={setMessageOpen}
+          recipientId={editing._id}
+          recipientName={editing.name}
+        />
+      )}
     </div>
   );
 }

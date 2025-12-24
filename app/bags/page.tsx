@@ -19,16 +19,16 @@ import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 
 export default function BagsPage() {
-  const { 
-    bags, 
-    loading, 
-    error, 
-    createBag, 
-    updateBagItem, 
+  const {
+    bags,
+    loading,
+    error,
+    createBag,
+    updateBagItem,
     removeFromBag,
-    deleteBag 
+    deleteBag
   } = useBag();
-  
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newBagName, setNewBagName] = useState("");
   const [newBagDescription, setNewBagDescription] = useState("");
@@ -82,7 +82,7 @@ export default function BagsPage() {
     }
   };
 
-  if (loading) {
+  if (loading && bags.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -173,64 +173,65 @@ export default function BagsPage() {
                       const imgUrl = typeof firstImg === 'string' ? firstImg : firstImg?.url;
                       const key = item.product.id ? `${bag.id}-${item.product.id}` : `${bag.id}-${idx}`;
                       return (
-                      <div key={key} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0 relative overflow-hidden">
-                          {imgUrl ? (
-                            <Image
-                              src={imgUrl}
-                              alt={(typeof firstImg !== 'string' ? firstImg?.alt : '') || item.product.name}
-                              fill
-                              className="object-cover rounded-lg"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-300 rounded-lg"></div>
-                          )}
-                        </div>
-                        
-                        <div className="flex-grow">
-                          <h4 className="font-medium text-gray-900 text-sm">{item.product.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            Rs. {item.product.price.toFixed(2)} / {item.product.unit || 'unit'}
-                          </p>
-                        </div>
+                        <div key={key} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0 relative overflow-hidden">
+                            {imgUrl ? (
+                              <Image
+                                src={imgUrl}
+                                alt={(typeof firstImg !== 'string' ? firstImg?.alt : '') || item.product.name}
+                                fill
+                                className="object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-300 rounded-lg"></div>
+                            )}
+                          </div>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(bag.id, item.product.id, item.quantity - 1)}
-                            className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
-                            disabled={item.quantity <= 1}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          
-                          <span className="w-8 text-center font-medium">{item.quantity}</span>
-                          
-                          <button
-                            onClick={() => updateQuantity(bag.id, item.product.id, item.quantity + 1)}
-                            className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
-                            disabled={item.quantity >= (item.product.stock || 999)}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
+                          <div className="flex-grow">
+                            <h4 className="font-medium text-gray-900 text-sm">{item.product.name}</h4>
+                            <p className="text-sm text-gray-600">
+                              Rs. {item.product.price.toFixed(2)} / {item.product.unit || 'unit'}
+                            </p>
+                          </div>
 
-                          <button
-                            onClick={() => removeItem(bag.id, item.product.id)}
-                            className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center hover:bg-red-200 ml-2"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => updateQuantity(bag.id, item.product.id, item.quantity - 1)}
+                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+
+                            <span className="w-8 text-center font-medium">{item.quantity}</span>
+
+                            <button
+                              onClick={() => updateQuantity(bag.id, item.product.id, item.quantity + 1)}
+                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                              disabled={item.quantity >= (item.product.stock || 999)}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => removeItem(bag.id, item.product.id)}
+                              className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center hover:bg-red-200 ml-2"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}) || (
-                      <p className="text-gray-500 text-center py-4">No items in this bag</p>
-                    )}
+                      )
+                    }) || (
+                        <p className="text-gray-500 text-center py-4">No items in this bag</p>
+                      )}
                   </div>
 
                   {bag.tags && bag.tags.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
-            {bag.tags.map((tag, index) => (
+                      {bag.tags.map((tag, index) => (
                         <span
-              key={`${bag.id}-tag-${index}-${tag}`}
+                          key={`${bag.id}-tag-${index}-${tag}`}
                           className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
                         >
                           {tag}
@@ -293,8 +294,8 @@ export default function BagsPage() {
             >
               Cancel
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={handleCreateBag}
               disabled={loading || !newBagName.trim()}
             >

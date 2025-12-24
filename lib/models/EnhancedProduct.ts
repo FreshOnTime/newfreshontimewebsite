@@ -23,6 +23,8 @@ export interface IProduct extends Document {
     width: number;
     height: number;
   };
+  isBundle?: boolean;
+  bundleItems?: { product: mongoose.Types.ObjectId; quantity: number }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -109,6 +111,20 @@ const productSchema = new Schema<IProduct>({
     width: Number,
     height: Number,
   },
+  isBundle: {
+    type: Boolean,
+    default: false,
+  },
+  bundleItems: [{
+    product: {
+      type: Schema.Types.ObjectId,
+      ref: 'EnhancedProduct',
+    },
+    quantity: {
+      type: Number,
+      default: 1,
+    },
+  }],
 }, {
   timestamps: true,
 });
@@ -124,17 +140,17 @@ productSchema.index({ createdAt: -1 });
 productSchema.index({ name: 'text', description: 'text' }); // Text search
 
 // Virtual for profit margin
-productSchema.virtual('profitMargin').get(function() {
+productSchema.virtual('profitMargin').get(function () {
   return this.price - this.costPrice;
 });
 
 // Virtual for profit percentage
-productSchema.virtual('profitPercentage').get(function() {
+productSchema.virtual('profitPercentage').get(function () {
   return this.costPrice > 0 ? ((this.price - this.costPrice) / this.costPrice * 100) : 0;
 });
 
 // Virtual for low stock status
-productSchema.virtual('isLowStock').get(function() {
+productSchema.virtual('isLowStock').get(function () {
   return this.stockQty <= (this.minStockLevel || 5);
 });
 

@@ -17,6 +17,8 @@ import {
   Menu,
   X,
   BookOpen,
+  Bell,
+  Layers,
 } from 'lucide-react';
 
 const navigation = [
@@ -27,6 +29,8 @@ const navigation = [
   { name: 'Supplier Uploads', href: '/admin/supplier-uploads', icon: FileText },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
+  { name: 'Bundles', href: '/admin/bundles', icon: Layers },
+  { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Blog Posts', href: '/admin/blogs', icon: BookOpen },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
