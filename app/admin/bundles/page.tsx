@@ -10,17 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Layers, Plus, Trash2, Search, Save } from "lucide-react";
 import { Product } from "@/models/product";
-import { Supplier } from "@/models/Supplier";
-
 interface BundleForm {
     name: string;
     sku: string;
     description: string;
     pricePerBaseQuantity: number;
+    costPrice: number;
     image: string;
     categoryId: string;
-    supplierId: string;
-    bundleItems: { productId: string; name: string; quantity: number }[];
+    bundleItems: { productId: string; name: string; quantity: number; price: number }[];
 }
 
 interface Category {
@@ -31,7 +29,6 @@ interface Category {
 export default function BundlesPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [productSearch, setProductSearch] = useState("");
     const [searchResults, setSearchResults] = useState<Product[]>([]);
 
@@ -46,25 +43,12 @@ export default function BundlesPage() {
         name: "bundleItems"
     });
 
-    // Fetch categories and suppliers on mount
+    // Fetch categories on mount
     useEffect(() => {
         fetch("/api/categories")
             .then(res => res.json())
             .then(data => {
                 if (data.success) setCategories(data.data);
-            });
-
-        // Fetch valid suppliers for admin bundle creation
-        fetch("/api/admin/suppliers?limit=100")
-            .then(res => res.json())
-            .then(data => {
-                if (data.suppliers) {
-                    setSuppliers(data.suppliers);
-                    // Default to first supplier if available
-                    if (data.suppliers.length > 0) {
-                        setValue("supplierId", data.suppliers[0]._id);
-                    }
-                }
             });
     }, [setValue]);
 
@@ -92,10 +76,10 @@ export default function BundlesPage() {
                 sku: data.sku,
                 description: data.description,
                 price: Number(data.pricePerBaseQuantity),
-                costPrice: Number(data.pricePerBaseQuantity) * 0.8, // Estimate cost price as 80% for now
+                costPrice: Number(data.costPrice),
                 image: data.image || "/placeholder.svg",
                 categoryId: data.categoryId,
-                supplierId: data.supplierId,
+
                 isBundle: true,
                 bundleItems: data.bundleItems.map(item => ({
                     product: item.productId,
@@ -125,7 +109,7 @@ export default function BundlesPage() {
                 toast.success("Bundle created successfully");
                 reset();
             } else {
-                toast.error(result.message || "Failed to create bundle");
+                toast.error(result.error || result.message || "Failed to create bundle");
             }
         } catch (error) {
             toast.error("An error occurred");
@@ -135,10 +119,12 @@ export default function BundlesPage() {
     };
 
     const addProductToBundle = (product: Product) => {
+        const price = (product as any).price || (product as any).pricePerBaseQuantity || 0;
         append({
             productId: product._id || "",
             name: product.name,
-            quantity: 1
+            quantity: 1,
+            price: price
         });
         setProductSearch("");
         setSearchResults([]);
@@ -147,8 +133,8 @@ export default function BundlesPage() {
     return (
         <div className="space-y-8 p-8 max-w-5xl mx-auto animate-fade-in-up">
             <div className="flex items-center gap-4 border-b border-gray-100 pb-6">
-                <div className="bg-purple-50 p-3 rounded-2xl">
-                    <Layers className="w-8 h-8 text-purple-600" />
+                <div className="bg-green-50 p-3 rounded-2xl">
+                    <Layers className="w-8 h-8 text-green-600" />
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Bundle Management</h1>
@@ -194,11 +180,20 @@ export default function BundlesPage() {
 
                                 <div className="grid gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Price (LKR)</label>
+                                        <label className="text-sm font-medium text-gray-700">Selling Price (LKR)</label>
                                         <Input
                                             type="number"
                                             step="0.01"
-                                            {...register("pricePerBaseQuantity", { required: "Price is required" })}
+                                            {...register("pricePerBaseQuantity", { required: "Selling price is required" })}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700">Cost Price (LKR)</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            {...register("costPrice", { required: "Cost price is required" })}
                                             placeholder="0.00"
                                         />
                                     </div>
@@ -216,21 +211,6 @@ export default function BundlesPage() {
                                         </Select>
                                     </div>
                                 </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Supplier</label>
-                                    <Select onValueChange={(val) => setValue("supplierId", val)} defaultValue={watch("supplierId")}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Supplier" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {suppliers.map(sup => (
-                                                <SelectItem key={sup._id} value={sup._id}>{sup.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700">Image URL</label>
                                     <Input
@@ -262,17 +242,23 @@ export default function BundlesPage() {
                                 />
                                 {searchResults.length > 0 && (
                                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                        {searchResults.map(p => (
-                                            <div
-                                                key={p._id}
-                                                className="p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2 text-sm"
-                                                onClick={() => addProductToBundle(p)}
-                                            >
-                                                <img src={p.image?.url} className="w-8 h-8 rounded object-cover" />
-                                                <div className="flex-1 truncate">{p.name}</div>
-                                                <div className="text-gray-500 text-xs">Rs. {p.pricePerBaseQuantity}</div>
-                                            </div>
-                                        ))}
+                                        {searchResults.map(p => {
+                                            const price = (p as any).price || (p as any).pricePerBaseQuantity || 0;
+                                            const imageUrl = typeof p.image === 'string' ? p.image : p.image?.url || '/placeholder.svg';
+                                            return (
+                                                <div
+                                                    key={p._id}
+                                                    className="p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 text-sm border-b border-gray-50 last:border-0"
+                                                    onClick={() => addProductToBundle(p)}
+                                                >
+                                                    <img src={imageUrl} className="w-10 h-10 rounded-lg object-cover bg-gray-100" alt={p.name} />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-medium truncate">{p.name}</div>
+                                                        <div className="text-green-600 font-semibold">Rs. {price.toFixed(2)}</div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
@@ -281,7 +267,10 @@ export default function BundlesPage() {
                             <div className="space-y-3">
                                 {fields.map((field, index) => (
                                     <div key={field.id} className="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                        <div className="flex-1 text-sm font-medium truncate">{field.name}</div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium truncate">{field.name}</div>
+                                            <div className="text-xs text-green-600">Rs. {(field as any).price?.toFixed(2) || '0.00'}</div>
+                                        </div>
                                         <Input
                                             type="number"
                                             className="w-16 h-8 text-center"
@@ -300,7 +289,7 @@ export default function BundlesPage() {
                             </div>
 
                             <Button
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                className="w-full bg-green-600 hover:bg-green-700 text-white"
                                 onClick={handleSubmit(onSubmit)}
                                 disabled={isSubmitting}
                             >
