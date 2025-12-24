@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Layers, Plus, Trash2, Search, Save } from "lucide-react";
 import { Product } from "@/models/product";
+import { Supplier } from "@/models/Supplier";
 
 interface BundleForm {
     name: string;
@@ -18,6 +19,7 @@ interface BundleForm {
     pricePerBaseQuantity: number;
     image: string;
     categoryId: string;
+    supplierId: string;
     bundleItems: { productId: string; name: string; quantity: number }[];
 }
 
@@ -29,6 +31,7 @@ interface Category {
 export default function BundlesPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [productSearch, setProductSearch] = useState("");
     const [searchResults, setSearchResults] = useState<Product[]>([]);
 
@@ -43,14 +46,27 @@ export default function BundlesPage() {
         name: "bundleItems"
     });
 
-    // Fetch categories on mount
+    // Fetch categories and suppliers on mount
     useEffect(() => {
         fetch("/api/categories")
             .then(res => res.json())
             .then(data => {
                 if (data.success) setCategories(data.data);
             });
-    }, []);
+
+        // Fetch valid suppliers for admin bundle creation
+        fetch("/api/admin/suppliers?limit=100")
+            .then(res => res.json())
+            .then(data => {
+                if (data.suppliers) {
+                    setSuppliers(data.suppliers);
+                    // Default to first supplier if available
+                    if (data.suppliers.length > 0) {
+                        setValue("supplierId", data.suppliers[0]._id);
+                    }
+                }
+            });
+    }, [setValue]);
 
     // Search products
     useEffect(() => {
@@ -75,25 +91,26 @@ export default function BundlesPage() {
                 name: data.name,
                 sku: data.sku,
                 description: data.description,
-                pricePerBaseQuantity: Number(data.pricePerBaseQuantity),
-                image: { url: data.image || "/placeholder.svg" },
-                category: data.categoryId,
+                price: Number(data.pricePerBaseQuantity),
+                costPrice: Number(data.pricePerBaseQuantity) * 0.8, // Estimate cost price as 80% for now
+                image: data.image || "/placeholder.svg",
+                categoryId: data.categoryId,
+                supplierId: data.supplierId,
                 isBundle: true,
                 bundleItems: data.bundleItems.map(item => ({
                     product: item.productId,
                     quantity: Number(item.quantity)
                 })),
                 // Defaults
-                baseMeasurementQuantity: 1,
-                measurementUnit: "ea",
-                isSoldAsUnit: true,
-                minOrderQuantity: 1,
-                maxOrderQuantity: 100,
-                stepQuantity: 1,
-                stockQuantity: 100, // Bundles are virtual usually, or track constituent stock (advanced)
-                lowStockThreshold: 5,
-                updatedBy: "Admin",
-                createdBy: "Admin"
+                stockQty: 100,
+                minStockLevel: 5,
+                // Optional but good to have defaults
+                tags: ["Bundle"],
+                attributes: {
+                    baseMeasurementQuantity: 1,
+                    measurementUnit: "ea",
+                    isSoldAsUnit: true,
+                }
             };
 
             const response = await fetch("/api/admin/products", {
@@ -198,6 +215,20 @@ export default function BundlesPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">Supplier</label>
+                                    <Select onValueChange={(val) => setValue("supplierId", val)} defaultValue={watch("supplierId")}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Supplier" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {suppliers.map(sup => (
+                                                <SelectItem key={sup._id} value={sup._id}>{sup.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div className="space-y-2">
