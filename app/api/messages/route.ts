@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth'; // Assuming next-auth, allow adjustment if verifying otherwise
-import { authOptions } from '@/lib/auth'; // Adjust path if needed, usually where auth options are
-import dbConnect from '@/lib/dbConnect'; // Adjust if dbConnect is elsewhere
+import { NextRequest, NextResponse } from 'next/server'; // Adjust path if needed, usually where auth options are
+import dbConnect from '@/lib/db'; // Adjust if dbConnect is elsewhere
 import Message from '@/lib/models/Message';
 import User from '@/lib/models/User';
 import jwt from 'jsonwebtoken';
