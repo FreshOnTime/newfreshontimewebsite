@@ -5,8 +5,10 @@
 @layer base {
   :root {
     /* Billion Dollar Aesthetic Palette */
-    --background: 0 0% 100%; /* Pure White */
-    --foreground: 222 47% 11%; /* Deep Navy */
+    --background: 0 0% 100%;
+    /* Pure White */
+    --foreground: 222 47% 11%;
+    /* Deep Navy */
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -15,7 +17,7 @@
     --popover-foreground: 222 47% 11%;
 
     /* Primary: Deep Luxurious Emerald */
-    --primary: 158 45% 20%; 
+    --primary: 158 45% 20%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Soft Gold / Champagne */
@@ -26,7 +28,7 @@
     --muted-foreground: 215.4 16.3% 46.9%;
 
     /* Accent: Gold/Amber for CTAs */
-    --accent: 43 96% 56%; 
+    --accent: 43 96% 56%;
     --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84.2% 60.2%;
@@ -36,7 +38,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 158 45% 20%;
 
-    --radius: 1rem; /* More rounded premium feel */
+    --radius: 1rem;
+    /* More rounded premium feel */
 
     /* Category Specifics - Muted/Pastel Premium versions */
     --fruits: 25 95% 58%;
@@ -82,18 +85,59 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Clean white background for premium feel */
+    /* Modern premium background with subtle patterns */
     background-color: hsl(var(--background));
+    background-image:
+      /* Subtle gradient orbs */
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(34, 197, 94, 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(16, 185, 129, 0.05), transparent),
+      radial-gradient(ellipse 50% 30% at 0% 100%, rgba(34, 197, 94, 0.04), transparent),
+      /* Subtle dot pattern */
+      radial-gradient(circle at center, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+    background-attachment: fixed;
   }
-  
+
+  /* Alternative clean mesh gradient for specific sections */
+  .bg-mesh {
+    background-color: #ffffff;
+    background-image:
+      radial-gradient(at 40% 20%, hsla(158, 64%, 52%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(189, 75%, 75%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(158, 64%, 52%, 0.06) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(340, 22%, 87%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(158, 64%, 52%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(189, 75%, 75%, 0.06) 0px, transparent 50%);
+  }
+
+  /* Noise texture overlay for premium depth */
+  .bg-noise::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    z-index: 1;
+  }
+
   /* Premium typography defaults */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply tracking-tight font-semibold;
   }
-  
+
   /* Smoother font rendering */
   html {
     -webkit-font-smoothing: antialiased;
@@ -106,59 +150,59 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   /* Premium glass effect */
   .glass {
     @apply bg-white/80 backdrop-blur-xl border border-white/20;
   }
-  
+
   .glass-dark {
     @apply bg-black/40 backdrop-blur-xl border border-white/10;
   }
-  
+
   /* Premium shadows */
   .shadow-premium {
-    box-shadow: 
+    box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.04),
       0 4px 8px rgba(0, 0, 0, 0.04),
       0 16px 32px rgba(0, 0, 0, 0.04);
   }
-  
+
   .shadow-premium-lg {
-    box-shadow: 
+    box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.02),
       0 8px 16px rgba(0, 0, 0, 0.04),
       0 24px 48px rgba(0, 0, 0, 0.06);
   }
-  
+
   .shadow-premium-hover {
-    box-shadow: 
+    box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.04),
       0 12px 24px rgba(0, 0, 0, 0.06),
       0 32px 64px rgba(0, 0, 0, 0.08);
   }
-  
+
   /* Premium gradient text */
   .text-gradient-premium {
     @apply bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent;
   }
-  
+
   /* Premium card hover */
   .card-hover-premium {
     @apply transition-all duration-300 ease-out;
   }
-  
+
   .card-hover-premium:hover {
     @apply -translate-y-1;
-    box-shadow: 
+    box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.04),
       0 16px 32px rgba(0, 0, 0, 0.08);
   }
-  
+
   /* Premium border gradient */
   .border-gradient {
     background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, hsl(158 64% 32%), hsl(162 63% 50%)) border-box;
+      linear-gradient(135deg, hsl(158 64% 32%), hsl(162 63% 50%)) border-box;
     border: 1px solid transparent;
   }
 }
@@ -168,21 +212,27 @@
   0% {
     transform: translate(0px, 0px) scale(1);
   }
+
   33% {
     transform: translate(30px, -50px) scale(1.1);
   }
+
   66% {
     transform: translate(-20px, 20px) scale(0.9);
   }
+
   100% {
     transform: translate(0px, 0px) scale(1);
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -192,6 +242,7 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -202,6 +253,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -217,7 +269,7 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -257,9 +309,12 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Premium focus states */
@@ -268,6 +323,8 @@
 }
 
 /* Premium input styling */
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   @apply outline-none ring-2 ring-emerald-500/20 border-emerald-500;
 }
