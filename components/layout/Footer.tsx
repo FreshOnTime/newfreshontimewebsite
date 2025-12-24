@@ -27,13 +27,13 @@ export function Footer() {
               convenience you&apos;ll love.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
                 <Instagram className="w-5 h-5" />
               </a>
             </div>
@@ -44,47 +44,47 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/about" className="text-gray-400 hover:text-accent transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/products" className="text-gray-400 hover:text-accent transition-colors">
                   All Products
                 </Link>
               </li>
               <li>
-                <Link href="/deals" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/deals" className="text-gray-400 hover:text-accent transition-colors">
                   Hot Deals
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/categories" className="text-gray-400 hover:text-accent transition-colors">
                   Categories
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/how-it-works" className="text-gray-400 hover:text-accent transition-colors">
                   How It Works
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/careers" className="text-gray-400 hover:text-accent transition-colors">
                   Careers
                 </Link>
               </li>
               <li>
-                <Link href="/orders" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/orders" className="text-gray-400 hover:text-accent transition-colors">
                   My Orders
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/blog" className="text-gray-400 hover:text-accent transition-colors">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/help" className="text-gray-400 hover:text-accent transition-colors">
                   Help Center
                 </Link>
               </li>
@@ -96,27 +96,27 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Categories</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/categories/fresh-produce" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/categories/fresh-produce" className="text-gray-400 hover:text-accent transition-colors">
                   Fresh Produce
                 </Link>
               </li>
               <li>
-                <Link href="/categories/dairy-eggs" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/categories/dairy-eggs" className="text-gray-400 hover:text-accent transition-colors">
                   Dairy & Eggs
                 </Link>
               </li>
               <li>
-                <Link href="/categories/meat-seafood" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/categories/meat-seafood" className="text-gray-400 hover:text-accent transition-colors">
                   Meat & Seafood
                 </Link>
               </li>
               <li>
-                <Link href="/categories/pantry-staples" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/categories/pantry-staples" className="text-gray-400 hover:text-accent transition-colors">
                   Pantry Staples
                 </Link>
               </li>
               <li>
-                <Link href="/categories/bakery" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/categories/bakery" className="text-gray-400 hover:text-accent transition-colors">
                   Bakery
                 </Link>
               </li>
@@ -129,7 +129,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center text-gray-400">
                 <Mail className="w-4 h-4 mr-2" />
-                <a href="mailto:hello@freshpick.lk" className="hover:text-white transition-colors">
+                <a href="mailto:hello@freshpick.lk" className="hover:text-accent transition-colors">
                   hello@freshpick.lk
                 </a>
               </li>
@@ -147,13 +147,13 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
             <p>&copy; 2025 Fresh Pick. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/privacy" className="hover:text-white transition-colors">
+              <Link href="/privacy" className="hover:text-accent transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="hover:text-white transition-colors">
+              <Link href="/terms" className="hover:text-accent transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/refund" className="hover:text-white transition-colors">
+              <Link href="/refund" className="hover:text-accent transition-colors">
                 Refund Policy
               </Link>
             </div>
