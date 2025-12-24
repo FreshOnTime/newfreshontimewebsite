@@ -22,6 +22,8 @@ export interface Product {
   totalSales: number;
   isFeatured?: boolean;
   discountPercentage?: number;
+  isBundle?: boolean;
+  bundleItems?: Array<{ product: string | Product; quantity: number }>;
   lowStockThreshold: number;
 
   // Optional selectable unit options e.g., [{label:'1kg', quantity:1, unit:'kg', price: X}]
