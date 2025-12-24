@@ -15,10 +15,9 @@ interface BundleForm {
     sku: string;
     description: string;
     pricePerBaseQuantity: number;
-    costPrice: number;
     image: string;
     categoryId: string;
-    bundleItems: { productId: string; name: string; quantity: number; price: number }[];
+    bundleItems: { productId: string; name: string; quantity: number; price: number; costPrice: number }[];
 }
 
 interface Category {
@@ -76,7 +75,7 @@ export default function BundlesPage() {
                 sku: data.sku,
                 description: data.description,
                 price: Number(data.pricePerBaseQuantity),
-                costPrice: Number(data.costPrice),
+                costPrice: (data.bundleItems || []).reduce((sum, item) => sum + ((item.costPrice || 0) * Number(item.quantity || 1)), 0) || 0,
                 image: data.image || "/placeholder.svg",
                 categoryId: data.categoryId,
 
@@ -96,6 +95,8 @@ export default function BundlesPage() {
                     isSoldAsUnit: true,
                 }
             };
+
+            console.log('Bundle payload:', JSON.stringify(payload, null, 2));
 
             const response = await fetch("/api/admin/products", {
                 method: "POST",
@@ -120,11 +121,13 @@ export default function BundlesPage() {
 
     const addProductToBundle = (product: Product) => {
         const price = (product as any).price || (product as any).pricePerBaseQuantity || 0;
+        const costPrice = (product as any).costPrice || price * 0.7; // Default cost to 70% of price if not available
         append({
             productId: product._id || "",
             name: product.name,
             quantity: 1,
-            price: price
+            price: price,
+            costPrice: costPrice
         });
         setProductSearch("");
         setSearchResults([]);
@@ -185,15 +188,6 @@ export default function BundlesPage() {
                                             type="number"
                                             step="0.01"
                                             {...register("pricePerBaseQuantity", { required: "Selling price is required" })}
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Cost Price (LKR)</label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            {...register("costPrice", { required: "Cost price is required" })}
                                             placeholder="0.00"
                                         />
                                     </div>
@@ -287,6 +281,19 @@ export default function BundlesPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Calculated Cost Display */}
+                            {fields.length > 0 && (
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-medium text-gray-700">Total Cost Price:</span>
+                                        <span className="text-lg font-bold text-green-600">
+                                            Rs. {fields.reduce((sum, field) => sum + ((field as any).costPrice || 0) * ((field as any).quantity || 1), 0).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Auto-calculated from products</p>
+                                </div>
+                            )}
 
                             <Button
                                 className="w-full bg-green-600 hover:bg-green-700 text-white"
