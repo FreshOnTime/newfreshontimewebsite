@@ -89,11 +89,11 @@ export default function RootLayout({
             <body className={`${defaultFont.className} antialiased pb-16 md:pb-0`}>
               <AdminChromeGuard>{children}</AdminChromeGuard>
               <BottomNav />
-              <ChatWidget />
+              {/* <ChatWidget /> */}
               <Toaster />
               <ServiceWorkerRegistration />
-              {/* Puter.js for AI Chat */}
-              <script src="https://js.puter.com/v2/" async />
+              {/* Puter.js for AI Chat - Temporarily disabled */}
+              {/* <script src="https://js.puter.com/v2/" async /> */}
               {process.env.NEXT_PUBLIC_GA_ID && (
                 <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
               )}
