@@ -9,6 +9,7 @@ import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import BottomNav from "@/components/layout/BottomNav";
+// import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled
 
 const defaultFont = Inter({
   subsets: ["latin"],
@@ -88,8 +89,11 @@ export default function RootLayout({
             <body className={`${defaultFont.className} antialiased pb-16 md:pb-0`}>
               <AdminChromeGuard>{children}</AdminChromeGuard>
               <BottomNav />
+              <ChatWidget />
               <Toaster />
               <ServiceWorkerRegistration />
+              {/* Puter.js for AI Chat */}
+              <script src="https://js.puter.com/v2/" async />
               {process.env.NEXT_PUBLIC_GA_ID && (
                 <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
               )}

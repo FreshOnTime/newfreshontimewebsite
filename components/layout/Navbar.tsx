@@ -304,21 +304,21 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Categories navigation - Desktop */}
-        <div className="hidden md:block border-t border-gray-100">
-          <nav className="flex items-center space-x-3 py-3 overflow-x-auto no-scrollbar">
+        {/* Categories navigation - Desktop - Enhanced Design */}
+        <div className="hidden md:block bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/80 border-t border-emerald-100/50">
+          <nav className="flex items-center justify-center gap-2 py-3 overflow-x-auto no-scrollbar">
             <Link
               href="/products"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition flex items-center gap-2 shadow-sm"
+              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
             >
-              <ShoppingBasket className="w-4 h-4" />
-              All Products
+              <ShoppingBasket className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+              <span className="text-gray-700 group-hover:text-emerald-700 font-medium">All Products</span>
             </Link>
             <Link
               href="/categories"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
+              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
             >
-              Categories
+              <span className="text-gray-600 group-hover:text-emerald-700 font-medium">Categories</span>
             </Link>
             {(navCategories || []).map((category) => {
               const Icon =
@@ -327,24 +327,24 @@ export function Navbar() {
                 <Link
                   key={category.slug}
                   href={`/categories/${category.slug}`}
-                  className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition duration-200 flex items-center gap-2 shadow-sm"
+                  className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
                 >
-                  <Icon className="w-4 h-4" />
-                  {category.name}
+                  <Icon className="w-4 h-4 text-gray-500 group-hover:text-emerald-600 group-hover:scale-110 transition-all" />
+                  <span className="text-gray-600 group-hover:text-emerald-700 font-medium">{category.name}</span>
                 </Link>
               );
             })}
             <Link
               href="/orders"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
+              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
             >
-              Orders
+              <span className="text-gray-600 group-hover:text-emerald-700 font-medium">Orders</span>
             </Link>
             <Link
               href="/blog"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
+              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
             >
-              Blog
+              <span className="text-gray-600 group-hover:text-emerald-700 font-medium">Blog</span>
             </Link>
           </nav>
         </div>
