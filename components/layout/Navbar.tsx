@@ -119,16 +119,16 @@ export function Navbar() {
       <div className="bg-gradient-to-r from-primary/5 via-white to-primary/5 border-b border-primary/10">
         <div className="container mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary shrink-0">
                 <MapPin className="w-4 h-4" aria-hidden />
               </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-gray-900 tracking-tight leading-none flex items-center gap-2">
-                  Delivering around Colombo
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Now Active</span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold text-gray-900 tracking-tight leading-none flex items-center gap-2 text-sm sm:text-base">
+                  <span className="truncate">Delivering around Colombo</span>
+                  <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Now Active</span>
                 </span>
-                <span className="text-xs text-primary/80 font-medium truncate mt-0.5">
+                <span className="text-xs text-primary/80 font-medium truncate mt-0.5 hidden sm:block">
                   Scheduled delivery available — choose slot at checkout
                 </span>
               </div>
@@ -145,8 +145,8 @@ export function Navbar() {
               </Link>
             </div>
 
-            <div className="flex md:hidden items-center text-primary ml-4">
-              <span className="text-xs font-semibold bg-primary/10 px-2 py-1 rounded-full border border-primary/20">Delivery Available</span>
+            <div className="flex sm:hidden items-center text-primary ml-2 shrink-0">
+              <span className="text-[10px] font-semibold bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 whitespace-nowrap">Active</span>
             </div>
           </div>
         </div>
@@ -304,52 +304,47 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Categories navigation - Desktop - Clean Premium Design */}
-        <div className="hidden md:block bg-white border-t border-b border-gray-100 shadow-sm">
+        {/* Categories navigation - Desktop - Glassmorphism Pills */}
+        <div className="hidden md:block bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/80 border-t border-emerald-100/50 shadow-sm">
           <div className="container mx-auto px-4 md:px-8">
-            <nav className="flex items-center gap-1 py-2 overflow-x-auto no-scrollbar">
+            <nav className="flex items-center gap-2 py-3 overflow-x-auto no-scrollbar">
               <Link
                 href="/products"
-                className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors relative"
+                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
               >
-                <ShoppingBasket className="w-4 h-4" />
-                <span>All Products</span>
-                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                <ShoppingBasket className="w-4 h-4 text-emerald-600" />
+                <span className="text-gray-700 font-medium">All Products</span>
               </Link>
-
-              <span className="text-gray-200 mx-1">|</span>
-
-              {(navCategories || []).map((category, index) => {
+              <Link
+                href="/categories"
+                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
+              >
+                <span className="text-gray-600 font-medium">Categories</span>
+              </Link>
+              {(navCategories || []).map((category) => {
                 const Icon = categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
                 return (
                   <Link
                     key={category.slug}
                     href={`/categories/${category.slug}`}
-                    className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative whitespace-nowrap"
+                    className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{category.name}</span>
-                    <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                    <Icon className="w-4 h-4 text-gray-500 group-hover:text-emerald-600 transition-colors" />
+                    <span className="text-gray-600 group-hover:text-emerald-700 font-medium">{category.name}</span>
                   </Link>
                 );
               })}
-
-              <span className="text-gray-200 mx-1">|</span>
-
               <Link
                 href="/orders"
-                className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative whitespace-nowrap"
+                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
               >
-                <span>My Orders</span>
-                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                <span className="text-gray-600 font-medium">My Orders</span>
               </Link>
-
               <Link
                 href="/blog"
-                className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative whitespace-nowrap"
+                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
               >
-                <span>Blog</span>
-                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                <span className="text-gray-600 font-medium">Blog</span>
               </Link>
             </nav>
           </div>
