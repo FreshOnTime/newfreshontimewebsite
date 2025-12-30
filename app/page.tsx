@@ -19,6 +19,8 @@ import CategoryBento from "@/components/home/CategoryBento";
 import Testimonials from "@/components/home/Testimonials";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
 import NewsletterForm from "@/components/home/NewsletterForm";
+import TrustBadges from "@/components/home/TrustBadges";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
 
 import dbConnect from "@/lib/database";
 
