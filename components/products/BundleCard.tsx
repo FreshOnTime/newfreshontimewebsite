@@ -22,21 +22,19 @@ interface BundleCardProps {
 }
 
 export function BundleCard({ product }: BundleCardProps) {
-    const { addBagItem } = useBag();
+    const { addToBag, currentBag } = useBag();
     const [isHovered, setIsHovered] = useState(false);
 
-    const handleAddToBag = (e: React.MouseEvent) => {
+    const handleAddToBag = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        addBagItem({
-            trainingClassId: product._id!,
-            quantity: 1,
-            name: product.name,
-            price: product.pricePerBaseQuantity,
-            image: product.image?.url,
-            sku: product.sku,
-            maxQuantity: product.maxOrderQuantity,
-        });
+
+        if (!currentBag) {
+            toast.error("Please log in or create a bag first");
+            return;
+        }
+
+        await addToBag(currentBag.id, product, 1);
         toast.success("Bundle added to cart!");
     };
 

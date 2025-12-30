@@ -33,14 +33,48 @@ export const metadata: Metadata = {
 };
 
 // Server-side data fetching
-async function getProducts(): Promise<Product[]> {
+// Server-side data fetching
+async function getProducts() {
   try {
     await dbConnect();
-    const ProductModel = (await import("@/lib/models/Product")).default;
-    const products = await ProductModel.find({})
+    const EnhancedProduct = (await import("@/lib/models/EnhancedProduct")).default;
+    const Category = (await import("@/lib/models/Category")).default;
+
+    // Fetch products
+    const rawProducts = await EnhancedProduct.find({ archived: false })
       .sort({ createdAt: -1 })
       .limit(10)
       .lean();
+
+    // Get unique category IDs to fetch category details
+    const categoryIds = [...new Set(rawProducts.map(p => p.categoryId))].filter(Boolean);
+    const categories = await Category.find({ _id: { $in: categoryIds } }).lean();
+    const categoryMap = new Map(categories.map(c => [String(c._id), c]));
+
+    // Map EnhancedProduct to the structure expected by ProductCard
+    const products = rawProducts.map(product => {
+      const img = product.image || (product.images && product.images[0]) || "/placeholder.svg";
+      const cat = product.categoryId ? categoryMap.get(String(product.categoryId)) : null;
+
+      return {
+        _id: product._id,
+        sku: product.sku,
+        name: product.name,
+        // Map image string to IImage structure if needed, or handle in component. 
+        // ProductCard expects { url: string } for image.
+        image: { url: img },
+        discountPercentage: 0, // EnhancedProduct doesn't typically have this, default to 0
+        baseMeasurementQuantity: 1, // Default
+        pricePerBaseQuantity: product.price,
+        measurementUnit: "ea", // Default or map if available
+        isSoldAsUnit: true,
+        description: product.description,
+        isOutOfStock: (product.stockQty || 0) <= 0,
+        stockQuantity: product.stockQty || 0,
+        category: cat ? { name: cat.name, slug: cat.slug } : undefined,
+      };
+    });
+
     return JSON.parse(JSON.stringify(products));
   } catch (error) {
     console.error("Failed to fetch products:", error);
