@@ -304,49 +304,55 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Categories navigation - Desktop - Enhanced Design */}
-        <div className="hidden md:block bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/80 border-t border-emerald-100/50">
-          <nav className="flex items-center justify-center gap-2 py-3 overflow-x-auto no-scrollbar">
-            <Link
-              href="/products"
-              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
-            >
-              <ShoppingBasket className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
-              <span className="text-gray-700 group-hover:text-emerald-700 font-medium">All Products</span>
-            </Link>
-            <Link
-              href="/categories"
-              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
-            >
-              <span className="text-gray-600 group-hover:text-emerald-700 font-medium">Categories</span>
-            </Link>
-            {(navCategories || []).map((category) => {
-              const Icon =
-                categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
-              return (
-                <Link
-                  key={category.slug}
-                  href={`/categories/${category.slug}`}
-                  className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
-                >
-                  <Icon className="w-4 h-4 text-gray-500 group-hover:text-emerald-600 group-hover:scale-110 transition-all" />
-                  <span className="text-gray-600 group-hover:text-emerald-700 font-medium">{category.name}</span>
-                </Link>
-              );
-            })}
-            <Link
-              href="/orders"
-              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
-            >
-              <span className="text-gray-600 group-hover:text-emerald-700 font-medium">Orders</span>
-            </Link>
-            <Link
-              href="/blog"
-              className="group relative text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/80 backdrop-blur-sm border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2 hover:scale-105"
-            >
-              <span className="text-gray-600 group-hover:text-emerald-700 font-medium">Blog</span>
-            </Link>
-          </nav>
+        {/* Categories navigation - Desktop - Clean Premium Design */}
+        <div className="hidden md:block bg-white border-t border-b border-gray-100 shadow-sm">
+          <div className="container mx-auto px-4 md:px-8">
+            <nav className="flex items-center gap-1 py-2 overflow-x-auto no-scrollbar">
+              <Link
+                href="/products"
+                className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors relative"
+              >
+                <ShoppingBasket className="w-4 h-4" />
+                <span>All Products</span>
+                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </Link>
+
+              <span className="text-gray-200 mx-1">|</span>
+
+              {(navCategories || []).map((category, index) => {
+                const Icon = categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
+                return (
+                  <Link
+                    key={category.slug}
+                    href={`/categories/${category.slug}`}
+                    className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative whitespace-nowrap"
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{category.name}</span>
+                    <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                  </Link>
+                );
+              })}
+
+              <span className="text-gray-200 mx-1">|</span>
+
+              <Link
+                href="/orders"
+                className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative whitespace-nowrap"
+              >
+                <span>My Orders</span>
+                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </Link>
+
+              <Link
+                href="/blog"
+                className="group flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors relative whitespace-nowrap"
+              >
+                <span>Blog</span>
+                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </Link>
+            </nav>
+          </div>
         </div>
 
         {/* Mobile search */}

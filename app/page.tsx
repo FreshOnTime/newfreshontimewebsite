@@ -163,6 +163,9 @@ export default async function Home() {
       {/* Promotional Carousel - Client Island */}
       <HomeCarousel images={promoImages} />
 
+      {/* Trust Badges */}
+      <TrustBadges />
+
       {/* Lifestyle Banners */}
       <BannerGrid />
 
@@ -228,6 +231,9 @@ export default async function Home() {
 
       {/* Value Props Strip */}
       <FeaturesStrip />
+
+      {/* Why Choose Us */}
+      <WhyChooseUs />
 
       {/* Testimonials */}
       <Testimonials />
