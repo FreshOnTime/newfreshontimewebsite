@@ -22,6 +22,10 @@ import NewsletterForm from "@/components/home/NewsletterForm";
 
 import dbConnect from "@/lib/database";
 
+// Force runtime rendering - fetch data on every request
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Fresh Pick | Premium Online Grocery Delivery in Colombo",
   description: "Experience the freshest groceries delivered to your door in Colombo. Shop premium produce, dairy, meats, and pantry staples with same-day delivery.",
@@ -40,11 +44,17 @@ async function getProducts(): Promise<Product[]> {
     const EnhancedProduct = (await import("@/lib/models/EnhancedProduct")).default;
     const Category = (await import("@/lib/models/Category")).default;
 
-    // Fetch products
-    const rawProducts = await EnhancedProduct.find({ archived: false })
+    // Fetch products - removing archived filter to test
+    console.log("[Homepage] Starting product fetch...");
+    const rawProducts = await EnhancedProduct.find({})
       .sort({ createdAt: -1 })
-      .limit(10)
+      .limit(20)
       .lean();
+
+    console.log(`[Homepage] Fetched ${rawProducts.length} raw products`);
+    if (rawProducts.length > 0) {
+      console.log("[Homepage] First product:", JSON.stringify(rawProducts[0], null, 2));
+    }
 
     // Get unique category IDs to fetch category details
     const categoryIds = [...new Set(rawProducts.map(p => p.categoryId))].filter(Boolean);
@@ -138,10 +148,7 @@ export default async function Home() {
     getCategories(),
   ]);
 
-  const featuredProducts = products.slice(0, 10);
-  const dealProducts = products.filter(
-    (product) => product.discountPercentage && product.discountPercentage > 0
-  );
+  const featuredProducts = products.slice(0, 20);
 
   return (
     <div className="bg-white">
@@ -159,65 +166,6 @@ export default async function Home() {
 
       {/* Categories Section */}
       <CategoryBento categories={categories} />
-
-      {/* Hot Deals Section */}
-      {dealProducts.length > 0 && (
-        <section className="py-16 md:py-24 bg-gradient-to-b from-orange-50/50 to-white">
-          <div className="container mx-auto px-4 md:px-8">
-            <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-12">
-              <div>
-                <span className="text-orange-500 text-sm font-semibold tracking-wider uppercase mb-3 block">
-                  Limited Time
-                </span>
-                <h2 className="text-3xl md:text-4xl font-bold mb-3 text-gray-900 tracking-tight">
-                  Hot Deals
-                </h2>
-                <p className="text-base md:text-lg text-gray-500 max-w-md">
-                  Don&apos;t miss these special offers on your favorite products
-                </p>
-              </div>
-              <Button
-                asChild
-                variant="outline"
-                className="mt-4 md:mt-0 border-2 border-orange-200 text-orange-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 rounded-full px-6 transition-all"
-              >
-                <Link href="/deals">
-                  View All Deals
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Link>
-              </Button>
-            </AnimatedSection>
-
-            <ProductErrorBoundary>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                {dealProducts.slice(0, 6).map((product, index) => (
-                  <AnimatedProductItem key={product.sku} index={index}>
-                    <ProductCard
-                      id={product._id?.toString() || ""}
-                      sku={product.sku}
-                      name={product.name}
-                      image={product.image?.url || ""}
-                      discountPercentage={product.discountPercentage || 0}
-                      baseMeasurementQuantity={product.baseMeasurementQuantity}
-                      pricePerBaseQuantity={product.pricePerBaseQuantity}
-                      measurementType={
-                        product.measurementUnit as
-                        | "g"
-                        | "kg"
-                        | "ml"
-                        | "l"
-                        | "ea"
-                        | "lb"
-                      }
-                      isDiscreteItem={product.isSoldAsUnit}
-                    />
-                  </AnimatedProductItem>
-                ))}
-              </div>
-            </ProductErrorBoundary>
-          </div>
-        </section>
-      )}
 
       {/* Featured Products Section */}
       <section className="py-16 md:py-24 bg-white">

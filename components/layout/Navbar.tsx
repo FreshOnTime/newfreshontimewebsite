@@ -315,12 +315,6 @@ export function Navbar() {
               All Products
             </Link>
             <Link
-              href="/deals"
-              className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition font-semibold"
-            >
-              Hot Deals
-            </Link>
-            <Link
               href="/categories"
               className="text-sm whitespace-nowrap py-1 px-3 rounded-full bg-white hover:bg-primary/10 hover:text-primary transition"
             >
@@ -484,13 +478,6 @@ export function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 All Products
-              </Link>
-              <Link
-                href="/deals"
-                className="block text-red-600 hover:text-red-700"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Hot Deals
               </Link>
               <Link
                 href="/categories"
