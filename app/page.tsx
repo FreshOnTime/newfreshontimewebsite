@@ -21,6 +21,7 @@ import GuaranteeCta from "@/components/home/GuaranteeCta";
 import NewsletterForm from "@/components/home/NewsletterForm";
 import TrustBadges from "@/components/home/TrustBadges";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
+import SubscriptionPromo from "@/components/home/SubscriptionPromo";
 
 import dbConnect from "@/lib/database";
 
@@ -234,6 +235,9 @@ export default async function Home() {
 
       {/* Why Choose Us */}
       <WhyChooseUs />
+
+      {/* Subscription Promo */}
+      <SubscriptionPromo />
 
       {/* Testimonials */}
       <Testimonials />

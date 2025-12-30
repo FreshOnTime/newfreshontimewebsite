@@ -335,6 +335,12 @@ export function Navbar() {
                 );
               })}
               <Link
+                href="/subscriptions"
+                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 border border-orange-300 hover:from-amber-500 hover:to-orange-600 hover:shadow-lg hover:shadow-orange-100/50 transition-all duration-300 flex items-center gap-2"
+              >
+                <span className="text-white font-semibold">📦 Subscriptions</span>
+              </Link>
+              <Link
                 href="/orders"
                 className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
               >
