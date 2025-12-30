@@ -9,32 +9,42 @@ ENV JWT_SECRET=build_time_dummy_secret
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/scripts ./scripts
 
-# Create uploads directories
-RUN mkdir -p /app/public/uploads/supplier-uploads \
-             /app/public/uploads/product-images \
-             /app/public/uploads/banner-images && \
-    chmod -R 755 /app/public/uploads
+# Set permissions for nextjs user
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
 
-# Don't reinstall production deps if we copied node_modules from builder
-# fallback to install only if needed, but copying is safer.
-# RUN npm install --production 
+# Copy standalone build
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Create uploads directories
+RUN mkdir -p public/uploads/supplier-uploads \
+             public/uploads/product-images \
+             public/uploads/banner-images \
+             public/uploads/products && \
+    chmod -R 755 public/uploads && \
+    chown -R nextjs:nodejs public/uploads
+
+USER nextjs
 
 EXPOSE 3000
-RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 nextjs -G nodejs
-RUN chown -R nextjs:nodejs /app
-USER nextjs
-CMD ["npm", "start"]
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Initialize uploads and start server
+CMD ["sh", "-c", "node scripts/init-uploads.js && node server.js"]
 
 # Usage:
 # docker build -t fresh-pick-app .
-# docker run -p 3000:3000 -e MONGODB_URI="mongodb+srv://..." fresh-pick-app
+# docker run -p 3000:3000 -e MONGODB_URI="..." -e JWT_SECRET="..." fresh-pick-app
