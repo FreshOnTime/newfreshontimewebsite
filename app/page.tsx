@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 
 // Server-side data fetching
 // Server-side data fetching
-async function getProducts() {
+async function getProducts(): Promise<Product[]> {
   try {
     await dbConnect();
     const EnhancedProduct = (await import("@/lib/models/EnhancedProduct")).default;
@@ -52,27 +52,58 @@ async function getProducts() {
     const categoryMap = new Map(categories.map(c => [String(c._id), c]));
 
     // Map EnhancedProduct to the structure expected by ProductCard
-    const products = rawProducts.map(product => {
-      const img = product.image || (product.images && product.images[0]) || "/placeholder.svg";
-      const cat = product.categoryId ? categoryMap.get(String(product.categoryId)) : null;
+    // Using the same logic as app/products/page.tsx
+    const products = rawProducts.map((product) => {
+      const single = product.image;
+      const first = Array.isArray(product.images) ? product.images[0] : undefined;
+      const img = single || first || '/placeholder.svg';
+      const attrs = (product.attributes ?? {}) as Record<string, unknown>;
+      const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
+      const unitOptions = Array.isArray(maybeUnitOptions)
+        ? maybeUnitOptions
+          .map((opt) => {
+            const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
+            const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
+              ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
+              : undefined;
+            const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
+            const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
+            const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
+            if (!unit || !quantity || price === undefined) return null;
+            return { label: label || `${quantity}${unit}`, quantity, unit, price };
+          })
+          .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
+        : undefined;
+      const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
 
-      return {
-        _id: product._id,
-        sku: product.sku,
-        name: product.name,
-        // Map image string to IImage structure if needed, or handle in component. 
-        // ProductCard expects { url: string } for image.
-        image: { url: img },
-        discountPercentage: 0, // EnhancedProduct doesn't typically have this, default to 0
-        baseMeasurementQuantity: 1, // Default
-        pricePerBaseQuantity: product.price,
-        measurementUnit: "ea", // Default or map if available
+      return ({
+        sku: product.sku || String(product._id),
+        name: product.name || '',
+        image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
+        description: product.description || '',
+        category: categoryIdValue
+          ? (() => {
+            const meta = categoryMap.get(categoryIdValue);
+            return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
+          })()
+          : undefined,
+        baseMeasurementQuantity: 1,
+        pricePerBaseQuantity: Number(product.price ?? 0),
+        measurementUnit: 'ea' as const, // Force text to literal type
         isSoldAsUnit: true,
-        description: product.description,
-        isOutOfStock: (product.stockQty || 0) <= 0,
-        stockQuantity: product.stockQty || 0,
-        category: cat ? { name: cat.name, slug: cat.slug } : undefined,
-      };
+        minOrderQuantity: 1,
+        maxOrderQuantity: 9999,
+        stepQuantity: 1,
+        stockQuantity: Number(product.stockQty ?? 0),
+        isOutOfStock: Number(product.stockQty ?? 0) <= 0,
+        totalSales: 0,
+        isFeatured: false,
+        discountPercentage: 0,
+        lowStockThreshold: Number(product.minStockLevel ?? 0),
+        createdAt: product.createdAt as unknown as Date | undefined,
+        updatedAt: product.updatedAt as unknown as Date | undefined,
+        unitOptions,
+      });
     });
 
     return JSON.parse(JSON.stringify(products));
