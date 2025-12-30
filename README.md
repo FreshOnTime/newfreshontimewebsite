@@ -2,6 +2,15 @@
 
 A complete e-commerce application built with Next.js, MongoDB, and JWT authentication.
 
+## 📚 Architecture Documentation
+
+**Strategic Decision Documents:**
+- [**E-Commerce Architecture Decision**](ECOMMERCE_ARCHITECTURE_DECISION.md) - Full analysis: Multi-vendor marketplace vs standard e-commerce
+- [**Quick Reference Summary**](ECOMMERCE_DECISION_SUMMARY.md) - TL;DR and key decisions
+- [**Vendor-Ready Architecture Guide**](VENDOR_READY_ARCHITECTURE_GUIDE.md) - Technical implementation for future multi-vendor support
+
+**Current Approach:** Standard e-commerce with vendor-ready architecture for future scaling.
+
 ## 🚀 Features
 
 - **Full Stack Architecture**: Single Next.js application with API routes
