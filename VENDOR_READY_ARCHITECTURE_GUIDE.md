@@ -435,31 +435,37 @@ export default function ProductsPage() {
 ## Migration Strategy
 
 ### Phase 1: Standard E-Commerce (Current)
-```sql
--- Products are all platform-owned
-vendorId: null
-isVendorManaged: false
+```javascript
+// Products are all platform-owned
+{
+  vendorId: null,
+  isVendorManaged: false
+}
 ```
 
 ### Phase 2: Vendor Onboarding
-```sql
--- Add vendor role to select users
-UPDATE users 
-SET roles = ['vendor']
-WHERE _id IN (selected_vendor_ids);
+```javascript
+// Add vendor role to select users
+db.users.updateMany(
+  { _id: { $in: selectedVendorIds } },
+  { $set: { roles: ['vendor'] } }
+);
 
--- Assign existing products to vendors
-UPDATE products 
-SET vendorId = vendor_id,
-    isVendorManaged = true
-WHERE supplier = vendor_supplier_id;
+// Assign existing products to vendors
+db.products.updateMany(
+  { supplier: vendorSupplierId },
+  { $set: { 
+    vendorId: vendorId,
+    isVendorManaged: true 
+  }}
+);
 ```
 
 ### Phase 3: Full Multi-Vendor
-```sql
--- Enable vendor portals
--- All new products get vendor assignment automatically
--- Order splits calculate automatically
+```javascript
+// Enable vendor portals via feature flags
+// All new products get vendor assignment automatically
+// Order splits calculate automatically based on vendorId
 ```
 
 ---
