@@ -2,23 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
 import Subscription from '@/lib/models/Subscription';
 import SubscriptionPlan from '@/lib/models/SubscriptionPlan';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 // GET user's subscriptions
 export async function GET(request: NextRequest) {
     try {
         await dbConnect();
 
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
+        const user = await verifyToken(request);
+        if (!user) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
             );
         }
 
-        const subscriptions = await Subscription.find({ user: session.user.id })
+        const subscriptions = await Subscription.find({ user: user.mongoId })
             .populate('plan')
             .sort({ createdAt: -1 })
             .lean();
@@ -41,8 +40,8 @@ export async function POST(request: NextRequest) {
     try {
         await dbConnect();
 
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
+        const user = await verifyToken(request);
+        if (!user) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
 
         // Check if user already has an active subscription to this plan
         const existingSubscription = await Subscription.findOne({
-            user: session.user.id,
+            user: user.mongoId,
             plan: planId,
             status: { $in: ['active', 'pending'] },
         });
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
         }
 
         const subscription = await Subscription.create({
-            user: session.user.id,
+            user: user.mongoId,
             plan: planId,
             status: 'active',
             startDate: start,

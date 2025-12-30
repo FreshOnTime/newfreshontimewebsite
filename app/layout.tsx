@@ -9,6 +9,9 @@ import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import BottomNav from "@/components/layout/BottomNav";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import ReferralBanner from "@/components/ReferralBanner";
+import FirstOrderPopup from "@/components/FirstOrderPopup";
 // import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled
 
 const defaultFont = Inter({
@@ -87,8 +90,11 @@ export default function RootLayout({
         <WishlistProvider>
           <html lang="en">
             <body className={`${defaultFont.className} antialiased pb-16 md:pb-0`}>
+              <ReferralBanner />
               <AdminChromeGuard>{children}</AdminChromeGuard>
               <BottomNav />
+              <WhatsAppButton />
+              <FirstOrderPopup />
               {/* <ChatWidget /> */}
               <Toaster />
               <ServiceWorkerRegistration />

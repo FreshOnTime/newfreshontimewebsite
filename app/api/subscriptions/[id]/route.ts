@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/database';
 import Subscription from '@/lib/models/Subscription';
 import SubscriptionPlan from '@/lib/models/SubscriptionPlan';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 // GET single subscription
 export async function GET(
@@ -14,8 +13,8 @@ export async function GET(
         await dbConnect();
         const { id } = await params;
 
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
+        const user = await verifyToken(request);
+        if (!user) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
@@ -24,7 +23,7 @@ export async function GET(
 
         const subscription = await Subscription.findOne({
             _id: id,
-            user: session.user.id,
+            user: user.mongoId,
         })
             .populate('plan')
             .lean();
@@ -58,8 +57,8 @@ export async function PATCH(
         await dbConnect();
         const { id } = await params;
 
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
+        const user = await verifyToken(request);
+        if (!user) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
@@ -71,7 +70,7 @@ export async function PATCH(
 
         const subscription = await Subscription.findOne({
             _id: id,
-            user: session.user.id,
+            user: user.mongoId,
         });
 
         if (!subscription) {
