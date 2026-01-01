@@ -72,7 +72,7 @@ export default function ReferralBanner() {
     return (
         <>
             {/* Referral Bar */}
-            <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white py-2 px-4">
+            <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 text-white py-2 px-4">
                 <div className="container mx-auto flex items-center justify-center gap-4 text-sm">
                     <Gift className="w-4 h-4 animate-bounce" />
                     <span className="font-medium">
@@ -95,7 +95,7 @@ export default function ReferralBanner() {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white text-center relative">
+                        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white text-center relative">
                             <button
                                 onClick={() => setIsOpen(false)}
                                 className="absolute top-4 right-4 text-white/70 hover:text-white"
@@ -116,20 +116,20 @@ export default function ReferralBanner() {
                             {/* How it works */}
                             <div className="grid grid-cols-3 gap-4 mb-6">
                                 <div className="text-center">
-                                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <span className="text-amber-600 font-bold">1</span>
+                                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <span className="text-emerald-600 font-bold">1</span>
                                     </div>
                                     <p className="text-xs text-gray-600">Share your code</p>
                                 </div>
                                 <div className="text-center">
-                                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <span className="text-amber-600 font-bold">2</span>
+                                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <span className="text-emerald-600 font-bold">2</span>
                                     </div>
                                     <p className="text-xs text-gray-600">Friend orders</p>
                                 </div>
                                 <div className="text-center">
-                                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <span className="text-amber-600 font-bold">3</span>
+                                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <span className="text-emerald-600 font-bold">3</span>
                                     </div>
                                     <p className="text-xs text-gray-600">Both earn Rs. 200</p>
                                 </div>
@@ -139,14 +139,14 @@ export default function ReferralBanner() {
                             <div className="bg-gray-50 rounded-xl p-4 mb-4">
                                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Your Referral Code</p>
                                 <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-white border-2 border-dashed border-amber-300 rounded-lg py-3 px-4 text-center">
-                                        <span className="text-xl font-bold text-amber-600 tracking-wider">{referralCode}</span>
+                                    <div className="flex-1 bg-white border-2 border-dashed border-emerald-300 rounded-lg py-3 px-4 text-center">
+                                        <span className="text-xl font-bold text-emerald-600 tracking-wider">{referralCode}</span>
                                     </div>
                                     <button
                                         onClick={copyCode}
-                                        className="p-3 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors"
+                                        className="p-3 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors"
                                     >
-                                        {copied ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5 text-amber-600" />}
+                                        {copied ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5 text-emerald-600" />}
                                     </button>
                                 </div>
                             </div>
@@ -163,7 +163,7 @@ export default function ReferralBanner() {
                                 <Button
                                     onClick={copyCode}
                                     variant="outline"
-                                    className="border-amber-300 text-amber-600 hover:bg-amber-50"
+                                    className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
                                 >
                                     <Copy className="w-4 h-4 mr-2" />
                                     Copy Link

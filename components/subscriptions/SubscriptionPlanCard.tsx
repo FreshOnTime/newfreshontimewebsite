@@ -1,7 +1,8 @@
 'use client';
 
-import { Package, Check, Star, Clock, Truck, Sparkles } from 'lucide-react';
+import { Package, Check, Star, Clock, Truck, Sparkles, Salad, Egg, Leaf, Users, ShoppingBasket } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 interface SubscriptionPlan {
@@ -14,6 +15,7 @@ interface SubscriptionPlan {
     originalPrice?: number;
     frequency: string;
     icon: string;
+    image?: string;
     color: string;
     features: string[];
     contents: { name: string; quantity: string; category: string }[];
@@ -24,36 +26,56 @@ interface SubscriptionPlanCardProps {
     plan: SubscriptionPlan;
 }
 
-const colorClasses: { [key: string]: { bg: string; border: string; text: string; button: string } } = {
+// Map icons to Lucide components for professional look
+const planIcons: { [key: string]: React.ElementType } = {
+    'fresh-start': Salad,
+    'kitchen-essentials': Egg,
+    'organic-life': Leaf,
+    'family-bundle': Users,
+};
+
+const colorClasses: { [key: string]: { bg: string; border: string; text: string; button: string; iconBg: string } } = {
     emerald: {
         bg: 'from-emerald-50 to-emerald-100/50',
         border: 'border-emerald-200 hover:border-emerald-400',
         text: 'text-emerald-600',
         button: 'bg-emerald-600 hover:bg-emerald-700',
+        iconBg: 'bg-emerald-100',
     },
     blue: {
-        bg: 'from-blue-50 to-blue-100/50',
-        border: 'border-blue-200 hover:border-blue-400',
-        text: 'text-blue-600',
-        button: 'bg-blue-600 hover:bg-blue-700',
+        bg: 'from-slate-50 to-slate-100/50',
+        border: 'border-slate-200 hover:border-emerald-400',
+        text: 'text-emerald-600',
+        button: 'bg-emerald-600 hover:bg-emerald-700',
+        iconBg: 'bg-emerald-100',
     },
     purple: {
-        bg: 'from-purple-50 to-purple-100/50',
-        border: 'border-purple-200 hover:border-purple-400',
-        text: 'text-purple-600',
-        button: 'bg-purple-600 hover:bg-purple-700',
+        bg: 'from-emerald-50 to-teal-100/50',
+        border: 'border-emerald-200 hover:border-teal-400',
+        text: 'text-teal-600',
+        button: 'bg-teal-600 hover:bg-teal-700',
+        iconBg: 'bg-teal-100',
+    },
+    orange: {
+        bg: 'from-emerald-50/80 to-emerald-100/60',
+        border: 'border-emerald-300 hover:border-emerald-500',
+        text: 'text-emerald-700',
+        button: 'bg-emerald-700 hover:bg-emerald-800',
+        iconBg: 'bg-emerald-200',
     },
     teal: {
         bg: 'from-teal-50 to-teal-100/50',
         border: 'border-teal-200 hover:border-teal-400',
         text: 'text-teal-600',
         button: 'bg-teal-600 hover:bg-teal-700',
+        iconBg: 'bg-teal-100',
     },
 };
 
 export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps) {
     const colors = colorClasses[plan.color] || colorClasses.emerald;
     const frequencyLabel = plan.frequency === 'weekly' ? '/week' : plan.frequency === 'monthly' ? '/month' : '/2 weeks';
+    const IconComponent = planIcons[plan.slug] || ShoppingBasket;
 
     return (
         <div
@@ -69,9 +91,11 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
                 </div>
             )}
 
-            {/* Icon & Name */}
+            {/* Icon & Name - Professional Icon instead of emoji */}
             <div className="text-center mb-4">
-                <span className="text-4xl mb-2 block">{plan.icon}</span>
+                <div className={`w-16 h-16 ${colors.iconBg} rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm`}>
+                    <IconComponent className={`w-8 h-8 ${colors.text}`} />
+                </div>
                 <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
                 <p className="text-sm text-gray-500 mt-1">{plan.shortDescription}</p>
             </div>

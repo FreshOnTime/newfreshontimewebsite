@@ -22,6 +22,7 @@ import NewsletterForm from "@/components/home/NewsletterForm";
 import TrustBadges from "@/components/home/TrustBadges";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
 import SubscriptionPromo from "@/components/home/SubscriptionPromo";
+import LiveOrderCounter from "@/components/home/LiveOrderCounter";
 
 import dbConnect from "@/lib/database";
 
@@ -166,6 +167,9 @@ export default async function Home() {
 
       {/* Trust Badges */}
       <TrustBadges />
+
+      {/* Live Order Counter - Social Proof */}
+      <LiveOrderCounter />
 
       {/* Lifestyle Banners */}
       <BannerGrid />

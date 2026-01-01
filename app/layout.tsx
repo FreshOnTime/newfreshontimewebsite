@@ -12,6 +12,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ReferralBanner from "@/components/ReferralBanner";
 import FirstOrderPopup from "@/components/FirstOrderPopup";
+import RecentPurchasePopup from "@/components/RecentPurchasePopup";
 // import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled
 
 const defaultFont = Inter({
@@ -95,6 +96,7 @@ export default function RootLayout({
               <BottomNav />
               <WhatsAppButton />
               <FirstOrderPopup />
+              <RecentPurchasePopup />
               {/* <ChatWidget /> */}
               <Toaster />
               <ServiceWorkerRegistration />

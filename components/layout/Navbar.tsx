@@ -336,7 +336,8 @@ export function Navbar() {
                 href="/subscriptions"
                 className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 ml-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-sm hover:shadow"
               >
-                📦 Subscriptions
+                <Package className="w-4 h-4" />
+                Subscriptions
               </Link>
               <span className="text-gray-200 ml-1">|</span>
               <Link
