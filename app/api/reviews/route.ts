@@ -51,7 +51,11 @@ export async function GET(request: NextRequest) {
             },
         ]);
 
-        let summary = {
+        let summary: {
+            averageRating: number;
+            totalReviews: number;
+            distribution: Record<number, number>;
+        } = {
             averageRating: 0,
             totalReviews: 0,
             distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
