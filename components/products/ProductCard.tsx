@@ -101,75 +101,60 @@ export function ProductCard({
   } as unknown as Product);
 
   return (
-    <div className="w-full group">
-      {/* Editorial aesthetic: Image takes focus, minimal container */}
-      <div className="relative mb-4 overflow-hidden">
-        {/* Wishlist Button - Minimal absolute positioning */}
-        <button
-          onClick={handleWishlistClick}
-          className={cn(
-            "absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
-            isWishlisted ? "bg-red-50 text-red-500" : "bg-white/80 text-zinc-400 opacity-0 group-hover:opacity-100 backdrop-blur-sm hover:text-red-500"
+    <div className="w-full group relative">
+      <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-premium transition-all duration-500 hover:shadow-premium-hover hover:-translate-y-1">
+
+        {/* Image Container - 3:4 Aspect Ratio */}
+        <div className="aspect-[3/4] relative p-8 bg-gradient-to-br from-zinc-50 to-white/50">
+          <Link href={`/products/${sku}`} className="block h-full">
+            <div className="relative h-full w-full transform transition-transform duration-700 ease-out group-hover:scale-105">
+              <ProductImage src={imageUrl} alt={name} />
+            </div>
+          </Link>
+
+          {/* Wishlist Button - Always visible but subtle */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className={`absolute top-4 right-4 h-10 w-10 rounded-full transition-all duration-300 z-10 ${isWishlisted
+              ? "bg-red-50 text-red-500"
+              : "bg-white/80 text-zinc-400 hover:text-red-500 hover:bg-white backdrop-blur-md opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0"
+              }`}
+            onClick={handleWishlistClick}
+          >
+            <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
+          </Button>
+
+          {/* Discount Badge */}
+          {showDiscountBadge && (
+            <div className="absolute top-4 left-4 px-3 py-1 bg-zinc-900 text-white text-[10px] font-bold tracking-widest uppercase rounded-full">
+              Save {discountPercentage}%
+            </div>
           )}
-        >
-          <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
-        </button>
+        </div>
 
-        {/* Discount Badge - Top Left */}
-        {showDiscountBadge && (
-          <span className="absolute top-3 left-3 z-20 bg-zinc-900 text-white text-[10px] font-medium tracking-[0.2em] px-2 py-1 uppercase">
-            Save {discountPercentage}%
-          </span>
-        )}
+        {/* Product Info */}
+        <div className="p-6">
+          <Link href={`/products/${sku}`} className="block group/title">
+            <h3 className="font-serif text-xl text-zinc-900 mb-2 leading-tight group-hover/title:text-emerald-800 transition-colors line-clamp-2 min-h-[3rem]">
+              {name}
+            </h3>
+          </Link>
 
+          <div className="flex flex-col gap-4 mt-2">
+            <PriceDisplay
+              price={pricePerBaseQuantityWithDiscount}
+              originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
+              isDiscreteItem={isDiscreteItem}
+              baseMeasurementQuantity={baseMeasurementQuantity}
+              measurementType={measurementType}
+            />
 
-        <Link href={`/products/${sku}`} className="block relative aspect-square bg-[#fafaf9] overflow-hidden">
-          <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105">
-            <ProductImage src={imageUrl} alt={name} />
-          </div>
-          {/* Dark overlay on hover for premium feel */}
-          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-          {/* Quick Add Button - Appears on hover, sliding up */}
-          <div className="absolute bottom-4 left-4 right-4 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out z-20 hidden md:block">
-            <div className="bg-white/95 backdrop-blur-md shadow-premium rounded-none p-1 flex justify-center border border-zinc-100">
-              {/* Reusing existing button but wrapping it to fit our new layout */}
-              <div onClick={(e) => e.stopPropagation()}>
-                <AddToBagButton product={buildProductForBag()} quantity={1} />
-              </div>
+            {/* Button - Slides up in the content area */}
+            <div className="pt-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+              <AddToBagButton product={buildProductForBag()} quantity={1} />
             </div>
           </div>
-        </Link>
-
-        {/* Mobile Quick Add (Optional: could be always visible or different interaction) */}
-        <div className="absolute bottom-2 right-2 md:hidden z-20">
-          <div className="bg-white rounded-full shadow-lg p-2 border border-zinc-100" onClick={(e) => e.stopPropagation()}>
-            <AddToBagButton product={buildProductForBag()} quantity={1} />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center text-center space-y-1">
-        <Link href={`/products/${sku}`} className="group/title">
-          <h3 className="font-heading font-medium text-lg leading-tight text-zinc-900 group-hover/title:text-emerald-800 transition-colors line-clamp-1">
-            {name}
-          </h3>
-        </Link>
-
-        <div className="text-sm font-light text-zinc-500">
-          {!isDiscreteItem && (
-            <span>
-              {baseMeasurementQuantity !== 1 && `${baseMeasurementQuantity}`} {(measurementType || 'g').toLowerCase()}
-            </span>
-          )}
-          {isDiscreteItem && <span>Each</span>}
-        </div>
-
-        <div className="mt-1">
-          <PriceDisplay
-            price={pricePerBaseQuantityWithDiscount}
-            originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
-          />
         </div>
       </div>
     </div>
@@ -179,18 +164,30 @@ export function ProductCard({
 function PriceDisplay({
   price,
   originalPrice,
+  isDiscreteItem,
+  baseMeasurementQuantity,
+  measurementType,
 }: {
   price: number;
   originalPrice?: number;
+  isDiscreteItem: boolean;
+  baseMeasurementQuantity: number;
+  measurementType: string;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-zinc-900 font-medium tracking-wide">
+    <div className="flex items-baseline gap-2 flex-wrap">
+      <p className="text-lg font-bold text-gray-900">
         Rs. {formatPrice(price)}
-      </span>
+      </p>
       {originalPrice && (
-        <span className="text-zinc-400 text-xs line-through decoration-zinc-300">
+        <p className="text-sm text-gray-400 line-through">
           Rs. {formatPrice(originalPrice)}
+        </p>
+      )}
+      {!isDiscreteItem && (
+        <span className="text-xs font-medium text-gray-400">
+          /{baseMeasurementQuantity !== 1 && `${baseMeasurementQuantity}`}
+          {measurementType}
         </span>
       )}
     </div>
