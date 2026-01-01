@@ -4,22 +4,56 @@ import { useState, useEffect } from 'react';
 import { Gift, X, Copy, Check, Share2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface ReferralData {
+    code: string;
+    totalEarnings: number;
+    totalReferrals: number;
+    successfulReferrals: number;
+}
 
 export default function ReferralBanner() {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [referralCode, setReferralCode] = useState('');
+    const [referralData, setReferralData] = useState<ReferralData | null>(null);
     const [showBanner, setShowBanner] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
-        // Generate referral code or fetch from user profile
-        const code = 'FRESH' + Math.random().toString(36).substring(2, 8).toUpperCase();
-        setReferralCode(code);
-
         // Show banner after 5 seconds
         const timer = setTimeout(() => setShowBanner(true), 5000);
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        // Fetch referral data when modal opens and user is logged in
+        if (isOpen && user) {
+            fetchReferralData();
+        }
+    }, [isOpen, user]);
+
+    const fetchReferralData = async () => {
+        try {
+            const res = await fetch('/api/referrals');
+            const data = await res.json();
+            if (data.success) {
+                setReferralData(data.referral);
+            }
+        } catch (error) {
+            console.error('Error fetching referral data:', error);
+            // Fallback to generated code if API fails
+            setReferralData({
+                code: 'FRESH' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                totalEarnings: 0,
+                totalReferrals: 0,
+                successfulReferrals: 0,
+            });
+        }
+    };
+
+    const referralCode = referralData?.code || 'FRESHXXXXXX';
+
 
     const copyCode = () => {
         navigator.clipboard.writeText(referralCode);
@@ -140,11 +174,11 @@ export default function ReferralBanner() {
                             <div className="mt-6 pt-4 border-t flex items-center justify-center gap-6 text-sm text-gray-500">
                                 <div className="flex items-center gap-2">
                                     <Users className="w-4 h-4" />
-                                    <span>0 friends invited</span>
+                                    <span>{referralData?.totalReferrals || 0} friends invited</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Gift className="w-4 h-4" />
-                                    <span>Rs. 0 earned</span>
+                                    <span>Rs. {referralData?.totalEarnings?.toLocaleString() || 0} earned</span>
                                 </div>
                             </div>
                         </div>

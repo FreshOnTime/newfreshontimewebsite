@@ -27,7 +27,7 @@ export default function SubscriptionHero() {
                     {/* Main Heading */}
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                         Fresh Groceries,
-                        <span className="block bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-lime-300 to-emerald-300 bg-clip-text text-transparent">
                             Delivered Weekly
                         </span>
                     </h1>

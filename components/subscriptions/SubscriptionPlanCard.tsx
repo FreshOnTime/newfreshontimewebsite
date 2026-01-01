@@ -43,11 +43,11 @@ const colorClasses: { [key: string]: { bg: string; border: string; text: string;
         text: 'text-purple-600',
         button: 'bg-purple-600 hover:bg-purple-700',
     },
-    orange: {
-        bg: 'from-orange-50 to-orange-100/50',
-        border: 'border-orange-200 hover:border-orange-400',
-        text: 'text-orange-600',
-        button: 'bg-orange-600 hover:bg-orange-700',
+    teal: {
+        bg: 'from-teal-50 to-teal-100/50',
+        border: 'border-teal-200 hover:border-teal-400',
+        text: 'text-teal-600',
+        button: 'bg-teal-600 hover:bg-teal-700',
     },
 };
 
@@ -62,7 +62,7 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
             {/* Featured Badge */}
             {plan.isFeatured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                         <Star className="w-3 h-3 fill-current" />
                         Most Popular
                     </span>
