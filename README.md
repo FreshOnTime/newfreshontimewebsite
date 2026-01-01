@@ -17,10 +17,7 @@ Getting fresh, quality groceries in Sri Lanka is inconvenient and unreliable. We
 | Market Segment | Description | Status |
 |----------------|-------------|--------|
 | **B2C Subscriptions** | Weekly/monthly grocery boxes for families | ✅ Live |
-| **B2B Restaurant Supply** | Bulk fresh produce for restaurants & hotels | 🚧 Coming |
-| **Farm-to-Table** | Direct farmer partnerships, traceable produce | 🚧 Coming |
-| **Diaspora Gifting** | Send groceries to family in Sri Lanka | 🚧 Coming |
-| **Meal Kits** | Pre-portioned recipe boxes | 🚧 Coming |
+
 
 ---
 
