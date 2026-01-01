@@ -206,7 +206,7 @@ export function Navbar() {
                           <Link href="/auth/login">Access Account</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                          <Link href="/auth/signup">Create Membership</Link>
+                          <Link href="/auth/signup">Create Account</Link>
                         </DropdownMenuItem>
                       </>
                     ) : (

@@ -89,7 +89,7 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
 
             {/* Action */}
             <div className="mt-auto relative z-10">
-                <Link href={`/subscriptions/checkout?plan=${plan.slug}`} className="block">
+                <Link href={`/checkout?plan=${plan.slug}`} className="block">
                     <Button
                         className={cn(
                             "w-full h-14 text-xs font-bold uppercase tracking-[0.15em] rounded-none transition-all duration-300",

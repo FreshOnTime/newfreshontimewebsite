@@ -5,6 +5,7 @@ import SubscriptionHero from '@/components/subscriptions/SubscriptionHero';
 import SubscriptionPlanCard from '@/components/subscriptions/SubscriptionPlanCard';
 import { Check, HelpCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { defaultSubscriptionPlans } from '@/lib/data/subscriptionPlans';
 
 export const metadata: Metadata = {
     title: 'Subscription Boxes | Fresh Pick',
@@ -27,124 +28,12 @@ async function getSubscriptionPlans() {
     }
 }
 
-// Default plans if database is empty
-const defaultPlans = [
-    {
-        _id: '1',
-        name: 'Fresh Start',
-        slug: 'fresh-start',
-        description: 'Perfect for health-conscious individuals who want fresh fruits and vegetables weekly.',
-        shortDescription: 'Seasonal fruits & veggies',
-        price: 1800,
-        originalPrice: 2200,
-        frequency: 'weekly',
-        icon: '🥗',
-        color: 'emerald',
-        features: [
-            '5-7 seasonal vegetables',
-            '3-4 fresh fruits',
-            'Recipe suggestions included',
-            'Sourced from local farms',
-            'Free delivery',
-        ],
-        contents: [
-            { name: 'Tomatoes', quantity: '500g', category: 'Vegetables' },
-            { name: 'Carrots', quantity: '250g', category: 'Vegetables' },
-            { name: 'Bananas', quantity: '6 pcs', category: 'Fruits' },
-            { name: 'Apples', quantity: '4 pcs', category: 'Fruits' },
-            { name: 'Spinach', quantity: '200g', category: 'Leafy Greens' },
-        ],
-        isFeatured: false,
-    },
-    {
-        _id: '2',
-        name: 'Kitchen Essentials',
-        slug: 'kitchen-essentials',
-        description: 'All the basics you need for a fully stocked kitchen, delivered to your door.',
-        shortDescription: 'Eggs, milk, bread & basics',
-        price: 3500,
-        originalPrice: 4200,
-        frequency: 'weekly',
-        icon: '🍳',
-        color: 'blue',
-        features: [
-            'Fresh eggs (30 pcs)',
-            'Fresh milk (2L)',
-            'Artisan bread',
-            'Butter & cheese',
-            'Weekly basics bundle',
-            'Free delivery',
-        ],
-        contents: [
-            { name: 'Farm Eggs', quantity: '30 pcs', category: 'Dairy' },
-            { name: 'Fresh Milk', quantity: '2L', category: 'Dairy' },
-            { name: 'Bread', quantity: '2 loaves', category: 'Bakery' },
-            { name: 'Butter', quantity: '250g', category: 'Dairy' },
-        ],
-        isFeatured: true,
-    },
-    {
-        _id: '3',
-        name: 'Organic Life',
-        slug: 'organic-life',
-        description: 'Premium certified organic produce for the health-conscious family.',
-        shortDescription: 'Certified organic produce',
-        price: 4500,
-        originalPrice: 5500,
-        frequency: 'weekly',
-        icon: '🌿',
-        color: 'purple',
-        features: [
-            '100% certified organic',
-            'Chemical-free produce',
-            'Premium quality selection',
-            'Eco-friendly packaging',
-            'Carbon-neutral delivery',
-            'Priority support',
-        ],
-        contents: [
-            { name: 'Organic Veggies', quantity: 'Assorted', category: 'Organic' },
-            { name: 'Organic Fruits', quantity: 'Assorted', category: 'Organic' },
-            { name: 'Organic Eggs', quantity: '12 pcs', category: 'Organic' },
-        ],
-        isFeatured: false,
-    },
-    {
-        _id: '4',
-        name: 'Family Bundle',
-        slug: 'family-bundle',
-        description: 'Complete weekly groceries for a family of 4. Everything you need, one box.',
-        shortDescription: 'Complete weekly groceries',
-        price: 6000,
-        originalPrice: 7500,
-        frequency: 'weekly',
-        icon: '🍲',
-        color: 'orange',
-        features: [
-            'Feeds family of 4',
-            'Fresh produce + essentials',
-            'Meal planning guide',
-            'Customizable contents',
-            'Weekend recipe ideas',
-            'Priority morning delivery',
-        ],
-        contents: [
-            { name: 'Weekly Vegetables', quantity: 'Full set', category: 'Vegetables' },
-            { name: 'Weekly Fruits', quantity: 'Full set', category: 'Fruits' },
-            { name: 'Dairy Pack', quantity: 'Complete', category: 'Dairy' },
-            { name: 'Rice', quantity: '5kg', category: 'Staples' },
-            { name: 'Cooking Essentials', quantity: 'Assorted', category: 'Pantry' },
-        ],
-        isFeatured: false,
-    },
-];
-
 export default async function SubscriptionsPage() {
     let plans = await getSubscriptionPlans();
 
     // Use default plans if no plans in database
     if (!plans || plans.length === 0) {
-        plans = defaultPlans;
+        plans = defaultSubscriptionPlans;
     }
 
     return (
@@ -190,13 +79,13 @@ export default async function SubscriptionsPage() {
                 </div>
             </section>
 
-            {/* Concierge Section with Imagery */}
+            {/* The FreshPick Standard Section */}
             <section className="py-32 bg-[#fafaf9]">
                 <div className="container mx-auto px-4 max-w-7xl">
                     <div className="text-center mb-24">
                         <span className="text-[#0c2f21] text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Our Promise</span>
                         <h2 className="font-serif text-5xl md:text-6xl text-[#0c2f21]">
-                            The Concierge Experience
+                            The FreshPick Standard
                         </h2>
                     </div>
 
@@ -205,42 +94,42 @@ export default async function SubscriptionsPage() {
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
                                 <img
                                     src="https://images.unsplash.com/photo-1595855709940-57753384fa1d?q=80&w=2670&auto=format&fit=crop"
-                                    alt="Bespoke Selection"
+                                    alt="Harvested Daily"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
                                 />
                                 <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
-                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Bespoke Selection</h3>
+                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Harvested Daily</h3>
                             <p className="text-zinc-600 font-light leading-relaxed">
-                                Our curators hand-select every item based on your preferences and the peak season's offering.
+                                Picked at sunrise and delivered to your doorstep by sunset. We guarantee peak ripeness and flavor in every box.
                             </p>
                         </div>
                         <div className="group md:mt-16">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
                                 <img
                                     src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=2574&auto=format&fit=crop"
-                                    alt="White Glove Delivery"
+                                    alt="Farmer Direct"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
                                 />
                                 <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
-                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">White Glove Delivery</h3>
+                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Farmer Direct</h3>
                             <p className="text-zinc-600 font-light leading-relaxed">
-                                Delivered in temperature-controlled sustainable packaging by our uniformed personnel.
+                                100% of your subscription goes directly to supporting local sustainable agriculture. No middlemen, just honest food.
                             </p>
                         </div>
                         <div className="group md:mt-32">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
                                 <img
                                     src="https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2574&auto=format&fit=crop"
-                                    alt="Priority Access"
+                                    alt="Zero-Plastic Promise"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
                                 />
                                 <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
-                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Priority Access</h3>
+                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Zero-Plastic Promise</h3>
                             <p className="text-zinc-600 font-light leading-relaxed">
-                                Members receive first access to rare imports, limited harvests, and exclusive tasting events.
+                                Our packaging is fully biodegradable and plastic-free. We believe luxury shouldn't cost the earth.
                             </p>
                         </div>
                     </div>
