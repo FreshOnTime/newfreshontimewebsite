@@ -111,7 +111,7 @@ export default function RootLayout({
               <BottomNav />
               <WhatsAppButton />
               <FirstOrderPopup />
-              <RecentPurchasePopup />
+              {/* <RecentPurchasePopup /> */}
               {/* <ChatWidget /> */}
               <Toaster />
               <ServiceWorkerRegistration />
