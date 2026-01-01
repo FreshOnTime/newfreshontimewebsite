@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import ProductImage from "@/components/products/ProductImage";
 import { Product } from "@/models/product";
-import { Separator } from "@/components/ui/separator";
 import Markdown from "react-markdown";
 import { Suspense } from "react";
 import { ProductControls } from "./ProductControls";
@@ -17,13 +16,6 @@ import connectDB from '@/lib/database';
 import EnhancedProduct from '@/lib/models/EnhancedProduct';
 import Category from '@/lib/models/Category';
 import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct';
-
-// Mock data for "Perfect Pairing" - ideally this comes from the DB
-const PAIRINGS = [
-  { name: "Artisan Crackers", price: "Rs. 850.00", image: "/bannermaterial/1.png" },
-  { name: "Vintage Cheddar", price: "Rs. 2,100.00", image: "/bannermaterial/2.png" },
-  { name: "Organic Honey", price: "Rs. 1,500.00", image: "/bannermaterial/3.png" },
-];
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
@@ -279,77 +271,21 @@ export default async function ProductPage({
           </div>
         </div>
 
-        {/* Story & Provenance Grid */}
+        {/* Story Section */}
         <div className="container mx-auto px-4 md:px-8 py-24">
-          <div className="grid md:grid-cols-12 gap-16 lg:gap-24">
-
-            {/* Description Column */}
-            <div className="md:col-span-7 space-y-12">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-6">The Story</h3>
-                <div className="prose prose-lg prose-zinc font-light leading-loose text-zinc-600">
-                  {product.description ? (
-                    <Markdown rehypePlugins={[rehypeSanitize]}>
-                      {product.description}
-                    </Markdown>
-                  ) : (
-                    <p>A hallmark of quality and taste, selected for the discerning palate. This product represents the pinnacle of its category, sourced with care and delivered with precision.</p>
-                  )}
-                </div>
-              </div>
-
-              <Separator className="bg-zinc-100" />
-
-              {/* Provenance Details */}
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800 mb-2">Origin</h4>
-                  <p className="font-serif text-xl text-zinc-900">
-                    {/* Mock logic for now */}
-                    {product.tags?.includes('Locally Sourced') ? 'Sri Lanka' : 'Imported Selection'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800 mb-2">Grade</h4>
-                  <p className="font-serif text-xl text-zinc-900">Premium Export</p>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800 mb-2">Category</h4>
-                  <p className="font-serif text-xl text-zinc-900">{product.category?.name || 'General'}</p>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800 mb-2">Season</h4>
-                  <p className="font-serif text-xl text-zinc-900">Peak Harvest</p>
-                </div>
+          <div className="max-w-4xl mx-auto space-y-12">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-6">The Story</h3>
+              <div className="prose prose-lg prose-zinc font-light leading-loose text-zinc-600">
+                {product.description ? (
+                  <Markdown rehypePlugins={[rehypeSanitize]}>
+                    {product.description}
+                  </Markdown>
+                ) : (
+                  <p>A hallmark of quality and taste, selected for the discerning palate. This product represents the pinnacle of its category, sourced with care and delivered with precision.</p>
+                )}
               </div>
             </div>
-
-            {/* Sidebar: Perfect Pairings & Info */}
-            <div className="md:col-span-5 space-y-12">
-              <div className="bg-zinc-50 p-8 rounded-sm border border-zinc-100">
-                <h3 className="font-serif text-2xl text-zinc-900 mb-6">Perfect Pairings</h3>
-                <div className="space-y-6">
-                  {PAIRINGS.map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 group cursor-pointer">
-                      <div className="w-16 h-16 bg-white border border-zinc-200 rounded-sm overflow-hidden relative">
-                        {/* Placeholder images */}
-                        <div className="absolute inset-0 bg-zinc-100" />
-                      </div>
-                      <div>
-                        <h5 className="font-medium text-zinc-900 group-hover:text-emerald-700 transition-colors">{item.name}</h5>
-                        <p className="text-sm text-zinc-500">{item.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-8 pt-6 border-t border-zinc-200">
-                  <Link href="/products" className="text-xs font-bold uppercase tracking-widest text-emerald-700 hover:text-emerald-900">
-                    View All Recommendations
-                  </Link>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
 

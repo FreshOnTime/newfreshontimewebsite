@@ -272,47 +272,41 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
       </div>
 
       <div className="container mx-auto px-4 md:px-8 py-16">
-        <div className="flex flex-col lg:flex-row gap-12 items-start">
 
-          {/* Sidebar - Desktop */}
-          <div className="hidden lg:block sticky top-24">
-            <ProductsSidebar />
+        {/* Products Filter Bar - Horizontal */}
+        <div className="sticky top-0 z-20">
+          <ProductsFilterBar />
+        </div>
+
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100">
+            <span className="text-zinc-500 font-serif italic text-sm">
+              {pagination.total === 0 ? 'No items found' : `Showing ${start}-${end} of ${pagination.total} results`}
+            </span>
           </div>
 
-          {/* Main Content */}
-          <div className="w-full flex-1">
-            {/* Mobile Filter Toggle could go here */}
-
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100">
-              <span className="text-zinc-500 font-serif italic">
-                {pagination.total === 0 ? 'No items found' : `Showing ${start}-${end} of ${pagination.total} results`}
-              </span>
-              {/* Sort/Layout toggles could go here */}
+          {products.length === 0 ? (
+            <div className="py-24 text-center border border-dashed border-zinc-200 rounded-lg">
+              <p className="text-zinc-400 font-serif text-lg italic mb-2">No products match your criteria.</p>
+              <a href="/products" className="text-xs font-bold uppercase tracking-widest text-emerald-600 hover:text-emerald-700">Clear all filters</a>
             </div>
+          ) : (
+            <ProductGrid products={products} className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12" />
+          )}
 
-            {products.length === 0 ? (
-              <div className="py-24 text-center border border-dashed border-zinc-200 rounded-lg">
-                <p className="text-zinc-400 font-serif text-lg italic mb-2">No products match your criteria.</p>
-                <a href="/products" className="text-xs font-bold uppercase tracking-widest text-emerald-600 hover:text-emerald-700">Clear all filters</a>
-              </div>
-            ) : (
-              <ProductGrid products={products} className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-x-8 gap-y-12" />
-            )}
-
-            {pagination.total > 0 && (
-              <div className="pt-16 mt-8 border-t border-zinc-100 flex justify-center">
-                <ProductsPagination
-                  page={pagination.page}
-                  limit={pagination.limit}
-                  total={pagination.total}
-                  currentCount={products.length}
-                  hasPrev={pagination.hasPrev}
-                  hasNext={pagination.hasNext}
-                  totalPages={pagination.totalPages}
-                />
-              </div>
-            )}
-          </div>
+          {pagination.total > 0 && (
+            <div className="pt-16 mt-8 border-t border-zinc-100 flex justify-center">
+              <ProductsPagination
+                page={pagination.page}
+                limit={pagination.limit}
+                total={pagination.total}
+                currentCount={products.length}
+                hasPrev={pagination.hasPrev}
+                hasNext={pagination.hasNext}
+                totalPages={pagination.totalPages}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
