@@ -77,12 +77,13 @@ export default function ProductsFilterBar() {
         {/* Search */}
         <div className="w-full lg:w-96 relative group">
           <Input
-            className="bg-zinc-50 border-0 border-b-2 border-zinc-200 rounded-none px-0 py-6 text-lg focus-visible:ring-0 focus-visible:border-emerald-600 transition-all placeholder:text-zinc-300"
-            placeholder="SEARCH COLLECTION..."
+            className="bg-white border-zinc-200 rounded-full px-6 py-6 text-base shadow-sm focus-visible:ring-1 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all placeholder:text-zinc-400 font-medium tracking-wide uppercase"
+            placeholder="Search Collection..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") apply(); }}
           />
+          {/* Search Icon could go here if we had one, but keeping simple */}
         </div>
 
         {/* Filters Group */}
