@@ -29,12 +29,14 @@ async function getSubscriptionPlans() {
 }
 
 export default async function SubscriptionsPage() {
-    let plans = await getSubscriptionPlans();
+    const dbPlans = await getSubscriptionPlans();
 
-    // Use default plans if no plans in database
-    if (!plans || plans.length === 0) {
-        plans = defaultSubscriptionPlans;
-    }
+    // Merge DB plans with defaults to ensure all are visible
+    // This fixes the issue where only one plan shows up if only one has been created in DB
+    const plans = defaultSubscriptionPlans.map(defaultPlan => {
+        const existing = dbPlans.find((p: any) => p.slug === defaultPlan.slug);
+        return existing || defaultPlan;
+    });
 
     return (
         <div className="min-h-screen bg-white text-zinc-900">
@@ -93,7 +95,7 @@ export default async function SubscriptionsPage() {
                         <div className="group">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
                                 <img
-                                    src="https://images.unsplash.com/photo-1595855709940-57753384fa1d?q=80&w=2670&auto=format&fit=crop"
+                                    src="https://images.unsplash.com/photo-1597362925123-77861d3fbac7?q=80&w=1000&auto=format&fit=crop"
                                     alt="Harvested Daily"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
                                 />
@@ -107,7 +109,7 @@ export default async function SubscriptionsPage() {
                         <div className="group md:mt-16">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
                                 <img
-                                    src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=2574&auto=format&fit=crop"
+                                    src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=2670&auto=format&fit=crop"
                                     alt="Farmer Direct"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
                                 />
@@ -121,7 +123,7 @@ export default async function SubscriptionsPage() {
                         <div className="group md:mt-32">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
                                 <img
-                                    src="https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2574&auto=format&fit=crop"
+                                    src="https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?q=80&w=2670&auto=format&fit=crop"
                                     alt="Zero-Plastic Promise"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
                                 />

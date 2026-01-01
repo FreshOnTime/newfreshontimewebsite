@@ -47,7 +47,7 @@ export function deleteCookie(
 export function getCookie(request: NextRequest, name: string): string | undefined {
   const cookieHeader = request.headers.get('cookie');
   if (!cookieHeader) return undefined;
-  
+
   const cookies = parse(cookieHeader);
   return cookies[name];
 }
@@ -59,7 +59,7 @@ export function setAuthCookies(
 ): void {
   // Access token - short expiry
   setCookie(response, 'accessToken', accessToken, {
-    maxAge: 15 * 60, // 15 minutes
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   });
 
   // Refresh token - long expiry

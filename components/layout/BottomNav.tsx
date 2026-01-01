@@ -37,30 +37,28 @@ export default function BottomNav() {
                             key={href}
                             href={href}
                             className={`flex flex-col items-center justify-center w-full h-full px-2 relative transition-colors ${isActive
-                                ? "text-emerald-600"
-                                : "text-zinc-500 hover:text-zinc-900"
+                                ? "text-emerald-900"
+                                : "text-zinc-400 hover:text-zinc-600"
                                 }`}
                         >
                             <div className="relative">
                                 <Icon
-                                    className={`w-5 h-5 ${isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
-                                        }`}
+                                    className="w-7 h-7 transition-all duration-200"
+                                    strokeWidth={isActive ? 2 : 1.5}
+                                    fill={isActive ? "currentColor" : "none"}
                                 />
                                 {showBadge && itemCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white">
                                         {itemCount > 99 ? "99+" : itemCount}
                                     </span>
                                 )}
                             </div>
                             <span
-                                className={`text-[10px] mt-1 ${isActive ? "font-semibold" : "font-medium"
+                                className={`text-[10px] mt-1 tracking-wide ${isActive ? "font-semibold" : "font-medium"
                                     }`}
                             >
                                 {label}
                             </span>
-                            {isActive && (
-                                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-emerald-600 rounded-full" />
-                            )}
                         </Link>
                     );
                 })}

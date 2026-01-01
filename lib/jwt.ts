@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 const JWT_SECRET_RAW = process.env.JWT_SECRET;
-const JWT_ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '15m';
+const JWT_ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '7d';
 const JWT_REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '30d';
 
 if (!JWT_SECRET_RAW) {

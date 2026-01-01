@@ -259,7 +259,23 @@ export function Navbar() {
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
             <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
             <div className="h-px bg-gray-100 w-24 mx-auto my-2" />
-            <Link href="/auth/login" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+            {user ? (
+              <>
+                <Link href="/profile" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>My Profile</Link>
+                <Link href="/orders" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>My Orders</Link>
+                <button
+                  className="text-lg text-red-600 font-medium"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link href="/auth/login" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+            )}
           </nav>
         </div>
       )}
