@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -106,7 +106,7 @@ export default function RootLayout({
           <html lang="en">
             <body
               className={`${inter.variable} ${playfair.variable} ${cormorant.variable} min-h-screen bg-background font-sans antialiased`}
-            >        <ReferralBanner />
+            >
               <AdminChromeGuard>{children}</AdminChromeGuard>
               <BottomNav />
               <WhatsAppButton />
