@@ -28,51 +28,46 @@ export const ProductControls = ({ product }: { product: Product }) => {
   const { total, savings } = calculateItemTotal(derivedProduct, validQuantity);
 
   return (
-    <>
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-500 font-semibold">
-            Est. {getMeasurementType(derivedProduct.measurementUnit)}
-          </span>
-          <div className="text-right">
-            <span className="font-medium text-lg">
-              {formatMeasurement(
-                derivedProduct.isSoldAsUnit
-                  ? validQuantity * derivedProduct.baseMeasurementQuantity
-                  : validQuantity,
-                derivedProduct.measurementUnit
-              )}
+    <div className="space-y-8 bg-zinc-50 p-8 rounded-sm border border-zinc-100">
+      <div className="space-y-4">
+        {/* Estimated Weight Display - Only if not sold as unit */}
+        {!derivedProduct.isSoldAsUnit && (
+          <div className="flex justify-between items-end border-b border-zinc-200 pb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+              Est. {getMeasurementType(derivedProduct.measurementUnit)}
             </span>
-          </div>
-        </div>
-
-        {savings > 0 && (
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500 font-semibold">Savings</span>
-            <div className="text-right">
-              <span className="font-medium text-lg text-green-600">
-                Rs. {savings.toFixed(2)}
-              </span>
-            </div>
+            <span className="font-serif text-lg text-zinc-900">
+              {formatMeasurement(validQuantity, derivedProduct.measurementUnit)}
+            </span>
           </div>
         )}
 
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 font-bold">Total</span>
+        {/* Total Calculation */}
+        <div className="flex justify-between items-end">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">Subtotal</span>
           <div className="text-right">
-            <span className="font-medium text-lg">Rs. {total.toFixed(2)}</span>
+            <span className="font-serif text-2xl text-zinc-900">Rs. {total.toFixed(2)}</span>
+            {savings > 0 && (
+              <div className="text-xs font-medium text-emerald-600 mt-1">
+                You save Rs. {savings.toFixed(2)}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-6">
+        {/* Unit Options */}
         {product.unitOptions && product.unitOptions.length > 0 && (
-          <div className="flex gap-2 justify-end flex-wrap">
+          <div className="flex flex-wrap gap-3">
             {product.unitOptions.map((opt, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedOptionIndex(idx)}
-                className={`px-3 py-1 rounded-full border text-sm ${idx === selectedOptionIndex ? 'bg-green-600 text-white border-green-600' : 'border-gray-300 text-gray-700 hover:border-green-400'}`}
+                className={`px-4 py-2 rounded-sm text-sm font-medium transition-all ${idx === selectedOptionIndex
+                    ? 'bg-zinc-900 text-white shadow-md'
+                    : 'bg-white border border-zinc-200 text-zinc-600 hover:border-emerald-500 hover:text-emerald-700'
+                  }`}
                 aria-pressed={idx === selectedOptionIndex}
               >
                 {opt.label}
@@ -80,22 +75,30 @@ export const ProductControls = ({ product }: { product: Product }) => {
             ))}
           </div>
         )}
-        <QuantityInputLarge
-          value={quantity}
-          onChange={(value) => setQuantity(value)}
-          min={derivedProduct.minOrderQuantity}
-          max={derivedProduct.maxOrderQuantity}
-          step={derivedProduct.stepQuantity}
-          unit={derivedProduct.isSoldAsUnit ? "" : derivedProduct.measurementUnit}
-          isDiscreteItem={derivedProduct.isSoldAsUnit}
-          className="w-44 ml-auto"
-        />
-        {/* Add to Bag Button */}
-        <AddToBagButton product={derivedProduct} quantity={validQuantity} />
 
-        {/* Quick Now Button */}
-        <QuickOrderButton product={derivedProduct} quantity={validQuantity} />
+        {/* Actions Row */}
+        <div className="flex flex-wrap items-stretch gap-4">
+          <div className="w-32">
+            <QuantityInputLarge
+              value={quantity}
+              onChange={(value) => setQuantity(value)}
+              min={derivedProduct.minOrderQuantity}
+              max={derivedProduct.maxOrderQuantity}
+              step={derivedProduct.stepQuantity}
+              unit={derivedProduct.isSoldAsUnit ? "" : derivedProduct.measurementUnit}
+              isDiscreteItem={derivedProduct.isSoldAsUnit}
+              className="h-14 w-full"
+            />
+          </div>
+
+          <div className="flex-1 min-w-[140px]">
+            <AddToBagButton product={derivedProduct} quantity={validQuantity} />
+          </div>
+
+          {/* Quick order can be hidden or styled minimally to reduce clutter */}
+          {/* <QuickOrderButton product={derivedProduct} quantity={validQuantity} /> */}
+        </div>
       </div>
-    </>
+    </div>
   );
 };
