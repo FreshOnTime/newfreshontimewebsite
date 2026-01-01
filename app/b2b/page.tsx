@@ -22,10 +22,10 @@ export default function B2BPage() {
     });
 
     return (
-        <div ref={containerRef} className="relative bg-[#064e3b] text-white selection:bg-[#d4af37] selection:text-[#064e3b] overflow-clip">
+        <div ref={containerRef} className="relative bg-emerald-50 text-emerald-950 selection:bg-[#d4af37] selection:text-white overflow-clip">
 
-            {/* 1. Global Noise Texture for 'Film Grain' Premium Feel */}
-            <div className="fixed inset-0 z-[1] pointer-events-none opacity-[0.03] mix-blend-overlay">
+            {/* 1. Global Noise Texture (Subtler for Light Mode) */}
+            <div className="fixed inset-0 z-[1] pointer-events-none opacity-[0.05] mix-blend-multiply">
                 <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
                     <filter id="noiseFilter">
                         <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
@@ -60,23 +60,23 @@ function HeroSection() {
     });
 
     const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-    const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
     const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
     return (
         <section ref={ref} className="relative h-[120vh] flex items-center justify-center overflow-hidden z-10">
-            {/* Background Parallax Image */}
+            {/* Background (Lighter, Fresher) */}
             <div className="absolute inset-0 z-0">
-                <motion.div style={{ y, opacity }} className="absolute inset-0">
+                <motion.div style={{ y }} className="absolute inset-0">
                     <Image
                         src="https://images.unsplash.com/photo-1615485925694-a031e241692e?q=80&w=2574&auto=format&fit=crop"
-                        alt="Dark Moody Produce"
+                        alt="Fresh Premium Produce"
                         fill
-                        className="object-cover opacity-60"
+                        className="object-cover"
                         priority
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#064e3b]/80 via-transparent to-[#064e3b]" />
-                    <div className="absolute inset-0 bg-[#064e3b]/20" /> {/* Wash */}
+                    {/* White/Emerald Wash for Light Theme */}
+                    <div className="absolute inset-0 bg-emerald-50/60 mix-blend-screen" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/80 via-transparent to-emerald-50" />
                 </motion.div>
             </div>
 
@@ -87,7 +87,7 @@ function HeroSection() {
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1, ease: "easeOut" }}
-                        className="inline-flex items-center gap-2 border border-[#d4af37]/30 px-6 py-2 rounded-full backdrop-blur-sm bg-[#064e3b]/30"
+                        className="inline-flex items-center gap-2 border border-[#d4af37]/50 px-6 py-2 rounded-full backdrop-blur-md bg-white/40 shadow-sm"
                     >
                         <Star className="w-3 h-3 text-[#d4af37] fill-[#d4af37]" />
                         <span className="text-[#d4af37] text-xs font-bold tracking-[0.3em] uppercase">Private Client Division</span>
@@ -97,7 +97,7 @@ function HeroSection() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1.2, delay: 0.2, ease: "circOut" }}
-                        className="font-serif text-[15vw] leading-[0.8] tracking-in-tighter text-white mix-blend-overlay opacity-90"
+                        className="font-serif text-[15vw] leading-[0.8] tracking-in-tighter text-emerald-950 mix-blend-multiply opacity-90"
                     >
                         FINEST
                     </motion.h1>
@@ -106,7 +106,7 @@ function HeroSection() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1, delay: 0.8 }}
-                        className="text-xl md:text-3xl font-light text-zinc-200 max-w-2xl mx-auto leading-relaxed"
+                        className="text-xl md:text-3xl font-light text-emerald-900/80 max-w-2xl mx-auto leading-relaxed"
                     >
                         The definitive supply chain for Colombo's<br /> highest-grossing kitchens.
                     </motion.p>
@@ -116,7 +116,7 @@ function HeroSection() {
             <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 text-white/50"
+                className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 text-emerald-950/30"
             >
                 <ArrowDown className="w-6 h-6" />
             </motion.div>
@@ -132,11 +132,11 @@ function PhilosophySection() {
                 {/* Sticky Left: The Manifesto */}
                 <div className="lg:w-1/2 lg:h-screen lg:sticky lg:top-0 flex flex-col justify-center">
                     <span className="text-[#d4af37] text-xs font-bold tracking-[0.4em] uppercase mb-8 block">The Philosophy</span>
-                    <h2 className="font-serif text-6xl md:text-8xl text-white mb-10 leading-[0.9]">
+                    <h2 className="font-serif text-6xl md:text-8xl text-emerald-950 mb-10 leading-[0.9]">
                         Uncompromising<br />
-                        <span className="text-zinc-500 italic block mt-2">Precision.</span>
+                        <span className="text-emerald-500 italic block mt-2">Precision.</span>
                     </h2>
-                    <p className="text-xl text-zinc-300 font-light leading-relaxed max-w-md border-l border-[#d4af37] pl-8">
+                    <p className="text-xl text-emerald-900/70 font-light leading-relaxed max-w-md border-l border-[#d4af37] pl-8">
                         We don't just deliver vegetables. We curate the foundation of your Michelin-standard menu with military precision and artistic obsession.
                     </p>
                 </div>
@@ -152,17 +152,17 @@ function PhilosophySection() {
                             key={i}
                             className="group"
                         >
-                            <div className="aspect-[4/5] relative overflow-hidden mb-8 bg-zinc-900 border border-white/5">
+                            <div className="aspect-[4/5] relative overflow-hidden mb-8 bg-white shadow-xl">
                                 <Image
                                     src={item.img}
                                     alt={item.title}
                                     fill
-                                    className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
+                                    className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#064e3b] to-transparent opacity-60" />
+                                <div className="absolute inset-0 bg-emerald-900/0 group-hover:bg-emerald-900/10 transition-colors" />
                             </div>
-                            <h3 className="font-serif text-4xl text-white mb-3">{item.title}</h3>
-                            <p className="text-zinc-400 font-light">{item.desc}</p>
+                            <h3 className="font-serif text-4xl text-emerald-950 mb-3">{item.title}</h3>
+                            <p className="text-emerald-900/60 font-light">{item.desc}</p>
                         </AnimatedSection>
                     ))}
                 </div>
@@ -180,13 +180,13 @@ function HorizontalGallery() {
     const x = useTransform(scrollYProgress, [0, 1], ["0%", "-65%"]);
 
     return (
-        <section ref={targetRef} className="relative h-[300vh] bg-[#064e3b] z-20">
+        <section ref={targetRef} className="relative h-[300vh] bg-emerald-50 z-20">
             <div className="sticky top-0 h-screen flex items-center overflow-hidden">
                 <motion.div style={{ x }} className="flex gap-20 px-20">
                     <div className="flex-shrink-0 w-[40vw] flex flex-col justify-center">
                         <span className="text-[#d4af37] text-xs font-bold tracking-[0.4em] uppercase mb-8 block">The Collection</span>
-                        <h2 className="font-serif text-7xl md:text-9xl text-white leading-none">
-                            Rare<br /><span className="italic text-zinc-500">Finds</span>
+                        <h2 className="font-serif text-7xl md:text-9xl text-emerald-950 leading-none">
+                            Rare<br /><span className="italic text-emerald-500">Finds</span>
                         </h2>
                     </div>
 
@@ -196,14 +196,14 @@ function HorizontalGallery() {
                         { name: "Microgreens", origin: "Hydro Lab", img: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?q=80&w=2670" },
                         { name: "Exotic Mushrooms", origin: "Cloud Forest", img: "https://images.unsplash.com/photo-1504194921103-f8b80cadd5e4?q=80&w=2670" }
                     ].map((item, i) => (
-                        <div key={i} className="flex-shrink-0 w-[30vw] h-[60vh] relative group bg-[#022c22] border border-white/5">
+                        <div key={i} className="flex-shrink-0 w-[30vw] h-[60vh] relative group bg-white shadow-2xl overflow-hidden">
                             <Image
                                 src={item.img}
                                 alt={item.name}
                                 fill
-                                className="object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-700"
+                                className="object-cover transition-transform duration-700 group-hover:scale-105"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#064e3b] via-transparent to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-transparent to-transparent opacity-80" />
                             <div className="absolute bottom-0 left-0 p-8">
                                 <span className="text-[#d4af37] text-xs font-bold tracking-widest uppercase mb-2 block">{item.origin}</span>
                                 <h3 className="text-3xl font-serif text-white">{item.name}</h3>
@@ -213,8 +213,8 @@ function HorizontalGallery() {
 
                     <div className="flex-shrink-0 w-[30vw] flex items-center justify-center">
                         <div className="text-center">
-                            <p className="text-white text-xl mb-6 font-serif italic">And 150+ more varieties.</p>
-                            <Button variant="outline" className="border-[#d4af37] text-[#d4af37] hover:bg-[#d4af37] hover:text-[#064e3b]">
+                            <p className="text-emerald-950 text-xl mb-6 font-serif italic">And 150+ more varieties.</p>
+                            <Button variant="outline" className="border-[#d4af37] text-[#d4af37] hover:bg-[#d4af37] hover:text-white">
                                 Download Catalog
                             </Button>
                         </div>
@@ -227,25 +227,25 @@ function HorizontalGallery() {
 
 function ConciergeSection() {
     return (
-        <section id="contact" className="relative z-30 py-40 border-t border-white/10 bg-[#064e3b]">
+        <section id="contact" className="relative z-30 py-40 border-t border-emerald-900/5 bg-emerald-50">
             <div className="container mx-auto px-4">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-16">
                         <span className="text-[#d4af37] text-xs font-bold tracking-[0.4em] uppercase mb-6 block">Membership</span>
-                        <h2 className="font-serif text-5xl md:text-7xl text-white leading-tight">
+                        <h2 className="font-serif text-5xl md:text-7xl text-emerald-950 leading-tight">
                             Strictly by application.<br />
-                            <span className="text-zinc-500 italic">Limited availability for {new Date().getFullYear()}.</span>
+                            <span className="text-emerald-500 italic">Limited availability for {new Date().getFullYear()}.</span>
                         </h2>
                     </div>
 
-                    <div className="grid lg:grid-cols-2 gap-0 border border-white/10 shadow-2xl bg-[#065f46]">
+                    <div className="grid lg:grid-cols-2 gap-0 border border-emerald-900/5 shadow-2xl bg-white">
                         {/* Left: Concierge Info */}
-                        <div className="p-12 lg:p-20 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between bg-[#059669]/20 relative overflow-hidden">
-                            <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+                        <div className="p-12 lg:p-20 border-b lg:border-b-0 lg:border-r border-emerald-900/5 flex flex-col justify-between bg-emerald-50/50 relative overflow-hidden">
+                            <div className="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
 
                             <div className="relative z-10">
-                                <h3 className="font-serif text-4xl text-white mb-6">Concierge</h3>
-                                <p className="text-emerald-100/70 font-light leading-relaxed mb-12 text-lg">
+                                <h3 className="font-serif text-4xl text-emerald-950 mb-6">Concierge</h3>
+                                <p className="text-emerald-900/60 font-light leading-relaxed mb-12 text-lg">
                                     Approved partners receive dedicated 24/7 account management and priority logicstics.
                                 </p>
                             </div>
@@ -253,42 +253,42 @@ function ConciergeSection() {
                             <div className="relative z-10 space-y-8">
                                 <div>
                                     <div className="text-xs text-[#d4af37] uppercase tracking-widest font-bold mb-2">Direct Line</div>
-                                    <a href="tel:+94771234567" className="text-2xl font-serif text-white hover:text-[#d4af37] transition-colors">+94 77 123 4567</a>
+                                    <a href="tel:+94771234567" className="text-2xl font-serif text-emerald-950 hover:text-[#d4af37] transition-colors">+94 77 123 4567</a>
                                 </div>
                                 <div>
                                     <div className="text-xs text-[#d4af37] uppercase tracking-widest font-bold mb-2">Email</div>
-                                    <a href="mailto:b2b@freshpick.lk" className="text-xl text-white hover:text-[#d4af37] transition-colors">b2b@freshpick.lk</a>
+                                    <a href="mailto:b2b@freshpick.lk" className="text-xl text-emerald-950 hover:text-[#d4af37] transition-colors">b2b@freshpick.lk</a>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right: The Form */}
-                        <div className="p-12 lg:p-20 bg-[#064e3b]">
+                        <div className="p-12 lg:p-20 bg-white">
                             <form className="space-y-8" action="mailto:b2b@freshpick.lk" method="post" encType="text/plain">
                                 <div className="space-y-8">
                                     <div className="group">
-                                        <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-300 transition-colors">Establishment</label>
-                                        <input type="text" className="w-full bg-transparent border-b border-white/20 py-4 text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-white/20 font-serif text-lg" placeholder="Restaurant or Hotel Name" />
+                                        <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-600 transition-colors">Establishment</label>
+                                        <input type="text" className="w-full bg-transparent border-b border-emerald-900/10 py-4 text-emerald-950 focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-emerald-900/20 font-serif text-lg" placeholder="Restaurant or Hotel Name" />
                                     </div>
 
                                     <div className="grid md:grid-cols-2 gap-8">
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-300 transition-colors">Contact Person</label>
-                                            <input type="text" className="w-full bg-transparent border-b border-white/20 py-4 text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-white/20 font-serif text-lg" placeholder="Full Name" />
+                                            <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-600 transition-colors">Contact Person</label>
+                                            <input type="text" className="w-full bg-transparent border-b border-emerald-900/10 py-4 text-emerald-950 focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-emerald-900/20 font-serif text-lg" placeholder="Full Name" />
                                         </div>
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-300 transition-colors">Direct Phone</label>
-                                            <input type="tel" className="w-full bg-transparent border-b border-white/20 py-4 text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-white/20 font-serif text-lg" placeholder="+94..." />
+                                            <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-600 transition-colors">Direct Phone</label>
+                                            <input type="tel" className="w-full bg-transparent border-b border-emerald-900/10 py-4 text-emerald-950 focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-emerald-900/20 font-serif text-lg" placeholder="+94..." />
                                         </div>
                                     </div>
 
                                     <div className="group">
-                                        <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-300 transition-colors">Requirements</label>
-                                        <textarea rows={2} className="w-full bg-transparent border-b border-white/20 py-4 text-white focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-white/20 font-serif text-lg resize-none" placeholder="Est. weekly volume..."></textarea>
+                                        <label className="text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-3 block group-focus-within:text-emerald-600 transition-colors">Requirements</label>
+                                        <textarea rows={2} className="w-full bg-transparent border-b border-emerald-900/10 py-4 text-emerald-950 focus:outline-none focus:border-[#d4af37] transition-colors placeholder:text-emerald-900/20 font-serif text-lg resize-none" placeholder="Est. weekly volume..."></textarea>
                                     </div>
                                 </div>
 
-                                <Button size="lg" className="w-full bg-white text-[#064e3b] hover:bg-[#d4af37] hover:text-[#064e3b] h-16 text-lg font-bold tracking-widest uppercase transition-all mt-8 rounded-none border border-transparent hover:border-white/20">
+                                <Button size="lg" className="w-full bg-emerald-950 text-white hover:bg-[#d4af37] hover:text-white h-16 text-lg font-bold tracking-widest uppercase transition-all mt-8 rounded-none border border-transparent shadow-lg hover:shadow-xl">
                                     Submit Application
                                 </Button>
                             </form>
