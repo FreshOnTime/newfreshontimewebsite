@@ -17,35 +17,34 @@ export default function HeroSection() {
                     priority
                 />
                 {/* Cinematic Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/90"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-70"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-zinc-950"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] opacity-80"></div>
                 {/* Noise Texture */}
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.15] mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.2] mix-blend-overlay"></div>
             </div>
 
             <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10 text-center">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    transition={{ duration: 1, ease: "easeOut" }}
                 >
-                    <span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-sm font-medium tracking-widest uppercase mb-6">
-                        The Future of Freshness
+                    <span className="inline-block py-1 px-4 rounded-full bg-emerald-950/30 backdrop-blur-md border border-emerald-500/10 text-emerald-400 text-xs font-bold tracking-[0.3em] uppercase mb-8 shadow-2xl">
+                        Est. 2024 • Colombo
                     </span>
-                    <h1 className="text-5xl md:text-7xl lg:text-9xl font-serif font-bold text-white mb-6 tracking-tight leading-[0.9]">
-                        Taste the <br />
-                        <span className="text-emerald-400 italic">Extraordinary</span>
+                    <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-medium text-white mb-8 tracking-tighter leading-[0.9] drop-shadow-2xl">
+                        The Art of <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-emerald-500 italic font-light pr-4">Freshness</span>
                     </h1>
-                    <p className="text-xl md:text-2xl text-zinc-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-                        Premium artisanal groceries, sourced from the world&apos;s finest
-                        growers, delivered to your doorstep within hours.
+                    <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-xl mx-auto font-light leading-relaxed tracking-wide">
+                        Curating the world&apos;s finest harvests for the most discerning tables in Colombo.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-5 justify-center">
                         <Button
                             asChild
                             size="lg"
-                            className="bg-emerald-500 hover:bg-emerald-400 text-black px-10 py-7 text-lg font-bold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)]"
+                            className="bg-white text-zinc-950 hover:bg-emerald-50 px-12 py-8 text-sm font-bold tracking-widest uppercase rounded-none transition-all hover:scale-105"
                         >
                             <Link href="/products">Shop Experience</Link>
                         </Button>
@@ -53,7 +52,7 @@ export default function HeroSection() {
                             asChild
                             size="lg"
                             variant="outline"
-                            className="bg-transparent border-white/30 text-white hover:bg-white/10 px-10 py-7 text-lg font-medium rounded-full backdrop-blur-sm transition-all"
+                            className="bg-transparent border border-white/20 text-white hover:bg-white/5 px-12 py-8 text-sm font-medium tracking-widest uppercase rounded-none backdrop-blur-sm transition-all"
                         >
                             <Link href="/categories">View Collections</Link>
                         </Button>

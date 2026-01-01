@@ -30,7 +30,7 @@ export default function PrivateClientCTA() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Link href="/subscriptions" className="group relative px-8 py-4 bg-white text-zinc-900 rounded-full font-bold tracking-wide transition-all hover:bg-emerald-50 hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]">
                         <span className="flex items-center gap-2">
-                            View Memberships
+                            Shop Private Memberships
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </span>
                     </Link>

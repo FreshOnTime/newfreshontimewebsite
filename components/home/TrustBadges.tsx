@@ -38,7 +38,7 @@ const badges = [
 
 export default function TrustBadges() {
     return (
-        <section className="py-6 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-y border-emerald-100">
+        <section className="py-12 bg-white border-b border-zinc-100">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
                     {badges.map((badge, index) => (
@@ -48,14 +48,14 @@ export default function TrustBadges() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1, duration: 0.5 }}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-emerald-100/50 hover:border-emerald-200 hover:shadow-md transition-all duration-300 group"
+                            className="flex items-center gap-4 p-4 rounded-none transition-all duration-300 group"
                         >
-                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500 transition-colors duration-300">
-                                <badge.icon className="w-5 h-5 text-emerald-600 group-hover:text-white transition-colors" />
+                            <div className="w-12 h-12 flex items-center justify-center flex-shrink-0 border border-zinc-200 rounded-full group-hover:border-emerald-900 group-hover:bg-emerald-900 transition-all duration-500">
+                                <badge.icon className="w-5 h-5 text-zinc-900 group-hover:text-emerald-50 transition-colors duration-500 stroke-1" />
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-800 text-sm">{badge.title}</p>
-                                <p className="text-xs text-gray-500">{badge.description}</p>
+                                <p className="font-serif font-medium text-zinc-900 text-base tracking-wide">{badge.title}</p>
+                                <p className="text-xs text-zinc-500 uppercase tracking-widest mt-1">{badge.description}</p>
                             </div>
                         </motion.div>
                     ))}
