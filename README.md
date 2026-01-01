@@ -1,294 +1,207 @@
-# Fresh Pick - Full Stack Next.js Application
+# 🥬 Fresh Pick - Premium Grocery Delivery Platform
 
-A complete e-commerce application built with Next.js, MongoDB, and JWT authentication.
+**Pick Fresh, Live Easy** — Sri Lanka's premium online grocery delivery service with subscriptions, B2B supply, and diaspora gifting.
 
-## 📚 Architecture Documentation
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://mongodb.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://typescriptlang.org/)
 
-**Strategic Decision Documents:**
-- [**E-Commerce Architecture Decision**](ECOMMERCE_ARCHITECTURE_DECISION.md) - Full analysis: Multi-vendor marketplace vs standard e-commerce
-- [**Quick Reference Summary**](ECOMMERCE_DECISION_SUMMARY.md) - TL;DR and key decisions
-- [**Vendor-Ready Architecture Guide**](VENDOR_READY_ARCHITECTURE_GUIDE.md) - Technical implementation for future multi-vendor support
+---
 
-**Current Approach:** Standard e-commerce with vendor-ready architecture for future scaling.
+## 🎯 The Problem We Solve
 
-## 🚀 Features
+Getting fresh, quality groceries in Sri Lanka is inconvenient and unreliable. We're building the modern infrastructure for food commerce.
 
-- **Full Stack Architecture**: Single Next.js application with API routes
-- **MongoDB Integration**: Using Mongoose for data modeling and validation
-- **JWT Authentication**: Secure authentication with access and refresh tokens
-- **Role-based Authorization**: Support for multiple user roles (admin, customer, etc.)
-- **Cookie-based Security**: HTTP-only, secure cookies for token storage
-- **Rate Limiting**: Protection against brute force attacks
-- **Input Validation**: Comprehensive validation using Zod
-- **Product Management**: Full CRUD operations for products, categories, and brands
-- **User Management**: Registration, login, profile management
-- **Shopping Cart**: Bag/cart functionality
-- **Responsive Design**: Modern UI with Tailwind CSS
+## 💡 Our Unique Approach
+
+| Market Segment | Description | Status |
+|----------------|-------------|--------|
+| **B2C Subscriptions** | Weekly/monthly grocery boxes for families | ✅ Live |
+| **B2B Restaurant Supply** | Bulk fresh produce for restaurants & hotels | 🚧 Coming |
+| **Farm-to-Table** | Direct farmer partnerships, traceable produce | 🚧 Coming |
+| **Diaspora Gifting** | Send groceries to family in Sri Lanka | 🚧 Coming |
+| **Meal Kits** | Pre-portioned recipe boxes | 🚧 Coming |
+
+---
+
+## 🚀 Platform Features
+
+### Customer Acquisition
+- ✅ **Referral System** — Rs. 200 reward per successful referral
+- ✅ **First Order Discount** — Popup with newsletter signup
+- ✅ **Social Proof** — Live order counter, "X just purchased" notifications
+
+### Shopping Experience
+- ✅ **Curated Bags** — Pre-built grocery bundles
+- ✅ **Subscriptions** — Weekly, bi-weekly, monthly plans
+- ✅ **Quick Reorder** — One-click repeat from previous orders
+- ✅ **Smart Search** — Autocomplete with recent searches
+- ✅ **Wishlist** — Save items for later
+
+### Reviews & Trust
+- ✅ **Product Reviews** — Star ratings with verified purchase badges
+- ✅ **Low Stock Alerts** — "Only 3 left!" urgency indicators
+- ✅ **Trust Badges** — Freshness guarantee, secure checkout
+
+### Technical Excellence
+- ✅ **PWA Support** — Offline-ready, installable
+- ✅ **SEO Optimized** — Schema markup, sitemaps
+- ✅ **Mobile-First** — Responsive design with bottom navigation
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15, React 18, TypeScript
-- **Backend**: Next.js API Routes, MongoDB, Mongoose
-- **Authentication**: JWT, bcryptjs, HTTP-only cookies
-- **Validation**: Zod
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **Rate Limiting**: rate-limiter-flexible
-- **Development**: ESLint, TypeScript
+```
+Frontend:     Next.js 15, React 18, TypeScript, Tailwind CSS
+Backend:      Next.js API Routes, MongoDB, Mongoose
+Auth:         JWT with HTTP-only cookies, role-based access
+Payments:     Integration-ready (Stripe/PayHere)
+Storage:      Azure Blob Storage
+Analytics:    Google Analytics 4
+```
 
-## 📋 Prerequisites
+---
 
-- Node.js 18+ and npm
-- MongoDB Atlas account or local MongoDB installation
-- Git
+## 📊 API Endpoints
+
+### Core Commerce
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | List products with filters |
+| GET | `/api/categories` | Category tree |
+| POST | `/api/bags/reorder` | Quick reorder from past orders |
+| GET/POST | `/api/reviews` | Product reviews & ratings |
+| GET/POST | `/api/referrals` | Referral code management |
+| GET/POST/PATCH | `/api/subscriptions` | Subscription management |
+
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/signup` | User registration |
+| POST | `/api/auth/signin` | Login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Current user |
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Clone and install
+git clone <repo-url>
+cd newfreshontimewebsite
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your values
+
+# Run development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+---
 
 ## ⚙️ Environment Variables
 
-Create a `.env.local` file in the root directory:
-
 ```bash
 # Database
-MONGODB_URI=your_mongodb_connection_string
+MONGODB_URI=mongodb+srv://...
 
-# JWT Authentication
-JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
+# Authentication
+JWT_SECRET=your_32_char_secret_key
 JWT_ACCESS_EXPIRES=15m
 JWT_REFRESH_EXPIRES=30d
 
-# API Configuration
-NEXT_PUBLIC_API_BASE=/api
-NODE_ENV=development
+# Storage (optional)
+AZURE_STORAGE_CONNECTION_STRING=...
 
-# Azure Storage (for file uploads)
-AZURE_STORAGE_ACCOUNT_NAME=your_azure_storage_account
-AZURE_STORAGE_ACCOUNT_KEY=your_azure_storage_key
-AZURE_STORAGE_CONTAINER_NAME=your_container_name
+# Analytics (optional)
+NEXT_PUBLIC_GA_ID=G-XXXXXXXX
 
-# OpenAI (for AI features)
-OPENAI_API_KEY=your_openai_api_key
+# Email (optional)
+SENDGRID_API_KEY=SG.xxx
+SENDGRID_FROM_EMAIL=hello@freshpick.lk
 ```
 
-## 🚀 Installation & Setup
+---
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd newfreshpick.lk/fot-frontend
-   ```
+## 🏗️ Architecture
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.local.example .env.local
-   # Edit .env.local with your actual values
-   ```
-
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-5. **Access the application**
-   Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## � Email testing
-
-Set the SendGrid env vars (`SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL`, `FRONTEND_URL`) before testing email flows.
-
-During development you can trigger a test email using:
-
-PowerShell (session-only):
-```powershell
-$env:SENDGRID_API_KEY = 'SG.<your-key>'
-$env:SENDGRID_FROM_EMAIL = 'freshpicksllk@gmail.com'
-$env:FRONTEND_URL = 'http://localhost:3000'
-npm run dev
-# Then POST to the test endpoint
-Invoke-RestMethod -Uri http://localhost:3000/api/dev/send-test-email -Method POST -Body (@{ to = 'you@domain.com' } | ConvertTo-Json) -ContentType 'application/json' -Headers @{ 'x-dev-email-secret' = $env:DEV_EMAIL_SECRET }
+```
+app/
+├── api/           # API routes
+│   ├── auth/      # Authentication
+│   ├── products/  # Product CRUD
+│   ├── bags/      # Shopping bags & reorder
+│   ├── reviews/   # Product reviews
+│   ├── referrals/ # Referral system
+│   └── subscriptions/
+├── (pages)/       # Frontend routes
+components/
+├── home/          # Homepage sections
+├── products/      # Product cards, ratings
+├── subscriptions/ # Subscription cards
+└── layout/        # Navbar, Footer
+lib/
+├── models/        # Mongoose schemas
+├── auth.ts        # JWT verification
+└── database.ts    # MongoDB connection
 ```
 
-Or use the built-in flows:
-- Signup sends a verification email
-- Use `/auth/forgot` page to request a password reset
-- Password reset link uses `/auth/reset-password?token=...`
+---
 
+## 🔒 Security
 
-## �📝 Available Scripts
+- Password hashing with bcrypt (12 rounds)
+- JWT with short-lived access tokens (15m)
+- HTTP-only secure cookies
+- Rate limiting on auth endpoints
+- Input validation with Zod
+- Role-based access control
 
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm test` - Run tests with Jest
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:smoke` - Run smoke tests
+---
 
-## 🔐 Authentication API
+## 📱 Progressive Web App
 
-### Signup
-```bash
-POST /api/auth/signup
-Content-Type: application/json
+Fresh Pick is installable on mobile devices:
+- Offline product browsing
+- Push notification ready
+- Add to home screen prompt
 
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john@example.com",
-  "phoneNumber": "+1234567890",
-  "password": "SecurePass123",
-  "registrationAddress": {
-    "addressLine1": "123 Main St",
-    "city": "Colombo",
-    "province": "Western",
-    "postalCode": "10100",
-    "country": "Sri Lanka"
-  }
-}
-```
-
-### Login
-```bash
-POST /api/auth/signin
-Content-Type: application/json
-
-{
-  "identifier": "john@example.com", // or phone number
-  "password": "SecurePass123"
-}
-```
-
-### Get Current User
-```bash
-GET /api/auth/me
-# Requires authentication cookie
-```
-
-### Refresh Token
-```bash
-POST /api/auth/refresh
-# Uses refresh token from cookie
-```
-
-### Logout
-```bash
-POST /api/auth/logout
-# Clears authentication cookies
-```
-
-## 🛡️ Security Features
-
-- **Password Hashing**: bcrypt with salt rounds of 12
-- **JWT Tokens**: Short-lived access tokens (15m) and long-lived refresh tokens (30d)
-- **Secure Cookies**: HTTP-only, Secure, SameSite=lax
-- **Rate Limiting**: 5 attempts per 15 minutes for auth endpoints
-- **Input Validation**: Comprehensive validation for all inputs
-- **Role-based Access**: Middleware for protecting admin routes
-- **Token Revocation**: Refresh tokens stored hashed in database for revocation
-
-## 🔧 Development
-
-### Adding Protected Routes
-```typescript
-import { requireRoles, AuthenticatedRequest } from '@/lib/middleware/authNew';
-
-async function handleProtectedRoute(req: AuthenticatedRequest) {
-  // Route logic here
-  // req.user contains authenticated user data
-}
-
-export const POST = requireRoles(['admin', 'manager'])(handleProtectedRoute);
-```
-
-## 🧪 Testing API Endpoints
-
-### Using curl
-
-**Signup:**
-```bash
-curl -X POST http://localhost:3000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Test",
-    "lastName": "User",
-    "email": "test@example.com",
-    "phoneNumber": "+1234567890",
-    "password": "TestPass123",
-    "registrationAddress": {
-      "addressLine1": "123 Test St",
-      "city": "Colombo",
-      "province": "Western",
-      "postalCode": "10100",
-      "country": "Sri Lanka"
-    }
-  }'
-```
-
-**Login:**
-```bash
-curl -X POST http://localhost:3000/api/auth/signin \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "identifier": "test@example.com",
-    "password": "TestPass123"
-  }'
-```
-
-## 🔄 Migration Notes
-
-This application has been migrated from Firebase Authentication to JWT-based authentication with MongoDB:
-
-- **Old**: Firebase Auth with separate Express backend
-- **New**: JWT tokens with HTTP-only cookies in unified Next.js app
-- **Benefits**: Better control, no third-party auth dependencies, custom user fields
-
-### Key Route Changes
-- `POST /api/users/register` → `POST /api/auth/signup`
-- Firebase token verification → JWT cookie verification
-- All business logic now in Next.js API routes
+---
 
 ## 🚢 Deployment
 
-### Environment Setup
-Ensure all environment variables are set in your deployment platform:
-- `MONGODB_URI` - Your MongoDB connection string
-- `JWT_SECRET` - Secure random string (minimum 32 characters)
-- Other optional variables as needed
-
-### Deploying to Netlify
-
-This repo includes a `netlify.toml` and uses the official Next.js Runtime.
-
-Basic settings (Netlify UI → New site from Git):
-- Build command: `npm run build`
-- Publish directory: `.next`
-- Node version: `20`
-
-Environment variables (Site settings → Environment):
-- Required: `MONGODB_URI`, `JWT_SECRET`
-- Recommended: `AZURE_STORAGE_CONNECTION_STRING` (for uploads), `OPENAI_API_KEY` (if AI features),
-  `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`,
-  `FRONTEND_URL` (your full site URL), `NEXT_PUBLIC_SITE_URL` (public site URL)
-- Optional: `NEXT_PUBLIC_API_URL` (force a specific base URL)
-
-Notes:
-- The Next.js runtime/plugin is configured via `netlify.toml` and `@netlify/plugin-nextjs` in devDependencies.
-- API routes and middleware run as serverless functions; ensure `MONGODB_URI` points to a production MongoDB (e.g., Atlas).
-- If you used older Azure env vars, switch to `AZURE_STORAGE_CONNECTION_STRING` (matches `lib/storage/azureStorage.ts`).
-
-Optional CLI deploy (PowerShell):
-```powershell
+### Netlify (Recommended)
+```bash
 npm install -g netlify-cli
 netlify login
-netlify init
-netlify env:set NODE_VERSION 20
-# Set the rest of your env vars with netlify env:set KEY VALUE
 netlify deploy --prod --build
 ```
 
+### Environment Setup
+Set all required variables in your deployment platform's environment settings.
+
+---
+
 ## 📄 License
 
-This project is licensed under the MIT License.
+MIT License — © 2024 Fresh Pick
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request
+
+---
+
+**Built with ❤️ in Sri Lanka**

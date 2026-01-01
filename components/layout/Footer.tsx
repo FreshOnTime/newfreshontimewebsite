@@ -54,33 +54,28 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/deals" className="text-gray-400 hover:text-accent transition-colors">
-                  Hot Deals
+                <Link href="/subscriptions" className="text-gray-400 hover:text-accent transition-colors">
+                  Subscriptions
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="text-gray-400 hover:text-accent transition-colors">
-                  Categories
+                <Link href="/meal-kits" className="text-gray-400 hover:text-accent transition-colors">
+                  Meal Kits
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-gray-400 hover:text-accent transition-colors">
-                  How It Works
+                <Link href="/farm-to-table" className="text-gray-400 hover:text-accent transition-colors">
+                  Farm-to-Table
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-400 hover:text-accent transition-colors">
-                  Careers
+                <Link href="/diaspora" className="text-gray-400 hover:text-accent transition-colors">
+                  Send to Sri Lanka
                 </Link>
               </li>
               <li>
-                <Link href="/orders" className="text-gray-400 hover:text-accent transition-colors">
-                  My Orders
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-gray-400 hover:text-accent transition-colors">
-                  Blog
+                <Link href="/b2b" className="text-gray-400 hover:text-accent transition-colors">
+                  For Restaurants
                 </Link>
               </li>
               <li>
