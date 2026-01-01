@@ -41,7 +41,6 @@ export const metadata: Metadata = {
 };
 
 // Server-side data fetching
-// Server-side data fetching
 async function getProducts(): Promise<Product[]> {
   try {
     await dbConnect();
@@ -155,7 +154,7 @@ export default async function Home() {
   const featuredProducts = products.slice(0, 20);
 
   return (
-    <div className="bg-white">
+    <div className="bg-transparent">
       {/* Hero Section - Client Island */}
       <HeroSection />
 
@@ -178,7 +177,7 @@ export default async function Home() {
       <CategoryBento categories={categories} />
 
       {/* Featured Products Section */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-24 md:py-32 bg-transparent">
         <div className="container mx-auto px-4 md:px-8">
           <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
             <div>

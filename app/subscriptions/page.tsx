@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Metadata } from 'next';
 import dbConnect from '@/lib/database';
 import SubscriptionPlan from '@/lib/models/SubscriptionPlan';
@@ -43,10 +44,13 @@ export default async function SubscriptionsPage() {
             {/* Editorial Hero - Real Imagery */}
             <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <img
+                    <Image
                         src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"
                         alt="Background"
-                        className="w-full h-full object-cover brightness-[0.35]"
+                        fill
+                        className="object-cover brightness-[0.35]"
+                        priority
+                        sizes="100vw"
                     />
                 </div>
 
@@ -94,10 +98,12 @@ export default async function SubscriptionsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                         <div className="group">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
-                                <img
+                                <Image
                                     src="https://images.unsplash.com/photo-1597362925123-77861d3fbac7?q=80&w=1000&auto=format&fit=crop"
                                     alt="Harvested Daily"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                 />
                                 <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
@@ -108,10 +114,12 @@ export default async function SubscriptionsPage() {
                         </div>
                         <div className="group md:mt-16">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
-                                <img
+                                <Image
                                     src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=2670&auto=format&fit=crop"
                                     alt="Farmer Direct"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                 />
                                 <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
@@ -122,10 +130,12 @@ export default async function SubscriptionsPage() {
                         </div>
                         <div className="group md:mt-32">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8">
-                                <img
+                                <Image
                                     src="https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?q=80&w=2670&auto=format&fit=crop"
                                     alt="Zero-Plastic Promise"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                 />
                                 <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>

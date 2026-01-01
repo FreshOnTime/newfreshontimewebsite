@@ -165,6 +165,9 @@ export function Navbar() {
                   <Link href="/subscriptions" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Subscriptions
                   </Link>
+                  <Link href="/b2b" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    Business
+                  </Link>
                   <Link href="/about" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Our Story
                   </Link>
@@ -258,6 +261,7 @@ export function Navbar() {
             <Link href="/products" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Shop</Link>
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
             <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
+            <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Business</Link>
             <div className="h-px bg-gray-100 w-24 mx-auto my-2" />
             {user ? (
               <>
