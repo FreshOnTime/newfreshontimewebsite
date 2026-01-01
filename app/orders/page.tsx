@@ -237,7 +237,7 @@ export default function OrdersPage() {
                               cancelOrder(o._id);
                             }}
                           >
-                            <XCircle className="w-4 h-4" />
+                            Cancel
                           </Button>
                         )}
                         <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">

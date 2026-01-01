@@ -23,13 +23,13 @@ const updateRecurringOrderSchema = z.object({
     qty: z.number().int().min(1),
   })).min(1).optional(),
   recurrence: z.object({
-  // Accept ISO string, date-only string, or Date
-  startDate: z.union([z.string().datetime(), z.string(), z.date()]).optional(),
-  endDate: z.union([z.string().datetime(), z.string(), z.date()]).optional(),
+    // Accept ISO string, date-only string, or Date
+    startDate: z.union([z.string().datetime(), z.string(), z.date()]).optional(),
+    endDate: z.union([z.string().datetime(), z.string(), z.date()]).optional(),
     daysOfWeek: z.array(z.number().min(0).max(6)).optional(),
-  includeDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
-  excludeDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
-  selectedDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
+    includeDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
+    excludeDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
+    selectedDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
     notes: z.string().max(1000).optional(),
   }).optional(),
   nextDeliveryAt: z.string().datetime().optional(),
@@ -47,22 +47,23 @@ const updateRecurringOrderSchema = z.object({
 });
 
 // GET - fetch single recurring order
-export const GET = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const GET = requireAuth(async (request: NextRequest, context?: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-  const { id } = context!.params;
-    
+    const params = await context!.params;
+    const { id } = params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
 
     const user = (request as AuthenticatedRequest).user;
-    
+
     const order = await Order.findById(id)
-      .populate({ 
-        path: 'items.productId', 
-        model: 'EnhancedProduct', 
-        select: 'name price images stockQty sku' 
+      .populate({
+        path: 'items.productId',
+        model: 'EnhancedProduct',
+        select: 'name price images stockQty sku'
       });
 
     if (!order) {
@@ -85,18 +86,19 @@ export const GET = requireAuth(async (request: NextRequest, context?: { params: 
     });
   } catch (error) {
     console.error('Error fetching recurring order:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch recurring order' 
+    return NextResponse.json({
+      error: 'Failed to fetch recurring order'
     }, { status: 500 });
   }
 });
 
 // PUT - update recurring order
-export const PUT = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const PUT = requireAuth(async (request: NextRequest, context?: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-  const { id } = context!.params;
-    
+    const params = await context!.params;
+    const { id } = params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
@@ -122,14 +124,14 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-  // Prepare update object
-  const update: Record<string, unknown> = {};
+    // Prepare update object
+    const update: Record<string, unknown> = {};
 
     // Update basic fields
     if (typeof data.isRecurring === 'boolean') {
       update.isRecurring = data.isRecurring;
     }
-    
+
     if (typeof data.scheduleStatus === 'string') {
       update.scheduleStatus = data.scheduleStatus;
     }
@@ -197,31 +199,31 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
     // Update recurrence object
     if (data.recurrence) {
       const recurrenceUpdate: Record<string, unknown> = {};
-      
+
       if (data.recurrence.startDate) {
         recurrenceUpdate.startDate = new Date(data.recurrence.startDate as unknown as string);
       }
-      
+
       if (data.recurrence.endDate) {
         recurrenceUpdate.endDate = new Date(data.recurrence.endDate as unknown as string);
       }
-      
+
       if (data.recurrence.daysOfWeek) {
         recurrenceUpdate.daysOfWeek = data.recurrence.daysOfWeek;
       }
-      
+
       if (data.recurrence.includeDates) {
         recurrenceUpdate.includeDates = data.recurrence.includeDates.map(d => new Date(d as unknown as string));
       }
-      
+
       if (data.recurrence.excludeDates) {
         recurrenceUpdate.excludeDates = data.recurrence.excludeDates.map(d => new Date(d as unknown as string));
       }
-      
+
       if (data.recurrence.selectedDates) {
         recurrenceUpdate.selectedDates = data.recurrence.selectedDates.map(d => new Date(d as unknown as string));
       }
-      
+
       if (typeof data.recurrence.notes === 'string') {
         recurrenceUpdate.notes = data.recurrence.notes;
       }
@@ -243,16 +245,16 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
         notes?: string;
       };
       if (rec.startDate && rec.endDate && rec.startDate >= rec.endDate) {
-        return NextResponse.json({ 
-          error: 'Start date must be before end date' 
+        return NextResponse.json({
+          error: 'Start date must be before end date'
         }, { status: 400 });
       }
 
       const validation = RecurringOrderService.validateRecurrencePattern(rec);
       if (!validation.valid) {
-        return NextResponse.json({ 
-          error: 'Invalid recurrence pattern', 
-          details: validation.errors 
+        return NextResponse.json({
+          error: 'Invalid recurrence pattern',
+          details: validation.errors
         }, { status: 400 });
       }
     }
@@ -275,8 +277,8 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
         if (!update.scheduleStatus) update.scheduleStatus = 'active';
         update.nextDeliveryAt = next;
       } else {
-  if (!update.scheduleStatus) update.scheduleStatus = 'ended';
-  update.nextDeliveryAt = null;
+        if (!update.scheduleStatus) update.scheduleStatus = 'ended';
+        update.nextDeliveryAt = null;
       }
     }
 
@@ -300,13 +302,13 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
     }
 
     const updatedOrder = await Order.findByIdAndUpdate(
-      id, 
-      { $set: update }, 
+      id,
+      { $set: update },
       { new: true, runValidators: true }
-    ).populate({ 
-      path: 'items.productId', 
-      model: 'EnhancedProduct', 
-      select: 'name price images stockQty sku' 
+    ).populate({
+      path: 'items.productId',
+      model: 'EnhancedProduct',
+      select: 'name price images stockQty sku'
     });
 
     return NextResponse.json({
@@ -316,30 +318,31 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid request data', 
-        details: error.errors 
+      return NextResponse.json({
+        error: 'Invalid request data',
+        details: error.errors
       }, { status: 400 });
     }
     console.error('Error updating recurring order:', error);
-    return NextResponse.json({ 
-      error: 'Failed to update recurring order' 
+    return NextResponse.json({
+      error: 'Failed to update recurring order'
     }, { status: 500 });
   }
 });
 
 // DELETE - delete/cancel recurring order
-export const DELETE = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const DELETE = requireAuth(async (request: NextRequest, context?: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-  const { id } = context!.params;
-    
+    const params = await context!.params;
+    const { id } = params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
 
     const user = (request as AuthenticatedRequest).user;
-    
+
     const order = await Order.findById(id);
     if (!order) {
       return NextResponse.json({ error: 'Recurring order not found' }, { status: 404 });
@@ -359,8 +362,8 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: { param
     if (user.role !== 'admin') {
       const updated = await Order.findByIdAndUpdate(
         id,
-        { 
-          $set: { 
+        {
+          $set: {
             scheduleStatus: 'ended',
             nextDeliveryAt: null,
           }
@@ -378,19 +381,19 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: { param
     // Admin can actually delete the order
     // First, restore stock for items if order is not delivered
     const shouldRestoreStock = !['delivered', 'shipped'].includes(order.status || '');
-    
+
     if (shouldRestoreStock) {
       try {
         await Promise.all((order.items || []).map(async (item: unknown) => {
           const it = item as { productId: unknown; qty: number };
           if (it && it.productId) {
-            const pid = typeof it.productId === 'object' && it.productId && '_id' in it.productId 
-              ? (it.productId as { _id: string })._id 
+            const pid = typeof it.productId === 'object' && it.productId && '_id' in it.productId
+              ? (it.productId as { _id: string })._id
               : it.productId;
-            
+
             if (mongoose.Types.ObjectId.isValid(String(pid))) {
               await EnhancedProduct.updateOne(
-                { _id: pid }, 
+                { _id: pid },
                 { $inc: { stockQty: it.qty || 0 } }
               ).catch(() => null);
             }
@@ -409,18 +412,19 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: { param
     });
   } catch (error) {
     console.error('Error deleting recurring order:', error);
-    return NextResponse.json({ 
-      error: 'Failed to delete recurring order' 
+    return NextResponse.json({
+      error: 'Failed to delete recurring order'
     }, { status: 500 });
   }
 });
 
 // PATCH - quick actions (pause, resume, end)
-export const PATCH = requireAuth(async (request: NextRequest, context?: { params: { id: string } }) => {
+export const PATCH = requireAuth(async (request: NextRequest, context?: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-  const { id } = context!.params;
-    
+    const params = await context!.params;
+    const { id } = params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
     }
@@ -429,8 +433,8 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
     const user = (request as AuthenticatedRequest).user;
 
     if (!body.action || !['pause', 'resume', 'end'].includes(body.action)) {
-      return NextResponse.json({ 
-        error: 'Invalid action. Must be pause, resume, or end' 
+      return NextResponse.json({
+        error: 'Invalid action. Must be pause, resume, or end'
       }, { status: 400 });
     }
 
@@ -474,9 +478,10 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
         }
         update = { scheduleStatus: next ? 'active' : 'ended', nextDeliveryAt: next };
         message = next ? 'Recurring order resumed successfully' : 'Cannot resume: no future delivery dates in recurrence. Please update start/end dates or schedule.';
-        break; }
+        break;
+      }
       case 'end':
-        update = { 
+        update = {
           scheduleStatus: 'ended',
           nextDeliveryAt: null,
         };
@@ -488,10 +493,10 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
       id,
       { $set: update },
       { new: true }
-    ).populate({ 
-      path: 'items.productId', 
-      model: 'EnhancedProduct', 
-      select: 'name price images stockQty sku' 
+    ).populate({
+      path: 'items.productId',
+      model: 'EnhancedProduct',
+      select: 'name price images stockQty sku'
     });
 
     return NextResponse.json({
@@ -501,8 +506,8 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
     });
   } catch (error) {
     console.error('Error performing recurring order action:', error);
-    return NextResponse.json({ 
-      error: 'Failed to perform action on recurring order' 
+    return NextResponse.json({
+      error: 'Failed to perform action on recurring order'
     }, { status: 500 });
   }
 });

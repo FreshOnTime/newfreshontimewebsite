@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/database';
 import EnhancedOrderModel from '@/lib/models/EnhancedOrder';
 import EnhancedProduct, { IProduct } from '@/lib/models/EnhancedProduct';
+import SubscriptionPlan from '@/lib/models/SubscriptionPlan';
 import mongoose from 'mongoose';
 import User from '@/lib/models/User';
 import { requireAuth } from '@/lib/auth';
@@ -11,7 +12,7 @@ import { sendOrderEmail } from '@/lib/services/mailService';
 export const GET = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
   try {
     await connectDB();
-    
+
     const { searchParams } = new URL(request.url);
     // Prefer authenticated user's mongoId; fallback to explicit userId only for admins querying others
     const queryUserId = searchParams.get('userId');
@@ -19,7 +20,7 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     const userId = (authUser?.mongoId || authUser?.userId);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -39,8 +40,8 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     ]);
 
     // Backward-compatible recurring indicator: mark as recurring if any recurrence-related data exists
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const orders: any[] = (ordersRaw as any[]).map((o) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const orders: any[] = (ordersRaw as any[]).map((o) => ({
       ...o,
       isRecurring: Boolean(o?.isRecurring || o?.scheduleStatus || o?.nextDeliveryAt || (o?.recurrence && (
         (Array.isArray(o.recurrence.daysOfWeek) && o.recurrence.daysOfWeek.length) ||
@@ -54,7 +55,7 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     return NextResponse.json({
       success: true,
       data: {
-  orders,
+        orders,
         pagination: {
           page,
           limit,
@@ -79,31 +80,31 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
   try {
     await connectDB();
 
-  const body = await request.json();
-  const { items, shippingAddress, paymentMethod, notes, discount = 0, bagId, bagName, useRegisteredAddress } = body;
-  const authUser = request.user;
-  const effectiveUserId = authUser?.mongoId || authUser?.userId;
-  // Accept isRecurring/recurrence from client, but also infer recurring when recurrence content is present
-  const rawIsRecurring = body.isRecurring;
-  const recurrence = body.recurrence as {
-    startDate?: string;
-    endDate?: string;
-    daysOfWeek?: number[];
-    includeDates?: string[];
-    excludeDates?: string[];
-    selectedDates?: string[];
-    notes?: string;
-  } | undefined;
-  const hasRecurrenceSignals = Boolean(
-    recurrence && (
-      recurrence.startDate || recurrence.endDate || recurrence.notes ||
-      (Array.isArray(recurrence.daysOfWeek) && recurrence.daysOfWeek.length > 0) ||
-      (Array.isArray(recurrence.includeDates) && recurrence.includeDates.length > 0) ||
-      (Array.isArray(recurrence.excludeDates) && recurrence.excludeDates.length > 0) ||
-      (Array.isArray(recurrence.selectedDates) && recurrence.selectedDates.length > 0)
-    )
-  );
-  const isRecurring = Boolean(rawIsRecurring) || hasRecurrenceSignals;
+    const body = await request.json();
+    const { items, shippingAddress, paymentMethod, notes, discount = 0, bagId, bagName, useRegisteredAddress } = body;
+    const authUser = request.user;
+    const effectiveUserId = authUser?.mongoId || authUser?.userId;
+    // Accept isRecurring/recurrence from client, but also infer recurring when recurrence content is present
+    const rawIsRecurring = body.isRecurring;
+    const recurrence = body.recurrence as {
+      startDate?: string;
+      endDate?: string;
+      daysOfWeek?: number[];
+      includeDates?: string[];
+      excludeDates?: string[];
+      selectedDates?: string[];
+      notes?: string;
+    } | undefined;
+    const hasRecurrenceSignals = Boolean(
+      recurrence && (
+        recurrence.startDate || recurrence.endDate || recurrence.notes ||
+        (Array.isArray(recurrence.daysOfWeek) && recurrence.daysOfWeek.length > 0) ||
+        (Array.isArray(recurrence.includeDates) && recurrence.includeDates.length > 0) ||
+        (Array.isArray(recurrence.excludeDates) && recurrence.excludeDates.length > 0) ||
+        (Array.isArray(recurrence.selectedDates) && recurrence.selectedDates.length > 0)
+      )
+    );
+    const isRecurring = Boolean(rawIsRecurring) || hasRecurrenceSignals;
 
     if (!effectiveUserId || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -112,45 +113,92 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       );
     }
 
-  // Load user (for optional address mapping), best-effort
-  const userDoc = (await User.findById(effectiveUserId).lean().catch(() => null)) as (null | {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phoneNumber?: string;
-    registrationAddress?: {
-      recipientName?: string;
-      streetAddress?: string;
-      streetAddress2?: string;
-      town?: string;
-      city?: string;
-      state?: string;
-      postalCode?: string;
-      countryCode?: string;
+    // Load user (for optional address mapping), best-effort
+    const userDoc = (await User.findById(effectiveUserId).lean().catch(() => null)) as (null | {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
       phoneNumber?: string;
-    };
-  });
+      registrationAddress?: {
+        recipientName?: string;
+        streetAddress?: string;
+        streetAddress2?: string;
+        town?: string;
+        city?: string;
+        state?: string;
+        postalCode?: string;
+        countryCode?: string;
+        phoneNumber?: string;
+      };
+    });
 
     // Validate products and calculate totals
-  const validatedItems: Array<{ productId: mongoose.Types.ObjectId; sku: string; name: string; qty: number; price: number; total: number }> = [];
+    const validatedItems: Array<{ productId: mongoose.Types.ObjectId; sku: string; name: string; qty: number; price: number; total: number }> = [];
     let subtotal = 0;
-    
+
     for (const item of items) {
       // Support ObjectId, SKU, or slug identifiers
-  let product: IProduct | null = null;
+      let product: IProduct | null = null;
       if (mongoose.Types.ObjectId.isValid(item.productId)) {
         product = await EnhancedProduct.findById(item.productId);
       }
+
+      // If not in products, check subscription plans
       if (!product) {
-        product = await EnhancedProduct.findOne({ $or: [ { sku: item.productId }, { slug: item.productId } ] });
+        product = await EnhancedProduct.findOne({ $or: [{ sku: item.productId }, { slug: item.productId }] });
       }
+
+      let isSubscription = false;
+      if (!product) {
+        // Try SubscriptionPlan in DB
+        let plan = null;
+        if (mongoose.Types.ObjectId.isValid(item.productId)) {
+          plan = await SubscriptionPlan.findById(item.productId);
+        }
+        if (!plan) {
+          plan = await SubscriptionPlan.findOne({ slug: item.productId });
+        }
+
+        // If not in DB, check default plans (fallback for mock IDs "1", "2" etc)
+        if (!plan) {
+          const defaultPlans = (await import('@/lib/data/subscriptionPlans')).defaultSubscriptionPlans;
+          const defaultPlan = defaultPlans.find(p => p._id === item.productId || p.slug === item.productId);
+
+          if (defaultPlan) {
+            // Check one last time by slug in DB to avoid dupes if ID didn't match
+            plan = await SubscriptionPlan.findOne({ slug: defaultPlan.slug });
+
+            if (!plan) {
+              // Create it in DB to get a real ObjectId
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { _id, ...planData } = defaultPlan;
+              plan = await SubscriptionPlan.create(planData);
+            }
+          }
+        }
+
+        if (plan) {
+          isSubscription = true;
+          product = {
+            _id: plan._id,
+            name: plan.name,
+            sku: plan.slug, // Use slug as SKU
+            slug: plan.slug,
+            price: plan.price,
+            stockQty: 999999, // Infinite stock for plans
+            images: plan.image ? [{ url: plan.image, alt: plan.name }] : [],
+            measurementUnit: 'box',
+          } as any;
+        }
+      }
+
       if (!product) {
         return NextResponse.json(
           { error: `Product with ID ${item.productId} not found` },
           { status: 400 }
         );
       }
-      
+
       if ((product.stockQty ?? 0) < item.quantity) {
         return NextResponse.json(
           { error: `Insufficient stock for product ${product.name}` },
@@ -171,15 +219,16 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         total: itemTotal,
       });
 
-      // Reduce stock
-  // Reduce stock atomically
-  await EnhancedProduct.updateOne({ _id: product._id }, { $inc: { stockQty: -item.quantity } });
+      // Reduce stock only if it's a real product
+      if (!isSubscription) {
+        await EnhancedProduct.updateOne({ _id: product._id }, { $inc: { stockQty: -item.quantity } });
+      }
     }
 
-  // Calculate shipping/tax/total (example logic)
-  const tax = 0;
-  const shipping = subtotal > 50 ? 0 : 5; // Free shipping over 50
-  const total = subtotal + tax + shipping - Number(discount || 0);
+    // Calculate shipping/tax/total (example logic)
+    const tax = 0;
+    const shipping = subtotal > 50 ? 0 : 5; // Free shipping over 50
+    const total = subtotal + tax + shipping - Number(discount || 0);
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -187,9 +236,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     // Map payment method to schema enum
     const pm = paymentMethod === 'cash_on_delivery' ? 'cash' : (paymentMethod || 'cash');
 
-  // Compute nextDeliveryAt if recurring
-  let nextDeliveryAt: Date | undefined = undefined;
-  if (isRecurring && recurrence) {
+    // Compute nextDeliveryAt if recurring
+    let nextDeliveryAt: Date | undefined = undefined;
+    if (isRecurring && recurrence) {
       const now = new Date();
       const start = recurrence.startDate ? new Date(recurrence.startDate) : now;
       const days = Array.isArray(recurrence.daysOfWeek) ? recurrence.daysOfWeek.filter((d: unknown): d is number => typeof d === 'number') : [];
@@ -211,7 +260,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
           }
         }
       }
-      nextDeliveryAt = candidates.sort((a,b) => +a - +b)[0];
+      nextDeliveryAt = candidates.sort((a, b) => +a - +b)[0];
     }
 
     // Resolve shipping address: prefer explicit shippingAddress, otherwise use user's registrationAddress when flagged or missing
@@ -226,7 +275,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     } | undefined = undefined;
     if (shippingAddress && typeof shippingAddress === 'object') {
       resolvedShipping = shippingAddress;
-  } else if (useRegisteredAddress || (!shippingAddress && userDoc?.registrationAddress)) {
+    } else if (useRegisteredAddress || (!shippingAddress && userDoc?.registrationAddress)) {
       const ra = userDoc?.registrationAddress as {
         recipientName?: string;
         streetAddress?: string;
@@ -252,7 +301,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       }
     }
 
-  // If still no shipping address, block order creation
+    // If still no shipping address, block order creation
     if (!resolvedShipping) {
       return NextResponse.json({ error: 'Shipping address is required' }, { status: 400 });
     }
@@ -286,7 +335,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     });
 
     const savedOrder = await newOrder.save();
-    
+
     const populatedOrder = await EnhancedOrderModel.findById(savedOrder._id)
       .populate({ path: 'items.productId', model: 'EnhancedProduct', select: 'name price images stockQty sku' });
 
@@ -294,7 +343,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     try {
       // Try to get an email address for the customer. If not available from userDoc, try loading full user record.
       let customerEmail: string | null = null;
-  if (userDoc && userDoc.email) customerEmail = userDoc.email;
+      if (userDoc && userDoc.email) customerEmail = userDoc.email;
       if (!customerEmail) {
         const fullUser = await User.findById(effectiveUserId).lean().catch(() => null) as (null | { email?: string; phoneNumber?: string });
         if (fullUser?.email) customerEmail = fullUser.email;
