@@ -101,12 +101,14 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/5 mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-zinc-600 uppercase tracking-widest font-medium">
-          <p>&copy; 2025 Fresh Pick. All rights reserved.</p>
-          <div className="flex space-x-8">
-            <Link href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-zinc-400 transition-colors">Terms</Link>
-            <Link href="/accessibility" className="hover:text-zinc-400 transition-colors">Accessibility</Link>
+        <div className="border-t border-white/5 mt-20 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-light text-zinc-500">
+            <p>&copy; {new Date().getFullYear()} FreshPick. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <Link href="/privacy" className="hover:text-[#d4af37] transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-[#d4af37] transition-colors">Terms of Service</Link>
+              <Link href="/cookies" className="hover:text-[#d4af37] transition-colors">Cookie Policy</Link>
+            </div>
           </div>
         </div>
       </div>

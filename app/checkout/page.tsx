@@ -81,7 +81,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      router.push(`/auth/signin?callbackUrl=${returnUrl}`);
+      router.push(`/auth/login?callbackUrl=${returnUrl}`);
     }
   }, [user, authLoading, router]);
 
