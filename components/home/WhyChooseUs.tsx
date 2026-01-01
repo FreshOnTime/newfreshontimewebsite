@@ -33,81 +33,81 @@ const features = [
 
 export default function WhyChooseUs() {
     return (
-        <section className="py-20 bg-gradient-to-b from-white via-emerald-50/30 to-white overflow-hidden">
+        <section className="py-32 bg-zinc-50/50">
             <div className="container mx-auto px-4 md:px-8">
                 {/* Section Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-20"
                 >
-                    <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-full mb-4">
-                        Why Fresh Pick?
+                    <span className="text-amber-600 font-medium tracking-[0.2em] text-xs uppercase mb-6 block">
+                        Our Promise
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-                        The Fresh Pick <span className="text-emerald-600">Difference</span>
+                    <h2 className="text-4xl md:text-6xl font-heading font-medium text-zinc-900 mb-6 drop-shadow-sm">
+                        The Fresh Pick <span className="italic font-serif text-emerald-700">Standard</span>
                     </h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                        We&apos;re not just another grocery store. We&apos;re your partner in healthy, sustainable living.
+                    <p className="text-zinc-500 max-w-2xl mx-auto text-xl font-light leading-relaxed">
+                        Redefining the grocery experience with uncompromising quality and white-glove service.
                     </p>
                 </motion.div>
 
                 {/* Features Grid */}
-                <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
                     {features.map((feature, index) => (
                         <motion.div
                             key={feature.title}
                             initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: index * 0.15, duration: 0.6 }}
-                            className="group relative bg-white rounded-2xl p-6 md:p-8 shadow-lg shadow-gray-200/50 border border-gray-100 hover:shadow-xl hover:shadow-emerald-100/50 hover:border-emerald-200 transition-all duration-500"
+                            transition={{ delay: index * 0.1, duration: 0.8 }}
+                            className="group relative bg-white rounded-[2rem] p-10 md:p-12 shadow-premium hover:shadow-premium-hover border border-white transition-all duration-500 hover:-translate-y-1"
                         >
-                            {/* Decorative gradient blob */}
-                            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${feature.gradient} opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity`} />
-
-                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                                <feature.icon className="w-7 h-7 text-white" />
+                            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-8 shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                                <feature.icon className="w-8 h-8 text-white stroke-[1.5]" />
                             </div>
 
-                            <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-emerald-700 transition-colors">
+                            <h3 className="text-2xl font-serif text-zinc-900 mb-4 group-hover:text-emerald-800 transition-colors">
                                 {feature.title}
                             </h3>
-                            <p className="text-gray-600 leading-relaxed">
+                            <p className="text-zinc-500 leading-relaxed font-light text-lg">
                                 {feature.description}
                             </p>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Stats Section */}
+                {/* Stats Section - Refined */}
                 <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                    className="mt-16 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-3xl p-8 md:p-12 text-white shadow-xl shadow-emerald-200/50"
+                    transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                    className="mt-24 relative overflow-hidden rounded-[3rem] bg-zinc-900 text-white shadow-2xl py-20 px-8"
                 >
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay" />
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-900/30 blur-[120px] rounded-full pointer-events-none" />
+
+                    <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-12 text-center max-w-5xl mx-auto">
                         {[
                             { value: "50K+", label: "Happy Customers" },
-                            { value: "500+", label: "Fresh Products" },
-                            { value: "100%", label: "Satisfaction Rate" },
-                            { value: "24h", label: "Fast Delivery" },
+                            { value: "500+", label: "Premium Products" },
+                            { value: "100%", label: "Satisfaction" },
+                            { value: "24h", label: "Direct Delivery" },
                         ].map((stat, index) => (
                             <div key={stat.label}>
                                 <motion.p
-                                    initial={{ scale: 0.5 }}
-                                    whileInView={{ scale: 1 }}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 200 }}
-                                    className="text-3xl md:text-5xl font-bold mb-2"
+                                    transition={{ delay: 0.6 + index * 0.1, duration: 0.8 }}
+                                    className="text-4xl md:text-6xl font-heading font-medium mb-3 bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent"
                                 >
                                     {stat.value}
                                 </motion.p>
-                                <p className="text-emerald-100 text-sm md:text-base">{stat.label}</p>
+                                <p className="text-zinc-400 text-sm tracking-widest uppercase font-medium">{stat.label}</p>
                             </div>
                         ))}
                     </div>

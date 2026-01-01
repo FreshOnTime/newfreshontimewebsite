@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -10,13 +10,28 @@ import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import BottomNav from "@/components/layout/BottomNav";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import ReferralBanner from "@/components/ReferralBanner";
+// import ReferralBanner from "@/components/ReferralBanner";
 import FirstOrderPopup from "@/components/FirstOrderPopup";
+import RecentPurchasePopup from "@/components/RecentPurchasePopup";
 // import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled
 
-const defaultFont = Inter({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-default",
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-accent",
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -89,12 +104,14 @@ export default function RootLayout({
       <BagProvider>
         <WishlistProvider>
           <html lang="en">
-            <body className={`${defaultFont.className} antialiased pb-16 md:pb-0`}>
-              <ReferralBanner />
+            <body
+              className={`${inter.variable} ${playfair.variable} ${cormorant.variable} min-h-screen bg-background font-sans antialiased`}
+            >
               <AdminChromeGuard>{children}</AdminChromeGuard>
               <BottomNav />
               <WhatsAppButton />
               <FirstOrderPopup />
+              {/* <RecentPurchasePopup /> */}
               {/* <ChatWidget /> */}
               <Toaster />
               <ServiceWorkerRegistration />

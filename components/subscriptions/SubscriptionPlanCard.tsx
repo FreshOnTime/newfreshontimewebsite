@@ -1,8 +1,9 @@
 'use client';
 
-import { Package, Check, Star, Clock, Truck, Sparkles } from 'lucide-react';
+import { Check, Star, Sparkles, Truck, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SubscriptionPlan {
     _id: string;
@@ -14,6 +15,7 @@ interface SubscriptionPlan {
     originalPrice?: number;
     frequency: string;
     icon: string;
+    image?: string;
     color: string;
     features: string[];
     contents: { name: string; quantity: string; category: string }[];
@@ -24,124 +26,88 @@ interface SubscriptionPlanCardProps {
     plan: SubscriptionPlan;
 }
 
-const colorClasses: { [key: string]: { bg: string; border: string; text: string; button: string } } = {
-    emerald: {
-        bg: 'from-emerald-50 to-emerald-100/50',
-        border: 'border-emerald-200 hover:border-emerald-400',
-        text: 'text-emerald-600',
-        button: 'bg-emerald-600 hover:bg-emerald-700',
-    },
-    blue: {
-        bg: 'from-blue-50 to-blue-100/50',
-        border: 'border-blue-200 hover:border-blue-400',
-        text: 'text-blue-600',
-        button: 'bg-blue-600 hover:bg-blue-700',
-    },
-    purple: {
-        bg: 'from-purple-50 to-purple-100/50',
-        border: 'border-purple-200 hover:border-purple-400',
-        text: 'text-purple-600',
-        button: 'bg-purple-600 hover:bg-purple-700',
-    },
-    orange: {
-        bg: 'from-orange-50 to-orange-100/50',
-        border: 'border-orange-200 hover:border-orange-400',
-        text: 'text-orange-600',
-        button: 'bg-orange-600 hover:bg-orange-700',
-    },
-};
-
 export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps) {
-    const colors = colorClasses[plan.color] || colorClasses.emerald;
-    const frequencyLabel = plan.frequency === 'weekly' ? '/week' : plan.frequency === 'monthly' ? '/month' : '/2 weeks';
+    const isFeatured = plan.isFeatured;
+    const frequencyLabel = plan.frequency === 'weekly' ? 'per week' : plan.frequency === 'monthly' ? 'per month' : 'every 2 weeks';
 
     return (
         <div
-            className={`relative bg-gradient-to-br ${colors.bg} rounded-2xl border-2 ${colors.border} p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group`}
+            className={cn(
+                "relative group flex flex-col h-full transition-all duration-500",
+                "bg-white border p-8 md:p-10 overflow-hidden",
+                isFeatured
+                    ? "border-[#d4af37]/30 shadow-2xl scale-[1.02] z-10 bg-[#0c2f21] text-white"
+                    : "border-zinc-100 hover:border-[#0c2f21]/20 hover:shadow-xl text-zinc-900 shadow-sm"
+            )}
         >
-            {/* Featured Badge */}
-            {plan.isFeatured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            {/* Featured Badge - Gold Luxury */}
+            {isFeatured && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <span className="inline-flex items-center gap-1.5 bg-[#d4af37] text-[#0c2f21] text-[10px] font-bold tracking-[0.2em] uppercase px-4 py-2 shadow-lg">
                         <Star className="w-3 h-3 fill-current" />
-                        Most Popular
+                        Signature Box
                     </span>
                 </div>
             )}
 
-            {/* Icon & Name */}
-            <div className="text-center mb-4">
-                <span className="text-4xl mb-2 block">{plan.icon}</span>
-                <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                <p className="text-sm text-gray-500 mt-1">{plan.shortDescription}</p>
+            {/* Header */}
+            <div className="text-center mb-8 relative z-10">
+                <h3 className={cn("font-serif text-2xl md:text-3xl mb-3", isFeatured ? "text-white" : "text-zinc-900")}>
+                    {plan.name}
+                </h3>
+                <p className={cn("text-sm font-light leading-relaxed max-w-[240px] mx-auto", isFeatured ? "text-emerald-100/70" : "text-zinc-500")}>
+                    {plan.description}
+                </p>
             </div>
 
-            {/* Price */}
-            <div className="text-center mb-6">
-                <div className="flex items-baseline justify-center gap-1">
+            {/* Pricing */}
+            <div className={cn("text-center mb-8 pb-8 border-b relative z-10", isFeatured ? "border-white/10" : "border-zinc-100")}>
+                <div className="flex flex-col items-center justify-center gap-1">
                     {plan.originalPrice && (
-                        <span className="text-lg text-gray-400 line-through">Rs. {plan.originalPrice.toLocaleString()}</span>
+                        <span className={cn("text-sm line-through font-serif", isFeatured ? "text-emerald-400/50 decoration-emerald-400/30" : "text-zinc-400 decoration-zinc-300")}>
+                            Rs. {plan.originalPrice.toLocaleString()}
+                        </span>
                     )}
-                    <span className={`text-3xl font-bold ${colors.text}`}>Rs. {plan.price.toLocaleString()}</span>
-                    <span className="text-gray-500 text-sm">{frequencyLabel}</span>
-                </div>
-                {plan.originalPrice && (
-                    <span className="inline-block mt-1 text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
-                        Save Rs. {(plan.originalPrice - plan.price).toLocaleString()}
+                    <span className={cn("text-4xl md:text-5xl font-serif", isFeatured ? "text-[#d4af37]" : "text-[#0c2f21]")}>
+                        Rs. {plan.price.toLocaleString()}
                     </span>
-                )}
+                    <span className={cn("text-xs uppercase tracking-widest mt-2", isFeatured ? "text-emerald-400" : "text-zinc-400")}>{frequencyLabel}</span>
+                </div>
             </div>
 
             {/* Features */}
-            <ul className="space-y-2 mb-6">
-                {plan.features.slice(0, 5).map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
-                        <Check className={`w-4 h-4 ${colors.text} shrink-0 mt-0.5`} />
-                        <span>{feature}</span>
-                    </li>
-                ))}
-            </ul>
+            <div className="flex-grow mb-8 px-2 relative z-10">
+                <ul className="space-y-4">
+                    {plan.features.map((feature, index) => (
+                        <li key={index} className={cn("flex items-start gap-3 text-sm font-light", isFeatured ? "text-emerald-100" : "text-zinc-600")}>
+                            <Check className={cn("w-4 h-4 shrink-0 mt-0.5", isFeatured ? "text-[#d4af37]" : "text-[#0c2f21]")} />
+                            <span>{feature}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-            {/* What's Included */}
-            {plan.contents && plan.contents.length > 0 && (
-                <div className="bg-white/50 rounded-xl p-3 mb-6">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">What's Included</p>
-                    <div className="flex flex-wrap gap-1">
-                        {plan.contents.slice(0, 4).map((item, index) => (
-                            <span
-                                key={index}
-                                className="inline-flex items-center text-xs bg-white px-2 py-1 rounded-full border border-gray-200"
-                            >
-                                {item.name}
-                            </span>
-                        ))}
-                        {plan.contents.length > 4 && (
-                            <span className="inline-flex items-center text-xs text-gray-500 px-2 py-1">
-                                +{plan.contents.length - 4} more
-                            </span>
+            {/* Action */}
+            <div className="mt-auto relative z-10">
+                <Link href={`/checkout?plan=${plan.slug}`} className="block">
+                    <Button
+                        className={cn(
+                            "w-full h-14 text-xs font-bold uppercase tracking-[0.15em] rounded-none transition-all duration-300",
+                            isFeatured
+                                ? "bg-[#d4af37] text-[#0c2f21] hover:bg-white hover:text-[#0c2f21]"
+                                : "bg-[#0c2f21] text-white hover:bg-[#1a4a36]"
                         )}
-                    </div>
+                    >
+                        Select Box
+                    </Button>
+                </Link>
+
+                <div className={cn("flex flex-col items-center gap-2 mt-6 text-[10px] uppercase tracking-wider", isFeatured ? "text-emerald-400/60" : "text-zinc-400")}>
+                    <span className="flex items-center gap-1.5">
+                        <Truck className="w-3 h-3" />
+                        Complimentary Delivery
+                    </span>
                 </div>
-            )}
-
-            {/* CTA Button */}
-            <Link href={`/subscriptions/checkout?plan=${plan.slug}`} className="block">
-                <Button className={`w-full ${colors.button} text-white font-semibold py-3 rounded-xl group-hover:shadow-lg transition-all`}>
-                    Subscribe Now
-                    <Sparkles className="w-4 h-4 ml-2" />
-                </Button>
-            </Link>
-
-            {/* Delivery Info */}
-            <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                    <Truck className="w-3 h-3" />
-                    Free Delivery
-                </span>
-                <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Cancel anytime
-                </span>
             </div>
         </div>
     );

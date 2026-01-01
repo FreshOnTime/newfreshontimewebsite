@@ -22,12 +22,13 @@ import NewsletterForm from "@/components/home/NewsletterForm";
 import TrustBadges from "@/components/home/TrustBadges";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
 import SubscriptionPromo from "@/components/home/SubscriptionPromo";
+import LiveOrderCounter from "@/components/home/LiveOrderCounter";
 
 import dbConnect from "@/lib/database";
 
-// Force runtime rendering - fetch data on every request
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Use ISR (Incremental Static Regeneration) for fast loading
+// Revalidate every 60 seconds to keep data fresh
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Fresh Pick | Premium Online Grocery Delivery in Colombo",
@@ -39,7 +40,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Server-side data fetching
 // Server-side data fetching
 async function getProducts(): Promise<Product[]> {
   try {
@@ -154,7 +154,7 @@ export default async function Home() {
   const featuredProducts = products.slice(0, 20);
 
   return (
-    <div className="bg-white">
+    <div className="bg-transparent">
       {/* Hero Section - Client Island */}
       <HeroSection />
 
@@ -167,6 +167,9 @@ export default async function Home() {
       {/* Trust Badges */}
       <TrustBadges />
 
+      {/* Live Order Counter - Social Proof */}
+      <LiveOrderCounter />
+
       {/* Lifestyle Banners */}
       <BannerGrid />
 
@@ -174,24 +177,24 @@ export default async function Home() {
       <CategoryBento categories={categories} />
 
       {/* Featured Products Section */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-24 md:py-32 bg-transparent">
         <div className="container mx-auto px-4 md:px-8">
-          <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-12">
+          <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
             <div>
-              <span className="text-emerald-600 text-sm font-semibold tracking-wider uppercase mb-3 block">
+              <span className="text-amber-500 text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
                 Trending Now
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold mb-3 text-gray-900 tracking-tight">
-                Featured Products
+              <h2 className="text-4xl md:text-6xl font-heading font-medium mb-4 text-zinc-900 tracking-tight leading-[1.1]">
+                Featured <span className="italic font-serif text-emerald-700">Selections</span>
               </h2>
-              <p className="text-base md:text-lg text-gray-500 max-w-md">
-                Our most popular items this week, loved by customers
+              <p className="text-lg md:text-xl text-zinc-500 max-w-xl font-light leading-relaxed">
+                Curated favorites, loved by our most discerning customers.
               </p>
             </div>
             <Button
               asChild
               variant="outline"
-              className="mt-4 md:mt-0 border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 rounded-full px-6 transition-all"
+              className="mt-6 md:mt-0 border-zinc-200 text-zinc-900 hover:bg-zinc-900 hover:text-white rounded-full px-8 py-6 text-sm font-medium tracking-wide transition-all"
             >
               <Link href="/products">
                 View All Products

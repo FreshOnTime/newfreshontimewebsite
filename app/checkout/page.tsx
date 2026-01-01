@@ -15,15 +15,18 @@ import Link from "next/link";
 
 import { RRule, Frequency } from 'rrule';
 
+import { defaultSubscriptionPlans } from "@/lib/data/subscriptionPlans";
+
 // ... other imports
 
 export default function CheckoutPage() {
   const params = useSearchParams();
   const bagId = params.get("bagId");
   const quickSku = params.get("quickSku");
+  const planSlug = params.get("plan");
   const quickQty = Number(params.get("qty") || '1');
   const { bags, currentBag, removeFromBag, updateBagItem } = useBag();
-  const { user } = useAuth(); // Restore usage
+  const { user, loading: authLoading } = useAuth(); // Restore usage
 
   const bag = useMemo(() => {
     if (bagId) return bags.find(b => b.id === bagId) || null;
@@ -73,6 +76,39 @@ export default function CheckoutPage() {
       setShipPhone(user.registrationAddress.phoneNumber || user.phoneNumber || '');
     }
   }, [user]);
+
+  // Auth Redirect
+  useEffect(() => {
+    if (!authLoading && !user) {
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/auth/login?callbackUrl=${returnUrl}`);
+    }
+  }, [user, authLoading, router]);
+
+  // Load Subscription Plan
+  useEffect(() => {
+    if (!planSlug) return;
+
+    const plan = defaultSubscriptionPlans.find(p => p.slug === planSlug);
+    if (plan) {
+      const item: PreviewItem = {
+        product: {
+          id: plan._id,
+          name: plan.name,
+          price: plan.price,
+          unit: 'box',
+          images: [{ url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop', alt: plan.name }] // Placeholder or plan image
+        },
+        quantity: 1,
+      };
+      setPreviewBag({ id: `plan-${plan._id}`, name: plan.name, items: [item] });
+
+      // Setup recurring
+      setIsRecurring(true);
+      if (plan.frequency === 'weekly') setRecurrenceFreq(RRule.WEEKLY);
+      if (plan.frequency === 'monthly') setRecurrenceFreq(RRule.MONTHLY);
+    }
+  }, [planSlug]);
 
   // If quickSku is present and there's no bag, fetch product and set preview
   useEffect(() => {
@@ -249,6 +285,25 @@ ${deliveryTo}`;
       if (!isWhatsapp) setSubmitting(false); // Keep submitting true for whatsapp to prevent double clicks during redirect
     }
   };
+
+  // Subscription/Auth Loading State
+  // If we have a plan slug, we must ensure we either have a user OR we are redirecting.
+  // We also need to wait for the previewBag to be populated.
+  if (planSlug) {
+    // If not logged in (and done loading), we are redirecting, so show loader.
+    // If loading auth, show loader.
+    // If logged in but no preview bag yet (plan loading), show loader.
+    if (!user || authLoading || !previewBag) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-gray-500">
+            {!user && !authLoading ? 'Redirecting to login...' : 'Loading subscription details...'}
+          </p>
+        </div>
+      );
+    }
+  }
 
   if (!hasEffectiveBag) {
     return (

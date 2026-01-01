@@ -66,7 +66,7 @@ export default function CategoriesIndex() {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
                   <span className="w-12 h-1 bg-white/30 rounded-full mb-6 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                  <h3 className="text-3xl font-serif font-bold text-white mb-2">{c.name}</h3>
+                  <h3 className="text-3xl font-heading font-medium text-white mb-2 tracking-wide drop-shadow-md">{c.name}</h3>
                   <div className="inline-flex items-center text-sm font-medium text-white/80 uppercase tracking-widest opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                     View Collection <ArrowRight className="ml-2 w-4 h-4" />
                   </div>

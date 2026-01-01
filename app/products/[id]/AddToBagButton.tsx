@@ -39,6 +39,8 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
   const [newBagName, setNewBagName] = useState("");
   const [newBagDescription, setNewBagDescription] = useState("");
 
+  const selectedBag = bags.find(bag => bag.id === selectedBagId);
+
   const handleAddToBag = async () => {
     if (!selectedBagId) {
       toast.error("Please select a bag first");
@@ -47,7 +49,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
 
     try {
       await addToBag(selectedBagId, product, quantity);
-      toast.success(`Added ${product.name} to bag!`);
+      toast.success(`Added ${product.name} to ${selectedBag?.name || 'bag'}`);
     } catch (error) {
       toast.error("Failed to add item to bag");
       console.error("Error adding to bag:", error);
@@ -77,14 +79,11 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
     selectBag(bagId);
   };
 
-  const selectedBag = bags.find(bag => bag.id === selectedBagId);
-
   return (
     <>
-      <div className="w-full md:w-auto flex">
+      <div className="w-full flex">
         <Button
-          className="w-full rounded-s-full px-4 min-h-[3rem] h-auto whitespace-normal leading-tight"
-          size="lg"
+          className="w-full rounded-s-full px-4 h-10 whitespace-normal leading-tight text-sm font-medium"
           disabled={product.isOutOfStock || loading || !selectedBagId}
           onClick={handleAddToBag}
         >
@@ -93,7 +92,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
           </span>
         </Button>
         <DropdownMenu>
-          <DropdownMenuTrigger 
+          <DropdownMenuTrigger
             className="bg-primary text-primary-foreground rounded-e-full border-l px-4"
             disabled={loading}
           >
@@ -167,8 +166,8 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
             >
               Cancel
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={handleCreateBag}
               disabled={loading || !newBagName.trim()}
             >

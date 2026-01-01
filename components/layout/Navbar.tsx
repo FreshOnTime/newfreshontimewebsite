@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import ReferralBanner from "@/components/ReferralBanner"; // Add import
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,24 +14,15 @@ import {
   MapPin,
   LogOut,
   Settings,
-  Cake,
-  CupSoda,
-  Milk,
-  Apple,
-  Snowflake,
-  Beef,
-  Archive,
-  Candy,
-  ShoppingBasket,
-  Drumstick,
-  Carrot,
-  IceCream2,
+  ShoppingBag,
   Package,
   Heart,
+  ChevronDown,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,33 +40,25 @@ interface NavCategory {
   slug: string;
 }
 
-const categoryIcons: Record<string, React.ElementType> = {
-  bakery: Cake,
-  beverages: CupSoda,
-  dairy: Milk,
-  "dairy-eggs": Milk,
-  produce: Apple,
-  "fresh-produce": Carrot,
-  frozen: Snowflake,
-  "frozen-foods": IceCream2,
-  meat: Beef,
-  "meat-poultry": Drumstick,
-  "meat-seafood": Drumstick,
-  pantry: Archive,
-  "pantry-staples": Package,
-  snacks: Candy,
-};
-
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useAuth();
-  const cartItemCount = 0; // This would come from your cart context/state
   const { bags } = useBag();
   const bagCount = bags?.length || 0;
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Use cached categories - refreshes every 15 minutes
+  // Handle scroll effect for glassmorphism
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const { data: navCategories } = useLocalStorageCache<NavCategory[]>(
     "navbar_categories",
     async () => {
@@ -113,418 +98,196 @@ export function Navbar() {
     }
   };
 
+  const isHome = pathname === "/";
+  const textColor = isHome && !scrolled ? "text-white" : "text-zinc-900";
+  const hoverColor = isHome && !scrolled ? "hover:text-amber-200" : "hover:text-emerald-700";
+  const iconColor = isHome && !scrolled ? "text-white" : "text-zinc-600";
+
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-primary/5 via-white to-primary/5 border-b border-primary/10">
-        <div className="container mx-auto px-4 py-2.5">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary shrink-0">
-                <MapPin className="w-4 h-4" aria-hidden />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-semibold text-gray-900 tracking-tight leading-none flex items-center gap-2 text-sm sm:text-base">
-                  <span className="truncate">Delivering around Colombo</span>
-                  <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Now Active</span>
-                </span>
-                <span className="text-xs text-primary/80 font-medium truncate mt-0.5 hidden sm:block">
-                  Scheduled delivery available — choose slot at checkout
-                </span>
-              </div>
-            </div>
+    <>
+      {/* Spacer for fixed header (only on non-home pages) */}
+      {!isHome && <div className="h-20" />}
 
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/help" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-primary transition-colors uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-primary transition-colors"></span>
-                Help Center
-              </Link>
-              <Link href="/about" className="group flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-primary transition-colors uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-primary transition-colors"></span>
-                About Us
-              </Link>
-            </div>
+      <div className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center">
 
-            <div className="flex sm:hidden items-center text-primary ml-2 shrink-0">
-              <span className="text-[10px] font-semibold bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 whitespace-nowrap">Active</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Main navbar */}
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src="/fresh-pick.svg"
-              alt="Fresh Pick"
-              width={180}
-              height={180}
-              className="text-primary"
-            />
+        <header
+          className={`w-full transition-all duration-500 ease-in-out ${scrolled || !isHome
+            ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100 py-3"
+            : "bg-transparent py-6"
+            }`}
+        >
+          <div className="container mx-auto px-6 md:px-12">
+            <div className="flex items-center justify-between">
+              {/* Logo area */}
+              <div className="flex items-center gap-12">
+                <Link href="/" className="relative z-50 group">
+                  <div className="flex flex-col">
+                    <span className={`font-serif text-2xl md:text-3xl font-bold tracking-tight transition-colors duration-300 ${isHome && !scrolled ? "text-white" : "text-emerald-950"}`}>
+                      Fresh<span className="italic text-emerald-500">Pick</span>
+                    </span>
+                    <span className={`text-[10px] uppercase tracking-[0.3em] font-medium transition-colors duration-300 ${isHome && !scrolled ? "text-white/70" : "text-emerald-900/60"}`}>
+                      Colombo
+                    </span>
+                  </div>
+                </Link>
 
-          </Link>
-
-          {/* Search bar - Desktop (improved spacing & visuals) */}
-          <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-            <form onSubmit={handleSearch} className="w-full relative" aria-label="Site search">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search for products, brands, categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-28 py-3 border border-gray-200 rounded-full shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden />
-                <Button
-                  type="submit"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 rounded-full px-4 py-2 flex items-center gap-2"
-                  aria-label="Search"
-                >
-                  <Search className="w-4 h-4 text-white" />
-                  <span className="hidden sm:inline text-sm text-white">Search</span>
-                </Button>
-              </div>
-            </form>
-          </div>
-
-          {/* Right side actions */}
-          <div className="flex items-center space-x-4">
-            {/* Account dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="hidden md:flex items-center space-x-2"
-                >
-                  <User className={`w-5 h-5 ${user ? "text-primary" : ""}`} />
-                  <span>{user ? user.firstName : "Account"}</span>
-                  {user && (
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {user.role}
-                    </Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {!user ? (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link href="/auth/signup">Sign Up</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/auth/login">Sign In</Link>
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile">
-                        <User className="w-4 h-4 mr-2" />
-                        My Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/orders">Order History</Link>
-                    </DropdownMenuItem>
-                    {(user.role === "admin" || user.role === "manager") && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href="/dashboard">
-                            <Settings className="w-4 h-4 mr-2" />
-                            Dashboard
-                          </Link>
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    {user.role === "supplier" && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href="/dashboard">
-                            <Settings className="w-4 h-4 mr-2" />
-                            Supplier Dashboard
-                          </Link>
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleLogout}
-                      className="text-red-600"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Wishlist */}
-            <Link href="/wishlist">
-              <Button variant="ghost" className="relative hidden md:flex">
-                <Heart className="w-6 h-6" />
-              </Button>
-            </Link>
-
-            {/* Shopping cart */}
-            <Link href="/bags">
-              <Button variant="ghost" className="relative">
-                <ShoppingCart className="w-6 h-6" />
-                {cartItemCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] h-5 flex items-center justify-center">
-                    {cartItemCount}
-                  </Badge>
-                )}
-                {bagCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-1 py-0.5 rounded-full min-w-[18px] h-4 flex items-center justify-center">
-                    {bagCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Categories navigation - Desktop - Glassmorphism Pills */}
-        <div className="hidden md:block bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/80 border-t border-emerald-100/50 shadow-sm">
-          <div className="container mx-auto px-4 md:px-8">
-            <nav className="flex items-center gap-2 py-3 overflow-x-auto no-scrollbar">
-              <Link
-                href="/products"
-                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
-              >
-                <ShoppingBasket className="w-4 h-4 text-emerald-600" />
-                <span className="text-gray-700 font-medium">All Products</span>
-              </Link>
-              <Link
-                href="/categories"
-                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
-              >
-                <span className="text-gray-600 font-medium">Categories</span>
-              </Link>
-              {(navCategories || []).map((category) => {
-                const Icon = categoryIcons[category.slug?.toLowerCase()] || ShoppingBasket;
-                return (
-                  <Link
-                    key={category.slug}
-                    href={`/categories/${category.slug}`}
-                    className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
-                  >
-                    <Icon className="w-4 h-4 text-gray-500 group-hover:text-emerald-600 transition-colors" />
-                    <span className="text-gray-600 group-hover:text-emerald-700 font-medium">{category.name}</span>
+                {/* Desktop Navigation - Minimal & Elegant */}
+                <nav className="hidden lg:flex items-center gap-8">
+                  <Link href="/products" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                    Shop
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
-                );
-              })}
-              <Link
-                href="/subscriptions"
-                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 border border-orange-300 hover:from-amber-500 hover:to-orange-600 hover:shadow-lg hover:shadow-orange-100/50 transition-all duration-300 flex items-center gap-2"
-              >
-                <span className="text-white font-semibold">📦 Subscriptions</span>
-              </Link>
-              <Link
-                href="/orders"
-                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
-              >
-                <span className="text-gray-600 font-medium">My Orders</span>
-              </Link>
-              <Link
-                href="/blog"
-                className="group flex-shrink-0 text-sm whitespace-nowrap py-2 px-4 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 flex items-center gap-2"
-              >
-                <span className="text-gray-600 font-medium">Blog</span>
-              </Link>
-            </nav>
-          </div>
-        </div>
+                  <div className="relative group">
+                    <button className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                      Collections
+                      <ChevronDown className="w-3 h-3 opacity-50" />
+                    </button>
+                    {/* Mega Menu / Dropdown */}
+                    <div className="absolute top-full left-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-premium p-4 border border-gray-100">
+                        <div className="flex flex-col gap-1">
+                          {(navCategories || []).slice(0, 6).map((cat) => (
+                            <Link
+                              key={cat.slug}
+                              href={`/categories/${cat.slug}`}
+                              className="text-sm text-gray-600 hover:text-emerald-700 hover:bg-emerald-50/50 px-3 py-2 rounded-lg transition-colors"
+                            >
+                              {cat.name}
+                            </Link>
+                          ))}
+                          <Link href="/categories" className="text-xs font-bold uppercase tracking-wider text-emerald-600 mt-2 px-3 py-2 border-t border-gray-100 pt-3">
+                            View All Collections
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <Link href="/subscriptions" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    Subscriptions
+                  </Link>
+                  <Link href="/b2b" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    Business
+                  </Link>
+                  <Link href="/blog" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    Blog
+                  </Link>
+                  <Link href="/about" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    Our Story
+                  </Link>
+                </nav>
+              </div>
 
-        {/* Mobile search */}
-        <div className="md:hidden border-t border-gray-100 py-3">
-          <form onSubmit={handleSearch} className="relative">
-            <Input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-20 border-2 border-gray-200 rounded-full focus:border-primary focus:ring-0"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Button
-              type="submit"
-              size="sm"
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 rounded-full"
-            >
-              Go
-            </Button>
-          </form>
-        </div>
+              {/* Right Actions */}
+              <div className="flex items-center gap-6">
+                {/* Expandable Search */}
+                <div className="hidden md:flex items-center">
+                  <div className={`relative flex items-center ${scrolled || !isHome ? "bg-gray-100/50" : "bg-white/10"} rounded-full px-3 py-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:bg-white w-[250px] focus-within:w-[300px]`}>
+                    <Search className={`w-4 h-4 ${iconColor} opacity-70 flex-shrink-0 peer-focus:text-zinc-900`} />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      className={`bg-transparent border-none outline-none text-sm ml-2 w-full placeholder:text-gray-400 focus:text-zinc-900 focus:placeholder:text-zinc-400 ${isHome && !scrolled ? "text-white placeholder:text-white/60" : "text-gray-900"}`}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                    />
+                  </div>
+                </div>
+
+                {/* Account */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className={`hidden md:flex items-center gap-2 text-sm font-medium transition-colors ${textColor} ${hoverColor}`}>
+                      {user ? (
+                        <span className="max-w-[100px] truncate">{user.firstName}</span>
+                      ) : (
+                        "Sign In"
+                      )}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-gray-100 shadow-premium">
+                    {!user ? (
+                      <>
+                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                          <Link href="/auth/login">Access Account</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                          <Link href="/auth/signup">Create Account</Link>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                          <Link href="/profile">My Profile</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                          <Link href="/orders">Orders</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 rounded-lg cursor-pointer">
+                          Sign Out
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Cart */}
+                <Link href="/bags" className="relative group">
+                  <div className={`p-2 rounded-full transition-colors ${isHome && !scrolled ? "bg-white/10 hover:bg-white/20 text-white" : "bg-emerald-50/50 hover:bg-emerald-100/50 text-emerald-900"}`}>
+                    <ShoppingBag className="w-5 h-5" />
+                    {bagCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-amber-950">
+                        {bagCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+
+                {/* Mobile Menu Toggle */}
+                <button
+                  className={`md:hidden p-2 ${iconColor}`}
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
       </div>
 
-      {/* Mobile menu overlay */}
+      {/* Luxury Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-180px)] overflow-y-auto">
-          <div className="container mx-auto px-4 py-4">
-            {/* Account section */}
-            <div className="border-b border-gray-200 pb-4 mb-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <User className="w-6 h-6 text-gray-600" />
-                <span className="font-medium">Account</span>
-              </div>
-              <div className="space-y-2 ml-9">
-                {user ? (
-                  <>
-                    <Link
-                      href="/profile"
-                      className="block text-gray-600 hover:text-primary"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {user.firstName || "My Profile"}
-                    </Link>
-                    <Link
-                      href="/orders"
-                      className="block text-gray-600 hover:text-primary"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Order History
-                    </Link>
-                    {(user.role === "admin" || user.role === "manager") && (
-                      <Link
-                        href="/dashboard"
-                        className="block text-gray-600 hover:text-primary"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Dashboard
-                      </Link>
-                    )}
-                    {user.role === "supplier" && (
-                      <Link
-                        href="/dashboard"
-                        className="block text-gray-600 hover:text-primary"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Supplier Dashboard
-                      </Link>
-                    )}
-                    <button
-                      onClick={async () => {
-                        await handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="block text-left text-red-600 hover:text-red-700 w-full"
-                    >
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/auth/signup"
-                      className="block text-gray-600 hover:text-green-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Sign Up
-                    </Link>
-                    <Link
-                      href="/auth/login"
-                      className="block text-gray-600 hover:text-green-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Sign In
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Categories */}
-            <div className="border-b border-gray-200 pb-4 mb-4">
-              <h3 className="font-medium mb-3">Categories</h3>
-              <div className="space-y-2">
-                {(navCategories || []).map((category) => {
-                  const Icon =
-                    categoryIcons[category.slug?.toLowerCase()] ||
-                    ShoppingBasket;
-                  return (
-                    <Link
-                      key={category.slug}
-                      href={`/categories/${category.slug}`}
-                      className="flex items-center gap-3 text-gray-600 hover:text-primary py-1"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Icon className="w-5 h-5" />
-                      {category.name}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Help links */}
-            <div className="space-y-2">
-              <Link
-                href="/products"
-                className="block text-gray-600 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                All Products
-              </Link>
-              <Link
-                href="/categories"
-                className="block text-gray-600 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Categories
-              </Link>
-              <Link
-                href="/orders"
-                className="block text-gray-600 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Orders
-              </Link>
-              <Link
-                href="/blog"
-                className="block text-gray-600 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Blog
-              </Link>
-              <Link
-                href="/help"
-                className="block text-gray-600 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Help & Support
-              </Link>
-              <Link
-                href="/about"
-                className="block text-gray-600 hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                About Us
-              </Link>
-            </div>
-          </div>
+        <div className="fixed inset-0 z-40 bg-white/95 backdrop-blur-xl pt-24 px-6 animate-in fade-in slide-in-from-top-10 duration-300">
+          <nav className="flex flex-col gap-6 text-center">
+            <Link href="/products" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Shop</Link>
+            <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
+            <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
+            <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Business</Link>
+            <Link href="/blog" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Blog</Link>
+            <div className="h-px bg-gray-100 w-24 mx-auto my-2" />
+            {user ? (
+              <>
+                <Link href="/profile" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>My Profile</Link>
+                <Link href="/orders" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>My Orders</Link>
+                <button
+                  className="text-lg text-red-600 font-medium"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link href="/auth/login" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+            )}
+          </nav>
         </div>
       )}
-    </header>
+    </>
   );
 }
