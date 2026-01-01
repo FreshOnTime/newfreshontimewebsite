@@ -26,9 +26,9 @@ import LiveOrderCounter from "@/components/home/LiveOrderCounter";
 
 import dbConnect from "@/lib/database";
 
-// Force runtime rendering - fetch data on every request
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Use ISR (Incremental Static Regeneration) for fast loading
+// Revalidate every 60 seconds to keep data fresh
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Fresh Pick | Premium Online Grocery Delivery in Colombo",
