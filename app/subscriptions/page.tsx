@@ -148,23 +148,41 @@ export default async function SubscriptionsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Hero Section */}
-            <SubscriptionHero />
+        <div className="min-h-screen bg-white text-zinc-900">
+            {/* Editorial Hero - Real Imagery */}
+            <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"
+                        alt="Background"
+                        className="w-full h-full object-cover brightness-[0.35]"
+                    />
+                </div>
 
-            {/* Subscription Plans */}
-            <section className="py-16 md:py-20">
+                <div className="container mx-auto max-w-5xl text-center relative z-10 text-white pt-20">
+                    <span className="inline-block mb-6 text-xs font-bold tracking-[0.3em] uppercase text-[#d4af37] border border-[#d4af37]/30 px-6 py-3 rounded-full backdrop-blur-sm">
+                        Signature Collections
+                    </span>
+                    <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl mb-8 leading-[0.9] tracking-tight text-white drop-shadow-2xl">
+                        The Subscription<br />
+                        <span className="text-[#d4af37] italic">Experience</span>
+                    </h1>
+                    <p className="text-xl md:text-2xl font-light text-zinc-200 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
+                        Weekly provisions of the world's finest produce, curated into elegant boxes for the discerning home.
+                    </p>
+                </div>
+
+                {/* Scroll Indicator */}
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
+                    <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-[#d4af37] to-transparent" />
+                </div>
+            </section>
+
+            {/* Plans Grid */}
+            <section className="py-24 bg-white relative">
+                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent" />
                 <div className="container mx-auto px-4">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                            Choose Your Perfect Box
-                        </h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            Select the subscription that fits your lifestyle. All boxes include free delivery and can be paused or cancelled anytime.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-[1400px] mx-auto -mt-32 relative z-20">
                         {plans.map((plan: any) => (
                             <SubscriptionPlanCard key={plan._id} plan={plan} />
                         ))}
@@ -172,91 +190,81 @@ export default async function SubscriptionsPage() {
                 </div>
             </section>
 
-            {/* How It Works */}
-            <section className="py-16 bg-white">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-                        How It Works
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl font-bold text-emerald-600">1</span>
+            {/* Concierge Section with Imagery */}
+            <section className="py-32 bg-[#fafaf9]">
+                <div className="container mx-auto px-4 max-w-7xl">
+                    <div className="text-center mb-24">
+                        <span className="text-[#0c2f21] text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Our Promise</span>
+                        <h2 className="font-serif text-5xl md:text-6xl text-[#0c2f21]">
+                            The Concierge Experience
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                        <div className="group">
+                            <div className="relative aspect-[4/5] overflow-hidden mb-8">
+                                <img
+                                    src="https://images.unsplash.com/photo-1595855709940-57753384fa1d?q=80&w=2670&auto=format&fit=crop"
+                                    alt="Bespoke Selection"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                />
+                                <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Choose Your Box</h3>
-                            <p className="text-gray-600 text-sm">Select the subscription plan that best fits your needs and budget.</p>
+                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Bespoke Selection</h3>
+                            <p className="text-zinc-600 font-light leading-relaxed">
+                                Our curators hand-select every item based on your preferences and the peak season's offering.
+                            </p>
                         </div>
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl font-bold text-emerald-600">2</span>
+                        <div className="group md:mt-16">
+                            <div className="relative aspect-[4/5] overflow-hidden mb-8">
+                                <img
+                                    src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=2574&auto=format&fit=crop"
+                                    alt="White Glove Delivery"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                />
+                                <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Set Delivery Day</h3>
-                            <p className="text-gray-600 text-sm">Choose your preferred delivery day and time slot for weekly deliveries.</p>
+                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">White Glove Delivery</h3>
+                            <p className="text-zinc-600 font-light leading-relaxed">
+                                Delivered in temperature-controlled sustainable packaging by our uniformed personnel.
+                            </p>
                         </div>
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl font-bold text-emerald-600">3</span>
+                        <div className="group md:mt-32">
+                            <div className="relative aspect-[4/5] overflow-hidden mb-8">
+                                <img
+                                    src="https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2574&auto=format&fit=crop"
+                                    alt="Priority Access"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0"
+                                />
+                                <div className="absolute inset-0 bg-[#0c2f21]/10 group-hover:bg-transparent transition-colors duration-500" />
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Enjoy Fresh Groceries</h3>
-                            <p className="text-gray-600 text-sm">Receive your curated box of fresh groceries every week at your doorstep.</p>
+                            <h3 className="text-2xl font-serif text-[#0c2f21] mb-3">Priority Access</h3>
+                            <p className="text-zinc-600 font-light leading-relaxed">
+                                Members receive first access to rare imports, limited harvests, and exclusive tasting events.
+                            </p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* FAQ Section */}
-            <section className="py-16 bg-gray-50">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-                        Frequently Asked Questions
-                    </h2>
-                    <div className="max-w-3xl mx-auto space-y-4">
+            {/* FAQ - Minimal */}
+            <section className="py-24 bg-white">
+                <div className="container mx-auto px-4 max-w-3xl">
+                    <div className="text-center mb-16">
+                        <h2 className="font-serif text-3xl md:text-4xl">Common Questions</h2>
+                    </div>
+                    <div className="space-y-8">
                         {[
-                            {
-                                q: 'Can I pause or cancel my subscription?',
-                                a: 'Yes! You can pause or cancel your subscription anytime from your profile. No questions asked.',
-                            },
-                            {
-                                q: 'What if I\'m not satisfied with my delivery?',
-                                a: 'We offer a 100% satisfaction guarantee. If you\'re not happy with any item, we\'ll replace it or refund you.',
-                            },
-                            {
-                                q: 'Can I customize what\'s in my box?',
-                                a: 'You can specify items you want to exclude (e.g., allergies). Full customization coming soon!',
-                            },
-                            {
-                                q: 'What payment methods do you accept?',
-                                a: 'We accept Cash on Delivery (COD), bank transfers, and card payments.',
-                            },
-                        ].map((faq, index) => (
-                            <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
-                                <div className="flex items-start gap-3">
-                                    <HelpCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
-                                        <p className="text-gray-600 text-sm">{faq.a}</p>
-                                    </div>
-                                </div>
+                            { q: "What makes FreshPick boxes unique?", a: "Each FreshPick collection is curated from the top 1% of harvests. Our expert agrarians hand-select produce at peak ripeness for unmatched flavor." },
+                            { q: "Can I customize my FreshPick box?", a: "Certainly. Your personal concierge can tailor your weekly delivery to accommodate preferences, allergies, or specific culinary requirements." },
+                            { q: "Is the service flexible?", a: "As a FreshPick subscriber, you enjoy complete freedom. Pause your deliveries during travel or cancel indefinitely with a single click." },
+                        ].map((item, i) => (
+                            <div key={i} className="border-b border-zinc-100 pb-8">
+                                <h3 className="font-medium text-lg mb-2">{item.q}</h3>
+                                <p className="text-zinc-500 font-light leading-relaxed">{item.a}</p>
                             </div>
                         ))}
                     </div>
-                </div>
-            </section>
-
-            {/* CTA Section */}
-            <section className="py-16 bg-gradient-to-r from-emerald-600 to-teal-700 text-white">
-                <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-                    <p className="text-emerald-100 mb-8 max-w-xl mx-auto">
-                        Join hundreds of happy subscribers enjoying fresh groceries delivered to their door every week.
-                    </p>
-                    <Link
-                        href="#plans"
-                        className="inline-flex items-center gap-2 bg-white text-emerald-700 font-semibold px-8 py-3 rounded-full hover:bg-emerald-50 transition-colors"
-                    >
-                        View Plans
-                        <ArrowRight className="w-4 h-4" />
-                    </Link>
                 </div>
             </section>
         </div>

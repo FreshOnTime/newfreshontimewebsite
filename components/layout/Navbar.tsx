@@ -163,7 +163,7 @@ export function Navbar() {
                     </div>
                   </div>
                   <Link href="/subscriptions" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
-                    Membership
+                    Subscriptions
                   </Link>
                   <Link href="/about" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Our Story
@@ -257,7 +257,7 @@ export function Navbar() {
           <nav className="flex flex-col gap-6 text-center">
             <Link href="/products" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Shop</Link>
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
-            <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Membership</Link>
+            <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
             <div className="h-px bg-gray-100 w-24 mx-auto my-2" />
             <Link href="/auth/login" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
           </nav>
