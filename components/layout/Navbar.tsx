@@ -182,12 +182,19 @@ export function Navbar() {
               <div className="flex items-center gap-6">
                 {/* Expandable Search */}
                 <div className="hidden md:flex items-center">
-                  <div className={`relative flex items-center ${scrolled || !isHome ? "bg-gray-100/50" : "bg-white/10"} rounded-full px-3 py-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:bg-white w-[250px] focus-within:w-[300px]`}>
-                    <Search className={`w-4 h-4 ${iconColor} opacity-70 flex-shrink-0 peer-focus:text-zinc-900`} />
+                  <div className={`relative flex items-center rounded-full px-4 py-2.5 transition-all duration-300 focus-within:ring-1 w-[250px] focus-within:w-[320px] ${scrolled || !isHome
+                      ? "bg-zinc-100 focus-within:bg-white focus-within:ring-zinc-200"
+                      : "bg-white/10 backdrop-blur-md border border-white/20 focus-within:bg-white/20 focus-within:border-white/40 focus-within:ring-white/0"
+                    }`}>
+                    <Search className={`w-4 h-4 flex-shrink-0 transition-colors ${scrolled || !isHome ? "text-zinc-400" : "text-white/80"
+                      }`} />
                     <input
                       type="text"
-                      placeholder="Search..."
-                      className={`bg-transparent border-none outline-none text-sm ml-2 w-full placeholder:text-gray-400 focus:text-zinc-900 focus:placeholder:text-zinc-400 ${isHome && !scrolled ? "text-white placeholder:text-white/60" : "text-gray-900"}`}
+                      placeholder="Search for perfection..."
+                      className={`bg-transparent border-none outline-none text-sm ml-3 w-full font-light transition-colors ${scrolled || !isHome
+                          ? "text-zinc-900 placeholder:text-zinc-400"
+                          : "text-white placeholder:text-white/70"
+                        }`}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
@@ -198,34 +205,34 @@ export function Navbar() {
                 {/* Account */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className={`hidden md:flex items-center gap-2 text-sm font-medium transition-colors ${textColor} ${hoverColor}`}>
+                    <button className={`hidden md:flex items-center gap-2 text-sm font-medium transition-colors hover:opacity-80 ${textColor}`}>
                       {user ? (
-                        <span className="max-w-[100px] truncate">{user.firstName}</span>
+                        <span className="max-w-[100px] truncate tracking-wide">{user.firstName}</span>
                       ) : (
                         "Sign In"
                       )}
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-gray-100 shadow-premium">
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-zinc-100 bg-white/95 backdrop-blur-xl shadow-2xl mt-4">
                     {!user ? (
                       <>
-                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-3 px-4">
                           <Link href="/auth/login">Access Account</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-3 px-4">
                           <Link href="/auth/signup">Create Account</Link>
                         </DropdownMenuItem>
                       </>
                     ) : (
                       <>
-                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-2.5 px-4 font-medium text-zinc-600">
                           <Link href="/profile">My Profile</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-2.5 px-4 font-medium text-zinc-600">
                           <Link href="/orders">Orders</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 rounded-lg cursor-pointer">
+                        <DropdownMenuSeparator className="bg-zinc-100 my-2" />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl cursor-pointer focus:bg-red-50 focus:text-red-600 py-2.5 px-4">
                           Sign Out
                         </DropdownMenuItem>
                       </>
@@ -235,10 +242,13 @@ export function Navbar() {
 
                 {/* Cart */}
                 <Link href="/bags" className="relative group">
-                  <div className={`p-2 rounded-full transition-colors ${isHome && !scrolled ? "bg-white/10 hover:bg-white/20 text-white" : "bg-emerald-50/50 hover:bg-emerald-100/50 text-emerald-900"}`}>
+                  <div className={`p-2.5 rounded-full transition-all duration-300 ${isHome && !scrolled
+                      ? "bg-white/10 hover:bg-white/20 text-white"
+                      : "bg-zinc-100 hover:bg-emerald-50 text-zinc-900 hover:text-emerald-700"
+                    }`}>
                     <ShoppingBag className="w-5 h-5" />
                     {bagCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-amber-950">
+                      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
                         {bagCount}
                       </span>
                     )}

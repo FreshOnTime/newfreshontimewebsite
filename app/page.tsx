@@ -18,6 +18,7 @@ import InfiniteMarquee from "@/components/ui/infinite-marquee";
 import CategoryBento from "@/components/home/CategoryBento";
 import Testimonials from "@/components/home/Testimonials";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
+import PrivateClientCTA from "@/components/home/PrivateClientCTA";
 import NewsletterForm from "@/components/home/NewsletterForm";
 import TrustBadges from "@/components/home/TrustBadges";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
@@ -248,8 +249,8 @@ export default async function Home() {
       {/* Guarantee CTA */}
       <GuaranteeCta />
 
-      {/* Newsletter Section - Client Island */}
-      <NewsletterForm />
+      {/* Private Client Services CTA */}
+      <PrivateClientCTA />
     </div>
   );
 }
