@@ -6,7 +6,8 @@
   :root {
     /* Ultra-Premium Billionaire Aesthetic */
     --background: 0 0% 100%;
-    --foreground: 220 20% 10%; /* Rich charcoal */
+    --foreground: 220 20% 10%;
+    /* Rich charcoal */
 
     --card: 0 0% 100%;
     --card-foreground: 220 20% 10%;
@@ -15,7 +16,7 @@
     --popover-foreground: 220 20% 10%;
 
     /* Primary: Deep Luxurious Forest */
-    --primary: 160 40% 18%; 
+    --primary: 160 40% 18%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Warm Champagne */
@@ -26,7 +27,7 @@
     --muted-foreground: 220 10% 50%;
 
     /* Accent: Rich Gold */
-    --accent: 45 85% 55%; 
+    --accent: 45 85% 55%;
     --accent-foreground: 220 20% 10%;
 
     /* Luxury Gold for CTAs */
@@ -86,18 +87,28 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     /* Clean white background for premium feel */
     background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 0% 0%, hsla(160, 40%, 97%, 0.5) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(45, 85%, 96%, 0.5) 0px, transparent 50%);
+    background-attachment: fixed;
   }
-  
+
   /* Premium typography defaults */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply tracking-tight font-semibold;
   }
-  
+
   /* Smoother font rendering */
   html {
     -webkit-font-smoothing: antialiased;
@@ -110,59 +121,59 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   /* Premium glass effect */
   .glass {
     @apply bg-white/80 backdrop-blur-xl border border-white/20;
   }
-  
+
   .glass-dark {
     @apply bg-black/40 backdrop-blur-xl border border-white/10;
   }
-  
+
   /* Premium shadows */
   .shadow-premium {
-    box-shadow: 
+    box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.04),
       0 4px 8px rgba(0, 0, 0, 0.04),
       0 16px 32px rgba(0, 0, 0, 0.04);
   }
-  
+
   .shadow-premium-lg {
-    box-shadow: 
+    box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.02),
       0 8px 16px rgba(0, 0, 0, 0.04),
       0 24px 48px rgba(0, 0, 0, 0.06);
   }
-  
+
   .shadow-premium-hover {
-    box-shadow: 
+    box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.04),
       0 12px 24px rgba(0, 0, 0, 0.06),
       0 32px 64px rgba(0, 0, 0, 0.08);
   }
-  
+
   /* Premium gradient text */
   .text-gradient-premium {
     @apply bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent;
   }
-  
+
   /* Premium card hover */
   .card-hover-premium {
     @apply transition-all duration-300 ease-out;
   }
-  
+
   .card-hover-premium:hover {
     @apply -translate-y-1;
-    box-shadow: 
+    box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.04),
       0 16px 32px rgba(0, 0, 0, 0.08);
   }
-  
+
   /* Premium border gradient */
   .border-gradient {
     background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, hsl(158 64% 32%), hsl(162 63% 50%)) border-box;
+      linear-gradient(135deg, hsl(158 64% 32%), hsl(162 63% 50%)) border-box;
     border: 1px solid transparent;
   }
 }
@@ -172,21 +183,27 @@
   0% {
     transform: translate(0px, 0px) scale(1);
   }
+
   33% {
     transform: translate(30px, -50px) scale(1.1);
   }
+
   66% {
     transform: translate(-20px, 20px) scale(0.9);
   }
+
   100% {
     transform: translate(0px, 0px) scale(1);
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -196,6 +213,7 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -206,6 +224,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -221,7 +240,7 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -261,9 +280,12 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Premium focus states */
@@ -272,6 +294,8 @@
 }
 
 /* Premium input styling */
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   @apply outline-none ring-2 ring-emerald-500/20 border-emerald-500;
 }

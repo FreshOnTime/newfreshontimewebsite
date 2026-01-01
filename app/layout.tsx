@@ -10,7 +10,7 @@ import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import BottomNav from "@/components/layout/BottomNav";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import ReferralBanner from "@/components/ReferralBanner";
+// import ReferralBanner from "@/components/ReferralBanner";
 import FirstOrderPopup from "@/components/FirstOrderPopup";
 import RecentPurchasePopup from "@/components/RecentPurchasePopup";
 // import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled

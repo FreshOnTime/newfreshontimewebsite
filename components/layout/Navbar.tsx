@@ -105,10 +105,10 @@ export function Navbar() {
   return (
     <>
       {/* Spacer for fixed header (only on non-home pages) */}
-      {!isHome && <div className="h-32" />}
+      {!isHome && <div className="h-20" />}
 
       <div className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center">
-        <ReferralBanner />
+
 
         <header
           className={`w-full transition-all duration-500 ease-in-out ${scrolled || !isHome

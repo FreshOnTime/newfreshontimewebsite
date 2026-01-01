@@ -39,7 +39,7 @@ export default async function SubscriptionsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-white text-zinc-900">
+        <div className="min-h-screen bg-transparent text-zinc-900">
             {/* Editorial Hero - Real Imagery */}
             <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
@@ -70,7 +70,7 @@ export default async function SubscriptionsPage() {
             </section>
 
             {/* Plans Grid */}
-            <section className="py-24 bg-white relative">
+            <section className="py-24 bg-transparent relative">
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent" />
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-[1400px] mx-auto -mt-32 relative z-20">
@@ -139,7 +139,7 @@ export default async function SubscriptionsPage() {
             </section>
 
             {/* FAQ - Minimal */}
-            <section className="py-24 bg-white">
+            <section className="py-24 bg-transparent">
                 <div className="container mx-auto px-4 max-w-3xl">
                     <div className="text-center mb-16">
                         <h2 className="font-serif text-3xl md:text-4xl">Common Questions</h2>
