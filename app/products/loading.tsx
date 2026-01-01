@@ -1,45 +1,29 @@
-'use client';
-
-import { Loader2 } from 'lucide-react';
+import { ProductGridSkeleton } from "@/components/products/ProductCardSkeleton";
+import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 
 export default function Loading() {
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header Skeleton */}
-            <div className="bg-white border-b py-4">
-                <div className="container mx-auto px-4">
-                    <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-                </div>
-            </div>
+        <>
+            <PremiumPageHeader
+                title="All Products"
+                subtitle="Explore our curated selection of premium groceries, fresh from the source to your table."
+                count={0}
+                isLoading={true}
+            />
+            <div className="container mx-auto px-4 md:px-8 pb-24">
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                    {/* Filter Bar Skeleton */}
+                    <div className="w-full space-y-8">
+                        <div className="h-16 bg-zinc-100 rounded-xl animate-pulse" />
 
-            {/* Filters Skeleton */}
-            <div className="container mx-auto px-4 py-6">
-                <div className="flex gap-4 mb-6">
-                    <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse" />
-                    <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse" />
-                    <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse" />
-                </div>
+                        <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+                            <div className="h-4 w-32 bg-zinc-100 rounded animate-pulse" />
+                        </div>
 
-                {/* Loading Indicator */}
-                <div className="flex items-center justify-center py-8">
-                    <div className="flex items-center gap-3 text-emerald-600">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="font-medium">Loading products...</span>
+                        <ProductGridSkeleton count={12} />
                     </div>
                 </div>
-
-                {/* Products Grid Skeleton */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {Array.from({ length: 20 }).map((_, i) => (
-                        <div key={i} className="bg-white rounded-xl border border-gray-100 p-3">
-                            <div className="aspect-square bg-gray-100 rounded-lg animate-pulse mb-3" />
-                            <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse mb-2" />
-                            <div className="h-3 w-1/2 bg-gray-100 rounded animate-pulse mb-2" />
-                            <div className="h-5 w-2/3 bg-emerald-100 rounded animate-pulse" />
-                        </div>
-                    ))}
-                </div>
             </div>
-        </div>
+        </>
     );
 }

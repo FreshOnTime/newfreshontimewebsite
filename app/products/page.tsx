@@ -28,9 +28,28 @@ async function getProducts(query: string) {
     const maxPriceParam = urlParams.get('maxPrice');
     const inStockParam = urlParams.get('inStock');
     const sortParam = urlParams.get('sort');
+    const tagsParam = urlParams.get('tags'); // New: Tags support
 
     const filter: Record<string, unknown> = {};
     filter.archived = archivedParam ? archivedParam === 'true' : false;
+
+    // Tag filtering (supports comma separated)
+    if (tagsParam) {
+      const tags = tagsParam.split(',').filter(Boolean);
+      if (tags.length > 0) {
+        // Using $all to ensure product has ALL selected tags (stricter)
+        // Or use $in for ANY of the selected tags. Often for sidebar filters, OR is more common within a group, 
+        // but if we treat diet + origin as one tag list, it depends.
+        // Let's use $in for now as "Match any of these attributes" is friendlier for exploration.
+        // Actually, if I select "Vegan" AND "Local", I probably want both.
+        // But if I select "Local" OR "Imported", I want either.
+        // Since we pass them all as one 'tags' param, simple approach is $in.
+        // For precision, we might need separate params, but let's start with $in.
+        // Wait, the UI passes 'tags' as a single comma list.
+        filter.tags = { $in: tags.map(t => new RegExp(t, 'i')) };
+      }
+    }
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -200,64 +219,95 @@ async function getProducts(query: string) {
   }
 }
 
+// Helper to safely get string values from query params
+function getString(val: string | string[] | undefined): string | undefined {
+  if (Array.isArray(val)) return val[0];
+  return val;
+}
+
 export default async function ProductsIndex({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const spObj = await searchParams;
   // Normalize to query string
   const sp = new URLSearchParams();
-  const allowed = ['search', 'categoryId', 'supplierId', 'minPrice', 'maxPrice', 'inStock', 'sort', 'page', 'limit'];
+  const allowed = ['search', 'categoryId', 'supplierId', 'minPrice', 'maxPrice', 'inStock', 'sort', 'page', 'limit', 'tags'];
+
   for (const key of allowed) {
     const val = spObj[key];
     if (Array.isArray(val)) {
-      for (const v of val) if (v != null) sp.append(key, String(v));
+      // For tags or multi-value fields, join them if needed, or append multiple
+      // tags usually come as comma-separated in my implementation plan, let's treat as such
+      if (key === 'tags') {
+        sp.set(key, val.join(','));
+      } else {
+        for (const v of val) if (v != null) sp.append(key, String(v));
+      }
     } else if (val != null) {
       sp.set(key, String(val));
     }
   }
+
   const { products, pagination } = await getProducts(sp.toString());
   const start = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
   const end = pagination.total === 0 ? 0 : start + products.length - 1;
 
   return (
-    <>
-      <PremiumPageHeader
-        title="All Products"
-        subtitle="Explore our curated selection of premium groceries, fresh from the source to your table."
-        count={pagination.total}
-      />
-      <div className="container mx-auto px-4 md:px-8 pb-24">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* Sticky Filter Sidebar (Desktop) would go here if we separate it, 
-                 for now assuming ProductsFilterBar handles it or is a top bar. 
-                 Based on file name it seems like a bar. Let's keep it simple first. */}
+    <div className="min-h-screen bg-white">
+      {/* Premium Header */}
+      <div className="bg-zinc-950 text-white py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-zinc-900 to-zinc-950"></div>
 
-          <div className="w-full space-y-8">
-            <ProductsFilterBar />
-
-            {pagination.total > 0 && (
-              <div className="flex items-center justify-between text-sm text-zinc-500 border-b border-zinc-100 pb-4">
-                <span>Showing {start}-{end} of {pagination.total} products</span>
-                {/* Add sort dropdown here if distinct from filter bar later */}
-              </div>
-            )}
-
-            <ProductGrid products={products} />
-
-            {products.length > 0 && (
-              <div className="pt-12 border-t border-zinc-100">
-                <ProductsPagination
-                  page={pagination.page}
-                  limit={pagination.limit}
-                  total={pagination.total}
-                  currentCount={products.length}
-                  hasPrev={pagination.hasPrev}
-                  hasNext={pagination.hasNext}
-                  totalPages={pagination.totalPages}
-                />
-              </div>
-            )}
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-xl">
+            <span className="text-emerald-500 font-bold tracking-[0.3em] text-xs uppercase mb-6 block">
+              The Collection
+            </span>
+            <h1 className="text-5xl md:text-6xl font-serif font-medium mb-6 tracking-tight">Curated Harvests</h1>
+            <p className="text-xl text-zinc-400 font-light leading-relaxed">
+              Explore our selection of premium groceries, sourced directly from the world's finest producers.
+            </p>
           </div>
         </div>
       </div>
-    </>
+
+      <div className="container mx-auto px-4 md:px-8 py-16">
+
+        {/* Products Filter Bar - Horizontal */}
+        <div className="sticky top-0 z-20">
+          <ProductsFilterBar />
+        </div>
+
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100">
+            <span className="text-zinc-500 font-serif italic text-sm">
+              {pagination.total === 0 ? 'No items found' : `Showing ${start}-${end} of ${pagination.total} results`}
+            </span>
+          </div>
+
+          {products.length === 0 ? (
+            <div className="py-24 text-center border border-dashed border-zinc-200 rounded-lg">
+              <p className="text-zinc-400 font-serif text-lg italic mb-2">No products match your criteria.</p>
+              <a href="/products" className="text-xs font-bold uppercase tracking-widest text-emerald-600 hover:text-emerald-700">Clear all filters</a>
+            </div>
+          ) : (
+            <ProductGrid products={products} className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12" />
+          )}
+
+          {pagination.total > 0 && (
+            <div className="pt-16 mt-8 border-t border-zinc-100 flex justify-center">
+              <ProductsPagination
+                page={pagination.page}
+                limit={pagination.limit}
+                total={pagination.total}
+                currentCount={products.length}
+                hasPrev={pagination.hasPrev}
+                hasNext={pagination.hasNext}
+                totalPages={pagination.totalPages}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

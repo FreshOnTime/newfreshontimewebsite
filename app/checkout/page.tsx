@@ -323,23 +323,23 @@ ${deliveryTo}`;
   }
 
   return (
-    <div className="bg-gray-50/50 min-h-screen">
+    <div className="bg-zinc-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">Checkout</h1>
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900">Checkout</h1>
             {effectiveBagName && (
-              <p className="text-gray-600 mt-2 text-lg">
-                Ordering <span className="font-medium text-primary">{effectiveBagName}</span>
+              <p className="text-zinc-600 mt-2 text-lg">
+                Ordering <span className="font-medium text-emerald-700">{effectiveBagName}</span>
                 {typeof itemCount === 'number' && itemCount > 0 ? (
-                  <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                  <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                     {itemCount} item{itemCount > 1 ? 's' : ''}
                   </span>
                 ) : ''}
               </p>
             )}
           </div>
-          <Link href="/bags" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+          <Link href="/bags" className="text-sm font-medium text-emerald-700 hover:text-emerald-800 transition-colors flex items-center gap-1">
             Continue Shopping
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </Link>
@@ -350,20 +350,20 @@ ${deliveryTo}`;
           <div className="lg:col-span-7 space-y-8">
 
             {/* Order Items */}
-            <Card className="shadow-premium border-none ring-1 ring-black/5 overflow-hidden">
-              <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <Card className="shadow-sm border border-zinc-100 rounded-2xl overflow-hidden bg-white">
+              <div className="bg-white px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+                <h2 className="text-lg font-serif font-semibold text-zinc-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                   Order Items
                 </h2>
-                {effectiveBagName && !previewBag && <span className="text-sm text-gray-500 font-medium">{effectiveBagName}</span>}
+                {effectiveBagName && !previewBag && <span className="text-sm text-zinc-500 font-medium">{effectiveBagName}</span>}
                 {previewBag && <span className="text-sm text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Quick Order</span>}
               </div>
               <CardContent className="p-6">
                 <div className="space-y-6">
                   {effectiveItems.map((it, idx) => (
                     <div key={`${effectiveBagId || 'bag'}-${it.product.id}-${idx}`} className="flex gap-4 group">
-                      <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shadow-sm flex-shrink-0 relative group-hover:ring-2 group-hover:ring-primary/20 transition-all">
+                      <div className="w-20 h-20 bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100 flex-shrink-0 relative group-hover:border-emerald-500/30 transition-all">
                         {it.product.images?.[0]?.url ? (
                           <img src={it.product.images[0].url} alt={it.product.images[0].alt || it.product.name} className="w-full h-full object-cover" />
                         ) : (

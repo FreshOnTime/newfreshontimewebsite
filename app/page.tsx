@@ -13,16 +13,12 @@ import HeroSection from "@/components/home/HeroSection";
 import HomeCarousel from "@/components/home/HomeCarousel";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
 import BannerGrid from "@/components/home/BannerGrid";
-import FeaturesStrip from "@/components/home/FeaturesStrip";
 import InfiniteMarquee from "@/components/ui/infinite-marquee";
 import CategoryBento from "@/components/home/CategoryBento";
-import Testimonials from "@/components/home/Testimonials";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
+import PrivateClientCTA from "@/components/home/PrivateClientCTA";
 import NewsletterForm from "@/components/home/NewsletterForm";
 import TrustBadges from "@/components/home/TrustBadges";
-import WhyChooseUs from "@/components/home/WhyChooseUs";
-import SubscriptionPromo from "@/components/home/SubscriptionPromo";
-import LiveOrderCounter from "@/components/home/LiveOrderCounter";
 
 import dbConnect from "@/lib/database";
 
@@ -167,8 +163,7 @@ export default async function Home() {
       {/* Trust Badges */}
       <TrustBadges />
 
-      {/* Live Order Counter - Social Proof */}
-      <LiveOrderCounter />
+
 
       {/* Lifestyle Banners */}
       <BannerGrid />
@@ -233,23 +228,13 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Value Props Strip */}
-      <FeaturesStrip />
 
-      {/* Why Choose Us */}
-      <WhyChooseUs />
-
-      {/* Subscription Promo */}
-      <SubscriptionPromo />
-
-      {/* Testimonials */}
-      <Testimonials />
 
       {/* Guarantee CTA */}
       <GuaranteeCta />
 
-      {/* Newsletter Section - Client Island */}
-      <NewsletterForm />
+      {/* Private Client Services CTA */}
+      <PrivateClientCTA />
     </div>
   );
 }

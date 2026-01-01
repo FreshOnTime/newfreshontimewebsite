@@ -105,9 +105,9 @@ export function ProductCard({
       <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-sm border border-zinc-100/50 hover:shadow-premium transition-all duration-300">
 
         {/* Image Container - Square Aspect Ratio */}
-        <div className="aspect-square relative p-6 bg-zinc-50/30">
+        <div className="aspect-square relative p-6 bg-white overflow-hidden">
           <Link href={`/products/${sku}`} className="block h-full">
-            <div className="relative h-full w-full transform transition-transform duration-500 hover:scale-105">
+            <div className="relative h-full w-full transform transition-transform duration-700 ease-out hover:scale-105">
               <ProductImage src={imageUrl} alt={name} />
             </div>
           </Link>
@@ -117,27 +117,27 @@ export function ProductCard({
             size="icon"
             variant="ghost"
             className={cn(
-              "absolute top-4 right-4 h-10 w-10 rounded-full bg-white shadow-sm transition-all duration-300 z-10",
+              "absolute top-3 right-3 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-300 z-10 hover:bg-white",
               isWishlisted ? "text-red-500" : "text-zinc-400 hover:text-red-500"
             )}
             onClick={handleWishlistClick}
           >
-            <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
+            <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
           </Button>
 
           {/* Discount Badge */}
           {showDiscountBadge && (
-            <div className="absolute top-4 left-4 px-3 py-1 bg-zinc-900 text-white text-[10px] font-bold tracking-widest uppercase rounded-full">
-              Save {discountPercentage}%
+            <div className="absolute top-3 left-3 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold tracking-widest uppercase">
+              -{discountPercentage}%
             </div>
           )}
         </div>
 
         {/* Product Info - Left Aligned */}
-        <div className="p-5">
-          {/* Title - Bold Sans-Serif */}
+        <div className="p-5 pt-2">
+          {/* Title - Serif for Premium Feel */}
           <Link href={`/products/${sku}`} className="block group/title">
-            <h3 className="font-bold text-lg text-zinc-900 mb-2 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2">
+            <h3 className="font-serif text-lg font-medium text-zinc-900 mb-1 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2">
               {name}
             </h3>
           </Link>

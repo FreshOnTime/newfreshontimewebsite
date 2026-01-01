@@ -16,13 +16,14 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <div className="relative aspect-square overflow-hidden bg-zinc-50">
+    <div className="relative aspect-square md:aspect-[4/5] overflow-hidden bg-zinc-100">
       <Image
         src={src}
         alt={alt}
         fill
-        className="object-cover transition-transform duration-700 hover:scale-110"
-        sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 300px"
+        className="object-cover transition-transform duration-1000 ease-out hover:scale-105"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+        priority
       />
     </div>
   );
