@@ -3,7 +3,6 @@ import ProductGrid from "@/components/products/ProductGrid";
 // import { PageContainer } from "@/components/templates/PageContainer";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import ProductsFilterBar from "@/components/products/ProductsFilterBar";
-import ProductsSidebar from "@/components/products/ProductsSidebar";
 import ProductsPagination from "@/components/products/ProductsPagination";
 
 import connectDB from '@/lib/database';

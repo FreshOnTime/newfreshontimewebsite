@@ -114,6 +114,31 @@ async function getProduct(id: string): Promise<Product | null> {
 }
 
 // ... (keep generateMetadata exactly as is)
+// Enable SSG for top products to improve performance
+export async function generateStaticParams() {
+  try {
+    await connectDB();
+    const mongoose = await import('mongoose');
+    // Fetch top 50 active products for static generation
+    // Prioritize by newest or best sellers if available
+    const products = await EnhancedProduct.find({
+      'settings.archived': { $ne: true },
+      isPublished: true
+    })
+      .select('sku slug _id')
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+
+    return products.map((p: any) => ({
+      id: p.sku || p.slug || String(p._id),
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -131,29 +156,29 @@ export async function generateMetadata({
 
   const description = product.description
     ? product.description.slice(0, 160).replace(/\s+/g, ' ').trim() + (product.description.length > 160 ? '...' : '')
-    : `Experience the finest ${product.name}, exclusively at Fresh On Time. Premium ${product.category?.name || 'grocery'} delivery service in Colombo, Sri Lanka. Sourced for quality, delivered with care.`;
+    : `Discover ${product.name}, a premium selection from our curated artisan and fresh collection. Fresh On Time brings you the finest home-made and farm-fresh products in Colombo.`;
 
   const productUrl = `${SITE_URL}/products/${product.sku}`;
   const imageUrl = product.image?.url?.startsWith('http')
     ? product.image.url
     : `${SITE_URL}${product.image?.url || '/og-image.jpg'}`;
 
-  const title = `${product.name} | Premium Grocery Delivery Colombo | Fresh On Time`;
+  const title = `${product.name} | Artisan & Premium Grocery Delivery Colombo | Fresh On Time`;
 
   return {
     title,
     description,
     keywords: [
       product.name.toLowerCase(),
-      product.category?.name?.toLowerCase() || 'luxury groceries',
+      product.category?.name?.toLowerCase() || 'artisan groceries',
+      'home made products sri lanka',
+      'artisan food delivery colombo',
+      'small batch local suppliers',
       'fresh pick premium',
       'grocery delivery colombo',
       'luxury food sri lanka',
-      'imported fruits colombo',
-      'fresh vegetables delivery',
       'high end supermarket',
       'colombo 7 grocery',
-      'cinnamon gardens delivery',
       'organic produce sri lanka'
     ].filter(Boolean).join(', '),
     alternates: {

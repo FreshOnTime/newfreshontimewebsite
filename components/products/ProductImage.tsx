@@ -22,7 +22,7 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         className="object-cover transition-transform duration-1000 ease-out hover:scale-105"
-        sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 800px"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
         priority
       />
     </div>
