@@ -13,11 +13,14 @@ export default function HeroSection() {
                     src="/bgs/landing-page-bg-1.jpg"
                     alt="Fresh vegetables background"
                     fill
-                    className="object-cover opacity-80"
+                    className="object-cover opacity-60 scale-105 animate-subtle-zoom"
                     priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90"></div>
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
+                {/* Cinematic Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black/90"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-70"></div>
+                {/* Noise Texture */}
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.15] mix-blend-overlay"></div>
             </div>
 
             <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10 text-center">

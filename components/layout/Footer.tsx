@@ -7,151 +7,106 @@ import { Facebook, Twitter, Instagram, Mail, MapPin } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/fresh-pick.svg"
-                alt="Fresh Pick"
-                width={180}
-                height={180}
-                className="text-white"
-              />
-
-            </div>
-            <p className="text-gray-400 text-sm">
-              The freshest groceries delivered to your door. Quality you can trust,
-              convenience you&apos;ll love.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-            </div>
+    <footer className="bg-zinc-950 text-white border-t border-white/5">
+      {/* Newsletter Section */}
+      <div className="border-b border-white/5">
+        <div className="container mx-auto px-6 md:px-12 py-16 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-lg text-center md:text-left">
+            <h3 className="font-serif text-3xl md:text-4xl italic mb-3 text-white">Join the Inner Circle</h3>
+            <p className="text-zinc-400 font-light">Receive exclusive invitations to seasonal harvests and private reserves.</p>
           </div>
-
-          {/* Quick Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/about" className="text-gray-400 hover:text-accent transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/products" className="text-gray-400 hover:text-accent transition-colors">
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link href="/subscriptions" className="text-gray-400 hover:text-accent transition-colors">
-                  Subscriptions
-                </Link>
-              </li>
-              <li>
-                <Link href="/meal-kits" className="text-gray-400 hover:text-accent transition-colors">
-                  Meal Kits
-                </Link>
-              </li>
-              <li>
-                <Link href="/farm-to-table" className="text-gray-400 hover:text-accent transition-colors">
-                  Farm-to-Table
-                </Link>
-              </li>
-              <li>
-                <Link href="/diaspora" className="text-gray-400 hover:text-accent transition-colors">
-                  Send to Sri Lanka
-                </Link>
-              </li>
-              <li>
-                <Link href="/b2b" className="text-gray-400 hover:text-accent transition-colors">
-                  For Restaurants
-                </Link>
-              </li>
-              <li>
-                <Link href="/help" className="text-gray-400 hover:text-accent transition-colors">
-                  Help Center
-                </Link>
-              </li>
-            </ul>
+          <div className="flex w-full md:w-auto gap-4">
+            <input
+              type="email"
+              placeholder="Email Address"
+              className="bg-white/5 border border-white/10 rounded-full px-6 py-4 w-full md:w-80 text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-all font-light"
+            />
+            <button className="bg-white text-zinc-950 px-8 py-4 rounded-full font-medium tracking-wide hover:bg-amber-200 transition-colors">
+              Subscribe
+            </button>
           </div>
+        </div>
+      </div>
 
-          {/* Categories */}
-          <div>
-            <h3 className="font-semibold mb-4">Categories</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/categories/fresh-produce" className="text-gray-400 hover:text-accent transition-colors">
-                  Fresh Produce
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/dairy-eggs" className="text-gray-400 hover:text-accent transition-colors">
-                  Dairy & Eggs
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/meat-seafood" className="text-gray-400 hover:text-accent transition-colors">
-                  Meat & Seafood
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/pantry-staples" className="text-gray-400 hover:text-accent transition-colors">
-                  Pantry Staples
-                </Link>
-              </li>
-              <li>
-                <Link href="/categories/bakery" className="text-gray-400 hover:text-accent transition-colors">
-                  Bakery
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 className="font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center text-gray-400">
-                <Mail className="w-4 h-4 mr-2" />
-                <a href="mailto:hello@freshpick.lk" className="hover:text-accent transition-colors">
-                  hello@freshpick.lk
-                </a>
-              </li>
-              <li className="flex items-start text-gray-400">
-                <MapPin className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
-                <span>
-                  Headquarters: Colombo, Sri Lanka
+      <div className="container mx-auto px-6 md:px-12 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-24">
+          {/* Brand Column */}
+          <div className="md:col-span-4 space-y-8">
+            <Link href="/" className="inline-block">
+              <div className="flex flex-col">
+                <span className="font-serif text-3xl font-bold tracking-tight text-white">
+                  Fresh<span className="italic text-emerald-500">Pick</span>
                 </span>
-              </li>
-            </ul>
+                <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-emerald-900/60 text-zinc-500">
+                  Colombo
+                </span>
+              </div>
+            </Link>
+            <p className="text-zinc-400 font-light leading-relaxed">
+              Curating the finest harvest for those who appreciate the extraordinary.
+              Elevating the daily ritual of nourishment into an art form.
+            </p>
+            <div className="flex space-x-4 pt-4">
+              {[Facebook, Twitter, Instagram].map((Icon, i) => (
+                <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 hover:bg-emerald-900/30 hover:text-emerald-400 transition-all duration-300 border border-white/5 hover:border-emerald-500/30">
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Links Columns */}
+          <div className="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-12">
+            <div>
+              <h4 className="font-serif text-lg text-white mb-8 italic">Collections</h4>
+              <ul className="space-y-4">
+                {['Fresh Produce', 'Dairy & Eggs', 'Meat & Seafood', 'Pantry Staples', 'Bakery', 'Beverages'].map((item) => (
+                  <li key={item}>
+                    <Link href="/products" className="text-zinc-500 hover:text-emerald-400 transition-colors text-sm tracking-wide font-light flex items-center group">
+                      <span className="w-0 group-hover:w-2 h-[1px] bg-emerald-500 mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-serif text-lg text-white mb-8 italic">World of Fresh</h4>
+              <ul className="space-y-4">
+                {['Our Story', 'The Growers', 'Sustainability', 'Private Membership', 'Concierge Services', 'Journal'].map((item) => (
+                  <li key={item}>
+                    <Link href="#" className="text-zinc-500 hover:text-emerald-400 transition-colors text-sm tracking-wide font-light flex items-center group">
+                      <span className="w-0 group-hover:w-2 h-[1px] bg-emerald-500 mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-serif text-lg text-white mb-8 italic">Client Care</h4>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3 text-zinc-500 font-light text-sm">
+                  <MapPin className="w-4 h-4 mt-1 shrink-0 text-emerald-600" />
+                  <span>Available throughout<br />Greater Colombo</span>
+                </li>
+                <li className="flex items-center gap-3 text-zinc-500 font-light text-sm">
+                  <Mail className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <a href="mailto:concierge@freshpick.lk" className="hover:text-white transition-colors">concierge@freshpick.lk</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <p>&copy; 2025 Fresh Pick. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/privacy" className="hover:text-accent transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="hover:text-accent transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="/refund" className="hover:text-accent transition-colors">
-                Refund Policy
-              </Link>
-            </div>
+        <div className="border-t border-white/5 mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-zinc-600 uppercase tracking-widest font-medium">
+          <p>&copy; 2025 Fresh Pick. All rights reserved.</p>
+          <div className="flex space-x-8">
+            <Link href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-zinc-400 transition-colors">Terms</Link>
+            <Link href="/accessibility" className="hover:text-zinc-400 transition-colors">Accessibility</Link>
           </div>
         </div>
       </div>

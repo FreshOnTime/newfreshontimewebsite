@@ -109,51 +109,61 @@ export function ProductCard({
   } as unknown as Product);
 
   return (
-    <Card className="w-full max-w-[280px] overflow-hidden border-0 bg-white rounded-3xl transition-all duration-300 ease-out hover:shadow-xl group ring-1 ring-zinc-100">
-      <div className="relative overflow-hidden bg-zinc-50">
-        <div className="aspect-square relative p-6">
+    <div className="w-full max-w-[300px] group relative">
+      <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-premium transition-all duration-500 hover:shadow-premium-hover hover:-translate-y-1">
+        {/* Image Container */}
+        <div className="aspect-[3/4] relative p-8 bg-gradient-to-br from-zinc-50 to-white/50">
           <Link href={`/products/${sku}`} className="block h-full">
-            <div className="relative h-full transform transition-transform duration-700 ease-out group-hover:scale-110">
+            <div className="relative h-full w-full transform transition-transform duration-700 ease-out group-hover:scale-105">
               <ProductImage src={imageUrl} alt={name} />
             </div>
           </Link>
+
+          {/* Wishlist Button - Always visible but subtle */}
           <Button
             size="icon"
             variant="ghost"
-            className={`absolute top-4 right-4 h-9 w-9 rounded-full transition-all duration-300 z-10 ${isWishlisted
-              ? "bg-red-50 text-red-500 shadow-sm"
-              : "bg-white/50 text-zinc-400 hover:bg-white hover:text-red-500 backdrop-blur-sm"
+            className={`absolute top-4 right-4 h-10 w-10 rounded-full transition-all duration-300 z-10 ${isWishlisted
+              ? "bg-red-50 text-red-500"
+              : "bg-white/80 text-zinc-400 hover:text-red-500 hover:bg-white backdrop-blur-md opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0"
               }`}
             onClick={handleWishlistClick}
           >
             <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
           </Button>
-        </div>
-        {showDiscountBadge && (
-          <Badge className="absolute left-4 top-4 font-bold text-[10px] tracking-wider uppercase bg-zinc-900/90 text-white backdrop-blur-sm px-2.5 py-1 rounded-sm">
-            -{discountPercentage}%
-          </Badge>
-        )}
-      </div>
-      <CardContent className="p-5">
-        <Link href={`/products/${sku}`} className="block">
-          <h3 className="text-zinc-900 font-serif text-lg leading-tight min-h-[3rem] group-hover:text-emerald-700 transition-colors duration-300 line-clamp-2">
-            {name}
-          </h3>
-        </Link>
-        <div className="mt-4 space-y-3">
-          <PriceDisplay
-            price={pricePerBaseQuantityWithDiscount}
-            originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
-            isDiscreteItem={isDiscreteItem}
-            baseMeasurementQuantity={baseMeasurementQuantity}
-            measurementType={measurementType}
-          />
 
-          <AddToBagButton product={buildProductForBag()} quantity={1} />
+          {/* Discount Badge */}
+          {showDiscountBadge && (
+            <div className="absolute top-4 left-4 px-3 py-1 bg-zinc-900 text-white text-[10px] font-bold tracking-widest uppercase rounded-full">
+              Save {discountPercentage}%
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Product Info */}
+        <div className="p-6">
+          <Link href={`/products/${sku}`} className="block group/title">
+            <h3 className="font-serif text-xl text-zinc-900 mb-2 leading-tight group-hover/title:text-emerald-800 transition-colors line-clamp-2 min-h-[3rem]">
+              {name}
+            </h3>
+          </Link>
+
+          <div className="flex flex-col gap-4 mt-2">
+            <PriceDisplay
+              price={pricePerBaseQuantityWithDiscount}
+              originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
+              isDiscreteItem={isDiscreteItem}
+              baseMeasurementQuantity={baseMeasurementQuantity}
+              measurementType={measurementType}
+            />
+
+            <div className="pt-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+              <AddToBagButton product={buildProductForBag()} quantity={1} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

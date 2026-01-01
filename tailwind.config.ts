@@ -63,6 +63,10 @@ export default {
     },
     fontFamily: {
       default: ["var(--font-default)"],
+      sans: ["var(--font-sans)", "sans-serif"],
+      serif: ["var(--font-heading)", "serif"],
+      accent: ["var(--font-accent)", "serif"],
+      heading: ["var(--font-heading)", "serif"],
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],

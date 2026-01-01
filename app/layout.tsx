@@ -15,9 +15,23 @@ import FirstOrderPopup from "@/components/FirstOrderPopup";
 import RecentPurchasePopup from "@/components/RecentPurchasePopup";
 // import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled
 
-const defaultFont = Inter({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-default",
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-accent",
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -90,8 +104,9 @@ export default function RootLayout({
       <BagProvider>
         <WishlistProvider>
           <html lang="en">
-            <body className={`${defaultFont.className} antialiased pb-16 md:pb-0`}>
-              <ReferralBanner />
+            <body
+              className={`${inter.variable} ${playfair.variable} ${cormorant.variable} min-h-screen bg-background font-sans antialiased`}
+            >        <ReferralBanner />
               <AdminChromeGuard>{children}</AdminChromeGuard>
               <BottomNav />
               <WhatsAppButton />
