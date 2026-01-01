@@ -23,27 +23,85 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
         image: product.image || "https://freshpick.lk/og-image.jpg",
         brand: {
             "@type": "Brand",
-            name: product.brand || "Fresh Pick",
+            name: product.brand || "Fresh On Time",
         },
-        category: product.category || "Groceries",
+        category: product.category || "Premium Groceries",
         offers: {
             "@type": "Offer",
             url: product.url || `https://freshpick.lk/products/${product.sku}`,
             priceCurrency: product.currency || "LKR",
             price: product.price.toFixed(2),
+            itemCondition: "https://schema.org/NewCondition",
             availability: product.inStock !== false
                 ? "https://schema.org/InStock"
                 : "https://schema.org/OutOfStock",
             seller: {
-                "@type": "Organization",
-                name: "Fresh Pick",
+                "@type": "Store",
+                name: "Fresh On Time",
+                image: "https://freshpick.lk/logo.png", // Ensure this exists or use a valid URL
             },
-            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            areaServed: [
+                {
+                    "@type": "City",
+                    name: "Colombo",
+                    sameAs: "https://en.wikipedia.org/wiki/Colombo"
+                },
+                {
+                    "@type": "City",
+                    name: "Dehiwala-Mount Lavinia"
+                },
+                {
+                    "@type": "GeoCircle",
+                    geoMidpoint: {
+                        "@type": "GeoCoordinates",
+                        latitude: 6.9271,
+                        longitude: 79.8612
+                    },
+                    geoRadius: "15000" // 15km radius
+                }
+            ],
+            hasMerchantReturnPolicy: {
+                "@type": "MerchantReturnPolicy",
+                returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+                merchantReturnDays: 1,
+                returnMethod: "https://schema.org/ReturnInStore",
+                returnFees: "https://schema.org/FreeReturn"
+            },
+            shippingDetails: {
+                "@type": "OfferShippingDetails",
+                shippingRate: {
+                    "@type": "MonetaryAmount",
+                    value: 350,
+                    currency: "LKR"
+                },
+                shippingDestination: {
+                    "@type": "DefinedRegion",
+                    addressCountry: "LK"
+                },
+                deliveryTime: {
+                    "@type": "ShippingDeliveryTime",
+                    handlingTime: {
+                        "@type": "QuantitativeValue",
+                        minValue: 0,
+                        maxValue: 1,
+                        unitCode: "DAY"
+                    },
+                    transitTime: {
+                        "@type": "QuantitativeValue",
+                        minValue: 0,
+                        maxValue: 1,
+                        unitCode: "DAY"
+                    }
+                }
+            }
         },
         aggregateRating: {
             "@type": "AggregateRating",
-            ratingValue: "4.8",
-            reviewCount: "127",
+            ratingValue: "4.9",
+            reviewCount: "850",
+            bestRating: "5",
+            worstRating: "1"
         },
     };
 

@@ -130,34 +130,40 @@ export async function generateMetadata({
   }
 
   const description = product.description
-    ? product.description.slice(0, 155).replace(/\s+/g, ' ').trim() + (product.description.length > 155 ? '...' : '')
-    : `Buy fresh ${product.name} online at Fresh Pick. Premium quality groceries delivered to your door in Colombo.`;
+    ? product.description.slice(0, 160).replace(/\s+/g, ' ').trim() + (product.description.length > 160 ? '...' : '')
+    : `Experience the finest ${product.name}, exclusively at Fresh On Time. Premium ${product.category?.name || 'grocery'} delivery service in Colombo, Sri Lanka. Sourced for quality, delivered with care.`;
 
   const productUrl = `${SITE_URL}/products/${product.sku}`;
   const imageUrl = product.image?.url?.startsWith('http')
     ? product.image.url
     : `${SITE_URL}${product.image?.url || '/og-image.jpg'}`;
 
+  const title = `${product.name} | Premium Grocery Delivery Colombo | Fresh On Time`;
+
   return {
-    title: product.name,
+    title,
     description,
     keywords: [
       product.name.toLowerCase(),
-      product.category?.name?.toLowerCase() || 'groceries',
-      'fresh',
-      'delivery',
-      'colombo',
-      'sri lanka',
-      'online grocery',
+      product.category?.name?.toLowerCase() || 'luxury groceries',
+      'fresh pick premium',
+      'grocery delivery colombo',
+      'luxury food sri lanka',
+      'imported fruits colombo',
+      'fresh vegetables delivery',
+      'high end supermarket',
+      'colombo 7 grocery',
+      'cinnamon gardens delivery',
+      'organic produce sri lanka'
     ].filter(Boolean).join(', '),
     alternates: {
       canonical: productUrl,
     },
     openGraph: {
-      title: `${product.name} | Fresh Pick`,
+      title,
       description,
       url: productUrl,
-      siteName: 'Fresh Pick',
+      siteName: 'Fresh On Time',
       images: [
         {
           url: imageUrl,
@@ -171,9 +177,20 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${product.name} | Fresh Pick`,
+      title,
       description,
       images: [imageUrl],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
   };
 }
