@@ -12,7 +12,17 @@ interface HomemadeContentProps {
 
 export default function HomemadeContent({ products }: HomemadeContentProps) {
     return (
-        <div className="relative bg-white text-zinc-900 selection:bg-amber-100 selection:text-amber-900 overflow-clip">
+        <div className="relative bg-zinc-900 text-zinc-100 selection:bg-amber-900 selection:text-amber-100 overflow-clip">
+            {/* Cinematic Grain Overlay */}
+            <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.03] mix-blend-overlay">
+                <svg className="h-full w-full">
+                    <filter id="noise">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+                    </filter>
+                    <rect width="100%" height="100%" filter="url(#noise)" />
+                </svg>
+            </div>
+
             {/* Hero Section */}
             <HeroSection />
 
@@ -38,31 +48,31 @@ function HeroSection() {
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
     return (
-        <section ref={ref} className="relative h-[70vh] flex items-center justify-center overflow-hidden z-10 bg-zinc-950">
+        <section ref={ref} className="relative h-[85vh] flex items-center justify-center overflow-hidden z-10 bg-zinc-950">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <motion.div style={{ y, opacity }} className="absolute inset-0">
-                    {/* Using a placeholder or existing image that fits the 'homemade' vibe */}
                     <Image
                         src="https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=2670&auto=format&fit=crop"
                         alt="Handcrafted Background"
                         fill
-                        className="object-cover opacity-50 grayscale"
+                        className="object-cover opacity-60 grayscale-[0.8]"
                         priority
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/80 via-zinc-950/60 to-zinc-950" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/20 to-zinc-950" />
                 </motion.div>
             </div>
 
             {/* Content */}
             <div className="container mx-auto px-4 relative z-10 h-full flex flex-col justify-center items-center text-center">
-                <div className="space-y-8 max-w-4xl">
+                <div className="space-y-10 max-w-5xl">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                         className="inline-block"
                     >
-                        <span className="inline-flex items-center gap-3 border-y border-amber-500/30 py-2 px-4 text-amber-500 text-xs md:text-sm tracking-[0.3em] uppercase font-bold">
+                        <span className="inline-flex items-center gap-3 border-y border-amber-500/30 py-3 px-6 text-amber-500 text-xs md:text-sm tracking-[0.4em] uppercase font-bold">
                             Curated Excellence
                         </span>
                     </motion.div>
@@ -70,21 +80,20 @@ function HeroSection() {
                     <motion.h1
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: "circOut" }}
-                        className="font-serif text-5xl md:text-7xl tracking-tight text-white leading-none"
+                        transition={{ duration: 1.2, ease: "circOut", delay: 0.2 }}
+                        className="font-serif text-6xl md:text-8xl tracking-tight text-white leading-[0.9]"
                     >
                         Homemade & <br />
-                        <span className="text-amber-200 italic">Handcrafted.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 italic pr-2">Handcrafted.</span>
                     </motion.h1>
 
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.3 }}
-                        className="text-lg md:text-xl font-light text-zinc-300 max-w-2xl mx-auto leading-relaxed"
+                        transition={{ duration: 1, delay: 0.6 }}
+                        className="text-lg md:text-2xl font-light text-zinc-300 max-w-3xl mx-auto leading-relaxed"
                     >
-                        Discover a curated collection of premium domestic produce from small entrepreneurs.
-                        Each item is a testament to passion, quality, and the art of creation.
+                        A tribute to the artisans. Discover a curated collection of premium domestic produce from small entrepreneurs, where every item tells a story of passion.
                     </motion.p>
                 </div>
             </div>
@@ -94,32 +103,25 @@ function HeroSection() {
 
 function PhilosophySection() {
     return (
-        <section className="relative z-20 py-24 container mx-auto px-4 bg-zinc-50 border-b border-zinc-200">
+        <section className="relative z-20 py-24 container mx-auto px-4 border-t border-white/5">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-20 text-center md:text-left">
-                    <span className="text-emerald-900 text-xs font-bold tracking-[0.2em] uppercase mb-6 block">The Craftsmen</span>
-                    <h2 className="font-serif text-3xl md:text-5xl text-zinc-900 leading-[1.2] max-w-4xl">
-                        Supporting the finest local artisans and their dedication to traditional methods.
-                    </h2>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-12">
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold tracking-wide uppercase text-zinc-900 border-t border-amber-900/10 pt-4">Authentic Origins</h3>
-                        <p className="text-zinc-600 font-light leading-relaxed">
-                            Sourced directly from home kitchens and small farms that prioritize flavor over mass production.
+                <div className="grid md:grid-cols-3 gap-12 text-center md:text-left">
+                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
+                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Authentic Origins</h3>
+                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
+                            Sourced directly from home kitchens. No factories. No assembly lines. Just pure, unadulterated craft.
                         </p>
                     </div>
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold tracking-wide uppercase text-zinc-900 border-t border-amber-900/10 pt-4">Small Batch</h3>
-                        <p className="text-zinc-600 font-light leading-relaxed">
-                            Limited quantities ensure meticulous attention to detail and superior quality control in every item.
+                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
+                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Small Batch</h3>
+                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
+                            Limited quantities ensure meticulous attention to detail. When it's gone, it's gone until the next harvest.
                         </p>
                     </div>
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold tracking-wide uppercase text-zinc-900 border-t border-amber-900/10 pt-4">Community Growth</h3>
-                        <p className="text-zinc-600 font-light leading-relaxed">
-                            Empowering local entrepreneurs by connecting their exceptional products with discerning customers.
+                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
+                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Community First</h3>
+                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
+                            Every purchase directly supports a local entrepreneur, fueling the domestic economy from the ground up.
                         </p>
                     </div>
                 </div>
@@ -130,23 +132,29 @@ function PhilosophySection() {
 
 function ProductDisplaySection({ products }: { products: Product[] }) {
     return (
-        <section className="relative bg-white z-20 py-24 min-h-[50vh]">
+        <section className="relative bg-zinc-950 z-20 py-32 min-h-[50vh]">
             <div className="container mx-auto px-4">
-                <div className="flex items-center justify-between mb-12">
-                    <h2 className="text-3xl font-serif text-emerald-950">
-                        Current Selections
-                    </h2>
-                    <span className="text-sm text-zinc-500 font-medium tracking-widest uppercase">
-                        {products.length} {products.length === 1 ? 'Item' : 'Items'} Found
+                <div className="flex items-end justify-between mb-20 border-b border-white/10 pb-8">
+                    <div>
+                        <span className="text-amber-500 text-xs font-bold tracking-[0.3em] uppercase mb-4 block">The Collection</span>
+                        <h2 className="text-4xl md:text-5xl font-serif text-white">
+                            Limited Releases
+                        </h2>
+                    </div>
+                    <span className="hidden md:block text-sm text-zinc-500 font-medium tracking-widest uppercase pb-2">
+                        {products.length} {products.length === 1 ? 'Masterpiece' : 'Masterpieces'} Available
                     </span>
                 </div>
 
                 <ProductGrid products={products} />
 
                 {products.length === 0 && (
-                    <div className="text-center py-20 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
-                        <p className="text-xl text-zinc-400 font-serif mb-2">Curating Excellence...</p>
-                        <p className="text-zinc-500">We are currently selecting the finest homemade products for you.</p>
+                    <div className="flex flex-col items-center justify-center py-32 bg-white/5 border border-white/5 border-dashed">
+                        <div className="w-16 h-16 mb-6 rounded-full bg-white/5 flex items-center justify-center">
+                            <span className="text-2xl">✨</span>
+                        </div>
+                        <p className="text-2xl text-zinc-300 font-serif mb-3">Curating Excellence...</p>
+                        <p className="text-zinc-500 font-light max-w-md text-center">We are currently selecting the finest homemade products for you. Check back soon for our latest drops.</p>
                     </div>
                 )}
             </div>
