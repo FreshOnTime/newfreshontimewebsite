@@ -74,11 +74,18 @@ export function Footer() {
             <div>
               <h4 className="font-serif text-lg text-white mb-8 italic">World of Fresh</h4>
               <ul className="space-y-4">
-                {['Our Story', 'The Growers', 'Sustainability', 'Private Membership', 'Concierge Services', 'Journal'].map((item) => (
-                  <li key={item}>
-                    <Link href="#" className="text-zinc-500 hover:text-emerald-400 transition-colors text-sm tracking-wide font-light flex items-center group">
+                {[
+                  { name: 'Our Story', href: '/about' },
+                  { name: 'The Growers', href: '/about' },
+                  { name: 'Sustainability', href: '/about' },
+                  { name: 'Private Membership', href: '/subscriptions' },
+                  { name: 'Concierge Services', href: '/contact' },
+                  { name: 'Journal', href: '/blog' },
+                ].map((item) => (
+                  <li key={item.name}>
+                    <Link href={item.href} className="text-zinc-500 hover:text-emerald-400 transition-colors text-sm tracking-wide font-light flex items-center group">
                       <span className="w-0 group-hover:w-2 h-[1px] bg-emerald-500 mr-0 group-hover:mr-2 transition-all duration-300"></span>
-                      {item}
+                      {item.name}
                     </Link>
                   </li>
                 ))}
