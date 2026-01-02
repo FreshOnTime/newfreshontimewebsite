@@ -133,9 +133,13 @@ export function Navbar() {
                 </Link>
 
                 {/* Desktop Navigation - Minimal & Elegant */}
-                <nav className="hidden lg:flex items-center gap-8">
+                <nav className="hidden lg:flex items-center gap-5">
                   <Link href="/products" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
                     Shop
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
+                  </Link>
+                  <Link href="/homemade" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                    Homemade
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
                   <div className="relative group">
@@ -183,8 +187,8 @@ export function Navbar() {
                 {/* Expandable Search */}
                 <div className="hidden md:flex items-center">
                   <div className={`relative flex items-center rounded-full px-4 py-2.5 transition-all duration-300 focus-within:ring-1 w-[250px] focus-within:w-[320px] ${scrolled || !isHome
-                      ? "bg-zinc-100 focus-within:bg-white focus-within:ring-zinc-200"
-                      : "bg-white/10 backdrop-blur-md border border-white/20 focus-within:bg-white/20 focus-within:border-white/40 focus-within:ring-white/0"
+                    ? "bg-zinc-100 focus-within:bg-white focus-within:ring-zinc-200"
+                    : "bg-white/10 backdrop-blur-md border border-white/20 focus-within:bg-white/20 focus-within:border-white/40 focus-within:ring-white/0"
                     }`}>
                     <Search className={`w-4 h-4 flex-shrink-0 transition-colors ${scrolled || !isHome ? "text-zinc-400" : "text-white/80"
                       }`} />
@@ -192,8 +196,8 @@ export function Navbar() {
                       type="text"
                       placeholder="Search for perfection..."
                       className={`bg-transparent border-none outline-none text-sm ml-3 w-full font-light transition-colors ${scrolled || !isHome
-                          ? "text-zinc-900 placeholder:text-zinc-400"
-                          : "text-white placeholder:text-white/70"
+                        ? "text-zinc-900 placeholder:text-zinc-400"
+                        : "text-white placeholder:text-white/70"
                         }`}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -243,8 +247,8 @@ export function Navbar() {
                 {/* Cart */}
                 <Link href="/bags" className="relative group">
                   <div className={`p-2.5 rounded-full transition-all duration-300 ${isHome && !scrolled
-                      ? "bg-white/10 hover:bg-white/20 text-white"
-                      : "bg-zinc-100 hover:bg-emerald-50 text-zinc-900 hover:text-emerald-700"
+                    ? "bg-white/10 hover:bg-white/20 text-white"
+                    : "bg-zinc-100 hover:bg-emerald-50 text-zinc-900 hover:text-emerald-700"
                     }`}>
                     <ShoppingBag className="w-5 h-5" />
                     {bagCount > 0 && (
@@ -273,6 +277,7 @@ export function Navbar() {
         <div className="fixed inset-0 z-40 bg-white/95 backdrop-blur-xl pt-24 px-6 animate-in fade-in slide-in-from-top-10 duration-300">
           <nav className="flex flex-col gap-6 text-center">
             <Link href="/products" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Shop</Link>
+            <Link href="/homemade" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Homemade</Link>
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
             <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
             <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Business</Link>
