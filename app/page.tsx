@@ -27,11 +27,11 @@ import dbConnect from "@/lib/database";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Fresh Pick | #1 Premium Online Grocery Delivery Sri Lanka",
-  description: "Shop the finest fresh produce, meats, and pantry essentials in Sri Lanka. Same-day grocery delivery within Colombo & suburbs. Experience the 'Fresh Pick' difference today.",
+  title: "Fresh Pick | Fresh Products & Recurring Orders - #1 in Sri Lanka",
+  description: "The best place for fresh products and recurring orders in Sri Lanka. Get premium fresh produce delivered to your door with flexible weekly schedules. Same-day delivery available.",
   openGraph: {
-    title: "Fresh Pick | #1 Premium Online Grocery Store Sri Lanka",
-    description: "Your premium online grocery store in Colombo. Freshness guaranteed. Same-day delivery available.",
+    title: "Fresh Pick | Fresh Products & Recurring Orders Sri Lanka",
+    description: "Your premium online grocery store in Colombo. Best fresh products and recurring grocery orders.",
     type: "website",
     locale: "en_LK",
     url: "https://freshpick.lk",

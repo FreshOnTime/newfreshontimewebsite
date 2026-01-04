@@ -9,8 +9,8 @@ import Link from 'next/link';
 import { defaultSubscriptionPlans } from '@/lib/data/subscriptionPlans';
 
 export const metadata: Metadata = {
-    title: 'Subscription Boxes | Fresh Pick',
-    description: 'Subscribe to curated boxes of fresh produce delivered weekly. Save time and money with our subscription service.',
+    title: 'Recurring Orders & Subscription Boxes | Fresh Pick',
+    description: 'Set up recurring orders for fresh products. Subscribe to curated boxes of fresh produce delivered weekly. Automate your grocery shopping with Fresh Pick.',
 };
 
 // Force dynamic rendering

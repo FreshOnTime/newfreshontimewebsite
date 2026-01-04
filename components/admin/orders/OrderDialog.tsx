@@ -13,13 +13,21 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
+
 const schema = z.object({
-  status: z.enum(['pending','confirmed','processing','shipped','delivered','cancelled','refunded']),
-  paymentStatus: z.enum(['pending','paid','failed','refunded']),
+  status: z.enum(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']),
+  paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']),
   trackingNumber: z.string().optional(),
   notes: z.string().max(1000).optional(),
-  scheduleStatus: z.enum(['active','paused','ended']).optional(),
+  scheduleStatus: z.enum(['active', 'paused', 'ended']).optional(),
   nextDeliveryAt: z.string().optional(),
+  isRecurring: z.boolean().optional(),
+  recurrence: z.object({
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    daysOfWeek: z.array(z.number()).optional(),
+    notes: z.string().optional(),
+  }).optional(),
   shippingAddress: z.object({
     name: z.string().optional(),
     street: z.string().optional(),
@@ -41,14 +49,48 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface Order { _id?: string; status: FormData['status']; paymentStatus: FormData['paymentStatus']; trackingNumber?: string; notes?: string; orderNumber?: string; total?: number; isRecurring?: boolean; scheduleStatus?: 'active'|'paused'|'ended'; nextDeliveryAt?: string; bagId?: string; bagName?: string; shipping?: number; tax?: number; discount?: number; items?: Array<{ productId?: string; sku?: string; name?: string; qty: number; price: number; total?: number }>; shippingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; phone?: string; }; billingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; }; recurrence?: { startDate?: string; endDate?: string; daysOfWeek?: number[]; includeDates?: string[]; excludeDates?: string[]; selectedDates?: string[]; notes?: string; }; }
+interface Order {
+  _id?: string;
+  status: FormData['status'];
+  paymentStatus: FormData['paymentStatus'];
+  trackingNumber?: string;
+  notes?: string;
+  orderNumber?: string;
+  total?: number;
+  isRecurring?: boolean;
+  scheduleStatus?: 'active' | 'paused' | 'ended';
+  nextDeliveryAt?: string;
+  bagId?: string;
+  bagName?: string;
+  shipping?: number;
+  tax?: number;
+  discount?: number;
+  items?: Array<{ productId?: string; sku?: string; name?: string; qty: number; price: number; total?: number }>;
+  shippingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; phone?: string; };
+  billingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; };
+  recurrence?: { startDate?: string; endDate?: string; daysOfWeek?: number[]; includeDates?: string[]; excludeDates?: string[]; selectedDates?: string[]; notes?: string; };
+}
 
 export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boolean; onOpenChange: (o: boolean) => void; order?: Order | null; onSave: () => void; }) {
   const isEditing = !!order?._id;
   const [loading, setLoading] = useState(false);
-  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { status: 'pending', paymentStatus: 'pending', trackingNumber: '', notes: '', scheduleStatus: undefined, nextDeliveryAt: '', shippingAddress: undefined, billingAddress: undefined } });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      status: 'pending',
+      paymentStatus: 'pending',
+      trackingNumber: '',
+      notes: '',
+      scheduleStatus: undefined,
+      nextDeliveryAt: '',
+      isRecurring: false,
+      recurrence: { startDate: '', endDate: '', daysOfWeek: [], notes: '' },
+      shippingAddress: undefined,
+      billingAddress: undefined
+    }
+  });
 
-  // Editable items state
+  // Items state ... (omitted for brevity, keep existing)
   type SelectedItem = { productId: string; sku: string; name: string; price: number; qty: number };
   const [items, setItems] = useState<SelectedItem[]>([]);
   const [searchProducts, setSearchProducts] = useState('');
@@ -68,12 +110,19 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
         trackingNumber: order.trackingNumber || '',
         notes: order.notes || '',
         scheduleStatus: order.scheduleStatus,
-        nextDeliveryAt: order.nextDeliveryAt ? order.nextDeliveryAt.substring(0,10) : '',
+        nextDeliveryAt: order.nextDeliveryAt ? order.nextDeliveryAt.substring(0, 10) : '',
+        isRecurring: order.isRecurring || false,
+        recurrence: {
+          startDate: order.recurrence?.startDate ? new Date(order.recurrence.startDate).toISOString().substring(0, 10) : '',
+          endDate: order.recurrence?.endDate ? new Date(order.recurrence.endDate).toISOString().substring(0, 10) : '',
+          daysOfWeek: order.recurrence?.daysOfWeek || [],
+          notes: order.recurrence?.notes || '',
+        },
         shippingAddress: order.shippingAddress,
         billingAddress: order.billingAddress,
       });
 
-      // initialize editable items and charges from order
+      // ... (items initialization)
       const initItems = (order.items || []).map((it) => ({
         productId: String(it.productId || ''),
         sku: String(it.sku || ''),
@@ -86,7 +135,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
       setTax(typeof order.tax === 'number' ? order.tax : 0);
       setDiscount(typeof order.discount === 'number' ? order.discount! : 0);
     } else {
-      // Reset to clean defaults when creating a new order so previous values don't leak
+      // Reset ...
       form.reset({
         status: 'pending',
         paymentStatus: 'pending',
@@ -94,6 +143,8 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
         notes: '',
         scheduleStatus: undefined,
         nextDeliveryAt: '',
+        isRecurring: false,
+        recurrence: { startDate: '', endDate: '', daysOfWeek: [], notes: '' },
         shippingAddress: undefined,
         billingAddress: undefined,
       });
@@ -104,7 +155,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
     }
   }, [order, form]);
 
-  // Load products for search
+  // ... (useEffect for search, addItem, updateQty, removeItem remain same)
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -116,18 +167,18 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
         const anyObj = data as { products?: unknown };
         const rows = Array.isArray(anyObj.products)
           ? (anyObj.products as Array<Record<string, unknown>>)
-              .map((p) => {
-                const id = typeof p._id === 'string' ? p._id : String(p._id ?? '');
-                const name = typeof p.name === 'string' ? p.name : '';
-                const sku = typeof p.sku === 'string' ? p.sku : '';
-                const price = typeof p.price === 'number' ? p.price : Number(p.price || 0);
-                if (!id || !name || !sku) return null;
-                return { _id: id, name, sku, price };
-              })
-              .filter(Boolean) as Array<{ _id: string; name: string; sku: string; price: number }>
+            .map((p) => {
+              const id = typeof p._id === 'string' ? p._id : String(p._id ?? '');
+              const name = typeof p.name === 'string' ? p.name : '';
+              const sku = typeof p.sku === 'string' ? p.sku : '';
+              const price = typeof p.price === 'number' ? p.price : Number(p.price || 0);
+              if (!id || !name || !sku) return null;
+              return { _id: id, name, sku, price };
+            })
+            .filter(Boolean) as Array<{ _id: string; name: string; sku: string; price: number }>
           : [];
         if (!cancelled) setProductResults(rows);
-      } catch {}
+      } catch { }
     };
     if (open) run();
     return () => {
@@ -178,6 +229,11 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
           discount: Number((discount || 0).toFixed(2)),
           total: Number(computedTotal.toFixed(2)),
           nextDeliveryAt: data.nextDeliveryAt ? new Date(data.nextDeliveryAt).toISOString() : undefined,
+          recurrence: data.recurrence ? {
+            ...data.recurrence,
+            startDate: data.recurrence.startDate ? new Date(data.recurrence.startDate).toISOString() : undefined,
+            endDate: data.recurrence.endDate ? new Date(data.recurrence.endDate).toISOString() : undefined,
+          } : undefined,
           shippingAddress: data.shippingAddress,
           billingAddress: data.billingAddress,
         }),
@@ -195,9 +251,11 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
     }
   };
 
+  const isRecurringOrder = form.watch('isRecurring') || order?.isRecurring;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Order {order?.orderNumber}</DialogTitle>
         </DialogHeader>
@@ -209,9 +267,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                   <FormLabel>Status</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="confirmed">Confirmed</SelectItem>
@@ -231,9 +287,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                   <FormLabel>Payment Status</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment status" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select payment status" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="paid">Paid</SelectItem>
@@ -246,101 +300,87 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                 </FormItem>
               )} />
             </div>
+
             <FormField name="trackingNumber" control={form.control} render={({ field }) => (<FormItem><FormLabel>Tracking Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField name="notes" control={form.control} render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
 
-            {(order?.isRecurring || order?.nextDeliveryAt || order?.scheduleStatus || order?.recurrence) && (
-              <div className="mt-4 border rounded p-3">
-                <h3 className="text-sm font-medium">Recurring schedule</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+            {/* Recurring Section */}
+            {(isRecurringOrder) && (
+              <div className="mt-4 border rounded p-3 bg-slate-50">
+                <h3 className="text-sm font-medium mb-2">Recurring Schedule Details</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <FormField name="scheduleStatus" control={form.control} render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Schedule Status</FormLabel>
+                      <FormLabel>Status</FormLabel>
                       <FormControl>
-                        <select className="border rounded px-2 py-1 w-full" {...field}>
-                          <option value="">Unchanged</option>
-                          <option value="active">Active</option>
-                          <option value="paused">Paused</option>
-                          <option value="ended">Ended</option>
-                        </select>
+                        <Select value={field.value || "active"} onValueChange={field.onChange}>
+                          <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="paused">Paused</SelectItem>
+                            <SelectItem value="ended">Ended</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField name="nextDeliveryAt" control={form.control} render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Next delivery date</FormLabel>
-                      <FormControl>
-                        <input type="date" className="border rounded px-2 py-1 w-full" {...field} />
-                      </FormControl>
+                      <FormLabel>Next Delivery</FormLabel>
+                      <FormControl><Input type="date" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Current</label>
-                    <div className="text-sm text-gray-700">{order.nextDeliveryAt ? new Date(order.nextDeliveryAt).toLocaleDateString() : '—'}</div>
-                  </div>
                 </div>
-                {order.recurrence && (
-                  <div className="grid grid-cols-1 gap-3 mt-3 text-xs text-gray-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>Start: {order.recurrence.startDate ? new Date(order.recurrence.startDate).toLocaleDateString() : '—'}</div>
-                      <div>End: {order.recurrence.endDate ? new Date(order.recurrence.endDate).toLocaleDateString() : '—'}</div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <FormField name="recurrence.startDate" control={form.control} render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Date</FormLabel>
+                      <FormControl><Input type="date" {...field} value={field.value || ''} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField name="recurrence.endDate" control={form.control} render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Date</FormLabel>
+                      <FormControl><Input type="date" {...field} value={field.value || ''} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+
+                <FormField name="recurrence.daysOfWeek" control={form.control} render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Days of Week</FormLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => {
+                        const isSelected = (field.value || []).includes(idx);
+                        return (
+                          <div
+                            key={day}
+                            className={`px-3 py-1 rounded text-sm cursor-pointer border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                            onClick={() => {
+                              const current = field.value || [];
+                              const newDays = isSelected
+                                ? current.filter(d => d !== idx)
+                                : [...current, idx].sort();
+                              field.onChange(newDays);
+                            }}
+                          >
+                            {day}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div>
-                      <div className="font-medium mb-1">Days of week</div>
-                      <div className="flex flex-wrap gap-2">
-                        {(Array.isArray(order.recurrence.daysOfWeek) && order.recurrence.daysOfWeek.length ? order.recurrence.daysOfWeek : []).map((d) => {
-                          const names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-                          const label = names[d] ?? String(d);
-                          return <span key={`dow-${d}`} className="px-2 py-0.5 rounded border bg-gray-50 text-gray-700">{label}</span>;
-                        })}
-                        {!(order.recurrence.daysOfWeek && order.recurrence.daysOfWeek.length) && (
-                          <span className="text-gray-500">—</span>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium mb-1">Selected dates</div>
-                      <div className="flex flex-wrap gap-2">
-                        {(order.recurrence.selectedDates || []).map((d, idx) => (
-                          <span key={`sel-${idx}`} className="px-2 py-0.5 rounded border bg-blue-50 text-blue-700">{new Date(d as string).toLocaleDateString()}</span>
-                        ))}
-                        {!(order.recurrence.selectedDates && order.recurrence.selectedDates.length) && (
-                          <span className="text-gray-500">—</span>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium mb-1">Include dates</div>
-                      <div className="flex flex-wrap gap-2">
-                        {(order.recurrence.includeDates || []).map((d, idx) => (
-                          <span key={`inc-${idx}`} className="px-2 py-0.5 rounded border bg-green-50 text-green-700">{new Date(d as string).toLocaleDateString()}</span>
-                        ))}
-                        {!(order.recurrence.includeDates && order.recurrence.includeDates.length) && (
-                          <span className="text-gray-500">—</span>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium mb-1">Exclude dates</div>
-                      <div className="flex flex-wrap gap-2">
-                        {(order.recurrence.excludeDates || []).map((d, idx) => (
-                          <span key={`exc-${idx}`} className="px-2 py-0.5 rounded border bg-red-50 text-red-700">{new Date(d as string).toLocaleDateString()}</span>
-                        ))}
-                        {!(order.recurrence.excludeDates && order.recurrence.excludeDates.length) && (
-                          <span className="text-gray-500">—</span>
-                        )}
-                      </div>
-                    </div>
-                    {order.recurrence?.notes && (
-                      <div>
-                        <div className="font-medium mb-1">Notes</div>
-                        <div className="text-sm text-gray-700">{order.recurrence.notes}</div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField name="recurrence.notes" control={form.control} render={({ field }) => (<FormItem className="mt-3"><FormLabel>Schedule Notes</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>)} />
+
               </div>
             )}
 
@@ -355,7 +395,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
 
               {/* Product search */}
               <div className="flex gap-2 mb-3">
-                <Input placeholder="Search products..." value={searchProducts} onChange={(e)=>setSearchProducts(e.target.value)} />
+                <Input placeholder="Search products..." value={searchProducts} onChange={(e) => setSearchProducts(e.target.value)} />
               </div>
               <div className="max-h-40 overflow-y-auto border rounded mb-3">
                 <Table>
@@ -407,7 +447,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                       </TableCell>
                       <TableCell>Rs. {Number(it.price).toFixed(2)}</TableCell>
                       <TableCell>
-                        <Input type="number" className="w-24" value={it.qty} onChange={(e)=>updateQty(it.productId, parseInt(e.target.value))} />
+                        <Input type="number" className="w-24" value={it.qty} onChange={(e) => updateQty(it.productId, parseInt(e.target.value))} />
                       </TableCell>
                       <TableCell>Rs. {Number(it.price * it.qty).toFixed(2)}</TableCell>
                       <TableCell>
@@ -426,9 +466,9 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                 <div className="border rounded p-3">
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between"><span className="text-gray-600">Subtotal</span><span className="font-medium">Rs. {subtotal.toFixed(2)}</span></div>
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Shipping</span><Input type="number" className="w-28" value={shippingFee} onChange={(e)=>setShippingFee(Number(e.target.value||0))} /></div>
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Tax</span><Input type="number" className="w-28" value={tax} onChange={(e)=>setTax(Number(e.target.value||0))} /></div>
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Discount</span><Input type="number" className="w-28" value={discount} onChange={(e)=>setDiscount(Number(e.target.value||0))} /></div>
+                    <div className="flex items-center justify-between"><span className="text-gray-600">Shipping</span><Input type="number" className="w-28" value={shippingFee} onChange={(e) => setShippingFee(Number(e.target.value || 0))} /></div>
+                    <div className="flex items-center justify-between"><span className="text-gray-600">Tax</span><Input type="number" className="w-28" value={tax} onChange={(e) => setTax(Number(e.target.value || 0))} /></div>
+                    <div className="flex items-center justify-between"><span className="text-gray-600">Discount</span><Input type="number" className="w-28" value={discount} onChange={(e) => setDiscount(Number(e.target.value || 0))} /></div>
                     <div className="flex items-center justify-between pt-2 border-t font-semibold"><span>Total</span><span>Rs. {computedTotal.toFixed(2)}</span></div>
                   </div>
                 </div>

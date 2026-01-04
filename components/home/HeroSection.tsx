@@ -36,8 +36,8 @@ export default function HeroSection() {
                         The Art of <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-emerald-500 italic font-light pr-4">Freshness</span>
                     </h1>
-                    <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-xl mx-auto font-light leading-relaxed tracking-wide">
-                        Curating the world&apos;s finest harvests for the most discerning tables in Colombo.
+                    <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+                        Curating fresh products and recurring orders for the most discerning tables in Colombo, Sri Lanka.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-5 justify-center">
