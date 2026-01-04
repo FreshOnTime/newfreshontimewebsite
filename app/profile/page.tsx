@@ -226,7 +226,7 @@ export default function ProfilePage() {
                     Order History
                   </Button>
                 </Link>
-                <Link href="/addresses" className="block">
+                <Link href="/profile/addresses" className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <MapPin className="w-4 h-4 mr-2" />
                     Manage Addresses

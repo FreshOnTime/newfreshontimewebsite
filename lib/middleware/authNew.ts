@@ -7,13 +7,13 @@ export interface AuthenticatedRequest extends NextRequest {
   user?: TokenPayload & { _id: string };
 }
 
-type RouteHandler = (req: AuthenticatedRequest, ...args: unknown[]) => Promise<NextResponse>;
+type RouteHandler = (req: AuthenticatedRequest, ...args: any[]) => Promise<NextResponse>;
 
 export function withAuth(
   handler: RouteHandler,
-  options: { 
-    requiredRoles?: string[]; 
-    optional?: boolean; 
+  options: {
+    requiredRoles?: string[];
+    optional?: boolean;
   } = {}
 ) {
   return async (req: NextRequest, ...args: unknown[]) => {
@@ -57,7 +57,7 @@ export function withAuth(
       // Check role authorization
       if (options.requiredRoles && options.requiredRoles.length > 0) {
         const userRoles = [user.role, ...(user.secondaryRoles || [])];
-        const hasRequiredRole = options.requiredRoles.some(role => 
+        const hasRequiredRole = options.requiredRoles.some(role =>
           userRoles.includes(role)
         );
 
