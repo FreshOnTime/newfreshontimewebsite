@@ -101,7 +101,7 @@ export default async function SubscriptionsPage() {
                             <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-zinc-100">
                                 <Image
                                     src="https://images.unsplash.com/photo-1597362925123-77861d3fbac7?q=80&w=1000&auto=format&fit=crop"
-                                    alt="Harvested Daily"
+                                    alt="Fresh harvested vegetables daily for recurring orders"
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -117,7 +117,7 @@ export default async function SubscriptionsPage() {
                             <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-zinc-100">
                                 <Image
                                     src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=2670&auto=format&fit=crop"
-                                    alt="Farmer Direct"
+                                    alt="Direct from farmers recurring fresh produce delivery"
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -133,7 +133,7 @@ export default async function SubscriptionsPage() {
                             <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-zinc-100">
                                 <Image
                                     src="https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?q=80&w=2670&auto=format&fit=crop"
-                                    alt="Zero-Plastic Promise"
+                                    alt="Eco-friendly zero plastic fresh products delivery"
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -169,6 +169,41 @@ export default async function SubscriptionsPage() {
                     </div>
                 </div>
             </section>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "FAQPage",
+                        "mainEntity": [
+                            {
+                                "@type": "Question",
+                                "name": "What makes FreshPick boxes unique?",
+                                "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "Each FreshPick collection is curated from the top 1% of harvests. Our expert agrarians hand-select produce at peak ripeness for unmatched flavor."
+                                }
+                            },
+                            {
+                                "@type": "Question",
+                                "name": "Can I customize my FreshPick box?",
+                                "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "Certainly. Your personal concierge can tailor your weekly delivery to accommodate preferences, allergies, or specific culinary requirements."
+                                }
+                            },
+                            {
+                                "@type": "Question",
+                                "name": "Is the service flexible?",
+                                "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "As a FreshPick subscriber, you enjoy complete freedom. Pause your deliveries during travel or cancel indefinitely with a single click."
+                                }
+                            }
+                        ]
+                    })
+                }}
+            />
         </div>
     );
 }
