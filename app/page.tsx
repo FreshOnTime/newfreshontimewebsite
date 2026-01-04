@@ -27,12 +27,18 @@ import dbConnect from "@/lib/database";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Fresh Pick | Premium Online Grocery Delivery in Colombo",
-  description: "Experience the freshest groceries delivered to your door in Colombo. Shop premium produce, dairy, meats, and pantry staples with same-day delivery.",
+  title: "Fresh Pick | Fresh Products & Recurring Orders - #1 in Sri Lanka",
+  description: "The best place for fresh products and recurring orders in Sri Lanka. Get premium fresh produce delivered to your door with flexible weekly schedules. Same-day delivery available.",
   openGraph: {
-    title: "Fresh Pick | Pick Fresh, Live Easy",
-    description: "Your premium online grocery store in Colombo. Freshness guaranteed.",
+    title: "Fresh Pick | Fresh Products & Recurring Orders Sri Lanka",
+    description: "Your premium online grocery store in Colombo. Best fresh products and recurring grocery orders.",
     type: "website",
+    locale: "en_LK",
+    url: "https://freshpick.lk",
+    siteName: "Fresh Pick Sri Lanka",
+  },
+  alternates: {
+    canonical: "https://freshpick.lk",
   },
 };
 
@@ -86,6 +92,7 @@ async function getProducts(): Promise<Product[]> {
       const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
 
       return ({
+        _id: product._id,
         sku: product.sku || String(product._id),
         name: product.name || '',
         image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },

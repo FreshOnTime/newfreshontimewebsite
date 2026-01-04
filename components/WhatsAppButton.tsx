@@ -2,10 +2,17 @@
 
 import { useState } from 'react';
 import { MessageCircle, X, Send, Phone } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function WhatsAppButton() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
+
+    // Hide on admin pages
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
 
     const phoneNumber = '94771234567'; // Replace with actual WhatsApp number
     const defaultMessages = [

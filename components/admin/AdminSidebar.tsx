@@ -29,7 +29,7 @@ const navigation = [
   { name: 'Supplier Uploads', href: '/admin/supplier-uploads', icon: FileText },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
-  { name: 'Bundles', href: '/admin/bundles', icon: Layers },
+  { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Blog Posts', href: '/admin/blogs', icon: BookOpen },
@@ -92,7 +92,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
     <>
       <div className="flex h-16 shrink-0 items-center">
         <Link href="/admin" className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="h-8 w-8 bg-emerald-800 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">FP</span>
           </div>
           <span className="font-bold text-xl text-gray-900">Fresh Pick</span>
@@ -108,14 +108,14 @@ function SidebarContent({ pathname }: { pathname: string }) {
                     href={item.href}
                     className={cn(
                       pathname?.startsWith(item.href)
-                        ? 'bg-gray-50 text-blue-600'
-                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50',
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'text-gray-700 hover:text-emerald-700 hover:bg-emerald-50',
                       'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                     )}
                   >
                     <item.icon
                       className={cn(
-                        pathname?.startsWith(item.href) ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600',
+                        pathname?.startsWith(item.href) ? 'text-emerald-700' : 'text-gray-400 group-hover:text-emerald-700',
                         'h-6 w-6 shrink-0'
                       )}
                     />

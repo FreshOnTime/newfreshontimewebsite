@@ -133,6 +133,7 @@ async function getProducts(query: string) {
       const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
 
       return ({
+        _id: product._id,
         sku: product.sku || String(product._id),
         name: product.name || '',
         image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
