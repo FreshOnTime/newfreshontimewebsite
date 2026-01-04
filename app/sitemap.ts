@@ -53,6 +53,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: "yearly",
             priority: 0.3,
         },
+        {
+            url: `${SITE_URL}/subscriptions`,
+            lastModified: new Date(),
+            changeFrequency: "weekly",
+            priority: 0.9,
+        },
     ];
 
     let productPages: MetadataRoute.Sitemap = [];

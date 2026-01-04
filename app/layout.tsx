@@ -38,13 +38,24 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://freshpick.lk"),
   applicationName: "Fresh Pick",
   title: {
-    default: "Fresh Pick | Premium Online Grocery Delivery in Colombo",
-    template: "%s | Fresh Pick"
+    default: "Fresh Pick | Premium Online Grocery Delivery in Sri Lanka",
+    template: "%s | Fresh Pick Sri Lanka"
   },
-  description: "Experience the freshest groceries delivered to your door in Colombo. Shop premium produce, dairy, meats, and pantry staples with same-day delivery.",
-  keywords: ["fresh groceries", "grocery delivery colombo", "online supermarket sri lanka", "premium produce", "fruit delivery", "vegetable delivery", "fresh meat", "seafood delivery", "fresh pick"],
+  description: "Experience the freshest groceries delivered to your door in Colombo and suburbs. Shop premium produce, dairy, meats, and pantry staples with same-day delivery in Sri Lanka.",
+  keywords: [
+    "fresh groceries sri lanka",
+    "online grocery delivery colombo",
+    "supermarket delivery sri lanka",
+    "fresh vegetables colombo",
+    "online keells alternative",
+    "cargills online alternative",
+    "premium food delivery sri lanka",
+    "exotic fruit delivery sri lanka",
+    "fresh pick",
+    "same day delivery groceries colombo"
+  ],
   authors: [{ name: "Fresh Pick Team" }],
-  creator: "Fresh Pick",
+  creator: "Fresh Pick Sri Lanka",
   publisher: "Fresh Pick",
   formatDetection: {
     email: false,
@@ -52,16 +63,16 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Fresh Pick | Pick Fresh, Live Easy",
-    description: "Your premium online grocery store in Colombo. Freshness guaranteed or your money back.",
+    title: "Fresh Pick | Premium Online Grocery Store Sri Lanka",
+    description: "Your premium online grocery store in Colombo. Freshness guaranteed or your money back. Same-day delivery available.",
     url: "https://freshpick.lk",
-    siteName: "Fresh Pick",
+    siteName: "Fresh Pick Sri Lanka",
     images: [
       {
-        url: "/og-image.jpg", // Make sure to add this image to public folder or use a dynamic one
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Fresh Pick - Premium Groceries",
+        alt: "Fresh Pick - Premium Groceries Sri Lanka",
       },
     ],
     locale: "en_LK",
@@ -69,9 +80,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fresh Pick | Premium Grocery Delivery",
-    description: "Freshest groceries delivered to your doorstep in Colombo.",
-    images: ["/twitter-image.jpg"], // Make sure to add this image
+    title: "Fresh Pick | Premium Grocery Delivery Sri Lanka",
+    description: "Freshest groceries delivered to your doorstep in Colombo, Sri Lanka.",
+    images: ["/twitter-image.jpg"],
     creator: "@freshpicklk",
   },
   robots: {
@@ -89,7 +100,7 @@ export const metadata: Metadata = {
     canonical: "https://freshpick.lk",
   },
   verification: {
-    google: "google-site-verification-code", // Placeholder
+    google: "google-site-verification-code",
   },
   category: "food & drink",
 };
@@ -126,24 +137,28 @@ export default function RootLayout({
                   __html: JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "GroceryStore",
-                    "name": "Fresh Pick",
+                    "name": "Fresh Pick Sri Lanka",
                     "image": "https://freshpick.lk/logo.png",
-                    "description": "Freshest groceries delivered to your doorstep in Colombo.",
+                    "description": "Premium online grocery store delivering fresh produce and essentials in Colombo, Sri Lanka.",
                     "url": "https://freshpick.lk",
-                    "telephone": "+94770000000",
-                    "priceRange": "$$",
+                    "telephone": "+94777123456", // Placeholder realistic number
+                    "priceRange": "LKR",
                     "address": {
                       "@type": "PostalAddress",
-                      "streetAddress": "123 Galle Road",
-                      "addressLocality": "Colombo",
-                      "addressRegion": "Western",
-                      "postalCode": "00300",
+                      "streetAddress": "No. 123, Galle Road",
+                      "addressLocality": "Bambalapitiya",
+                      "addressRegion": "Colombo",
+                      "postalCode": "00400",
                       "addressCountry": "LK"
                     },
                     "geo": {
                       "@type": "GeoCoordinates",
-                      "latitude": 6.9271,
-                      "longitude": 79.8612
+                      "latitude": 6.8906,
+                      "longitude": 79.8549
+                    },
+                    "areaServed": {
+                      "@type": "City",
+                      "name": "Colombo"
                     },
                     "openingHoursSpecification": [
                       {

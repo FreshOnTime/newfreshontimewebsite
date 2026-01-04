@@ -1,12 +1,19 @@
 import mongoose, { Document, Schema } from "mongoose";
-import imageSchema, { IImage } from "./Image";
+
+// Define a simpler image interface for blogs
+export interface IBlogImage {
+  url: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+}
 
 export interface IBlog extends Document {
   title: string;
   slug: string;
   excerpt: string;
   content: string;
-  featuredImage?: IImage;
+  featuredImage?: IBlogImage;
   author: mongoose.Types.ObjectId;
   authorName?: string;
   category?: string;
@@ -24,6 +31,20 @@ export interface IBlog extends Document {
   createdBy?: string;
   updatedBy?: string;
 }
+
+// Define a simpler image schema that doesn't require filename/path/contentType
+const blogImageSchema = new Schema({
+  url: {
+    type: String,
+    required: [true, "Blog image URL is required"],
+  },
+  alt: {
+    type: String,
+    trim: true,
+  },
+  width: Number,
+  height: Number,
+}, { _id: false });
 
 const blogSchema: Schema = new Schema<IBlog>(
   {
@@ -55,7 +76,7 @@ const blogSchema: Schema = new Schema<IBlog>(
       minlength: [50, "Blog: Content must be at least 50 characters long"],
     },
     featuredImage: {
-      type: imageSchema,
+      type: blogImageSchema,
       required: false,
     },
     author: {
@@ -76,7 +97,7 @@ const blogSchema: Schema = new Schema<IBlog>(
       type: [String],
       default: [],
       validate: {
-        validator: function(v: string[]) {
+        validator: function (v: string[]) {
           return v.length <= 20;
         },
         message: "Blog: Cannot have more than 20 tags"
@@ -145,3 +166,4 @@ blogSchema.index({ isDeleted: 1 });
 
 const Blog = mongoose.models.Blog || mongoose.model<IBlog>("Blog", blogSchema);
 export default Blog;
+
