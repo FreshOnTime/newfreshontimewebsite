@@ -144,8 +144,11 @@ async function getHomeData(): Promise<HomeData> {
     });
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const timeoutPromise = new Promise<HomeData>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error('HOME_DATA_TIMEOUT')), HOME_DATA_TIMEOUT_MS);
+    const timeoutPromise = new Promise<HomeData>((resolve) => {
+      timeoutId = setTimeout(() => {
+        console.warn(`[Homepage] Data fetch exceeded ${HOME_DATA_TIMEOUT_MS}ms. Rendering fast fallback.`);
+        resolve({ products: [], categories: [] });
+      }, HOME_DATA_TIMEOUT_MS);
     });
 
     try {
@@ -154,10 +157,6 @@ async function getHomeData(): Promise<HomeData> {
       if (timeoutId) clearTimeout(timeoutId);
     }
   } catch (error) {
-    if (error instanceof Error && error.message === 'HOME_DATA_TIMEOUT') {
-      console.warn(`[Homepage] Data fetch exceeded ${HOME_DATA_TIMEOUT_MS}ms. Rendering fast fallback.`);
-      return { products: [], categories: [] };
-    }
     console.error("[Homepage] Failed to fetch home data:", error);
     return { products: [], categories: [] };
   }
