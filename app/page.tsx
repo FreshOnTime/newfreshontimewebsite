@@ -138,11 +138,14 @@ async function getHomeData(): Promise<HomeData> {
       };
     })();
 
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<HomeData>((_, reject) => {
-      setTimeout(() => reject(new Error('HOME_DATA_TIMEOUT')), HOME_DATA_TIMEOUT_MS);
+      timeoutId = setTimeout(() => reject(new Error('HOME_DATA_TIMEOUT')), HOME_DATA_TIMEOUT_MS);
     });
 
-    return await Promise.race([homeDataPromise, timeoutPromise]);
+    const result = await Promise.race([homeDataPromise, timeoutPromise]);
+    if (timeoutId) clearTimeout(timeoutId);
+    return result;
   } catch (error) {
     if (error instanceof Error && error.message === 'HOME_DATA_TIMEOUT') {
       console.warn(`[Homepage] Data fetch exceeded ${HOME_DATA_TIMEOUT_MS}ms. Rendering fast fallback.`);
