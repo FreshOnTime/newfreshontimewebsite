@@ -86,6 +86,7 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
                                     src={src}
                                     alt={`Promo ${i + 1}`}
                                     fill
+                                    sizes="(max-width: 768px) 100vw, 90vw"
                                     className="object-cover"
                                     priority={i === 0}
                                 />

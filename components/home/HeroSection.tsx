@@ -13,6 +13,7 @@ export default function HeroSection() {
                     src="/bgs/landing-page-bg-1.jpg"
                     alt="Fresh vegetables background"
                     fill
+                    sizes="100vw"
                     className="object-cover opacity-60 scale-105 animate-subtle-zoom"
                     priority
                 />
