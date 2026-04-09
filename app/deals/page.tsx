@@ -4,12 +4,14 @@ import { PageContainer } from "@/components/templates/PageContainer";
 import { Product } from "@/models/product";
 import { withBase } from "@/lib/serverUrl";
 
-export const dynamic = 'force-dynamic';
+// Use ISR: deals/discounted products change infrequently; 5-minute cache
+// reduces serverless cold starts and avoids a DB/API call on every request.
+export const revalidate = 300;
 
 async function getDealProducts() {
   try {
     const response = await fetch(withBase('/api/products'), {
-      cache: 'no-store'
+      next: { revalidate: 300 },
     });
     if (response.ok) {
       const data = await response.json();

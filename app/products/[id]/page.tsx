@@ -17,6 +17,11 @@ import EnhancedProduct from '@/lib/models/EnhancedProduct';
 import Category from '@/lib/models/Category';
 import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct';
 
+// ISR: product details change occasionally; revalidate every 5 minutes.
+// Works alongside generateStaticParams to pre-render top products at build time
+// and serve cached responses for subsequent requests.
+export const revalidate = 300;
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -100,8 +105,8 @@ async function getProduct(id: string): Promise<Product | null> {
     try {
       const { withBase } = await import('@/lib/serverUrl');
       const absolute = withBase(`/api/products/${id}`);
-      let resp = await fetch(absolute, { cache: 'no-store' });
-      if (!resp.ok) resp = await fetch(`/api/products/${id}`, { cache: 'no-store' });
+      let resp = await fetch(absolute, { next: { revalidate: 300 } });
+      if (!resp.ok) resp = await fetch(`/api/products/${id}`, { next: { revalidate: 300 } });
       if (resp.ok) {
         const data = await resp.json();
         return data.data || null;

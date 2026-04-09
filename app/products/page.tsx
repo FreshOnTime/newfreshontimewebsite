@@ -181,9 +181,9 @@ async function getProducts(query: string) {
     try {
       const { withBase } = await import('@/lib/serverUrl');
       const absolute = withBase(`/api/products${query ? `?${query}` : ''}`);
-      let resp = await fetch(absolute, { cache: 'no-store' });
+      let resp = await fetch(absolute, { next: { revalidate: 300 } });
       if (!resp.ok) {
-        resp = await fetch(`/api/products${query ? `?${query}` : ''}`, { cache: 'no-store' });
+        resp = await fetch(`/api/products${query ? `?${query}` : ''}`, { next: { revalidate: 300 } });
       }
       if (resp.ok) {
         const data = await resp.json();
