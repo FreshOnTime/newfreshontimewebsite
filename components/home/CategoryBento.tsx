@@ -64,6 +64,7 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                                         src={category.imageUrl || "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"}
                                         alt={category.name}
                                         fill
+                                        sizes={index === 0 ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 25vw"}
                                         className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100"
                                     />
                                 </div>

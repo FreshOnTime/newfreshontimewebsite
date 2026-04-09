@@ -21,6 +21,7 @@ export default function BannerGrid() {
                 src={b.image}
                 alt={b.title}
                 fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className="object-cover opacity-80 group-hover:scale-105 group-hover:opacity-90 transition-all duration-[1.5s] ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-700" />

@@ -1,10 +1,8 @@
 import { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/products/ProductCard";
-import { ProductGridSkeleton } from "@/components/products/ProductCardSkeleton";
 import { ProductErrorBoundary } from "@/components/products/ProductErrorBoundary";
 import { Product } from "@/models/product";
 
@@ -17,10 +15,12 @@ import InfiniteMarquee from "@/components/ui/infinite-marquee";
 import CategoryBento from "@/components/home/CategoryBento";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
 import PrivateClientCTA from "@/components/home/PrivateClientCTA";
-import NewsletterForm from "@/components/home/NewsletterForm";
 import TrustBadges from "@/components/home/TrustBadges";
 
+// Static model imports — avoids per-revalidation dynamic import overhead
 import dbConnect from "@/lib/database";
+import EnhancedProductModel from "@/lib/models/EnhancedProduct";
+import CategoryModel from "@/lib/models/Category";
 
 // Use ISR (Incremental Static Regeneration) for fast loading
 // Revalidate every 60 seconds to keep data fresh
@@ -42,32 +42,39 @@ export const metadata: Metadata = {
   },
 };
 
-// Server-side data fetching
-async function getProducts(): Promise<Product[]> {
+type CategoryDisplay = { _id: unknown; name: string; slug: string; imageUrl?: string; description?: string };
+
+interface HomeData {
+  products: Product[];
+  categories: CategoryDisplay[];
+}
+
+// Single consolidated data fetch: one dbConnect, two parallel queries, no redundant round-trips
+async function getHomeData(): Promise<HomeData> {
   try {
     await dbConnect();
-    const EnhancedProduct = (await import("@/lib/models/EnhancedProduct")).default;
-    const Category = (await import("@/lib/models/Category")).default;
 
-    // Fetch products - removing archived filter to test
-    console.log("[Homepage] Starting product fetch...");
-    const rawProducts = await EnhancedProduct.find({})
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .lean();
+    // Fetch products and categories in parallel to minimise latency
+    const [rawProducts, allCategories] = await Promise.all([
+      EnhancedProductModel
+        .find({ archived: { $ne: true } })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        // Select only the fields needed for the homepage product cards
+        .select('_id sku name image images description categoryId price stockQty minStockLevel attributes createdAt updatedAt')
+        .lean(),
+      CategoryModel
+        .find({ isActive: true })
+        .sort({ sortOrder: 1, name: 1 })
+        // Select only the fields needed for display (isActive/sortOrder used only for filter/sort)
+        .select('_id name slug description imageUrl')
+        .lean(),
+    ]);
 
-    console.log(`[Homepage] Fetched ${rawProducts.length} raw products`);
-    if (rawProducts.length > 0) {
-      console.log("[Homepage] First product:", JSON.stringify(rawProducts[0], null, 2));
-    }
+    // Build a category lookup map (reused for both product mapping and CategoryBento)
+    const categoryMap = new Map(allCategories.map(c => [String(c._id), c]));
 
-    // Get unique category IDs to fetch category details
-    const categoryIds = [...new Set(rawProducts.map(p => p.categoryId))].filter(Boolean);
-    const categories = await Category.find({ _id: { $in: categoryIds } }).lean();
-    const categoryMap = new Map(categories.map(c => [String(c._id), c]));
-
-    // Map EnhancedProduct to the structure expected by ProductCard
-    // Using the same logic as app/products/page.tsx
+    // Map EnhancedProduct documents to the shape expected by ProductCard
     const products = rawProducts.map((product) => {
       const single = product.image;
       const first = Array.isArray(product.images) ? product.images[0] : undefined;
@@ -91,7 +98,7 @@ async function getProducts(): Promise<Product[]> {
         : undefined;
       const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
 
-      return ({
+      return {
         _id: product._id,
         sku: product.sku || String(product._id),
         name: product.name || '',
@@ -105,7 +112,7 @@ async function getProducts(): Promise<Product[]> {
           : undefined,
         baseMeasurementQuantity: 1,
         pricePerBaseQuantity: Number(product.price ?? 0),
-        measurementUnit: 'ea' as const, // Force text to literal type
+        measurementUnit: 'ea' as const,
         isSoldAsUnit: true,
         minOrderQuantity: 1,
         maxOrderQuantity: 9999,
@@ -119,25 +126,16 @@ async function getProducts(): Promise<Product[]> {
         createdAt: product.createdAt as unknown as Date | undefined,
         updatedAt: product.updatedAt as unknown as Date | undefined,
         unitOptions,
-      });
+      };
     });
 
-    return JSON.parse(JSON.stringify(products));
+    return {
+      products: JSON.parse(JSON.stringify(products)),
+      categories: JSON.parse(JSON.stringify(allCategories)),
+    };
   } catch (error) {
-    console.error("Failed to fetch products:", error);
-    return [];
-  }
-}
-
-async function getCategories(): Promise<{ name: string; slug: string; imageUrl?: string; description?: string }[]> {
-  try {
-    await dbConnect();
-    const CategoryModel = (await import("@/lib/models/Category")).default;
-    const categories = await CategoryModel.find({}).lean();
-    return JSON.parse(JSON.stringify(categories));
-  } catch (error) {
-    console.error("Failed to fetch categories:", error);
-    return [];
+    console.error("[Homepage] Failed to fetch home data:", error);
+    return { products: [], categories: [] };
   }
 }
 
@@ -149,12 +147,7 @@ const promoImages = [
 ];
 
 export default async function Home() {
-  const [products, categories] = await Promise.all([
-    getProducts(),
-    getCategories(),
-  ]);
-
-  const featuredProducts = products.slice(0, 20);
+  const { products, categories } = await getHomeData();
 
   return (
     <div className="bg-transparent">
@@ -207,7 +200,7 @@ export default async function Home() {
 
           <ProductErrorBoundary>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-              {featuredProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <AnimatedProductItem key={product.sku} index={index}>
                   <ProductCard
                     id={product._id?.toString() || ""}
