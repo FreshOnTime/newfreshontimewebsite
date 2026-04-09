@@ -13,8 +13,9 @@ export const metadata: Metadata = {
     description: 'Set up recurring orders for fresh products. Subscribe to curated boxes of fresh produce delivered weekly. Automate your grocery shopping with Fresh Pick.',
 };
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
+// Use ISR: subscription plans change rarely (admin-managed).
+// 5-minute revalidation avoids a DB call on every request while keeping data fresh.
+export const revalidate = 300;
 
 async function getSubscriptionPlans() {
     try {

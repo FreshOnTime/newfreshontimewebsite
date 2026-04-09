@@ -11,9 +11,10 @@ interface BlogPageProps {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Enable dynamic rendering with caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 60; // Revalidate every 60 seconds
+// ISR: revalidate every 60 seconds so blog content stays fresh without
+// re-rendering on every request. `force-dynamic` was removed because it
+// contradicts and overrides the `revalidate` directive.
+export const revalidate = 60;
 
 // Helper function to get blog data (shared between metadata and page)
 async function getBlogData(slug: string) {
