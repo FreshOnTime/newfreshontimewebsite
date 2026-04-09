@@ -42,11 +42,11 @@ export const metadata: Metadata = {
   },
 };
 
-type CategoryShape = { _id: unknown; name: string; slug: string; imageUrl?: string; description?: string };
+type CategoryDisplay = { _id: unknown; name: string; slug: string; imageUrl?: string; description?: string };
 
 interface HomeData {
   products: Product[];
-  categories: CategoryShape[];
+  categories: CategoryDisplay[];
 }
 
 // Single consolidated data fetch: one dbConnect, two parallel queries, no redundant round-trips
@@ -66,8 +66,8 @@ async function getHomeData(): Promise<HomeData> {
       CategoryModel
         .find({ isActive: true })
         .sort({ sortOrder: 1, name: 1 })
-        // Select only the fields needed for display
-        .select('_id name slug description imageUrl isActive sortOrder')
+        // Select only the fields needed for display (isActive/sortOrder used only for filter/sort)
+        .select('_id name slug description imageUrl')
         .lean(),
     ]);
 
