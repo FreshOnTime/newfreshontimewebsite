@@ -49,91 +49,105 @@ interface HomeData {
   categories: CategoryDisplay[];
 }
 
+const HOME_DATA_TIMEOUT_MS = 1200;
+
 // Single consolidated data fetch: one dbConnect, two parallel queries, no redundant round-trips
 async function getHomeData(): Promise<HomeData> {
   try {
-    await dbConnect();
+    const homeDataPromise = (async (): Promise<HomeData> => {
+      await dbConnect();
 
-    // Fetch products and categories in parallel to minimise latency
-    const [rawProducts, allCategories] = await Promise.all([
-      EnhancedProductModel
-        .find({ archived: { $ne: true } })
-        .sort({ createdAt: -1 })
-        .limit(20)
-        // Select only the fields needed for the homepage product cards
-        .select('_id sku name image images description categoryId price stockQty minStockLevel attributes createdAt updatedAt')
-        .lean(),
-      CategoryModel
-        .find({ isActive: true })
-        .sort({ sortOrder: 1, name: 1 })
-        // Select only the fields needed for display (isActive/sortOrder used only for filter/sort)
-        .select('_id name slug description imageUrl')
-        .lean(),
-    ]);
+      // Fetch products and categories in parallel to minimise latency
+      const [rawProducts, allCategories] = await Promise.all([
+        EnhancedProductModel
+          .find({ archived: { $ne: true } })
+          .sort({ createdAt: -1 })
+          .limit(20)
+          // Select only the fields needed for the homepage product cards
+          .select('_id sku name image images description categoryId price stockQty minStockLevel attributes createdAt updatedAt')
+          .lean(),
+        CategoryModel
+          .find({ isActive: true })
+          .sort({ sortOrder: 1, name: 1 })
+          // Select only the fields needed for display (isActive/sortOrder used only for filter/sort)
+          .select('_id name slug description imageUrl')
+          .lean(),
+      ]);
 
-    // Build a category lookup map (reused for both product mapping and CategoryBento)
-    const categoryMap = new Map(allCategories.map(c => [String(c._id), c]));
+      // Build a category lookup map (reused for both product mapping and CategoryBento)
+      const categoryMap = new Map(allCategories.map(c => [String(c._id), c]));
 
-    // Map EnhancedProduct documents to the shape expected by ProductCard
-    const products = rawProducts.map((product) => {
-      const single = product.image;
-      const first = Array.isArray(product.images) ? product.images[0] : undefined;
-      const img = single || first || '/placeholder.svg';
-      const attrs = (product.attributes ?? {}) as Record<string, unknown>;
-      const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
-      const unitOptions = Array.isArray(maybeUnitOptions)
-        ? maybeUnitOptions
-          .map((opt) => {
-            const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
-            const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
-              ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
-              : undefined;
-            const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
-            const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
-            const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
-            if (!unit || !quantity || price === undefined) return null;
-            return { label: label || `${quantity}${unit}`, quantity, unit, price };
-          })
-          .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
-        : undefined;
-      const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
+      // Map EnhancedProduct documents to the shape expected by ProductCard
+      const products = rawProducts.map((product) => {
+        const single = product.image;
+        const first = Array.isArray(product.images) ? product.images[0] : undefined;
+        const img = single || first || '/placeholder.svg';
+        const attrs = (product.attributes ?? {}) as Record<string, unknown>;
+        const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
+        const unitOptions = Array.isArray(maybeUnitOptions)
+          ? maybeUnitOptions
+            .map((opt) => {
+              const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
+              const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
+                ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
+                : undefined;
+              const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
+              const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
+              const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
+              if (!unit || !quantity || price === undefined) return null;
+              return { label: label || `${quantity}${unit}`, quantity, unit, price };
+            })
+            .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
+          : undefined;
+        const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
+
+        return {
+          _id: product._id,
+          sku: product.sku || String(product._id),
+          name: product.name || '',
+          image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
+          description: product.description || '',
+          category: categoryIdValue
+            ? (() => {
+              const meta = categoryMap.get(categoryIdValue);
+              return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
+            })()
+            : undefined,
+          baseMeasurementQuantity: 1,
+          pricePerBaseQuantity: Number(product.price ?? 0),
+          measurementUnit: 'ea' as const,
+          isSoldAsUnit: true,
+          minOrderQuantity: 1,
+          maxOrderQuantity: 9999,
+          stepQuantity: 1,
+          stockQuantity: Number(product.stockQty ?? 0),
+          isOutOfStock: Number(product.stockQty ?? 0) <= 0,
+          totalSales: 0,
+          isFeatured: false,
+          discountPercentage: 0,
+          lowStockThreshold: Number(product.minStockLevel ?? 0),
+          createdAt: product.createdAt as unknown as Date | undefined,
+          updatedAt: product.updatedAt as unknown as Date | undefined,
+          unitOptions,
+        };
+      });
 
       return {
-        _id: product._id,
-        sku: product.sku || String(product._id),
-        name: product.name || '',
-        image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
-        description: product.description || '',
-        category: categoryIdValue
-          ? (() => {
-            const meta = categoryMap.get(categoryIdValue);
-            return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
-          })()
-          : undefined,
-        baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: Number(product.price ?? 0),
-        measurementUnit: 'ea' as const,
-        isSoldAsUnit: true,
-        minOrderQuantity: 1,
-        maxOrderQuantity: 9999,
-        stepQuantity: 1,
-        stockQuantity: Number(product.stockQty ?? 0),
-        isOutOfStock: Number(product.stockQty ?? 0) <= 0,
-        totalSales: 0,
-        isFeatured: false,
-        discountPercentage: 0,
-        lowStockThreshold: Number(product.minStockLevel ?? 0),
-        createdAt: product.createdAt as unknown as Date | undefined,
-        updatedAt: product.updatedAt as unknown as Date | undefined,
-        unitOptions,
+        products: JSON.parse(JSON.stringify(products)),
+        categories: JSON.parse(JSON.stringify(allCategories)),
       };
+    })();
+
+    const timeoutPromise = new Promise<HomeData>((_, reject) => {
+      setTimeout(() => reject(new Error('HOME_DATA_TIMEOUT')), HOME_DATA_TIMEOUT_MS);
     });
 
-    return {
-      products: JSON.parse(JSON.stringify(products)),
-      categories: JSON.parse(JSON.stringify(allCategories)),
-    };
+    return await Promise.race([homeDataPromise, timeoutPromise]);
   } catch (error) {
+    if (error instanceof Error && error.message === 'HOME_DATA_TIMEOUT') {
+      console.warn(`[Homepage] Data fetch exceeded ${HOME_DATA_TIMEOUT_MS}ms. Rendering fast fallback.`);
+      return { products: [], categories: [] };
+    }
     console.error("[Homepage] Failed to fetch home data:", error);
     return { products: [], categories: [] };
   }
