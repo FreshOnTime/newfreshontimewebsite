@@ -116,7 +116,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    checkAuth();
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    const shouldCheckImmediately =
+      path.startsWith('/admin') ||
+      path.startsWith('/profile') ||
+      path.startsWith('/orders') ||
+      path.startsWith('/bags') ||
+      path.startsWith('/checkout') ||
+      path.startsWith('/wishlist');
+
+    if (shouldCheckImmediately) {
+      checkAuth();
+      return;
+    }
+
+    const deferMs = 1200;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let idleId: number | null = null;
+    const idleCallback = (window as Window & { requestIdleCallback?: (cb: IdleRequestCallback, options?: IdleRequestOptions) => number }).requestIdleCallback;
+    const cancelIdleCallback = (window as Window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleId = idleCallback(() => {
+        checkAuth();
+      }, { timeout: deferMs });
+    } else {
+      timeoutId = setTimeout(() => {
+        checkAuth();
+      }, deferMs);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (idleId !== null && typeof cancelIdleCallback === 'function') {
+        cancelIdleCallback(idleId);
+      }
+    };
   }, [refreshAuth]);
 
   const login = async (identifier: string, password: string) => {

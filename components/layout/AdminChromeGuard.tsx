@@ -2,8 +2,16 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { BagProvider } from '@/contexts/BagContext';
+import { WishlistProvider } from '@/contexts/WishlistContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+
+const BottomNav = dynamic(() => import('@/components/layout/BottomNav'));
+const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'));
+const FirstOrderPopup = dynamic(() => import('@/components/FirstOrderPopup'));
 
 export default function AdminChromeGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
@@ -12,18 +20,29 @@ export default function AdminChromeGuard({ children }: { children: React.ReactNo
   if (isAdmin) {
     // On admin routes, do NOT render website Navbar/Footer
     return (
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-1">{children}</main>
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col">
+          <main className="flex-1">{children}</main>
+        </div>
+      </AuthProvider>
     );
   }
 
   // Public site chrome
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <BagProvider>
+        <WishlistProvider>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <BottomNav />
+          <WhatsAppButton />
+          <FirstOrderPopup />
+        </WishlistProvider>
+      </BagProvider>
+    </AuthProvider>
   );
 }

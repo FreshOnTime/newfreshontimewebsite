@@ -1,19 +1,10 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter, Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { BagProvider } from "@/contexts/BagContext";
-import { WishlistProvider } from "@/contexts/WishlistContext";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
-import BottomNav from "@/components/layout/BottomNav";
-import WhatsAppButton from "@/components/WhatsAppButton";
-// import ReferralBanner from "@/components/ReferralBanner";
-import FirstOrderPopup from "@/components/FirstOrderPopup";
-import RecentPurchasePopup from "@/components/RecentPurchasePopup";
-// import ChatWidget from "@/components/chat/ChatWidget"; // Temporarily disabled
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,13 +15,14 @@ const inter = Inter({
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-heading",
+  weight: ["400", "700"],
   display: "swap",
 });
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-accent",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600"],
   display: "swap",
 });
 
@@ -133,97 +125,86 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <AuthProvider>
-      <BagProvider>
-        <WishlistProvider>
-          <html lang="en">
-            <body
-              className={`${inter.variable} ${playfair.variable} ${cormorant.variable} min-h-screen bg-background font-sans antialiased`}
-            >
-              <AdminChromeGuard>{children}</AdminChromeGuard>
-              <BottomNav />
-              <WhatsAppButton />
-              <FirstOrderPopup />
-              {/* <RecentPurchasePopup /> */}
-              {/* <ChatWidget /> */}
-              <Toaster />
-              <ServiceWorkerRegistration />
-              {/* Puter.js for AI Chat - Temporarily disabled */}
-              {/* <script src="https://js.puter.com/v2/" async /> */}
-              {process.env.NEXT_PUBLIC_GA_ID && (
-                <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
-              )}
-              <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                  __html: JSON.stringify({
-                    "@context": "https://schema.org",
-                    "@type": "GroceryStore",
-                    "name": "Fresh Pick Sri Lanka",
-                    "image": "https://freshpick.lk/logo.png",
-                    "description": "Premium online grocery store delivering fresh produce and essentials in Colombo, Sri Lanka.",
-                    "url": "https://freshpick.lk",
-                    "telephone": "+94777123456", // Placeholder realistic number
-                    "priceRange": "$$",
-                    "address": {
-                      "@type": "PostalAddress",
-                      "streetAddress": "No. 123, Galle Road",
-                      "addressLocality": "Bambalapitiya",
-                      "addressRegion": "Colombo",
-                      "postalCode": "00400",
-                      "addressCountry": "LK"
-                    },
-                    "geo": {
-                      "@type": "GeoCoordinates",
-                      "latitude": 6.9271,
-                      "longitude": 79.8612
-                    },
-                    "areaServed": [
-                      { "@type": "City", "name": "Colombo" },
-                      { "@type": "City", "name": "Nugegoda" },
-                      { "@type": "City", "name": "Battaramulla" },
-                      { "@type": "City", "name": "Rajagiriya" },
-                      { "@type": "City", "name": "Nawala" },
-                      { "@type": "City", "name": "Dehiwala" },
-                      { "@type": "City", "name": "Mount Lavinia" },
-                      { "@type": "City", "name": "Kollupitiya" },
-                      { "@type": "City", "name": "Bambalapitiya" },
-                      { "@type": "City", "name": "Cinnamon Gardens" }
-                    ],
-                    "hasMap": "https://www.google.com/maps/place/Colombo,+Sri+Lanka",
-                    "makesOffer": {
-                      "@type": "Offer",
-                      "itemOffered": {
-                        "@type": "Service",
-                        "name": "Recurring Order Service",
-                        "description": "Weekly delivery of fresh products and groceries to your doorstep."
-                      }
-                    },
-                    "openingHoursSpecification": [
-                      {
-                        "@type": "OpeningHoursSpecification",
-                        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                        "opens": "08:00",
-                        "closes": "22:00"
-                      }
-                    ],
-                    "sameAs": [
-                      "https://www.facebook.com/freshpicklk",
-                      "https://www.instagram.com/freshpicklk",
-                      "https://twitter.com/freshpicklk"
-                    ],
-                    "potentialAction": {
-                      "@type": "SearchAction",
-                      "target": "https://freshpick.lk/search?q={search_term_string}",
-                      "query-input": "required name=search_term_string"
-                    }
-                  })
-                }}
-              />
-            </body>
-          </html>
-        </WishlistProvider>
-      </BagProvider>
-    </AuthProvider>
+    <html lang="en">
+      <body
+        className={`${inter.variable} ${playfair.variable} ${cormorant.variable} min-h-screen bg-background font-sans antialiased`}
+      >
+        <AdminChromeGuard>{children}</AdminChromeGuard>
+        <Toaster />
+        <ServiceWorkerRegistration />
+        {/* Puter.js for AI Chat - Temporarily disabled */}
+        {/* <script src="https://js.puter.com/v2/" async /> */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "GroceryStore",
+              "name": "Fresh Pick Sri Lanka",
+              "image": "https://freshpick.lk/logo.png",
+              "description": "Premium online grocery store delivering fresh produce and essentials in Colombo, Sri Lanka.",
+              "url": "https://freshpick.lk",
+              "telephone": "+94777123456", // Placeholder realistic number
+              "priceRange": "$$",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "No. 123, Galle Road",
+                "addressLocality": "Bambalapitiya",
+                "addressRegion": "Colombo",
+                "postalCode": "00400",
+                "addressCountry": "LK"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 6.9271,
+                "longitude": 79.8612
+              },
+              "areaServed": [
+                { "@type": "City", "name": "Colombo" },
+                { "@type": "City", "name": "Nugegoda" },
+                { "@type": "City", "name": "Battaramulla" },
+                { "@type": "City", "name": "Rajagiriya" },
+                { "@type": "City", "name": "Nawala" },
+                { "@type": "City", "name": "Dehiwala" },
+                { "@type": "City", "name": "Mount Lavinia" },
+                { "@type": "City", "name": "Kollupitiya" },
+                { "@type": "City", "name": "Bambalapitiya" },
+                { "@type": "City", "name": "Cinnamon Gardens" }
+              ],
+              "hasMap": "https://www.google.com/maps/place/Colombo,+Sri+Lanka",
+              "makesOffer": {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Recurring Order Service",
+                  "description": "Weekly delivery of fresh products and groceries to your doorstep."
+                }
+              },
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                  "opens": "08:00",
+                  "closes": "22:00"
+                }
+              ],
+              "sameAs": [
+                "https://www.facebook.com/freshpicklk",
+                "https://www.instagram.com/freshpicklk",
+                "https://twitter.com/freshpicklk"
+              ],
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://freshpick.lk/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+      </body>
+    </html>
   );
 }

@@ -17,6 +17,7 @@ interface CacheOptions {
   ttl?: number; // Time to live in milliseconds
   forceRefresh?: boolean; // Bypass cache and fetch fresh data
   onError?: (error: Error) => void;
+  initialFetch?: "immediate" | "idle";
 }
 
 interface UseCacheResult<T> {
@@ -135,7 +136,7 @@ export function useLocalStorageCache<T>(
   fetcher: () => Promise<T>,
   options: CacheOptions = {}
 ): UseCacheResult<T> {
-  const { ttl = DEFAULT_TTL, forceRefresh = false, onError } = options;
+  const { ttl = DEFAULT_TTL, forceRefresh = false, onError, initialFetch = "immediate" } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,12 +194,32 @@ export function useLocalStorageCache<T>(
   // Initial load
   useEffect(() => {
     isMounted.current = true;
-    fetchData();
+    if (initialFetch === "immediate") {
+      fetchData();
+      return () => {
+        isMounted.current = false;
+      };
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let idleId: number | null = null;
+    const idleCallback = (window as Window & { requestIdleCallback?: (cb: IdleRequestCallback, options?: IdleRequestOptions) => number }).requestIdleCallback;
+    const cancelIdleCallback = (window as Window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback;
+
+    if (typeof idleCallback === "function") {
+      idleId = idleCallback(() => fetchData(), { timeout: 1500 });
+    } else {
+      timeoutId = setTimeout(() => fetchData(), 1200);
+    }
     
     return () => {
       isMounted.current = false;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (idleId !== null && typeof cancelIdleCallback === "function") {
+        cancelIdleCallback(idleId);
+      }
     };
-  }, [fetchData]);
+  }, [fetchData, initialFetch]);
 
   const refresh = useCallback(async () => {
     await fetchData(true);

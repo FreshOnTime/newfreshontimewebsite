@@ -79,7 +79,7 @@ export function Navbar() {
         })
         .filter((c) => Boolean(c.name) && Boolean(c.slug));
     },
-    { ttl: CACHE_TTL.LONG }
+    { ttl: CACHE_TTL.LONG, initialFetch: "idle" }
   );
 
   const handleSearch = (e: React.FormEvent) => {
