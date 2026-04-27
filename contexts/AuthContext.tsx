@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
 interface User {
   userId: string;
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pathname = usePathname();
 
   const clearError = () => setError(null);
 
@@ -116,8 +119,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    checkAuth();
-  }, [refreshAuth]);
+    const shouldCheckImmediately =
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/profile') ||
+      pathname.startsWith('/orders') ||
+      pathname.startsWith('/bags') ||
+      pathname.startsWith('/checkout') ||
+      pathname.startsWith('/wishlist');
+
+    if (shouldCheckImmediately) {
+      checkAuth();
+      return;
+    }
+
+    const deferredTask = scheduleIdleTask(checkAuth, {
+      timeout: 1200,
+      fallbackDelayMs: 1200,
+    });
+
+    return () => {
+      deferredTask.cancel();
+    };
+  }, [pathname, refreshAuth]);
 
   const login = async (identifier: string, password: string) => {
     try {

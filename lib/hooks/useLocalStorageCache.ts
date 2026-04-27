@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { scheduleIdleTask } from "@/lib/utils/idleCallback";
 
 // Cache configuration
 const CACHE_VERSION = "v1";
@@ -17,6 +18,7 @@ interface CacheOptions {
   ttl?: number; // Time to live in milliseconds
   forceRefresh?: boolean; // Bypass cache and fetch fresh data
   onError?: (error: Error) => void;
+  initialFetch?: "immediate" | "idle";
 }
 
 interface UseCacheResult<T> {
@@ -135,7 +137,7 @@ export function useLocalStorageCache<T>(
   fetcher: () => Promise<T>,
   options: CacheOptions = {}
 ): UseCacheResult<T> {
-  const { ttl = DEFAULT_TTL, forceRefresh = false, onError } = options;
+  const { ttl = DEFAULT_TTL, forceRefresh = false, onError, initialFetch = "immediate" } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,12 +195,21 @@ export function useLocalStorageCache<T>(
   // Initial load
   useEffect(() => {
     isMounted.current = true;
-    fetchData();
+    let deferredTask: { cancel: () => void } | null = null;
+
+    if (initialFetch === "immediate") {
+      fetchData();
+    } else {
+      deferredTask = scheduleIdleTask(() => {
+        fetchData();
+      }, { timeout: 1500, fallbackDelayMs: 1200 });
+    }
     
     return () => {
       isMounted.current = false;
+      deferredTask?.cancel();
     };
-  }, [fetchData]);
+  }, [fetchData, initialFetch]);
 
   const refresh = useCallback(async () => {
     await fetchData(true);
