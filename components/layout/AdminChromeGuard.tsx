@@ -9,9 +9,9 @@ import { WishlistProvider } from '@/contexts/WishlistContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
-const BottomNav = dynamic(() => import('@/components/layout/BottomNav'));
-const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'));
-const FirstOrderPopup = dynamic(() => import('@/components/FirstOrderPopup'));
+const BottomNav = dynamic(() => import('@/components/layout/BottomNav'), { loading: () => null, ssr: false });
+const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), { loading: () => null, ssr: false });
+const FirstOrderPopup = dynamic(() => import('@/components/FirstOrderPopup'), { loading: () => null, ssr: false });
 
 export default function AdminChromeGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';

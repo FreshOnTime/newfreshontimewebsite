@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { scheduleIdleTask } from "@/lib/utils/idleCallback";
 
 // Cache configuration
 const CACHE_VERSION = "v1";
@@ -194,30 +195,19 @@ export function useLocalStorageCache<T>(
   // Initial load
   useEffect(() => {
     isMounted.current = true;
+    let deferredTask: { cancel: () => void } | null = null;
+
     if (initialFetch === "immediate") {
       fetchData();
-      return () => {
-        isMounted.current = false;
-      };
-    }
-
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let idleId: number | null = null;
-    const idleCallback = (window as Window & { requestIdleCallback?: (cb: IdleRequestCallback, options?: IdleRequestOptions) => number }).requestIdleCallback;
-    const cancelIdleCallback = (window as Window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback;
-
-    if (typeof idleCallback === "function") {
-      idleId = idleCallback(() => fetchData(), { timeout: 1500 });
     } else {
-      timeoutId = setTimeout(() => fetchData(), 1200);
+      deferredTask = scheduleIdleTask(() => {
+        fetchData();
+      }, { timeout: 1500, fallbackDelayMs: 1200 });
     }
     
     return () => {
       isMounted.current = false;
-      if (timeoutId) clearTimeout(timeoutId);
-      if (idleId !== null && typeof cancelIdleCallback === "function") {
-        cancelIdleCallback(idleId);
-      }
+      deferredTask?.cancel();
     };
   }, [fetchData, initialFetch]);
 

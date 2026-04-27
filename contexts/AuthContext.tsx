@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
 interface User {
   userId: string;
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pathname = usePathname();
 
   const clearError = () => setError(null);
 
@@ -116,43 +119,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    const path = typeof window !== 'undefined' ? window.location.pathname : '';
     const shouldCheckImmediately =
-      path.startsWith('/admin') ||
-      path.startsWith('/profile') ||
-      path.startsWith('/orders') ||
-      path.startsWith('/bags') ||
-      path.startsWith('/checkout') ||
-      path.startsWith('/wishlist');
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/profile') ||
+      pathname.startsWith('/orders') ||
+      pathname.startsWith('/bags') ||
+      pathname.startsWith('/checkout') ||
+      pathname.startsWith('/wishlist');
 
     if (shouldCheckImmediately) {
       checkAuth();
       return;
     }
 
-    const deferMs = 1200;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let idleId: number | null = null;
-    const idleCallback = (window as Window & { requestIdleCallback?: (cb: IdleRequestCallback, options?: IdleRequestOptions) => number }).requestIdleCallback;
-    const cancelIdleCallback = (window as Window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback;
-
-    if (typeof idleCallback === 'function') {
-      idleId = idleCallback(() => {
-        checkAuth();
-      }, { timeout: deferMs });
-    } else {
-      timeoutId = setTimeout(() => {
-        checkAuth();
-      }, deferMs);
-    }
+    const deferredTask = scheduleIdleTask(checkAuth, {
+      timeout: 1200,
+      fallbackDelayMs: 1200,
+    });
 
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      if (idleId !== null && typeof cancelIdleCallback === 'function') {
-        cancelIdleCallback(idleId);
-      }
+      deferredTask.cancel();
     };
-  }, [refreshAuth]);
+  }, [pathname, refreshAuth]);
 
   const login = async (identifier: string, password: string) => {
     try {
