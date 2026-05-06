@@ -12,7 +12,7 @@ interface HomemadeContentProps {
 
 export default function HomemadeContent({ products }: HomemadeContentProps) {
     return (
-        <div className="relative bg-zinc-900 text-zinc-100 selection:bg-amber-900 selection:text-amber-100 overflow-clip">
+        <div className="relative bg-zinc-950 text-zinc-100 selection:bg-emerald-500/40 selection:text-emerald-50 overflow-clip">
             {/* Cinematic Grain Overlay */}
             <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.03] mix-blend-overlay">
                 <svg className="h-full w-full">
@@ -72,7 +72,7 @@ function HeroSection() {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="inline-block"
                     >
-                        <span className="inline-flex items-center gap-3 border-y border-amber-500/30 py-3 px-6 text-amber-500 text-xs md:text-sm tracking-[0.4em] uppercase font-bold">
+                        <span className="inline-flex items-center gap-3 border-y border-emerald-500/30 py-3 px-6 text-emerald-300 text-xs md:text-sm tracking-[0.4em] uppercase font-bold">
                             Curated Excellence
                         </span>
                     </motion.div>
@@ -84,7 +84,7 @@ function HeroSection() {
                         className="font-serif text-6xl md:text-8xl tracking-tight text-white leading-[0.9]"
                     >
                         Homemade & <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 italic pr-2">Handcrafted.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-emerald-100 to-emerald-200 italic pr-2">Handcrafted.</span>
                     </motion.h1>
 
                     <motion.p
@@ -106,21 +106,21 @@ function PhilosophySection() {
         <section className="relative z-20 py-24 container mx-auto px-4 border-t border-white/5">
             <div className="max-w-7xl mx-auto">
                 <div className="grid md:grid-cols-3 gap-12 text-center md:text-left">
-                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
-                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Authentic Origins</h3>
-                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
+                    <div className="space-y-4 p-8 bg-zinc-900/60 backdrop-blur-sm border border-white/10 hover:bg-zinc-900/80 transition-colors duration-500 group">
+                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-emerald-300 transition-colors">Authentic Origins</h3>
+                        <p className="text-zinc-400 font-light leading-relaxed group-hover:text-zinc-300 transition-colors">
                             Sourced directly from home kitchens. No factories. No assembly lines. Just pure, unadulterated craft.
                         </p>
                     </div>
-                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
-                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Small Batch</h3>
-                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
+                    <div className="space-y-4 p-8 bg-zinc-900/60 backdrop-blur-sm border border-white/10 hover:bg-zinc-900/80 transition-colors duration-500 group">
+                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-emerald-300 transition-colors">Small Batch</h3>
+                        <p className="text-zinc-400 font-light leading-relaxed group-hover:text-zinc-300 transition-colors">
                             Limited quantities ensure meticulous attention to detail. When it's gone, it's gone until the next harvest.
                         </p>
                     </div>
-                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
-                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Community First</h3>
-                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
+                    <div className="space-y-4 p-8 bg-zinc-900/60 backdrop-blur-sm border border-white/10 hover:bg-zinc-900/80 transition-colors duration-500 group">
+                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-emerald-300 transition-colors">Community First</h3>
+                        <p className="text-zinc-400 font-light leading-relaxed group-hover:text-zinc-300 transition-colors">
                             Every purchase directly supports a local entrepreneur, fueling the domestic economy from the ground up.
                         </p>
                     </div>
@@ -136,12 +136,12 @@ function ProductDisplaySection({ products }: { products: Product[] }) {
             <div className="container mx-auto px-4">
                 <div className="flex items-end justify-between mb-20 border-b border-white/10 pb-8">
                     <div>
-                        <span className="text-amber-500 text-xs font-bold tracking-[0.3em] uppercase mb-4 block">The Collection</span>
+                        <span className="text-emerald-400 text-xs font-bold tracking-[0.3em] uppercase mb-4 block">The Collection</span>
                         <h2 className="text-4xl md:text-5xl font-serif text-white">
                             Limited Releases
                         </h2>
                     </div>
-                    <span className="hidden md:block text-sm text-zinc-500 font-medium tracking-widest uppercase pb-2">
+                    <span className="hidden md:block text-sm text-zinc-400 font-medium tracking-widest uppercase pb-2">
                         {products.length} {products.length === 1 ? 'Masterpiece' : 'Masterpieces'} Available
                     </span>
                 </div>
@@ -149,7 +149,7 @@ function ProductDisplaySection({ products }: { products: Product[] }) {
                 <ProductGrid products={products} />
 
                 {products.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-32 bg-white/5 border border-white/5 border-dashed">
+                    <div className="flex flex-col items-center justify-center py-32 bg-white/5 border border-white/10 border-dashed">
                         <div className="w-16 h-16 mb-6 rounded-full bg-white/5 flex items-center justify-center">
                             <span className="text-2xl">✨</span>
                         </div>
