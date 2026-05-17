@@ -195,24 +195,24 @@ export default async function Home() {
       <CategoryBento categories={categories} />
 
       {/* Featured Products Section */}
-      <section className="py-24 md:py-32 bg-zinc-950">
+      <section className="py-24 md:py-32 bg-transparent">
         <div className="container mx-auto px-4 md:px-8">
           <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
             <div>
-              <span className="text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
+              <span className="text-amber-500 text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
                 Trending Now
               </span>
-              <h2 className="text-4xl md:text-6xl font-heading font-medium mb-4 text-white tracking-tight leading-[1.1]">
-                Featured <span className="italic font-serif text-emerald-400">Selections</span>
+              <h2 className="text-4xl md:text-6xl font-heading font-medium mb-4 text-zinc-900 tracking-tight leading-[1.1]">
+                Featured <span className="italic font-serif text-emerald-700">Selections</span>
               </h2>
-              <p className="text-lg md:text-xl text-zinc-400 max-w-xl font-light leading-relaxed">
+              <p className="text-lg md:text-xl text-zinc-500 max-w-xl font-light leading-relaxed">
                 Curated favorites, loved by our most discerning customers.
               </p>
             </div>
             <Button
               asChild
               variant="outline"
-              className="mt-6 md:mt-0 border-white/20 text-white hover:bg-emerald-500 hover:text-zinc-950 hover:border-emerald-400 rounded-full px-8 py-6 text-sm font-medium tracking-wide transition-all"
+              className="mt-6 md:mt-0 border-zinc-200 text-zinc-900 hover:bg-zinc-900 hover:text-white rounded-full px-8 py-6 text-sm font-medium tracking-wide transition-all"
             >
               <Link href="/products">
                 View All Products

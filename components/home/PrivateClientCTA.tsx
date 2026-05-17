@@ -15,7 +15,7 @@ export default function PrivateClientCTA() {
             </div>
 
             <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <span className="inline-block py-1 px-3 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-bold tracking-[0.2em] uppercase mb-8 backdrop-blur-sm">
+                <span className="inline-block py-1 px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold tracking-[0.2em] uppercase mb-8 backdrop-blur-sm">
                     Private Client Services
                 </span>
 
@@ -41,7 +41,7 @@ export default function PrivateClientCTA() {
 
                 <div className="mt-12 flex items-center justify-center gap-8 text-white/40 text-sm font-medium tracking-widest uppercase">
                     <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 fill-emerald-400 text-emerald-400" />
+                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                         Priority Access
                     </div>
                     <div className="w-1 h-1 bg-white/20 rounded-full" />
