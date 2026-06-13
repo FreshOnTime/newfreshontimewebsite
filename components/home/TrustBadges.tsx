@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Shield, Truck, Leaf, Award, Clock, CreditCard } from "lucide-react";
 
 const badges = [
@@ -38,26 +35,22 @@ const badges = [
 
 export default function TrustBadges() {
     return (
-        <section className="py-12 bg-white border-b border-zinc-100">
+        <section className="border-b border-zinc-100 bg-white py-12">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-                    {badges.map((badge, index) => (
-                        <motion.div
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-6">
+                    {badges.map((badge) => (
+                        <div
                             key={badge.title}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
-                            className="flex items-center gap-4 p-4 rounded-none transition-all duration-300 group"
+                            className="group flex items-center gap-4 rounded-none p-4 transition-all duration-300"
                         >
-                            <div className="w-12 h-12 flex items-center justify-center flex-shrink-0 border border-zinc-200 rounded-full group-hover:border-emerald-900 group-hover:bg-emerald-900 transition-all duration-500">
-                                <badge.icon className="w-5 h-5 text-zinc-900 group-hover:text-emerald-50 transition-colors duration-500 stroke-1" />
+                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-zinc-200 transition-all duration-500 group-hover:border-emerald-900 group-hover:bg-emerald-900">
+                                <badge.icon className="h-5 w-5 stroke-1 text-zinc-900 transition-colors duration-500 group-hover:text-emerald-50" />
                             </div>
                             <div>
-                                <p className="font-serif font-medium text-zinc-900 text-base tracking-wide">{badge.title}</p>
-                                <p className="text-xs text-zinc-500 uppercase tracking-widest mt-1">{badge.description}</p>
+                                <p className="font-serif text-base font-medium tracking-wide text-zinc-900">{badge.title}</p>
+                                <p className="mt-1 text-xs uppercase tracking-widest text-zinc-500">{badge.description}</p>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>
