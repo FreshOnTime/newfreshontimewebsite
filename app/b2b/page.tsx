@@ -1,70 +1,126 @@
 import type { Metadata } from 'next';
 import B2BContent from './B2BContent';
 
+const SITE_URL = 'https://freshpick.lk';
+const SERVICE_AREAS = [
+    'Colombo',
+    'Rajagiriya',
+    'Battaramulla',
+    'Nawala',
+    'Nugegoda',
+    'Dehiwala',
+    'Mount Lavinia',
+    'Kollupitiya',
+    'Bambalapitiya',
+];
+
 export const metadata: Metadata = {
-    title: "Premium Wholesale Vegetable Suppliers in Sri Lanka | Private Client Division | Fresh Pick",
-    description: "The definitive produce supply chain for Colombo's Michelin-standard kitchens. Exclusive wholesale partnership for high-end restaurants, hotels, and luxury villas. Strictly by application.",
-    keywords: "wholesale vegetables colombo, luxury produce suppliers sri lanka, fine dining vegetable suppliers, hotel vegetable delivery colombo, organic wholesale sri lanka, premium vegetable suppliers, restaurant supply chain colombo",
+    title: "B2B Fresh Produce Supply Colombo | Restaurants, Hotels, Farmers & Households | Fresh Pick",
+    description: "Fresh Pick supplies restaurants, hotels, offices, premium households, and farmers with reliable fresh produce sourcing, recurring grocery plans, and Colombo delivery support.",
+    keywords: [
+        "B2B fresh produce Colombo",
+        "restaurant vegetable supplier Colombo",
+        "hotel grocery supplier Sri Lanka",
+        "fresh produce supplier Sri Lanka",
+        "farm to table supplier Colombo",
+        "recurring grocery delivery Colombo",
+        "office pantry supplier Colombo",
+        "premium household grocery plans Sri Lanka",
+        "farmer sourcing Sri Lanka",
+        "wholesale vegetables Colombo",
+    ],
     openGraph: {
-        title: "Fresh Pick Private Client Division | The Finest Produce in Ceylon",
-        description: "Curated for the executive chef. Direct farm-to-kitchen logistics. Uncompromising quality.",
-        url: 'https://freshpick.lk/b2b',
-        siteName: 'Fresh Pick',
+        title: "Fresh Pick B2B Supply Network | Colombo Fresh Produce Delivery",
+        description: "Premium recurring produce supply for restaurants, hotels, offices, households, and farmer sourcing partnerships in Sri Lanka.",
+        url: `${SITE_URL}/b2b`,
+        siteName: 'Fresh Pick Sri Lanka',
         locale: 'en_LK',
         type: 'website',
+        images: [
+            {
+                url: '/og-image.jpg',
+                width: 1200,
+                height: 630,
+                alt: 'Fresh Pick B2B fresh produce supply in Colombo',
+            },
+        ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: "Fresh Pick Private Client | Wholesale",
-        description: "The supply chain behind Colombo's best menus.",
+        title: "Fresh Pick B2B Supply Network",
+        description: "Fresh produce sourcing and recurring supply for Colombo restaurants, hotels, offices, households, and farmers.",
+        images: ['/twitter-image.jpg'],
     },
     alternates: {
-        canonical: 'https://freshpick.lk/b2b',
+        canonical: `${SITE_URL}/b2b`,
     },
-    // Geo-targeting for Colombo, Sri Lanka
     other: {
-        "geo.region": "LK-11", // Colombo District
-        "geo.placename": "Colombo",
+        "geo.region": "LK-11",
+        "geo.placename": "Colombo, Sri Lanka",
         "geo.position": "6.9271;79.8612",
-        "ICBM": "6.9271, 79.8612"
-    }
+        "ICBM": "6.9271, 79.8612",
+    },
 };
 
 export default function B2BPage() {
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "WholesaleStore",
-        "name": "Fresh Pick Private Client Division",
-        "image": "https://freshpick.lk/images/og-b2b.jpg", // Placeholder or actual image
-        "description": "Premium B2B vegetable supply service for high-end hotels and restaurants in Sri Lanka.",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Colombo Wholesale Market",
-            "addressLocality": "Colombo",
-            "addressRegion": "Western Province",
-            "postalCode": "00100",
-            "addressCountry": "LK"
-        },
-        "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": 6.9271,
-            "longitude": 79.8612
-        },
-        "url": "https://freshpick.lk/b2b",
-        "telephone": "+94771234567",
-        "priceRange": "$$$",
-        "areaServed": [
+        "@graph": [
             {
-                "@type": "City",
-                "name": "Colombo"
+                "@type": "WebPage",
+                "@id": `${SITE_URL}/b2b#webpage`,
+                "url": `${SITE_URL}/b2b`,
+                "name": "Fresh Pick B2B Fresh Produce Supply Network",
+                "description": "B2B and recurring fresh produce supply for restaurants, hotels, offices, premium households, and farmer sourcing partnerships in Colombo, Sri Lanka.",
+                "isPartOf": { "@id": `${SITE_URL}/#website` },
+                "about": { "@id": `${SITE_URL}/b2b#service` },
+                "inLanguage": "en-LK",
             },
             {
-                "@type": "City",
-                "name": "Galle"
+                "@type": "Service",
+                "@id": `${SITE_URL}/b2b#service`,
+                "name": "Fresh Produce Supply and Recurring Grocery Procurement",
+                "serviceType": "Fresh produce supply, grocery procurement, recurring grocery delivery, farmer sourcing coordination",
+                "provider": { "@id": `${SITE_URL}/#organization` },
+                "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", name })),
+                "audience": [
+                    { "@type": "BusinessAudience", "name": "Restaurants and cloud kitchens" },
+                    { "@type": "BusinessAudience", "name": "Hotels, cafes and offices" },
+                    { "@type": "Audience", "name": "Premium households and private residences" },
+                    { "@type": "Audience", "name": "Sri Lankan farmers and grower networks" },
+                ],
+                "offers": {
+                    "@type": "OfferCatalog",
+                    "name": "Fresh Pick B2B Supply Plans",
+                    "itemListElement": [
+                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Restaurant and hotel produce supply" } },
+                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Office pantry and staff meal supply" } },
+                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Premium household recurring grocery plans" } },
+                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Farmer sourcing and harvest coordination" } }
+                    ]
+                }
             },
             {
-                "@type": "City",
-                "name": "Kandy"
+                "@type": "FAQPage",
+                "@id": `${SITE_URL}/b2b#faq`,
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Who can use Fresh Pick B2B supply?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Fresh Pick supports restaurants, hotels, cafes, offices, premium households, villas, and farmer sourcing partnerships that need reliable fresh produce supply in Colombo."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does Fresh Pick support recurring grocery orders?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Yes. Fresh Pick supports daily, weekly, and custom recurring grocery plans for business kitchens, office pantry needs, and household staples."
+                        }
+                    }
+                ]
             }
         ]
     };

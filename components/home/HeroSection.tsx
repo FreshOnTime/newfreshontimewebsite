@@ -1,51 +1,43 @@
-"use client";
-
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function HeroSection() {
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
+        <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950">
             <div className="absolute inset-0 z-0">
                 <Image
                     src="/bgs/landing-page-bg-1.jpg"
-                    alt="Fresh vegetables background"
+                    alt="Fresh vegetables and groceries delivered in Colombo"
                     fill
                     sizes="100vw"
-                    className="object-cover opacity-60 scale-105 animate-subtle-zoom"
+                    className="object-cover opacity-55 scale-105 animate-subtle-zoom"
                     priority
+                    fetchPriority="high"
                 />
-                {/* Cinematic Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-zinc-950"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] opacity-80"></div>
-                {/* Noise Texture */}
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.2] mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-zinc-950" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.82)_100%)] opacity-80" />
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.16] mix-blend-overlay" />
             </div>
 
-            <div className="container mx-auto px-4 md:px-8 lg:px-12 relative z-10 text-center">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                >
-                    <span className="inline-block py-1 px-4 rounded-full bg-emerald-950/30 backdrop-blur-md border border-emerald-500/10 text-emerald-400 text-xs font-bold tracking-[0.3em] uppercase mb-8 shadow-2xl">
+            <div className="container relative z-10 mx-auto px-4 text-center md:px-8 lg:px-12">
+                <div className="animate-fade-up">
+                    <span className="mb-8 inline-block rounded-full border border-emerald-500/10 bg-emerald-950/30 px-4 py-1 text-xs font-bold uppercase tracking-[0.3em] text-emerald-400 shadow-2xl backdrop-blur-md">
                         Est. 2024 • Colombo
                     </span>
-                    <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-medium text-white mb-8 tracking-tighter leading-[0.9] drop-shadow-2xl">
+                    <h1 className="mb-8 font-serif text-6xl font-medium leading-[0.9] tracking-tighter text-white drop-shadow-2xl md:text-8xl lg:text-9xl">
                         The Art of <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-emerald-500 italic font-light pr-4">Freshness</span>
+                        <span className="bg-gradient-to-r from-emerald-200 to-emerald-500 bg-clip-text pr-4 font-light italic text-transparent">Freshness</span>
                     </h1>
-                    <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
-                        Curating fresh products and recurring orders for the most discerning tables in Colombo, Sri Lanka.
+                    <p className="mx-auto mb-12 max-w-2xl text-lg font-light leading-relaxed tracking-wide text-zinc-400 md:text-xl">
+                        Curating fresh groceries, recurring orders, and produce supply for homes, restaurants, hotels, and offices in Colombo, Sri Lanka.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row gap-5 justify-center">
+                    <div className="flex flex-col justify-center gap-5 sm:flex-row">
                         <Button
                             asChild
                             size="lg"
-                            className="bg-white text-zinc-950 hover:bg-emerald-50 px-12 py-8 text-sm font-bold tracking-widest uppercase rounded-none transition-all hover:scale-105"
+                            className="rounded-none bg-white px-12 py-8 text-sm font-bold uppercase tracking-widest text-zinc-950 transition-all hover:scale-105 hover:bg-emerald-50"
                         >
                             <Link href="/products">Shop Experience</Link>
                         </Button>
@@ -53,16 +45,16 @@ export default function HeroSection() {
                             asChild
                             size="lg"
                             variant="outline"
-                            className="bg-transparent border border-white/20 text-white hover:bg-white/5 px-12 py-8 text-sm font-medium tracking-widest uppercase rounded-none backdrop-blur-sm transition-all"
+                            className="rounded-none border border-white/20 bg-transparent px-12 py-8 text-sm font-medium uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/5"
                         >
-                            <Link href="/categories">View Collections</Link>
+                            <Link href="/b2b">Supply Plans</Link>
                         </Button>
                     </div>
-                </motion.div>
+                </div>
             </div>
 
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-white/50">
-                <span className="text-xs tracking-widest uppercase">
+                <span className="text-xs uppercase tracking-widest">
                     Scroll to Discover
                 </span>
             </div>
