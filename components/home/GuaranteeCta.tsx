@@ -5,29 +5,40 @@ import Link from "next/link";
 
 export default function GuaranteeCta() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-zinc-900" />
-      <div className="absolute inset-0 -z-0 opacity-30 bg-[url('/noise.png')] mix-blend-overlay" />
-      <div className="absolute inset-0 -z-0 bg-gradient-to-r from-emerald-900/50 to-black/50" />
-      <div className="container mx-auto px-4 py-20 text-white relative z-10">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 bg-zinc-800/50 p-8 md:p-12 rounded-[2rem] border border-white/5 backdrop-blur-sm">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-500/20 rounded-full text-emerald-400">
-                <ShieldCheck className="w-6 h-6" />
+    <section className="relative overflow-hidden bg-[#020303]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/20 to-transparent" />
+        <div className="absolute left-1/2 top-10 h-56 w-[42rem] -translate-x-1/2 rounded-full bg-emerald-400/[0.035] blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.045),transparent_42%)]" />
+      </div>
+
+      <div className="container relative z-10 mx-auto px-4 py-20 text-white">
+        <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-md md:p-12">
+          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/35 to-transparent" />
+          <div className="flex flex-col items-start justify-between gap-10 md:flex-row md:items-center">
+            <div className="max-w-2xl">
+              <div className="mb-5 flex items-center gap-3">
+                <div className="rounded-full border border-emerald-300/15 bg-emerald-300/10 p-2.5 text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.08)]">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <span className="text-sm font-bold uppercase tracking-[0.22em] text-emerald-300">Our Promise</span>
               </div>
-              <span className="text-sm font-bold uppercase tracking-widest text-emerald-400">Our Promise</span>
+              <h3 className="mb-4 font-serif text-3xl font-semibold leading-tight tracking-tight text-white md:text-4xl">
+                Freshness backed by a simple guarantee
+              </h3>
+              <p className="max-w-xl text-lg font-light leading-relaxed text-zinc-300">
+                If something isn’t perfect, we’ll replace it or refund you quickly. No stress, just freshness.
+              </p>
             </div>
-            <h3 className="text-3xl md:text-4xl font-serif font-bold leading-tight mb-4">Satisfaction guaranteed or your money back</h3>
-            <p className="text-zinc-300 text-lg leading-relaxed">If something isn’t perfect, we’ll replace it or refund you instantly. No questions, just freshness.</p>
+
+            <Link
+              href="/products"
+              className="group inline-flex items-center justify-center whitespace-nowrap rounded-full border border-emerald-300/30 bg-emerald-300/10 px-8 py-4 text-base font-bold text-emerald-50 shadow-[0_16px_45px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-300 hover:text-zinc-950"
+            >
+              Start shopping
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
-          <Link
-            href="/products"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-emerald-500 text-zinc-950 font-bold text-lg shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:bg-emerald-400 hover:scale-105 transition-all duration-300 whitespace-nowrap"
-          >
-            Start shopping
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
         </div>
       </div>
     </section>
