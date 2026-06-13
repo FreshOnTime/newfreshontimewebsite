@@ -21,7 +21,7 @@ export default function HeroSection() {
             </div>
 
             <div className="container relative z-10 mx-auto px-4 text-center md:px-8 lg:px-12">
-                <div className="animate-fade-in-up">
+                <div className="animate-fade-up">
                     <span className="mb-8 inline-block rounded-full border border-emerald-500/10 bg-emerald-950/30 px-4 py-1 text-xs font-bold uppercase tracking-[0.3em] text-emerald-400 shadow-2xl backdrop-blur-md">
                         Est. 2024 • Colombo
                     </span>
