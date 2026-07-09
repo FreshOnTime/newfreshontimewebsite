@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/contexts/AuthContext';
 import {
   ShoppingBag,
   Clock,
@@ -66,7 +65,6 @@ const statusVariant = (status: string): 'default' | 'secondary' | 'destructive' 
 const money = (n: number) => `Rs. ${(Number(n) || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function CustomerDashboard() {
-  const { user } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<CustomerDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,11 +100,6 @@ export default function CustomerDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName || 'there'}</h2>
-        <p className="text-muted-foreground">Here&apos;s an overview of your orders, deliveries, and saved items.</p>
-      </div>
-
       {/* Stat tiles */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map(({ label, value, icon: Icon, hint }) => (
@@ -221,29 +214,6 @@ export default function CustomerDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Button variant="outline" onClick={() => router.push('/products')}>
-              Browse Products
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/bags')}>
-              My Bags
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/profile/subscriptions')}>
-              Subscriptions
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/wishlist')}>
-              Wishlist
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

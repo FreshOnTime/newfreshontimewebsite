@@ -16,9 +16,13 @@ const FirstOrderPopup = dynamic(() => import('@/components/FirstOrderPopup'), { 
 export default function AdminChromeGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
   const isAdmin = pathname.startsWith('/admin');
+  // The customer/supplier dashboard renders its own sidebar + header chrome,
+  // so suppress the public Navbar/Footer there (same as admin). Scoped to the
+  // exact path — the orphaned /dashboard/* sub-pages keep the public chrome.
+  const isDashboard = pathname === '/dashboard';
 
-  if (isAdmin) {
-    // On admin routes, do NOT render website Navbar/Footer
+  if (isAdmin || isDashboard) {
+    // On admin/dashboard routes, do NOT render website Navbar/Footer
     return (
       <AuthProvider>
         <div className="min-h-screen flex flex-col">

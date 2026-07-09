@@ -1,15 +1,27 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { ProfileCard } from '@/components/dashboard/ProfileCard';
 import SupplierDashboard from '@/components/supplier/SupplierDashboard';
 import CustomerDashboard from '@/components/customer/CustomerDashboard';
+import UploadProducts from '@/components/supplier/UploadProducts';
+import MessageList from '@/components/supplier/MessageList';
+
+const SECTION_LABELS: Record<string, string> = {
+  overview: 'Overview',
+  products: 'Products',
+  messages: 'Messages',
+  profile: 'Profile',
+};
 
 export default function DashboardPage() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+  const [section, setSection] = useState('overview');
 
   useEffect(() => {
     if (loading) return;
@@ -22,39 +34,72 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center">
-          <div className="text-lg">Loading...</div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-700" />
       </div>
     );
   }
 
-  if (!user) {
-    return null; // Redirecting to login
+  if (!user || user.role === 'admin') {
+    return null; // Redirecting
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button onClick={handleLogout} variant="outline">
-          Logout
-        </Button>
-      </div>
+  const isSupplier = user.role === 'supplier';
+  const title = isSupplier ? 'Supplier Dashboard' : 'My Account';
 
-      {user.role === 'supplier' ? (
-        <SupplierDashboard />
-      ) : (
-        <CustomerDashboard />
-      )}
+  const heading =
+    section === 'overview'
+      ? isSupplier
+        ? 'Overview'
+        : `Welcome back, ${user.firstName || 'there'}`
+      : SECTION_LABELS[section] ?? 'Overview';
+
+  const description =
+    section === 'overview'
+      ? isSupplier
+        ? 'A snapshot of your catalog, stock, and recent uploads.'
+        : "Here's an overview of your orders, deliveries, and saved items."
+      : undefined;
+
+  const renderSection = () => {
+    if (isSupplier) {
+      switch (section) {
+        case 'products':
+          return <UploadProducts />;
+        case 'messages':
+          return <MessageList />;
+        case 'profile':
+          return <ProfileCard />;
+        default:
+          return <SupplierDashboard />;
+      }
+    }
+    // Customer
+    switch (section) {
+      case 'profile':
+        return <ProfileCard />;
+      default:
+        return <CustomerDashboard />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <DashboardSidebar role={user.role} active={section} onSelect={setSection} title={title} />
+      <div className="lg:pl-64">
+        <DashboardHeader title={title} />
+        <main className="p-6">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-gray-900">{heading}</h1>
+              {description && <p className="text-sm text-muted-foreground">{description}</p>}
+            </div>
+            {renderSection()}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
