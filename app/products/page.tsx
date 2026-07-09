@@ -5,15 +5,13 @@ import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import ProductsFilterBar from "@/components/products/ProductsFilterBar";
 import ProductsPagination from "@/components/products/ProductsPagination";
 
-import connectDB from '@/lib/database';
-import EnhancedProduct, { type IProduct } from '@/lib/models/EnhancedProduct';
-import Category from '@/lib/models/Category';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
+import { serializeProductForUi } from '@/lib/productSerializer';
 
 // Read directly from the database in server components to avoid relying on internal API fetch
 async function getProducts(query: string) {
   try {
-    await connectDB();
-
     const urlParams = new URLSearchParams(query);
     const pageParam = parseInt(urlParams.get('page') || '1', 10);
     const limitParam = parseInt(urlParams.get('limit') || '24', 10);
@@ -30,138 +28,56 @@ async function getProducts(query: string) {
     const sortParam = urlParams.get('sort');
     const tagsParam = urlParams.get('tags'); // New: Tags support
 
-    const filter: Record<string, unknown> = {};
-    filter.archived = archivedParam ? archivedParam === 'true' : false;
+    const where: Prisma.ProductWhereInput = {
+      archived: archivedParam ? archivedParam === 'true' : false,
+    };
 
     // Tag filtering (supports comma separated)
     if (tagsParam) {
       const tags = tagsParam.split(',').filter(Boolean);
       if (tags.length > 0) {
-        // Using $all to ensure product has ALL selected tags (stricter)
-        // Or use $in for ANY of the selected tags. Often for sidebar filters, OR is more common within a group, 
-        // but if we treat diet + origin as one tag list, it depends.
-        // Let's use $in for now as "Match any of these attributes" is friendlier for exploration.
-        // Actually, if I select "Vegan" AND "Local", I probably want both.
-        // But if I select "Local" OR "Imported", I want either.
-        // Since we pass them all as one 'tags' param, simple approach is $in.
-        // For precision, we might need separate params, but let's start with $in.
-        // Wait, the UI passes 'tags' as a single comma list.
-        filter.tags = { $in: tags.map(t => new RegExp(t, 'i')) };
+        where.tags = { hasSome: tags };
       }
     }
 
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { sku: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } },
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { sku: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { tags: { has: search } },
       ];
     }
-    if (categoryId) filter.categoryId = categoryId;
-    if (supplierId) filter.supplierId = supplierId;
+    if (categoryId) where.categoryId = categoryId;
+    if (supplierId) where.supplierId = supplierId;
 
-    const priceFilter: Record<string, unknown> = {};
     const minPrice = minPriceParam ? parseFloat(minPriceParam) : undefined;
     const maxPrice = maxPriceParam ? parseFloat(maxPriceParam) : undefined;
-    if (typeof minPrice === 'number' && isFinite(minPrice)) priceFilter.$gte = minPrice;
-    if (typeof maxPrice === 'number' && isFinite(maxPrice)) priceFilter.$lte = maxPrice;
-    if (Object.keys(priceFilter).length) filter.price = priceFilter;
-    if (inStockParam === 'true') filter.stockQty = { $gt: 0 };
+    if ((typeof minPrice === 'number' && isFinite(minPrice)) || (typeof maxPrice === 'number' && isFinite(maxPrice))) {
+      where.price = {};
+      if (typeof minPrice === 'number' && isFinite(minPrice)) where.price.gte = minPrice;
+      if (typeof maxPrice === 'number' && isFinite(maxPrice)) where.price.lte = maxPrice;
+    }
+    if (inStockParam === 'true') where.stockQty = { gt: 0 };
 
-    let sort: Record<string, 1 | -1> = { createdAt: -1 };
-    if (sortParam === 'price-asc') sort = { price: 1 };
-    else if (sortParam === 'price-desc') sort = { price: -1 };
-    else if (sortParam === 'newest') sort = { createdAt: -1 };
-    else if (sortParam === 'oldest') sort = { createdAt: 1 };
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+    if (sortParam === 'price-asc') orderBy = { price: 'asc' };
+    else if (sortParam === 'price-desc') orderBy = { price: 'desc' };
+    else if (sortParam === 'oldest') orderBy = { createdAt: 'asc' };
 
-    const totalCount = await EnhancedProduct.countDocuments(filter);
+    const totalCount = await prisma.product.count({ where });
     const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / limit);
     const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
     const skip = totalPages === 0 ? 0 : (currentPage - 1) * limit;
 
-    const rawProducts = await EnhancedProduct.find<IProduct>(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    interface CategoryIdentifiable {
-      categoryId?: unknown;
-    }
-
-    const categoryIds: string[] = Array.from<string>(
-      new Set<string>(
-        rawProducts
-          .map((product) => {
-            const id = (product as CategoryIdentifiable)?.categoryId;
-            return id ? String(id) : null;
-          })
-          .filter((id): id is string => Boolean(id))
-      )
-    );
-    const categories = categoryIds.length
-      ? await Category.find({ _id: { $in: categoryIds } }).select('name slug').lean()
-      : [];
-    const categoryMap = new Map<string, { name: string; slug: string }>();
-    for (const c of categories as Array<{ _id: unknown; name?: string; slug?: string }>) {
-      const id = String(c._id);
-      categoryMap.set(id, { name: c.name || '', slug: c.slug || '' });
-    }
-
-    const products = rawProducts.map((product) => {
-      const single = product.image;
-      const first = Array.isArray(product.images) ? product.images[0] : undefined;
-      const img = single || first || '/placeholder.svg';
-      const attrs = (product.attributes ?? {}) as Record<string, unknown>;
-      const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
-      const unitOptions = Array.isArray(maybeUnitOptions)
-        ? maybeUnitOptions
-          .map((opt) => {
-            const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
-            const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
-              ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
-              : undefined;
-            const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
-            const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
-            const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
-            if (!unit || !quantity || price === undefined) return null;
-            return { label: label || `${quantity}${unit}`, quantity, unit, price };
-          })
-          .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
-        : undefined;
-      const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
-
-      return ({
-        _id: product._id,
-        sku: product.sku || String(product._id),
-        name: product.name || '',
-        image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
-        description: product.description || '',
-        category: categoryIdValue
-          ? (() => {
-            const meta = categoryMap.get(categoryIdValue);
-            return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
-          })()
-          : undefined,
-        baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: Number(product.price ?? 0),
-        measurementUnit: 'ea',
-        isSoldAsUnit: true,
-        minOrderQuantity: 1,
-        maxOrderQuantity: 9999,
-        stepQuantity: 1,
-        stockQuantity: Number(product.stockQty ?? 0),
-        isOutOfStock: Number(product.stockQty ?? 0) <= 0,
-        totalSales: 0,
-        isFeatured: false,
-        discountPercentage: 0,
-        lowStockThreshold: Number(product.minStockLevel ?? 0),
-        createdAt: product.createdAt as Date | undefined,
-        updatedAt: product.updatedAt as Date | undefined,
-        unitOptions,
-      });
+    const rawProducts = await prisma.product.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+      include: { category: { select: { name: true, slug: true } } },
     });
+    const products = rawProducts.map(serializeProductForUi);
 
     return {
       products,

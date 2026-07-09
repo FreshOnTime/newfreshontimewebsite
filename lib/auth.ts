@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken as verifyAccessToken } from '@/lib/jwt';
-import User from '@/lib/models/User';
-import connectDB from '@/lib/database';
-// Note: This legacy auth helper is kept for API routes using requireAuth.
+import prisma from '@/lib/prisma';
+// Legacy auth helper for API routes using requireAuth/requireAdmin — now backed by Postgres.
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
@@ -35,7 +34,7 @@ export async function verifyToken(request: NextRequest) {
     if (!token) {
       return null;
     }
-    
+
     let decoded: DecodedJwt;
     try {
       decoded = verifyAccessToken(token) as unknown as DecodedJwt;
@@ -48,19 +47,18 @@ export async function verifyToken(request: NextRequest) {
       return null;
     }
 
-    await connectDB();
-
-    // Verify user exists and is not banned (schema has isBanned, not isActive)
-    const user = await User.findOne({ userId: decoded.userId });
+    // Verify the user exists and is not banned. The JWT subject (userId) is the
+    // Postgres primary key, so mongoId === userId === user.id going forward.
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     if (!user || user.isBanned) {
       return null;
     }
 
     return {
-      userId: decoded.userId,
-      email: decoded.email,
-      role: decoded.role,
-      mongoId: user._id?.toString?.()
+      userId: user.id,
+      email: user.email || decoded.email,
+      role: user.role,
+      mongoId: user.id,
     };
   } catch (error) {
     console.error('Token verification error:', error);
@@ -70,12 +68,12 @@ export async function verifyToken(request: NextRequest) {
 
 // Function without generics to simplify typing
 export function requireAuth(handler: (
-  request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, 
+  request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } },
   context: any
 ) => Promise<NextResponse> | Promise<Response>) {
   return async (request: NextRequest, context: any) => {
     const user = await verifyToken(request);
-    
+
     if (!user) {
       return Response.json(
         { error: 'Authentication required' },
@@ -84,19 +82,19 @@ export function requireAuth(handler: (
     }
 
     // Add user to request
-  (request as AuthenticatedRequest).user = { ...user, email: user.email || '' };
-    
-  return handler(request as NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, context);
+    (request as AuthenticatedRequest).user = { ...user, email: user.email || '' };
+
+    return handler(request as NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, context);
   };
 }
 
 export function requireAdmin(handler: (
-  request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, 
+  request: NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } },
   context: any
 ) => Promise<NextResponse> | Promise<Response>) {
   return async (request: NextRequest, context: any) => {
     const user = await verifyToken(request);
-    
+
     if (!user) {
       return Response.json(
         { error: 'Authentication required' },
@@ -112,8 +110,8 @@ export function requireAdmin(handler: (
     }
 
     // Add user to request
-  (request as AuthenticatedRequest).user = { ...user, email: user.email || '' };
-    
-  return handler(request as NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, context);
+    (request as AuthenticatedRequest).user = { ...user, email: user.email || '' };
+
+    return handler(request as NextRequest & { user?: { userId: string; email: string; role: string; mongoId?: string } }, context);
   };
 }

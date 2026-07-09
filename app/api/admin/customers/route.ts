@@ -1,23 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import connectDB from '@/lib/database';
-import Customer from '@/lib/models/Customer';
-import Order from '@/lib/models/EnhancedOrder';
-import User from '@/lib/models/User';
-import type { Types } from 'mongoose';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction, checkRateLimit, getClientIP } from '@/lib/middleware/adminAuth';
-
-type CustomerAgg = {
-  _id: typeof import('mongoose')['Types']['ObjectId'];
-  name: string;
-  email: string;
-  phone?: string;
-  address?: Record<string, unknown>;
-  totalOrders?: number;
-  totalSpent?: number;
-  lastOrderDate?: Date;
-  createdAt?: Date;
-};
 
 const createCustomerSchema = z.object({
   name: z.string().min(1).max(100),
@@ -41,150 +26,107 @@ const querySchema = z.object({
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
+// Customers ARE users with role 'customer'. Select the fields we need plus the
+// registration address so we can present the legacy Customer shape.
+const customerUserSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phoneNumber: true,
+  createdAt: true,
+  addresses: {
+    where: { isRegistration: true },
+    take: 1,
+    select: { streetAddress: true, city: true, state: true, postalCode: true, countryCode: true },
+  },
+} satisfies Prisma.UserSelect;
+
+type CustomerUser = Prisma.UserGetPayload<{ select: typeof customerUserSelect }>;
+
+function toCustomerShape(
+  u: CustomerUser,
+  stats?: { totalOrders: number; totalSpent: number; lastOrderDate: Date | null }
+) {
+  const reg = u.addresses[0];
+  return {
+    _id: u.id,
+    name: `${u.firstName} ${u.lastName ?? ''}`.trim(),
+    email: u.email || '',
+    phone: u.phoneNumber,
+    address: reg
+      ? {
+          street: reg.streetAddress || '',
+          city: reg.city || '',
+          state: reg.state || '',
+          zipCode: reg.postalCode || '',
+          country: reg.countryCode || '',
+        }
+      : undefined,
+    totalOrders: stats?.totalOrders ?? 0,
+    totalSpent: stats?.totalSpent ?? 0,
+    lastOrderDate: stats?.lastOrderDate ?? undefined,
+    createdAt: u.createdAt,
+    source: 'user' as const,
+  };
+}
+
 export const GET = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    // Build filter
-    const filter: Record<string, unknown> = {};
+    const where: Prisma.UserWhereInput = { role: 'customer' };
     if (query.search) {
-      filter.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { email: { $regex: query.search, $options: 'i' } },
+      where.OR = [
+        { firstName: { contains: query.search, mode: 'insensitive' } },
+        { lastName: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+        { phoneNumber: { contains: query.search, mode: 'insensitive' } },
       ];
     }
 
-    // Calculate pagination
     const skip = (query.page - 1) * query.limit;
+    // totalSpent is computed post-query, so it can't be a DB sort key; fall back to createdAt.
+    const sortField = query.sortBy === 'name' ? 'firstName' : query.sortBy === 'email' ? 'email' : 'createdAt';
 
-    // Build sort
-    const sort: Record<string, 1 | -1> = {};
-    sort[query.sortBy] = query.sortOrder === 'asc' ? 1 : -1;
-
-    // Execute primary query against Customer collection
-    const [customers, total, globalTotal] = await Promise.all([
-      Customer.find(filter)
-        .sort(sort)
-        .skip(skip)
-        .limit(query.limit)
-        .lean(),
-      Customer.countDocuments(filter),
-      Customer.estimatedDocumentCount(),
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy: { [sortField]: query.sortOrder },
+        skip,
+        take: query.limit,
+        select: customerUserSelect,
+      }),
+      prisma.user.count({ where }),
     ]);
 
-    // Enrich customers with order aggregates (count, totalSpent, lastOrderDate)
-    if (customers.length > 0) {
-      const ids = customers.map((c) => c._id);
-      const aggregates = await Order.aggregate([
-        { $match: { customerId: { $in: ids } } },
+    // Aggregate order stats (count, total spent, last order date) per customer.
+    const ids = users.map((u) => u.id);
+    const grouped = ids.length
+      ? await prisma.order.groupBy({
+          by: ['customerId'],
+          where: { customerId: { in: ids } },
+          _count: { _all: true },
+          _sum: { total: true },
+          _max: { createdAt: true },
+        })
+      : [];
+    const statMap = new Map(
+      grouped.map((g) => [
+        g.customerId,
         {
-          $group: {
-            _id: '$customerId',
-            totalOrders: { $sum: 1 },
-            totalSpent: { $sum: '$total' },
-            lastOrderDate: { $max: '$createdAt' },
-          },
+          totalOrders: g._count._all,
+          totalSpent: Number(g._sum.total ?? 0),
+          lastOrderDate: g._max.createdAt,
         },
-      ]);
-      const aggMap = new Map<string, { totalOrders: number; totalSpent: number; lastOrderDate: Date }>();
-      for (const a of aggregates) {
-        aggMap.set(String(a._id), {
-          totalOrders: a.totalOrders || 0,
-          totalSpent: a.totalSpent || 0,
-          lastOrderDate: a.lastOrderDate,
-        });
-      }
-      for (let i = 0; i < customers.length; i++) {
-        const c = customers[i] as unknown as CustomerAgg;
-        const agg = aggMap.get(String(c._id));
-        if (agg) {
-          c.totalOrders = agg.totalOrders;
-          c.totalSpent = agg.totalSpent;
-          c.lastOrderDate = agg.lastOrderDate;
-        }
-        customers[i] = c as unknown as typeof customers[number];
-      }
-    }
+      ])
+    );
 
-    // If the Customer collection is empty, fall back to Users with role "customer"
-  if (globalTotal === 0) {
-      // Build user filter based on search
-      const userFilter: Record<string, unknown> = { role: 'customer' };
-      if (query.search) {
-        userFilter.$or = [
-          { firstName: { $regex: query.search, $options: 'i' } },
-          { lastName: { $regex: query.search, $options: 'i' } },
-          { email: { $regex: query.search, $options: 'i' } },
-          { phoneNumber: { $regex: query.search, $options: 'i' } },
-        ];
-      }
+    const customers = users.map((u) => toCustomerShape(u, statMap.get(u.id)));
 
-      // Map sort fields for User model
-      const userSort: Record<string, 1 | -1> = {};
-      const sortField = query.sortBy === 'name' ? 'firstName'
-                       : query.sortBy === 'email' ? 'email'
-                       : 'createdAt';
-      userSort[sortField] = query.sortOrder === 'asc' ? 1 : -1;
-
-      type UserLean = {
-        _id: Types.ObjectId;
-        firstName: string;
-        lastName?: string;
-        email?: string;
-        phoneNumber: string;
-        registrationAddress?: {
-          city?: string;
-          state?: string;
-          countryCode?: string;
-        };
-        createdAt?: Date;
-      };
-
-      const [userDocs, usersTotal] = await Promise.all([
-        User.find(userFilter)
-          .sort(userSort)
-          .skip(skip)
-          .limit(query.limit)
-          .lean<UserLean[]>(),
-        User.countDocuments(userFilter),
-      ]);
-
-      // Map Users to Customer-like shape expected by UI
-      const mapped = userDocs.map((u: UserLean) => ({
-        _id: u._id.toString(),
-        name: `${u.firstName} ${u.lastName ?? ''}`.trim(),
-        email: u.email || '',
-        phone: u.phoneNumber,
-        address: u.registrationAddress
-          ? {
-              city: u.registrationAddress.city || '',
-              state: u.registrationAddress.state || '',
-              country: u.registrationAddress.countryCode || '',
-            }
-          : undefined,
-        totalOrders: 0,
-        totalSpent: 0,
-        createdAt: u.createdAt as Date,
-        source: 'user' as const,
-      }));
-
-      return NextResponse.json({
-        customers: mapped,
-        pagination: {
-          page: query.page,
-          limit: query.limit,
-          total: usersTotal,
-          pages: Math.ceil(usersTotal / query.limit),
-        },
-      });
-    }
-
-    // Default: return Customer collection results
     return NextResponse.json({
-      customers: customers.map((c) => ({ ...c, source: 'customer' as const })),
+      customers,
       pagination: {
         page: query.page,
         limit: query.limit,
@@ -212,31 +154,79 @@ export const POST = requireAdminSimple(async (request) => {
       );
     }
 
-    await connectDB();
-
     const body = await request.json();
     const data = createCustomerSchema.parse(body);
 
-    // Check if email already exists
-    const existingCustomer = await Customer.findOne({ email: data.email });
-    if (existingCustomer) {
+    // A customer is a User with role 'customer'; phoneNumber is required & unique.
+    const phone = data.phone?.trim();
+    if (!phone) {
+      return NextResponse.json(
+        { error: 'Phone number is required to create a customer' },
+        { status: 400 }
+      );
+    }
+    const email = data.email.trim().toLowerCase();
+
+    // Uniqueness checks against the users table
+    const existingByEmail = await prisma.user.findFirst({ where: { email } });
+    if (existingByEmail) {
       return NextResponse.json(
         { error: 'Customer with this email already exists' },
         { status: 400 }
       );
     }
+    const existingByPhone = await prisma.user.findFirst({ where: { phoneNumber: phone } });
+    if (existingByPhone) {
+      return NextResponse.json(
+        { error: 'Customer with this phone already exists' },
+        { status: 400 }
+      );
+    }
 
-    // Create customer
-    const customer = await Customer.create(data);
+    // Split the display name into first/last for the User model.
+    const nameParts = data.name.trim().split(/\s+/);
+    const firstName = nameParts.shift() || data.name.trim();
+    const lastName = nameParts.length ? nameParts.join(' ') : null;
 
-    // Log audit action
+    const created = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        phoneNumber: phone,
+        role: 'customer',
+        ...(data.address
+          ? {
+              addresses: {
+                create: [
+                  {
+                    recipientName: data.name,
+                    streetAddress: data.address.street || '',
+                    town: data.address.city || '',
+                    city: data.address.city || '',
+                    state: data.address.state || '',
+                    postalCode: data.address.zipCode || '',
+                    countryCode: data.address.country || 'LK',
+                    phoneNumber: phone,
+                    isRegistration: true,
+                  },
+                ],
+              },
+            }
+          : {}),
+      },
+      select: customerUserSelect,
+    });
+
+    const customer = toCustomerShape(created);
+
     await logAuditAction(
       request.user!.userId,
       'create',
       'customer',
-      customer._id.toString(),
+      created.id,
       undefined,
-      customer.toObject(),
+      customer as unknown as Record<string, unknown>,
       request
     );
 

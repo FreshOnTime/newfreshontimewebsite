@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import User from '@/lib/models/User';
-import AuditLog from '@/lib/models/AuditLog';
+import prisma from '@/lib/prisma';
 import { verifyToken, TokenPayload } from '@/lib/jwt';
 
 export interface AdminUser {
@@ -28,8 +26,6 @@ export class AuthError extends Error {
  */
 export async function verifyAdminToken(cookieToken?: string): Promise<AdminUser | null> {
   try {
-    await connectDB();
-    
     if (!cookieToken) {
       return null;
     }
@@ -47,7 +43,7 @@ export async function verifyAdminToken(cookieToken?: string): Promise<AdminUser 
     }
 
     // Verify user still exists and has admin role
-    const user = await User.findOne({ userId: decoded.userId });
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     if (!user || user.isBanned) {
       return null;
     }
@@ -58,11 +54,11 @@ export async function verifyAdminToken(cookieToken?: string): Promise<AdminUser 
     }
 
     return {
-      userId: user._id.toString(),
+      userId: user.id,
       email: user.email || '',
       role: user.role,
       firstName: user.firstName,
-      lastName: user.lastName,
+      lastName: user.lastName || undefined,
     };
   } catch (error) {
     console.error('Admin token verification error:', error);
@@ -84,9 +80,9 @@ export function requireAdmin<T extends Record<string, string>>(
           ?.split(';')
           ?.find(c => c.trim().startsWith('accessToken='))
           ?.split('=')[1];
-      
+
       const user = await verifyAdminToken(cookieToken);
-      
+
       if (!user) {
         return NextResponse.json(
           { error: 'Admin access required' },
@@ -120,9 +116,9 @@ export function requireAdminSimple(
           ?.split(';')
           ?.find(c => c.trim().startsWith('accessToken='))
           ?.split('=')[1];
-      
+
       const user = await verifyAdminToken(cookieToken);
-      
+
       if (!user) {
         return NextResponse.json(
           { error: 'Admin access required' },
@@ -157,24 +153,23 @@ export async function logAuditAction(
   request?: NextRequest
 ) {
   try {
-    await connectDB();
-    
-    const ip = request?.headers.get('x-forwarded-for') || 
-               request?.headers.get('x-real-ip') || 
+    const ip = request?.headers.get('x-forwarded-for') ||
+               request?.headers.get('x-real-ip') ||
                'unknown';
-    
+
     const userAgent = request?.headers.get('user-agent') || 'unknown';
 
-    await AuditLog.create({
-      userId,
-      action,
-      resourceType,
-      resourceId: resourceId ? resourceId : undefined,
-      before,
-      after,
-      ip,
-      userAgent,
-      timestamp: new Date(),
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        action,
+        resourceType,
+        resourceId: resourceId ?? null,
+        before: (before ?? undefined) as never,
+        after: (after ?? undefined) as never,
+        ip,
+        userAgent,
+      },
     });
   } catch (error) {
     console.error('Audit logging error:', error);
@@ -232,7 +227,7 @@ export function validateOrigin(request: NextRequest): boolean {
     process.env.FRONTEND_URL,
   ].filter(Boolean);
 
-  return allowedOrigins.some(allowed => 
+  return allowedOrigins.some(allowed =>
     origin === allowed || referer?.startsWith(allowed + '/')
   );
 }

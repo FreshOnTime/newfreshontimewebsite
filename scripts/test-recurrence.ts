@@ -1,5 +1,3 @@
-
-import mongoose from 'mongoose';
 import { RecurringOrderService, RecurringOrderPattern } from '../lib/services/recurringOrderService';
 import { RRule } from 'rrule';
 

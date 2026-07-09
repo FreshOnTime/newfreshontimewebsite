@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import SupplierUpload from '@/lib/models/SupplierUpload';
+import prisma from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
@@ -12,8 +11,7 @@ export const DELETE = requireAdmin(async (request: NextRequest & { user?: { role
     const { uploadId } = body as { uploadId?: string };
     if (!uploadId) return NextResponse.json({ error: 'Missing uploadId' }, { status: 400 });
 
-    await connectDB();
-    const upload = await SupplierUpload.findById(uploadId).lean() as { path?: string } | null;
+    const upload = await prisma.supplierUpload.findUnique({ where: { id: uploadId } });
     if (!upload) return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
 
     // remove file from disk if present
@@ -26,7 +24,7 @@ export const DELETE = requireAdmin(async (request: NextRequest & { user?: { role
       console.warn('Failed to unlink upload file', e);
     }
 
-    await SupplierUpload.deleteOne({ _id: uploadId });
+    await prisma.supplierUpload.delete({ where: { id: uploadId } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

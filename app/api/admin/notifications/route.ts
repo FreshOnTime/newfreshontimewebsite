@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import Notification from '@/lib/models/Notification';
-import User from '@/lib/models/User';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import prisma from '@/lib/prisma';
+import { verifyToken } from '@/lib/jwt';
 
 // Helper to get user from token
 async function getUser(req: NextRequest) {
-    const token = (await cookies()).get('token')?.value;
+    const token = req.cookies.get('accessToken')?.value;
     if (!token) return null;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-        return decoded;
+        const decoded = verifyToken(token);
+        if (decoded.type !== 'access') return null;
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user || user.isBanned) return null;
+        return { ...decoded, role: user.role, secondaryRoles: user.secondaryRoles };
     } catch (err) {
         return null;
     }
@@ -19,10 +19,9 @@ async function getUser(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        await connectDB();
         const currentUser = await getUser(req);
 
-        if (!currentUser || currentUser.role !== 'admin') {
+        if (!currentUser || (currentUser.role !== 'admin' && !currentUser.secondaryRoles?.includes('admin'))) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -35,24 +34,26 @@ export async function POST(req: NextRequest) {
 
         // If targetUserId is 'all', we create a broadcast (targetUser: null)
         // Or if specific user, find them.
-        let targetUser = null;
+        let targetUserIdToSave: string | null = null;
         if (targetUserId && targetUserId !== 'all') {
-            const user = await User.findById(targetUserId);
+            const user = await prisma.user.findUnique({ where: { id: targetUserId } });
             if (!user) {
                 return NextResponse.json({ success: false, message: 'Target user not found' }, { status: 404 });
             }
-            targetUser = user._id;
+            targetUserIdToSave = user.id;
         }
 
-        const notification = await Notification.create({
-            title,
-            message,
-            type: type || 'info',
-            targetUser,
-            link,
+        const notification = await prisma.notification.create({
+            data: {
+                title,
+                message,
+                type: type || 'info',
+                targetUserId: targetUserIdToSave,
+                link,
+            },
         });
 
-        return NextResponse.json({ success: true, data: notification }, { status: 201 });
+        return NextResponse.json({ success: true, data: { ...notification, _id: notification.id } }, { status: 201 });
     } catch (error) {
         console.error('Error sending notification:', error);
         return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
@@ -61,28 +62,25 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
     try {
-        await connectDB();
         const currentUser = await getUser(req);
 
         if (!currentUser) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
 
-        // Find the user's ObjectId
-        const user = await User.findOne({ userId: currentUser.userId });
-        if (!user) {
-            return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
-        }
-
         // Fetch notifications for this user OR broadcasts (targetUser: null)
-        const notifications = await Notification.find({
-            $or: [
-                { targetUser: user._id },
-                { targetUser: null }
-            ]
-        }).sort({ createdAt: -1 }).limit(50);
+        const notifications = await prisma.notification.findMany({
+            where: {
+                OR: [
+                    { targetUserId: currentUser.userId },
+                    { targetUserId: null },
+                ],
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+        });
 
-        return NextResponse.json({ success: true, data: notifications }, { status: 200 });
+        return NextResponse.json({ success: true, data: notifications.map((n) => ({ ...n, _id: n.id })) }, { status: 200 });
     } catch (error) {
         console.error('Error fetching notifications:', error);
         return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });

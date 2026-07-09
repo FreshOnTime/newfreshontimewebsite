@@ -1,8 +1,6 @@
-import mongoose from 'mongoose';
-import Order from '@/lib/models/EnhancedOrder';
-import EnhancedProduct from '@/lib/models/EnhancedProduct';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { sendOrderEmail } from '@/lib/services/mailService';
-import User from '@/lib/models/User';
 
 export interface RecurringOrderPattern {
   orderId: string;
@@ -36,389 +34,206 @@ export interface RecurringOrderPattern {
   notes?: string;
 }
 
+function hydrateRecurrence(rec: Prisma.JsonValue): RecurringOrderPattern['recurrence'] {
+  if (!rec || typeof rec !== 'object' || Array.isArray(rec)) return {};
+  const r = rec as Record<string, unknown>;
+  return {
+    startDate: r.startDate ? new Date(String(r.startDate)) : undefined,
+    endDate: r.endDate ? new Date(String(r.endDate)) : undefined,
+    daysOfWeek: Array.isArray(r.daysOfWeek) ? r.daysOfWeek.filter((d): d is number => typeof d === 'number') : undefined,
+    includeDates: Array.isArray(r.includeDates) ? r.includeDates.map((d) => new Date(String(d))) : undefined,
+    excludeDates: Array.isArray(r.excludeDates) ? r.excludeDates.map((d) => new Date(String(d))) : undefined,
+    selectedDates: Array.isArray(r.selectedDates) ? r.selectedDates.map((d) => new Date(String(d))) : undefined,
+    notes: typeof r.notes === 'string' ? r.notes : undefined,
+  };
+}
+
+function recurrenceToJson(rec: RecurringOrderPattern['recurrence']): Prisma.InputJsonValue {
+  return {
+    ...(rec.startDate ? { startDate: rec.startDate.toISOString() } : {}),
+    ...(rec.endDate ? { endDate: rec.endDate.toISOString() } : {}),
+    ...(rec.daysOfWeek ? { daysOfWeek: rec.daysOfWeek } : {}),
+    ...(rec.includeDates ? { includeDates: rec.includeDates.map((d) => d.toISOString()) } : {}),
+    ...(rec.excludeDates ? { excludeDates: rec.excludeDates.map((d) => d.toISOString()) } : {}),
+    ...(rec.selectedDates ? { selectedDates: rec.selectedDates.map((d) => d.toISOString()) } : {}),
+    ...(rec.notes ? { notes: rec.notes } : {}),
+  };
+}
+
 export class RecurringOrderService {
-  /**
-   * Calculate the next delivery date based on recurrence pattern
-   */
-  static calculateNextDelivery(
-    pattern: RecurringOrderPattern,
-    currentDate: Date = new Date()
-  ): Date | null {
+  static calculateNextDelivery(pattern: RecurringOrderPattern, currentDate: Date = new Date()): Date | null {
     const { recurrence } = pattern;
+    if (recurrence.endDate && currentDate > recurrence.endDate) return null;
 
-    // If end date is passed, no more deliveries
-    if (recurrence.endDate && currentDate > recurrence.endDate) {
-      return null;
-    }
-
-    // 1. Try standardized RRULE
     if (recurrence.rruleString) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { rrulestr } = require('rrule');
-        const rule = rrulestr(recurrence.rruleString);
-
-        // If we have strict start/end dates in rule, they apply. 
-        // Also respect recurrence.endDate if clearer override.
-
-        const next = rule.after(currentDate);
-
-        if (next) {
-          if (recurrence.endDate && next > recurrence.endDate) return null;
-          return next;
-        }
-        return null;
+        const next = rrulestr(recurrence.rruleString).after(currentDate);
+        if (next && (!recurrence.endDate || next <= recurrence.endDate)) return next;
       } catch (e) {
         console.error('Error parsing RRULE:', e);
-        // Fallback or assume failed if invalid
       }
     }
 
-    // 2. Legacy/Custom Schema Logic (Backward Compatibility)
+    const excluded = new Set((recurrence.excludeDates || []).map((d) => d.toDateString()));
+    const explicit = [...(recurrence.selectedDates || []), ...(recurrence.includeDates || [])]
+      .filter((d) => d > currentDate && !excluded.has(d.toDateString()) && (!recurrence.endDate || d <= recurrence.endDate))
+      .sort((a, b) => +a - +b);
+    if (explicit.length) return explicit[0];
 
-    // If specific dates are selected, find the next one
-    if (recurrence.selectedDates && recurrence.selectedDates.length > 0) {
-      const futureSelectedDates = recurrence.selectedDates
-        .filter(date => date > currentDate)
-        .sort((a, b) => a.getTime() - b.getTime());
-
-      if (futureSelectedDates.length > 0) {
-        return futureSelectedDates[0];
-      }
-      return null; // No more selected dates
+    const days = recurrence.daysOfWeek || [];
+    if (!days.length) return null;
+    for (let i = 1; i <= 366; i++) {
+      const nextDate = new Date(currentDate);
+      nextDate.setDate(currentDate.getDate() + i);
+      if (recurrence.endDate && nextDate > recurrence.endDate) return null;
+      if (days.includes(nextDate.getDay()) && !excluded.has(nextDate.toDateString())) return nextDate;
     }
-
-    // If days of week are specified (Legacy "Weekly" style)
-    if (recurrence.daysOfWeek && recurrence.daysOfWeek.length > 0) {
-      const today = new Date(currentDate);
-      const currentDayOfWeek = today.getDay();
-
-      // Find next occurrence
-      let daysToAdd = 1;
-      for (let i = 0; i < 7; i++) {
-        const checkDay = (currentDayOfWeek + daysToAdd) % 7;
-        if (recurrence.daysOfWeek.includes(checkDay)) {
-          const nextDate = new Date(today);
-          nextDate.setDate(today.getDate() + daysToAdd);
-
-          // Check if this date is excluded
-          if (recurrence.excludeDates &&
-            recurrence.excludeDates.some(excludeDate =>
-              excludeDate.toDateString() === nextDate.toDateString())) {
-            daysToAdd++;
-            continue;
-          }
-
-          // Check if within date range
-          if (recurrence.startDate && nextDate < recurrence.startDate) {
-            daysToAdd++;
-            continue;
-          }
-
-          if (recurrence.endDate && nextDate > recurrence.endDate) {
-            return null;
-          }
-
-          return nextDate;
-        }
-        daysToAdd++;
-      }
-    }
-
-    // If include dates are specified, find the next one
-    if (recurrence.includeDates && recurrence.includeDates.length > 0) {
-      const futureIncludeDates = recurrence.includeDates
-        .filter(date => date > currentDate)
-        .sort((a, b) => a.getTime() - b.getTime());
-
-      if (futureIncludeDates.length > 0) {
-        return futureIncludeDates[0];
-      }
-    }
-
     return null;
   }
 
-  /**
-   * Create next order instance from recurring pattern
-   */
-  static async createNextOrderInstance(orderId: string): Promise<mongoose.Document | null> {
-    try {
-      const recurringOrder = await Order.findById(orderId);
-      if (!recurringOrder || !recurringOrder.isRecurring) {
-        throw new Error('Order is not a recurring order');
+  static async createNextOrderInstance(orderId: string) {
+    const recurringOrder = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true, customer: true } });
+    if (!recurringOrder || !recurringOrder.isRecurring) throw new Error('Order is not a recurring order');
+    if (recurringOrder.scheduleStatus !== 'active') return null;
+
+    const pattern = {
+      ...recurringOrder,
+      recurrence: hydrateRecurrence(recurringOrder.recurrence),
+      subtotal: Number(recurringOrder.subtotal),
+      tax: Number(recurringOrder.tax),
+      shipping: Number(recurringOrder.shipping),
+      discount: Number(recurringOrder.discount),
+      total: Number(recurringOrder.total),
+    } as unknown as RecurringOrderPattern;
+
+    const nextDelivery = this.calculateNextDelivery(pattern, recurringOrder.nextDeliveryAt || new Date());
+    if (!nextDelivery) {
+      await prisma.order.update({ where: { id: orderId }, data: { scheduleStatus: 'ended', nextDeliveryAt: null } });
+      return null;
+    }
+
+    const productIds = recurringOrder.items.map((i) => i.productId);
+    const products = await prisma.product.findMany({ where: { id: { in: productIds } } });
+    const productMap = new Map(products.map((p) => [p.id, p]));
+    const outOfStock = recurringOrder.items.filter((it) => (productMap.get(it.productId)?.stockQty || 0) < it.qty);
+
+    const followingDelivery = this.calculateNextDelivery(pattern, nextDelivery);
+    const created = await prisma.$transaction(async (tx) => {
+      if (!outOfStock.length) {
+        for (const item of recurringOrder.items) {
+          await tx.product.update({ where: { id: item.productId }, data: { stockQty: { decrement: item.qty } } });
+        }
       }
 
-      if (recurringOrder.scheduleStatus !== 'active') {
-        return null; // Don't create if paused or ended
-      }
-
-      // Calculate next delivery date
-      const nextDelivery = this.calculateNextDelivery(
-        recurringOrder as unknown as RecurringOrderPattern,
-        recurringOrder.nextDeliveryAt || new Date()
-      );
-
-      if (!nextDelivery) {
-        // No more deliveries, end the recurring schedule
-        await Order.findByIdAndUpdate(orderId, {
-          scheduleStatus: 'ended',
-          nextDeliveryAt: null,
-        });
-        return null;
-      }
-
-      // Check product availability
-      const availabilityChecks = await Promise.all(
-        recurringOrder.items.map(async (item: unknown) => {
-          const it = item as { productId: string; qty: number };
-          const product = await EnhancedProduct.findById(it.productId);
-          return {
-            productId: it.productId,
-            available: product ? product.stockQty >= it.qty : false,
-            currentStock: product?.stockQty || 0,
-            needed: it.qty,
-          };
-        })
-      );
-
-      const outOfStock = availabilityChecks.filter(check => !check.available);
-
-      // Create new order instance
-      const newOrderData = {
-        ...recurringOrder.toObject(),
-        _id: new mongoose.Types.ObjectId(),
-        orderNumber: `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        status: outOfStock.length > 0 ? 'pending' : 'confirmed',
-        estimatedDelivery: nextDelivery,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        notes: outOfStock.length > 0
-          ? `Auto-generated from recurring order. Some items may be out of stock: ${outOfStock.map(i => i.productId).join(', ')}`
-          : 'Auto-generated from recurring order',
-      };
-
-      // Remove version key
-      if ('__v' in newOrderData) {
-        delete (newOrderData as Record<string, unknown>).__v;
-      }
-
-      const newOrder = new Order(newOrderData);
-      await newOrder.save();
-
-      // Update stock quantities for available items
-      if (outOfStock.length === 0) {
-        await Promise.all(
-          recurringOrder.items.map(async (item: unknown) => {
-            const it = item as { productId: string; qty: number };
-            await EnhancedProduct.findByIdAndUpdate(
-              it.productId,
-              { $inc: { stockQty: -it.qty } }
-            );
-          })
-        );
-      }
-
-      // Update the original recurring order with next delivery date
-      const followingDelivery = this.calculateNextDelivery(
-        recurringOrder as unknown as RecurringOrderPattern,
-        nextDelivery
-      );
-
-      await Order.findByIdAndUpdate(orderId, {
-        nextDeliveryAt: followingDelivery,
-        scheduleStatus: followingDelivery ? 'active' : 'ended',
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber: `AUTO-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+          customerId: recurringOrder.customerId,
+          bagId: recurringOrder.bagId,
+          bagName: recurringOrder.bagName,
+          subtotal: recurringOrder.subtotal,
+          tax: recurringOrder.tax,
+          shipping: recurringOrder.shipping,
+          discount: recurringOrder.discount,
+          total: recurringOrder.total,
+          status: outOfStock.length ? 'pending' : 'confirmed',
+          paymentMethod: recurringOrder.paymentMethod,
+          paymentStatus: recurringOrder.paymentStatus,
+          shippingAddress: recurringOrder.shippingAddress as Prisma.InputJsonValue,
+          billingAddress: recurringOrder.billingAddress as Prisma.InputJsonValue,
+          notes: outOfStock.length
+            ? `Auto-generated from recurring order. Some items may be out of stock: ${outOfStock.map((i) => i.productId).join(', ')}`
+            : 'Auto-generated from recurring order',
+          estimatedDelivery: nextDelivery,
+          isRecurring: false,
+          items: {
+            create: recurringOrder.items.map((it) => ({
+              productId: it.productId,
+              sku: it.sku,
+              name: it.name,
+              qty: it.qty,
+              price: it.price,
+              total: it.total,
+            })),
+          },
+        },
       });
 
-      // Attempt to send order confirmation email to customer (non-blocking)
-      try {
-        // Try to resolve customer email from recurringOrder or by loading the user
-        let customerEmail: string | null = null;
-        const ro = recurringOrder as unknown as { customerId?: string; customerEmail?: string };
-        if (ro.customerEmail) customerEmail = ro.customerEmail as unknown as string;
-        if (!customerEmail && ro.customerId) {
-          const fullUser = await User.findById(ro.customerId).lean().catch(() => null) as (null | { email?: string; phoneNumber?: string });
-          if (fullUser?.email) customerEmail = fullUser.email;
-          else if (fullUser?.phoneNumber) customerEmail = fullUser.phoneNumber;
-        }
-
-        if (customerEmail) {
-          const orderObj = newOrder.toObject ? newOrder.toObject() : newOrder;
-          if (orderObj) {
-            const mailOrder = {
-              _id: orderObj._id ? String(orderObj._id) : undefined,
-              total: typeof orderObj.total === 'number'
-                ? orderObj.total
-                : (typeof orderObj.subtotal === 'number' ? orderObj.subtotal : undefined),
-            };
-            sendOrderEmail(customerEmail, mailOrder).catch(e => console.error('sendOrderEmail error', e));
-          }
-        }
-      } catch (e) {
-        console.error('Recurring order email error:', e);
-      }
+      await tx.order.update({
+        where: { id: orderId },
+        data: { nextDeliveryAt: followingDelivery, scheduleStatus: followingDelivery ? 'active' : 'ended' },
+      });
 
       return newOrder;
-    } catch (error) {
-      console.error('Error creating next order instance:', error);
-      throw error;
+    });
+
+    const customerEmail = recurringOrder.customer.email || recurringOrder.customer.phoneNumber;
+    if (customerEmail) {
+      sendOrderEmail(customerEmail, { _id: created.id, total: Number(created.total) }).catch((e) => console.error('sendOrderEmail error', e));
     }
+
+    return created;
   }
 
-  /**
-   * Process all pending recurring orders
-   */
-  static async processRecurringOrders(): Promise<{
-    processed: number;
-    created: number;
-    errors: string[];
-  }> {
-    const results = {
-      processed: 0,
-      created: 0,
-      errors: [] as string[],
-    };
+  static async processRecurringOrders() {
+    const results = { processed: 0, created: 0, errors: [] as string[] };
+    const dueOrders = await prisma.order.findMany({
+      where: { isRecurring: true, scheduleStatus: 'active', nextDeliveryAt: { lte: new Date() } },
+      select: { id: true },
+    });
+    results.processed = dueOrders.length;
 
-    try {
-      // Find all active recurring orders with due deliveries
-      const dueOrders = await Order.find({
-        isRecurring: true,
-        scheduleStatus: 'active',
-        nextDeliveryAt: { $lte: new Date() },
-      });
-
-      results.processed = dueOrders.length;
-
-      for (const order of dueOrders) {
-        try {
-          const orderId = (order as any)._id;
-          const newOrder = await this.createNextOrderInstance(String(orderId));
-          if (newOrder) {
-            results.created++;
-          }
-        } catch (error) {
-          const idStr = (order as any)._id ? String((order as any)._id) : 'unknown';
-          results.errors.push(`Order ${idStr}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+    for (const order of dueOrders) {
+      try {
+        const created = await this.createNextOrderInstance(order.id);
+        if (created) results.created++;
+      } catch (error) {
+        results.errors.push(`Order ${order.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-    } catch (error) {
-      results.errors.push(`General error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
     return results;
   }
 
-  /**
-   * Validate recurring order pattern
-   */
-  static validateRecurrencePattern(recurrence: RecurringOrderPattern['recurrence']): {
-    valid: boolean;
-    errors: string[];
-  } {
+  static validateRecurrencePattern(recurrence: RecurringOrderPattern['recurrence']) {
     const errors: string[] = [];
-
-    // Must have at least one recurrence method
-    const hasDaysOfWeek = recurrence.daysOfWeek && recurrence.daysOfWeek.length > 0;
-    const hasIncludeDates = recurrence.includeDates && recurrence.includeDates.length > 0;
-    const hasSelectedDates = recurrence.selectedDates && recurrence.selectedDates.length > 0;
-
-    if (!hasDaysOfWeek && !hasIncludeDates && !hasSelectedDates) {
+    if (!recurrence.daysOfWeek?.length && !recurrence.includeDates?.length && !recurrence.selectedDates?.length) {
       errors.push('Must specify at least one recurrence pattern (daysOfWeek, includeDates, or selectedDates)');
     }
-
-    // Validate date ranges
     if (recurrence.startDate && recurrence.endDate && recurrence.startDate >= recurrence.endDate) {
       errors.push('Start date must be before end date');
     }
-
-    // Validate days of week
-    if (recurrence.daysOfWeek) {
-      const invalidDays = recurrence.daysOfWeek.filter(day => day < 0 || day > 6);
-      if (invalidDays.length > 0) {
-        errors.push('Days of week must be between 0 (Sunday) and 6 (Saturday)');
-      }
+    if (recurrence.daysOfWeek?.some((day) => day < 0 || day > 6)) {
+      errors.push('Days of week must be between 0 (Sunday) and 6 (Saturday)');
     }
-
-    // Validate selected dates are in the future
-    if (recurrence.selectedDates) {
-      const pastDates = recurrence.selectedDates.filter(date => date <= new Date());
-      if (pastDates.length > 0) {
-        errors.push('Selected dates must be in the future');
-      }
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
+    return { valid: errors.length === 0, errors };
   }
 
-  /**
-   * Get recurring order statistics
-   */
-  static async getRecurringOrderStats(): Promise<{
-    total: number;
-    active: number;
-    paused: number;
-    ended: number;
-    totalValue: number;
-    avgOrderValue: number;
-    nextDeliveries: Array<{
-      orderId: string;
-      orderNumber: string;
-      customerId: string;
-      nextDeliveryAt: Date;
-      total: number;
-    }>;
-  }> {
-    const [totalStats, nextDeliveries] = await Promise.all([
-      Order.aggregate([
-        { $match: { isRecurring: true } },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: 1 },
-            active: {
-              $sum: { $cond: [{ $eq: ['$scheduleStatus', 'active'] }, 1, 0] }
-            },
-            paused: {
-              $sum: { $cond: [{ $eq: ['$scheduleStatus', 'paused'] }, 1, 0] }
-            },
-            ended: {
-              $sum: { $cond: [{ $eq: ['$scheduleStatus', 'ended'] }, 1, 0] }
-            },
-            totalValue: { $sum: '$total' },
-            avgOrderValue: { $avg: '$total' },
-          }
-        }
-      ]),
-      Order.find({
-        isRecurring: true,
-        scheduleStatus: 'active',
-        nextDeliveryAt: { $gte: new Date() },
-      })
-        .select('_id orderNumber customerId nextDeliveryAt total')
-        .sort({ nextDeliveryAt: 1 })
-        .limit(10)
-        .lean()
+  static async getRecurringOrderStats() {
+    const [orders, nextDeliveries] = await Promise.all([
+      prisma.order.findMany({ where: { isRecurring: true }, select: { scheduleStatus: true, total: true } }),
+      prisma.order.findMany({
+        where: { isRecurring: true, scheduleStatus: 'active', nextDeliveryAt: { gte: new Date() } },
+        select: { id: true, orderNumber: true, customerId: true, nextDeliveryAt: true, total: true },
+        orderBy: { nextDeliveryAt: 'asc' },
+        take: 10,
+      }),
     ]);
-
-    const stats = totalStats[0] || {
-      total: 0,
-      active: 0,
-      paused: 0,
-      ended: 0,
-      totalValue: 0,
-      avgOrderValue: 0,
-    };
-
+    const totalValue = orders.reduce((sum, order) => sum + Number(order.total), 0);
     return {
-      ...stats,
-      nextDeliveries: nextDeliveries.map(order => ({
-        orderId: order._id.toString(),
+      total: orders.length,
+      active: orders.filter((o) => o.scheduleStatus === 'active').length,
+      paused: orders.filter((o) => o.scheduleStatus === 'paused').length,
+      ended: orders.filter((o) => o.scheduleStatus === 'ended').length,
+      totalValue,
+      avgOrderValue: orders.length ? totalValue / orders.length : 0,
+      nextDeliveries: nextDeliveries.map((order) => ({
+        orderId: order.id,
         orderNumber: order.orderNumber,
-        customerId: order.customerId.toString(),
+        customerId: order.customerId,
         nextDeliveryAt: order.nextDeliveryAt,
-        total: order.total,
+        total: Number(order.total),
       })),
     };
   }

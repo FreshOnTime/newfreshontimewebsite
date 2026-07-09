@@ -17,10 +17,8 @@ import GuaranteeCta from "@/components/home/GuaranteeCta";
 import PrivateClientCTA from "@/components/home/PrivateClientCTA";
 import TrustBadges from "@/components/home/TrustBadges";
 
-// Static model imports — avoids per-revalidation dynamic import overhead
-import dbConnect from "@/lib/database";
-import EnhancedProductModel from "@/lib/models/EnhancedProduct";
-import CategoryModel from "@/lib/models/Category";
+import prisma from "@/lib/prisma";
+import { serializeProductForUi } from "@/lib/productSerializer";
 
 // Use ISR (Incremental Static Regeneration) for fast loading
 // Revalidate every 60 seconds to keep data fresh
@@ -42,7 +40,7 @@ export const metadata: Metadata = {
   },
 };
 
-type CategoryDisplay = { _id: unknown; name: string; slug: string; imageUrl?: string; description?: string };
+type CategoryDisplay = { _id: string; name: string; slug: string; imageUrl?: string; description?: string };
 
 interface HomeData {
   products: Product[];
@@ -55,86 +53,33 @@ const HOME_DATA_TIMEOUT_MS = 1200;
 async function getHomeData(): Promise<HomeData> {
   try {
     const homeDataPromise = (async (): Promise<HomeData> => {
-      await dbConnect();
-
       // Fetch products and categories in parallel to minimise latency
       const [rawProducts, allCategories] = await Promise.all([
-        EnhancedProductModel
-          .find({ archived: { $ne: true } })
-          .sort({ createdAt: -1 })
-          .limit(20)
-          // Select only the fields needed for the homepage product cards
-          .select('_id sku name image images description categoryId price stockQty minStockLevel attributes createdAt updatedAt')
-          .lean(),
-        CategoryModel
-          .find({ isActive: true })
-          .sort({ sortOrder: 1, name: 1 })
-          // Select only the fields needed for display (isActive/sortOrder used only for filter/sort)
-          .select('_id name slug description imageUrl')
-          .lean(),
+        prisma.product.findMany({
+          where: { archived: false },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+          include: { category: { select: { name: true, slug: true } } },
+        }),
+        prisma.category.findMany({
+          where: { isActive: true },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+          select: { id: true, name: true, slug: true, description: true, imageUrl: true },
+        }),
       ]);
 
-      // Build a category lookup map (reused for both product mapping and CategoryBento)
-      const categoryMap = new Map(allCategories.map(c => [String(c._id), c]));
-
-      // Map EnhancedProduct documents to the shape expected by ProductCard
-      const products = rawProducts.map((product) => {
-        const single = product.image;
-        const first = Array.isArray(product.images) ? product.images[0] : undefined;
-        const img = single || first || '/placeholder.svg';
-        const attrs = (product.attributes ?? {}) as Record<string, unknown>;
-        const maybeUnitOptions = (attrs as { unitOptions?: unknown }).unitOptions;
-        const unitOptions = Array.isArray(maybeUnitOptions)
-          ? maybeUnitOptions
-            .map((opt) => {
-              const o = opt as Partial<{ label: unknown; quantity: unknown; unit: unknown; price: unknown }>;
-              const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit)
-                ? (o.unit as 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb')
-                : undefined;
-              const quantity = typeof o.quantity === 'number' && isFinite(o.quantity) && o.quantity > 0 ? o.quantity : undefined;
-              const price = typeof o.price === 'number' && isFinite(o.price) && o.price >= 0 ? o.price : undefined;
-              const label = typeof o.label === 'string' && o.label.trim().length > 0 ? o.label : undefined;
-              if (!unit || !quantity || price === undefined) return null;
-              return { label: label || `${quantity}${unit}`, quantity, unit, price };
-            })
-            .filter(Boolean) as Array<{ label: string; quantity: number; unit: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; price: number }>
-          : undefined;
-        const categoryIdValue = product.categoryId ? String(product.categoryId) : undefined;
-
-        return {
-          _id: product._id,
-          sku: product.sku || String(product._id),
-          name: product.name || '',
-          image: { url: String(img), filename: '', contentType: '', path: String(img), alt: product.name || undefined },
-          description: product.description || '',
-          category: categoryIdValue
-            ? (() => {
-              const meta = categoryMap.get(categoryIdValue);
-              return { id: categoryIdValue, name: meta?.name || '', slug: meta?.slug || '' };
-            })()
-            : undefined,
-          baseMeasurementQuantity: 1,
-          pricePerBaseQuantity: Number(product.price ?? 0),
-          measurementUnit: 'ea' as const,
-          isSoldAsUnit: true,
-          minOrderQuantity: 1,
-          maxOrderQuantity: 9999,
-          stepQuantity: 1,
-          stockQuantity: Number(product.stockQty ?? 0),
-          isOutOfStock: Number(product.stockQty ?? 0) <= 0,
-          totalSales: 0,
-          isFeatured: false,
-          discountPercentage: 0,
-          lowStockThreshold: Number(product.minStockLevel ?? 0),
-          createdAt: product.createdAt as unknown as Date | undefined,
-          updatedAt: product.updatedAt as unknown as Date | undefined,
-          unitOptions,
-        };
-      });
+      const products = rawProducts.map(serializeProductForUi);
+      const categories = allCategories.map((c) => ({
+        _id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description ?? undefined,
+        imageUrl: c.imageUrl ?? undefined,
+      }));
 
       return {
         products: JSON.parse(JSON.stringify(products)),
-        categories: JSON.parse(JSON.stringify(allCategories)),
+        categories: JSON.parse(JSON.stringify(categories)),
       };
     })();
 

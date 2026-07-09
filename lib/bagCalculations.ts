@@ -1,5 +1,5 @@
-import { BagItem } from "../models/BagItem";
-import { Product } from "../models/product";
+import { BagItem } from "@/models/BagItem";
+import { Product } from "@/models/product";
 
 export const calculateItemTotal = (product: Product, quantity: number) => {
   const originalTotal = product.isSoldAsUnit

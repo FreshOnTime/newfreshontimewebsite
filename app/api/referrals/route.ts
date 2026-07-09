@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/database';
-import Referral from '@/lib/models/Referral';
-import User from '@/lib/models/User';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
-import mongoose from 'mongoose';
 
 const REFERRAL_REWARD = 200; // Rs. 200 per successful referral
 
@@ -13,8 +11,6 @@ const REFERRAL_REWARD = 200; // Rs. 200 per successful referral
  */
 export async function GET(request: NextRequest) {
     try {
-        await dbConnect();
-
         const user = await verifyToken(request);
         if (!user) {
             return NextResponse.json(
@@ -23,42 +19,33 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Resolve user ObjectId
-        let userObjectId = user.mongoId;
-        if (!userObjectId || !mongoose.Types.ObjectId.isValid(userObjectId)) {
-            const userDoc = await User.findOne({ userId: user.userId });
-            if (!userDoc) {
-                return NextResponse.json(
-                    { success: false, message: 'User not found' },
-                    { status: 404 }
-                );
-            }
-            userObjectId = userDoc._id.toString();
-        }
+        // The JWT subject is the Postgres user id (mongoId === userId === user.id).
+        const userId = user.userId;
 
         // Find or create referral record for user
-        let referral = await Referral.findOne({ owner: userObjectId });
+        let referral = await prisma.referral.findUnique({ where: { ownerId: userId } });
 
         if (!referral) {
             // Generate unique code
-            let code: string;
+            let code = '';
             let attempts = 0;
             const maxAttempts = 10;
 
             do {
                 code = 'FRESH' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                const exists = await Referral.findOne({ code });
+                const exists = await prisma.referral.findUnique({ where: { code } });
                 if (!exists) break;
                 attempts++;
             } while (attempts < maxAttempts);
 
-            referral = await Referral.create({
-                code,
-                owner: userObjectId,
-                referredUsers: [],
-                totalEarnings: 0,
-                totalReferrals: 0,
-                successfulReferrals: 0,
+            referral = await prisma.referral.create({
+                data: {
+                    code,
+                    ownerId: userId,
+                    totalEarnings: 0,
+                    totalReferrals: 0,
+                    successfulReferrals: 0,
+                },
             });
         }
 
@@ -66,7 +53,7 @@ export async function GET(request: NextRequest) {
             success: true,
             referral: {
                 code: referral.code,
-                totalEarnings: referral.totalEarnings,
+                totalEarnings: Number(referral.totalEarnings),
                 totalReferrals: referral.totalReferrals,
                 successfulReferrals: referral.successfulReferrals,
                 isActive: referral.isActive,
@@ -87,8 +74,6 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
-        await dbConnect();
-
         const body = await request.json();
         const { code, userId } = body;
 
@@ -103,9 +88,8 @@ export async function POST(request: NextRequest) {
         const normalizedCode = code.toUpperCase().trim();
 
         // Find the referral
-        const referral = await Referral.findOne({
-            code: normalizedCode,
-            isActive: true,
+        const referral = await prisma.referral.findFirst({
+            where: { code: normalizedCode, isActive: true },
         });
 
         if (!referral) {
@@ -117,17 +101,11 @@ export async function POST(request: NextRequest) {
 
         // If userId provided, add to referred users
         if (userId) {
-            // Resolve user ObjectId
-            let referredUserObjectId = userId;
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-                const userDoc = await User.findOne({ userId: userId });
-                if (userDoc) {
-                    referredUserObjectId = userDoc._id.toString();
-                }
-            }
+            // The provided id is the Postgres user id directly.
+            const referredUserId: string = userId;
 
             // Prevent self-referral
-            if (referral.owner.toString() === referredUserObjectId) {
+            if (referral.ownerId === referredUserId) {
                 return NextResponse.json(
                     { success: false, message: 'Cannot use your own referral code' },
                     { status: 400 }
@@ -135,19 +113,25 @@ export async function POST(request: NextRequest) {
             }
 
             // Check if already referred
-            const alreadyReferred = referral.referredUsers.some(
-                (r) => r.user.toString() === referredUserObjectId
-            );
+            const alreadyReferred = await prisma.referredUser.findUnique({
+                where: { referralId_userId: { referralId: referral.id, userId: referredUserId } },
+            });
 
             if (!alreadyReferred) {
-                referral.referredUsers.push({
-                    user: new mongoose.Types.ObjectId(referredUserObjectId),
-                    appliedAt: new Date(),
-                    orderPlaced: false,
-                    rewardPaid: false,
-                });
-                referral.totalReferrals += 1;
-                await referral.save();
+                await prisma.$transaction([
+                    prisma.referredUser.create({
+                        data: {
+                            referralId: referral.id,
+                            userId: referredUserId,
+                            orderPlaced: false,
+                            rewardPaid: false,
+                        },
+                    }),
+                    prisma.referral.update({
+                        where: { id: referral.id },
+                        data: { totalReferrals: { increment: 1 } },
+                    }),
+                ]);
             }
         }
 
@@ -172,8 +156,6 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
     try {
-        await dbConnect();
-
         const body = await request.json();
         const { referralCode, userId } = body;
 
@@ -184,7 +166,9 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        const referral = await Referral.findOne({ code: referralCode.toUpperCase() });
+        const referral = await prisma.referral.findFirst({
+            where: { code: referralCode.toUpperCase() },
+        });
 
         if (!referral) {
             return NextResponse.json(
@@ -193,22 +177,36 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Find the referred user entry
-        const referredEntry = referral.referredUsers.find(
-            (r) => r.user.toString() === userId && !r.orderPlaced
-        );
+        // Find the referred user entry that hasn't had an order placed yet
+        const referredEntry = await prisma.referredUser.findFirst({
+            where: { referralId: referral.id, userId, orderPlaced: false },
+        });
 
         if (referredEntry) {
-            referredEntry.orderPlaced = true;
+            const ops: Prisma.PrismaPromise<unknown>[] = [
+                prisma.referredUser.update({
+                    where: { id: referredEntry.id },
+                    data: {
+                        orderPlaced: true,
+                        ...(referredEntry.rewardPaid ? {} : { rewardPaid: true }),
+                    },
+                }),
+            ];
 
-            // Add reward for both parties
+            // Add reward for both parties (only once)
             if (!referredEntry.rewardPaid) {
-                referral.totalEarnings += REFERRAL_REWARD;
-                referral.successfulReferrals += 1;
-                referredEntry.rewardPaid = true;
+                ops.push(
+                    prisma.referral.update({
+                        where: { id: referral.id },
+                        data: {
+                            totalEarnings: { increment: REFERRAL_REWARD },
+                            successfulReferrals: { increment: 1 },
+                        },
+                    })
+                );
             }
 
-            await referral.save();
+            await prisma.$transaction(ops);
         }
 
         return NextResponse.json({

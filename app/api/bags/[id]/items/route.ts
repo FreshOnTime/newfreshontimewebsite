@@ -1,161 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import Bag from '@/lib/models/Bag';
-import EnhancedProduct from '@/lib/models/EnhancedProduct';
-import mongoose from 'mongoose';
+import prisma from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+import { BAG_INCLUDE, serializeBag, bagTotal } from '@/lib/bagSerializer';
 
-// POST - Add item to bag
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    await connectDB();
-    
-  const { id: bagId } = await params;
-  const body = await request.json();
-  const { productId, quantity } = body;
+type Ctx = { params: Promise<{ id: string }> };
+type AuthedReq = NextRequest & { user?: { userId: string; role: string; mongoId?: string } };
 
-    if (!productId || !quantity || quantity <= 0) {
-      return NextResponse.json(
-        { error: 'Product ID and valid quantity are required' },
-        { status: 400 }
-      );
-    }
-
-    const bag = await Bag.findById(bagId);
-    if (!bag) {
-      return NextResponse.json(
-        { error: 'Bag not found' },
-        { status: 404 }
-      );
-    }
-
-    // Look up the actual product from the database by _id, sku, or slug
-    interface ProdDoc {
-      _id: mongoose.Types.ObjectId;
-      price?: number;
-      stockQty?: number;
-      name?: string;
-    }
-    let product: ProdDoc | null = null;
-    if (mongoose.Types.ObjectId.isValid(productId)) {
-      product = await EnhancedProduct.findById(productId).lean<ProdDoc>();
-    }
-    if (!product) {
-      product = await EnhancedProduct.findOne({ $or: [{ sku: productId }, { slug: productId }] }).lean<ProdDoc>();
-    }
-  if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
-    }
-    // From here product is a lean object
-  if ((product.stockQty ?? 0) < quantity) {
-      return NextResponse.json(
-        { error: 'Insufficient stock' },
-        { status: 400 }
-      );
-    }
-
-    // Check if product already exists in bag
-    const existingItemIndex = bag.items.findIndex(
-      (item: { product: unknown }) => (item.product as unknown as { toString: () => string }).toString() === product!._id.toString()
-    );
-
-    if (existingItemIndex >= 0) {
-      // Update quantity
-      const newQuantity = bag.items[existingItemIndex].quantity + quantity;
-  if ((product.stockQty ?? 0) < newQuantity) {
-        return NextResponse.json(
-          { error: 'Insufficient stock for requested quantity' },
-          { status: 400 }
-        );
-      }
-      bag.items[existingItemIndex].quantity = newQuantity;
-  bag.items[existingItemIndex].price = Number(product.price ?? 0); // Update price in case it changed
-    } else {
-      // Add new item
-      bag.items.push({
-    product: product._id,
-        quantity,
-  price: Number(product.price ?? 0)
-      });
-    }
-
-    const updatedBag = await bag.save();
-    
-    const populatedBag = await Bag.findById(updatedBag._id)
-      .populate({
-        path: 'items.product',
-        model: 'EnhancedProduct',
-        select: 'name images stockQty price'
-      });
-
-    return NextResponse.json({
-      success: true,
-      data: populatedBag
-    });
-  } catch (error) {
-    console.error('Error adding item to bag:', error);
-    return NextResponse.json(
-      { error: 'Failed to add item to bag' },
-      { status: 500 }
-    );
-  }
+async function recomputeAndReturn(bagId: string) {
+  const items = await prisma.bagItem.findMany({ where: { bagId }, select: { price: true, quantity: true } });
+  await prisma.bag.update({
+    where: { id: bagId },
+    data: { totalAmount: bagTotal(items.map((i) => ({ price: Number(i.price), quantity: i.quantity }))) },
+  });
+  const bag = await prisma.bag.findUnique({ where: { id: bagId }, include: BAG_INCLUDE });
+  return bag ? serializeBag(bag) : null;
 }
 
-// DELETE - Remove item from bag
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+// POST - Add an item to a bag (owner only)
+export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
   try {
-    await connectDB();
-    
-    const { id: bagId } = await params;
+    const userId = request.user?.mongoId || request.user?.userId;
+    const { id: bagId } = await context.params;
+    const { productId, quantity } = await request.json();
+    const qty = Number(quantity);
+
+    if (!productId || !Number.isFinite(qty) || qty <= 0) {
+      return NextResponse.json({ error: 'Product ID and valid quantity are required' }, { status: 400 });
+    }
+
+    const bag = await prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } });
+    if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
+
+    const product = await prisma.product.findFirst({
+      where: { OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
+    });
+    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+
+    const existingItem = await prisma.bagItem.findUnique({
+      where: { bagId_productId: { bagId, productId: product.id } },
+    });
+    const newQuantity = (existingItem?.quantity || 0) + qty;
+    if (product.stockQty < newQuantity) {
+      return NextResponse.json({ error: 'Insufficient stock for requested quantity' }, { status: 400 });
+    }
+
+    await prisma.bagItem.upsert({
+      where: { bagId_productId: { bagId, productId: product.id } },
+      update: { quantity: newQuantity, price: Number(product.price) },
+      create: { bagId, productId: product.id, quantity: qty, price: Number(product.price) },
+    });
+
+    return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
+  } catch (error) {
+    console.error('Error adding item to bag:', error);
+    return NextResponse.json({ error: 'Failed to add item to bag' }, { status: 500 });
+  }
+});
+
+// DELETE - Remove an item from a bag (owner only)
+export const DELETE = requireAuth(async (request: AuthedReq, context: Ctx) => {
+  try {
+    const userId = request.user?.mongoId || request.user?.userId;
+    const { id: bagId } = await context.params;
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
 
-    if (!productId) {
-      return NextResponse.json(
-        { error: 'Product ID is required' },
-        { status: 400 }
-      );
-    }
+    if (!productId) return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
 
-    const bag = await Bag.findById(bagId);
-    if (!bag) {
-      return NextResponse.json(
-        { error: 'Bag not found' },
-        { status: 404 }
-      );
-    }
+    const bag = await prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } });
+    if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
 
-    // Remove item from bag
-    bag.items = bag.items.filter(
-      (item: { product: unknown }) => (item.product as unknown as { toString: () => string }).toString() !== productId
-    );
-
-    const updatedBag = await bag.save();
-    
-    const populatedBag = await Bag.findById(updatedBag._id)
-      .populate({
-        path: 'items.product',
-        model: 'EnhancedProduct',
-        select: 'name images stockQty price'
-      });
-
-    return NextResponse.json({
-      success: true,
-      data: populatedBag
+    // productId may be a Product id, sku, or slug.
+    const product = await prisma.product.findFirst({
+      where: { OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
+      select: { id: true },
     });
+    if (product) {
+      await prisma.bagItem.deleteMany({ where: { bagId, productId: product.id } });
+    }
+
+    return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
   } catch (error) {
     console.error('Error removing item from bag:', error);
-    return NextResponse.json(
-      { error: 'Failed to remove item from bag' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to remove item from bag' }, { status: 500 });
   }
-}
+});

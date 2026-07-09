@@ -76,7 +76,7 @@ export default function BundlesPage() {
     const fetchExistingBundles = async () => {
         try {
             setLoading(true);
-            const res = await fetch("/api/admin/products?limit=100");
+            const res = await fetch("/api/admin/products?limit=100&bundles=true");
             const data = await res.json();
             if (data.products) {
                 const bundles = data.products.filter((p: any) => p.isBundle === true);

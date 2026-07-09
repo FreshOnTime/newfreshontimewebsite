@@ -1,119 +1,87 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import EnhancedProduct from '@/lib/models/EnhancedProduct';
+import prisma from '@/lib/prisma';
 
 export async function POST() {
   try {
-    await connectDB();
-
     // Sample products matching the frontend mock data
     const sampleProducts = [
       {
         name: 'Araliya Basmathi Rice',
-        image: {
-          url: '/placeholder.svg',
-          filename: 'rice.jpg',
-          contentType: 'image/jpeg',
-          path: '/placeholder.svg'
-        },
         description: 'Premium Basmathi Rice',
-        searchContent: 'basmathi rice araliya premium grain',
-        isDisabled: false,
-        isDeleted: false,
-        baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: 400,
-        measurementType: 'kg',
-        isSoldAsUnit: false,
-        minOrderQuantity: 0.5,
-        maxOrderQuantity: 80,
-        stepQuantity: 0.5,
-        stockQuantity: 100,
-        lowStockThreshold: 10,
-        isOutOfStock: false,
-        totalSales: 500,
+        price: 400,
+        stockQty: 100,
+        minStockLevel: 10,
         discountPercentage: 10,
-        brand: '674ad90c123456789abcdef0', // Dummy ObjectId
-        category: '674ad90c123456789abcdef1' // Dummy ObjectId
+        image: '/placeholder.svg',
       },
       {
         name: 'White Sugar',
-        image: {
-          url: '/placeholder.svg',
-          filename: 'sugar.jpg',
-          contentType: 'image/jpeg',
-          path: '/placeholder.svg'
-        },
         description: 'Fine White Sugar',
-        searchContent: 'white sugar fine sweet granulated',
-        isDisabled: false,
-        isDeleted: false,
-        baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: 200,
-        measurementType: 'kg',
-        isSoldAsUnit: false,
-        minOrderQuantity: 0.5,
-        maxOrderQuantity: 5,
-        stepQuantity: 0.1,
-        stockQuantity: 150,
-        lowStockThreshold: 20,
-        isOutOfStock: false,
-        totalSales: 300,
+        price: 200,
+        stockQty: 150,
+        minStockLevel: 20,
         discountPercentage: 5,
-        brand: '674ad90c123456789abcdef0',
-        category: '674ad90c123456789abcdef1'
+        image: '/placeholder.svg',
       },
       {
         name: 'Table Salt',
-        image: {
-          url: '/placeholder.svg',
-          filename: 'salt.jpg',
-          contentType: 'image/jpeg',
-          path: '/placeholder.svg'
-        },
         description: 'Pure Table Salt',
-        searchContent: 'table salt pure cooking kitchen',
-        isDisabled: false,
-        isDeleted: false,
-        baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: 100,
-        measurementType: 'kg',
-        isSoldAsUnit: false,
-        minOrderQuantity: 0.1,
-        maxOrderQuantity: 2,
-        stepQuantity: 0.1,
-        stockQuantity: 80,
-        lowStockThreshold: 15,
-        isOutOfStock: false,
-        totalSales: 200,
+        price: 100,
+        stockQty: 80,
+        minStockLevel: 15,
         discountPercentage: 0,
-        brand: '674ad90c123456789abcdef0',
-        category: '674ad90c123456789abcdef1'
-      }
+        image: '/placeholder.svg',
+      },
     ];
 
-    // Clear existing products
-    await EnhancedProduct.deleteMany({});
-
-    // Adapt sample to EnhancedProduct minimal fields
-    const enhanced = sampleProducts.map((p, idx) => ({
-      name: p.name,
-      sku: `SKU-${idx + 1}`,
-      slug: p.name.toLowerCase().replace(/\s+/g, '-'),
-      description: p.description,
-      price: p.pricePerBaseQuantity,
-      costPrice: Math.max(0, p.pricePerBaseQuantity - 10),
-      categoryId: '000000000000000000000000',
-      supplierId: '000000000000000000000000',
-      stockQty: p.stockQuantity,
-      minStockLevel: p.lowStockThreshold,
-      images: [p.image?.url || '/placeholder.svg'],
-      tags: [],
-      attributes: {},
-      archived: false,
-    }));
-
-    // Insert sample products
-    const createdProducts = await EnhancedProduct.insertMany(enhanced);
+    // Idempotently upsert the sample products by SKU so re-seeding is safe and
+    // never orphans existing order_items (a destructive deleteMany would).
+    const createdProducts = [];
+    for (let idx = 0; idx < sampleProducts.length; idx++) {
+      const p = sampleProducts[idx];
+      const sku = `SKU-${idx + 1}`;
+      const slug = p.name.toLowerCase().replace(/\s+/g, '-');
+      const row = await prisma.product.upsert({
+        where: { sku },
+        update: {
+          name: p.name,
+          slug,
+          description: p.description,
+          price: p.price,
+          costPrice: Math.max(0, p.price - 10),
+          stockQty: p.stockQty,
+          minStockLevel: p.minStockLevel,
+          image: p.image,
+          images: [p.image],
+          discountPercentage: p.discountPercentage,
+        },
+        create: {
+          name: p.name,
+          sku,
+          slug,
+          description: p.description,
+          price: p.price,
+          costPrice: Math.max(0, p.price - 10),
+          categoryId: null,
+          supplierId: null,
+          stockQty: p.stockQty,
+          minStockLevel: p.minStockLevel,
+          image: p.image,
+          images: [p.image],
+          tags: [],
+          attributes: {},
+          archived: false,
+          discountPercentage: p.discountPercentage,
+        },
+      });
+      createdProducts.push({
+        ...row,
+        _id: row.id,
+        price: Number(row.price),
+        costPrice: Number(row.costPrice),
+        discountPercentage: Number(row.discountPercentage),
+      });
+    }
 
     return NextResponse.json({
       success: true,

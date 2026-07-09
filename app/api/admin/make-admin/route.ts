@@ -1,14 +1,9 @@
 import { NextRequest } from 'next/server';
-import connectDB from '@/lib/db';
-import { UserService } from '@/lib/services/userService';
+import prisma from '@/lib/prisma';
 import { sendSuccess, sendInternalError, sendBadRequest, sendNotFound } from '@/lib/utils/apiResponses';
-
-const userService = new UserService();
 
 export async function POST(req: NextRequest) {
   try {
-    await connectDB();
-    
     const { userId } = await req.json();
     
     if (!userId) {
@@ -16,20 +11,16 @@ export async function POST(req: NextRequest) {
     }
     
     // Find the user
-    const user = await userService.findUserById(userId);
+    const user = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
     if (!user) {
       return sendNotFound('User not found');
     }
     
     // Update user role to admin
-    const updatedUser = await userService.updateUser(userId, { role: 'admin' });
-    
-    if (!updatedUser) {
-      return sendInternalError('Failed to update user role');
-    }
+    const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } });
     
     return sendSuccess('User role updated to admin successfully', {
-      userId: updatedUser.userId,
+      userId: updatedUser.id,
       firstName: updatedUser.firstName,
       role: updatedUser.role
     });
@@ -41,8 +32,6 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    await connectDB();
-    
     const url = new URL(req.url);
     const userId = url.searchParams.get('userId');
     
@@ -50,13 +39,13 @@ export async function GET(req: NextRequest) {
       return sendBadRequest('User ID is required');
     }
     
-    const user = await userService.findUserById(userId);
+    const user = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
     if (!user) {
       return sendNotFound('User not found');
     }
     
     return sendSuccess('User role retrieved', {
-      userId: user.userId,
+      userId: user.id,
       firstName: user.firstName,
       role: user.role,
       isAdmin: user.role === 'admin'

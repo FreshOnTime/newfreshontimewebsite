@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { z } from 'zod';
-import connectDB from '@/lib/database';
-import Blog from '@/lib/models/Blog';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
@@ -18,27 +18,27 @@ const CACHE_HEADERS = {
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    const filter: Record<string, unknown> = { 
+    const where: Prisma.BlogWhereInput = {
       isDeleted: false,
       published: true,
     };
-    
+
     if (query.search) {
-      // Use text index for faster search when available
-      filter.$text = { $search: query.search };
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        { excerpt: { contains: query.search, mode: 'insensitive' } },
+      ];
     }
-    
+
     if (query.category) {
-      filter.category = query.category;
+      where.category = query.category;
     }
-    
+
     if (query.tag) {
-      filter.tags = query.tag;
+      where.tags = { has: query.tag };
     }
 
     const page = query.page;
@@ -47,76 +47,36 @@ export async function GET(request: NextRequest) {
 
     // Optimized query with minimal fields for list view
     const [blogs, total] = await Promise.all([
-      Blog.find(filter)
-        .select('title slug excerpt featuredImage category tags publishedAt views authorName')
-        .sort({ publishedAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Blog.countDocuments(filter),
+      prisma.blog.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          category: true,
+          tags: true,
+          publishedAt: true,
+          views: true,
+          authorName: true,
+        },
+        orderBy: { publishedAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.blog.count({ where }),
     ]);
 
     return NextResponse.json(
       {
-        blogs,
+        blogs: blogs.map(({ id, ...rest }) => ({ _id: id, ...rest })),
         pagination: { page, limit, total, pages: Math.ceil(total / limit) },
       },
       { headers: CACHE_HEADERS }
     );
   } catch (error) {
     console.error('Get public blogs error:', error);
-    // Fallback to regex search if text index fails
-    if (error instanceof Error && error.message.includes('text index')) {
-      return handleRegexSearch(request);
-    }
-    return NextResponse.json({ error: 'Failed to fetch blogs' }, { status: 500 });
-  }
-}
-
-// Fallback regex search function
-async function handleRegexSearch(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const query = querySchema.parse(Object.fromEntries(searchParams));
-
-    const filter: Record<string, unknown> = { 
-      isDeleted: false,
-      published: true,
-    };
-    
-    if (query.search) {
-      filter.$or = [
-        { title: { $regex: query.search, $options: 'i' } },
-        { excerpt: { $regex: query.search, $options: 'i' } },
-      ];
-    }
-    
-    if (query.category) filter.category = query.category;
-    if (query.tag) filter.tags = query.tag;
-
-    const page = query.page;
-    const limit = query.limit;
-    const skip = (page - 1) * limit;
-
-    const [blogs, total] = await Promise.all([
-      Blog.find(filter)
-        .select('title slug excerpt featuredImage category tags publishedAt views authorName')
-        .sort({ publishedAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Blog.countDocuments(filter),
-    ]);
-
-    return NextResponse.json(
-      {
-        blogs,
-        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-      },
-      { headers: CACHE_HEADERS }
-    );
-  } catch (error) {
-    console.error('Regex search error:', error);
     return NextResponse.json({ error: 'Failed to fetch blogs' }, { status: 500 });
   }
 }

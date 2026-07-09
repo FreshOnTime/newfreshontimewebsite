@@ -1,42 +1,32 @@
 import { NextRequest } from 'next/server';
-import { POST } from '@/app/api/users/register/route';
 
-// Mock dependencies
-jest.mock('@/lib/db', () => ({
+const mockPrisma = {
+  user: {
+    findFirst: jest.fn(),
+    create: jest.fn(),
+  },
+};
+
+jest.mock('@/lib/prisma', () => ({
   __esModule: true,
-  default: jest.fn().mockResolvedValue({}),
+  default: mockPrisma,
 }));
-
-jest.mock('@/lib/services/userService', () => ({
-  UserService: jest.fn().mockImplementation(() => ({
-    findUserById: jest.fn(),
-    createUser: jest.fn(),
-  })),
-}));
-
-import connectDB from '@/lib/db';
-import { UserService } from '@/lib/services/userService';
-
-const mockConnectDB = connectDB as jest.MockedFunction<typeof connectDB>;
 
 describe('/api/users/register', () => {
-  let mockUserService: jest.Mocked<UserService>;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUserService = new UserService() as jest.Mocked<UserService>;
   });
 
   describe('POST', () => {
     it('should successfully register a new user', async () => {
-      // Setup mocks
-      mockUserService.findUserById.mockResolvedValue(null);
-      mockUserService.createUser.mockResolvedValue({
-        _id: '123',
-        userId: 'test-user-id',
+      const { POST } = await import('@/app/api/users/register/route');
+      mockPrisma.user.findFirst.mockResolvedValue(null);
+      mockPrisma.user.create.mockResolvedValue({
+        id: 'test-user-id',
         firstName: 'John',
         phoneNumber: '+1234567890',
-      } as any);
+        addresses: [],
+      });
 
       // Create mock request
       const mockRequest = {
@@ -59,11 +49,13 @@ describe('/api/users/register', () => {
 
       const response = await POST(mockRequest);
       
-      expect(mockConnectDB).toHaveBeenCalled();
+      expect(mockPrisma.user.findFirst).toHaveBeenCalled();
+      expect(mockPrisma.user.create).toHaveBeenCalled();
       expect(response.status).toBe(201);
     });
 
     it('should return error when required fields are missing', async () => {
+      const { POST } = await import('@/app/api/users/register/route');
       // Create mock request with missing fields
       const mockRequest = {
         json: async () => ({

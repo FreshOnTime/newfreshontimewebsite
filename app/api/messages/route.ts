@@ -1,32 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server'; // Adjust path if needed, usually where auth options are
-import dbConnect from '@/lib/db'; // Adjust if dbConnect is elsewhere
-import Message from '@/lib/models/Message';
-import User from '@/lib/models/User';
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-// Helper to get user from token since we saw manual JWT handling in other files (e.g. middleware or custom auth)
-// But based on previous conversations, there might be a custom auth flow.
-// Let's check `contexts\AuthContext.tsx` or similar if needed. 
-// For now, I'll use the pattern seen in `app/api/admin/make-admin/route.ts`... wait, I didn't see that file's content.
-// I saw `app/dashboard/page.tsx` using `useAuth` from context. 
-// Most likely backend uses cookies.
-
-async function getUser(req: NextRequest) {
-    const token = (await cookies()).get('token')?.value;
+// Decode the auth cookie. The cookie is issued as `accessToken` across the app
+// (see lib/utils/cookies.ts); the decoded token's `userId` is the user's id.
+async function getUser() {
+    const token = (await cookies()).get('accessToken')?.value;
     if (!token) return null;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string; role?: string; [k: string]: unknown };
         return decoded;
-    } catch (err) {
+    } catch {
         return null;
     }
 }
 
 export async function POST(req: NextRequest) {
     try {
-        await dbConnect();
-        const currentUser = await getUser(req);
+        const currentUser = await getUser();
 
         if (!currentUser || currentUser.role !== 'admin') {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -39,61 +31,58 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
         }
 
-        const recipient = await User.findById(recipientId);
+        const recipient = await prisma.user.findUnique({ where: { id: recipientId } });
         if (!recipient) {
             return NextResponse.json({ success: false, message: 'Recipient not found' }, { status: 404 });
         }
 
-        const message = await Message.create({
-            sender: currentUser.userId, // Assuming userId is stored in token, or _id. Let's check User model again. 
-            // User model has `userId` (string) and `_id` (ObjectId). 
-            // Message schema uses ObjectId. 
-            // currentUser from JWT usually has _id. 
-            // Let's use _id if available, otherwise look up.
-            recipient: recipient._id,
-            subject,
-            content,
+        const message = await prisma.message.create({
+            data: {
+                senderId: currentUser.userId,
+                recipientId: recipient.id,
+                subject,
+                content,
+            },
         });
 
-        // We need to fetch the sender's ObjectId if currentUser.userId is the custom string ID.
-        // The JWT likely contains the _id. I will assume `currentUser.id` or `currentUser._id`.
-        // Actually, let's verify JWT structure if possible. 
-        // The previous turn didn't show JWT creation.
-        // Safest is to find sender by the ID in the token.
-
-        const sender = await User.findOne({ userId: currentUser.userId });
-        if (sender) {
-            message.sender = sender._id;
-            await message.save();
-        }
-
-        return NextResponse.json({ success: true, data: message }, { status: 201 });
+        return NextResponse.json({ success: true, data: { ...message, _id: message.id } }, { status: 201 });
     } catch (error) {
         console.error('Error sending message:', error);
         return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
     }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
-        await dbConnect();
-        const currentUser = await getUser(req);
+        const currentUser = await getUser();
 
         if (!currentUser) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
 
-        // Get the user's ObjectId
-        const user = await User.findOne({ userId: currentUser.userId });
+        const user = await prisma.user.findUnique({ where: { id: currentUser.userId } });
         if (!user) {
             return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
         }
 
-        const messages = await Message.find({ recipient: user._id })
-            .populate('sender', 'firstName lastName email')
-            .sort({ createdAt: -1 });
+        const messages = await prisma.message.findMany({
+            where: { recipientId: user.id },
+            include: {
+                sender: { select: { id: true, firstName: true, lastName: true, email: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
 
-        return NextResponse.json({ success: true, data: messages }, { status: 200 });
+        const data = messages.map((m) => {
+            const { sender, ...rest } = m;
+            return {
+                ...rest,
+                _id: m.id,
+                sender: sender ? { ...sender, _id: sender.id } : null,
+            };
+        });
+
+        return NextResponse.json({ success: true, data }, { status: 200 });
     } catch (error) {
         console.error('Error fetching messages:', error);
         return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });

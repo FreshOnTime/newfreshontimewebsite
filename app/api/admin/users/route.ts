@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import connectDB from '@/lib/database';
-import User from '@/lib/models/User';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const addressSchema = z.object({
@@ -55,44 +55,72 @@ const querySchema = z.object({
   sortOrder: z.enum(['asc','desc']).optional().default('desc'),
 });
 
-function generateUserId() {
-  return `USR-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
+// Fields returned to the admin UI. passwordHash is intentionally excluded.
+const userSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phoneNumber: true,
+  role: true,
+  secondaryRoles: true,
+  isBanned: true,
+  isEmailVerified: true,
+  isPhoneVerified: true,
+  giftCardBalance: true,
+  supplierId: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.UserSelect;
+
+type UserRow = Prisma.UserGetPayload<{ select: typeof userSelect }>;
+
+// Map a Prisma user row to the JSON shape the old Mongoose route returned.
+// IDs are UUIDs now; expose them as both `id`/`_id` and (for UI compat) `userId`.
+function serializeUser(u: UserRow) {
+  return {
+    ...u,
+    _id: u.id,
+    userId: u.id,
+    giftCardBalance: Number(u.giftCardBalance),
+  };
 }
 
 export const GET = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    const filter: Record<string, unknown> = {};
+    const where: Prisma.UserWhereInput = {};
     if (query.search) {
-      filter.$or = [
-        { firstName: { $regex: query.search, $options: 'i' } },
-        { lastName: { $regex: query.search, $options: 'i' } },
-        { email: { $regex: query.search, $options: 'i' } },
-        { phoneNumber: { $regex: query.search, $options: 'i' } },
-        { userId: { $regex: query.search, $options: 'i' } },
+      where.OR = [
+        { firstName: { contains: query.search, mode: 'insensitive' } },
+        { lastName: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+        { phoneNumber: { contains: query.search, mode: 'insensitive' } },
       ];
     }
     if (query.role) {
-      filter.role = query.role;
+      where.role = query.role;
     }
 
     const page = query.page;
     const limit = query.limit;
     const skip = (page - 1) * limit;
 
-    const sort: Record<string, 1 | -1> = {};
-    sort[query.sortBy] = query.sortOrder === 'asc' ? 1 : -1;
-
     const [users, total] = await Promise.all([
-      User.find(filter).sort(sort).skip(skip).limit(limit).lean(),
-      User.countDocuments(filter),
+      prisma.user.findMany({
+        where,
+        orderBy: { [query.sortBy]: query.sortOrder },
+        skip,
+        take: limit,
+        select: userSelect,
+      }),
+      prisma.user.count({ where }),
     ]);
 
     return NextResponse.json({
-      users,
+      users: users.map(serializeUser),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -103,44 +131,67 @@ export const GET = requireAdminSimple(async (request) => {
 
 export const POST = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const body = await request.json();
     const data = createUserSchema.parse(body);
-
-    const userId = data.userId?.trim() || generateUserId();
 
     // Normalize email/phone
     const email = data.email?.trim().toLowerCase();
     const phone = data.phoneNumber.trim();
 
     // Uniqueness checks
-    const existing = await User.findOne({
-      $or: [
-        { userId },
-        ...(email ? [{ email }] : []),
-        { phoneNumber: phone },
-      ],
+    const existing = await prisma.user.findFirst({
+      where: {
+        OR: [
+          ...(email ? [{ email }] : []),
+          { phoneNumber: phone },
+        ],
+      },
     });
     if (existing) {
       return NextResponse.json({ error: 'User with same ID, email, or phone already exists' }, { status: 400 });
     }
 
-    const created = await User.create({
-      ...data,
-      userId,
-      email,
-      phoneNumber: phone,
+    const { registrationAddress, addresses } = data;
+
+    const created = await prisma.user.create({
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName ?? null,
+        email: email ?? null,
+        phoneNumber: phone,
+        passwordHash: data.passwordHash ?? null,
+        role: data.role,
+        secondaryRoles: data.secondaryRoles ?? [],
+        isBanned: data.isBanned ?? false,
+        isEmailVerified: data.isEmailVerified ?? false,
+        giftCardBalance: data.giftCardBalance ?? 0,
+        addresses: {
+          create: [
+            { ...registrationAddress, isRegistration: true },
+            ...(addresses ?? []).map((a) => ({ ...a, isRegistration: false })),
+          ],
+        },
+      },
+      select: userSelect,
     });
 
-    await logAuditAction(request.user!.userId, 'create', 'user', created._id.toString(), undefined, created.toObject(), request);
+    const serialized = serializeUser(created);
+    await logAuditAction(
+      request.user!.userId,
+      'create',
+      'user',
+      created.id,
+      undefined,
+      serialized as unknown as Record<string, unknown>,
+      request
+    );
 
-    return NextResponse.json({ user: created }, { status: 201 });
+    return NextResponse.json({ user: serialized }, { status: 201 });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
-    const err = error as { code?: number; keyPattern?: Record<string, unknown> };
-    if (err && err.code === 11000) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json({ error: 'Duplicate key error' }, { status: 400 });
     }
     console.error('Create user error:', error);

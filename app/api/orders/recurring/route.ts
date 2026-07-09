@@ -1,14 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import connectDB from '@/lib/database';
-import Order from '@/lib/models/EnhancedOrder';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
-interface AuthenticatedRequest extends NextRequest {
-  user: {
-    userId: string;
-    role: string;
+type AuthUser = { userId: string; role: string; mongoId?: string };
+
+const ORDER_INCLUDE = {
+  items: {
+    include: {
+      product: { select: { id: true, name: true, price: true, images: true, stockQty: true, sku: true } },
+    },
+  },
+} satisfies Prisma.OrderInclude;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serializeOrder(o: any) {
+  const { items, ...rest } = o;
+  return {
+    ...rest,
+    _id: o.id,
+    subtotal: Number(o.subtotal),
+    tax: Number(o.tax),
+    shipping: Number(o.shipping),
+    discount: Number(o.discount),
+    total: Number(o.total),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    items: (items || []).map((it: any) => {
+      const { product, ...itRest } = it;
+      return {
+        ...itRest,
+        price: Number(it.price),
+        total: Number(it.total),
+        productId: product
+          ? {
+              _id: product.id,
+              name: product.name,
+              price: Number(product.price),
+              images: product.images,
+              stockQty: product.stockQty,
+              sku: product.sku,
+            }
+          : it.productId,
+      };
+    }),
   };
 }
 
@@ -39,7 +74,6 @@ const querySchema = z.object({
 // GET - fetch all recurring orders for the authenticated user
 export const GET = requireAuth(async (request: NextRequest) => {
   try {
-    await connectDB();
     const url = new URL(request.url);
     const query = querySchema.parse({
       page: url.searchParams.get('page') || '1',
@@ -49,38 +83,32 @@ export const GET = requireAuth(async (request: NextRequest) => {
       sortOrder: url.searchParams.get('sortOrder') || 'desc',
     });
 
-    const user = (request as AuthenticatedRequest).user;
+    const user = (request as NextRequest & { user: AuthUser }).user;
     const { page, limit, status, sortBy, sortOrder } = query;
     const skip = (page - 1) * limit;
 
-    // Build filter for recurring orders
-    const filter: Record<string, unknown> = {
-      customerId: user.userId,
+    // Orders store customerId = the user's id (mongoId === userId === user.id).
+    const where: Prisma.OrderWhereInput = {
+      customerId: user.mongoId || user.userId,
       isRecurring: true,
     };
 
     if (status) {
-      filter.scheduleStatus = status;
+      where.scheduleStatus = status;
     }
 
-    // Get total count
-    const total = await Order.countDocuments(filter);
+    const [ordersRaw, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: ORDER_INCLUDE,
+        orderBy: { [sortBy]: sortOrder },
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({ where }),
+    ]);
 
-    // Get orders with pagination and sorting
-    const sortOptions: Record<string, 1 | -1> = {};
-    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
-
-    const orders = await Order.find(filter)
-      .populate({ 
-        path: 'items.productId', 
-        model: 'EnhancedProduct', 
-        select: 'name price images stockQty sku' 
-      })
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
+    const orders = ordersRaw.map(serializeOrder);
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
@@ -99,14 +127,14 @@ export const GET = requireAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid query parameters', 
-        details: error.errors 
+      return NextResponse.json({
+        error: 'Invalid query parameters',
+        details: error.errors
       }, { status: 400 });
     }
     console.error('Error fetching recurring orders:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch recurring orders' 
+    return NextResponse.json({
+      error: 'Failed to fetch recurring orders'
     }, { status: 500 });
   }
 });
@@ -114,92 +142,92 @@ export const GET = requireAuth(async (request: NextRequest) => {
 // POST - create a recurring order from an existing order
 export const POST = requireAuth(async (request: NextRequest) => {
   try {
-    await connectDB();
     const body = await request.json();
-    const user = (request as AuthenticatedRequest).user;
+    const user = (request as NextRequest & { user: AuthUser }).user;
 
     // Validate the request body
     const data = recurringOrderSchema.parse(body);
 
     // Check if sourceOrderId is provided to copy from existing order
     if (!body.sourceOrderId) {
-      return NextResponse.json({ 
-        error: 'sourceOrderId is required to create recurring order' 
+      return NextResponse.json({
+        error: 'sourceOrderId is required to create recurring order'
       }, { status: 400 });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(body.sourceOrderId)) {
-      return NextResponse.json({ 
-        error: 'Invalid source order ID' 
-      }, { status: 400 });
-    }
-
-    // Get the source order
-    const sourceOrder = await Order.findById(body.sourceOrderId);
+    // Get the source order (with its line items)
+    const sourceOrder = await prisma.order.findUnique({
+      where: { id: String(body.sourceOrderId) },
+      include: { items: true },
+    });
     if (!sourceOrder) {
-      return NextResponse.json({ 
-        error: 'Source order not found' 
+      return NextResponse.json({
+        error: 'Source order not found'
       }, { status: 404 });
     }
 
-    // Verify ownership
-    if (String(sourceOrder.customerId) !== String(user.userId)) {
-      return NextResponse.json({ 
-        error: 'Access denied' 
+    // Verify ownership (orders are keyed by the user's id).
+    if (String(sourceOrder.customerId) !== String(user.mongoId || user.userId)) {
+      return NextResponse.json({
+        error: 'Access denied'
       }, { status: 403 });
     }
 
-    // Create new recurring order based on source order
-    const recurringOrderData = {
-      ...sourceOrder.toObject(),
-      _id: new mongoose.Types.ObjectId(),
-      orderNumber: `REC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      status: 'pending',
-      isRecurring: data.isRecurring,
-      recurrence: data.recurrence ? {
-        ...data.recurrence,
-        startDate: data.recurrence.startDate ? new Date(data.recurrence.startDate) : undefined,
-        endDate: data.recurrence.endDate ? new Date(data.recurrence.endDate) : undefined,
-        includeDates: data.recurrence.includeDates?.map(d => new Date(d)),
-        excludeDates: data.recurrence.excludeDates?.map(d => new Date(d)),
-        selectedDates: data.recurrence.selectedDates?.map(d => new Date(d)),
-      } : undefined,
-      nextDeliveryAt: data.nextDeliveryAt ? new Date(data.nextDeliveryAt) : undefined,
-      scheduleStatus: data.scheduleStatus,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // Remove version key if it exists
-    if ('__v' in recurringOrderData) {
-      delete (recurringOrderData as Record<string, unknown>).__v;
-    }
-
-    const newOrder = new Order(recurringOrderData);
-    const savedOrder = await newOrder.save();
-
-    const populatedOrder = await Order.findById(savedOrder._id)
-      .populate({ 
-        path: 'items.productId', 
-        model: 'EnhancedProduct', 
-        select: 'name price images stockQty sku' 
-      });
+    // Create new recurring order based on the source order.
+    const created = await prisma.order.create({
+      data: {
+        orderNumber: `REC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        customerId: sourceOrder.customerId,
+        bagId: sourceOrder.bagId,
+        bagName: sourceOrder.bagName,
+        subtotal: sourceOrder.subtotal,
+        tax: sourceOrder.tax,
+        shipping: sourceOrder.shipping,
+        discount: sourceOrder.discount,
+        total: sourceOrder.total,
+        status: 'pending',
+        paymentMethod: sourceOrder.paymentMethod,
+        shippingAddress: sourceOrder.shippingAddress as Prisma.InputJsonValue,
+        billingAddress:
+          sourceOrder.billingAddress === null
+            ? Prisma.JsonNull
+            : (sourceOrder.billingAddress as Prisma.InputJsonValue),
+        notes: sourceOrder.notes,
+        isRecurring: data.isRecurring,
+        recurrence: data.recurrence
+          ? (data.recurrence as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        nextDeliveryAt: data.nextDeliveryAt ? new Date(data.nextDeliveryAt) : null,
+        scheduleStatus: data.scheduleStatus,
+        items: {
+          create: sourceOrder.items.map((it) => ({
+            productId: it.productId,
+            sku: it.sku,
+            name: it.name,
+            qty: it.qty,
+            price: it.price,
+            total: it.total,
+          })),
+        },
+      },
+      include: ORDER_INCLUDE,
+    });
 
     return NextResponse.json({
       success: true,
-      data: populatedOrder,
+      data: serializeOrder(created),
       message: 'Recurring order created successfully',
     }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid request data', 
-        details: error.errors 
+      return NextResponse.json({
+        error: 'Invalid request data',
+        details: error.errors
       }, { status: 400 });
     }
     console.error('Error creating recurring order:', error);
-    return NextResponse.json({ 
-      error: 'Failed to create recurring order' 
+    return NextResponse.json({
+      error: 'Failed to create recurring order'
     }, { status: 500 });
   }
 });

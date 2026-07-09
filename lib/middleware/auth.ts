@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, TokenPayload } from '@/lib/jwt';
-import connectDB from '@/lib/database';
-import User from '@/lib/models/User';
+import prisma from '@/lib/prisma';
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: TokenPayload & { _id: string };
@@ -12,16 +11,14 @@ type RouteHandler = (req: AuthenticatedRequest, context?: any) => Promise<NextRe
 
 export function withAuth(
   handler: RouteHandler,
-  options: { 
-    requiredRoles?: string[]; 
-    optional?: boolean; 
+  options: {
+    requiredRoles?: string[];
+    optional?: boolean;
   } = {}
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (req: NextRequest, context?: any) => {
     try {
-      await connectDB();
-
       const accessToken = req.cookies.get('accessToken')?.value;
 
       if (!accessToken) {
@@ -47,8 +44,19 @@ export function withAuth(
         );
       }
 
+      // Reject refresh tokens presented as access tokens.
+      if (payload.type !== 'access') {
+        if (options.optional) {
+          return handler(req as AuthenticatedRequest, context);
+        }
+        return NextResponse.json(
+          { error: 'Invalid or expired token' },
+          { status: 401 }
+        );
+      }
+
       // Verify user still exists and is not banned
-      const user = await User.findOne({ userId: payload.userId });
+      const user = await prisma.user.findUnique({ where: { id: payload.userId } });
       if (!user || user.isBanned) {
         return NextResponse.json(
           { error: 'User not found or banned' },
@@ -58,10 +66,8 @@ export function withAuth(
 
       // Check role authorization
       if (options.requiredRoles && options.requiredRoles.length > 0) {
-        const userRoles = [user.role, ...(user.secondaryRoles || [])];
-        const hasRequiredRole = options.requiredRoles.some(role => 
-          userRoles.includes(role)
-        );
+        const userRoles: string[] = [user.role, ...(user.secondaryRoles || [])];
+        const hasRequiredRole = options.requiredRoles.some((role) => userRoles.includes(role));
 
         if (!hasRequiredRole) {
           return NextResponse.json(
@@ -74,7 +80,7 @@ export function withAuth(
       // Attach user to request
       (req as AuthenticatedRequest).user = {
         ...payload,
-        _id: user._id.toString()
+        _id: user.id,
       };
 
       return handler(req as AuthenticatedRequest, context);

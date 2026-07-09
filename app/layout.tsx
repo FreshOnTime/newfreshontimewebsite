@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
@@ -20,19 +19,6 @@ const SERVICE_AREAS = [
   "Cinnamon Gardens",
   "Havelock Town",
 ];
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  weight: ["400", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -164,7 +150,7 @@ export default function RootLayout({
   return (
     <html lang="en-LK">
       <body
-        className={`${inter.variable} ${playfair.variable} min-h-screen bg-background font-sans antialiased`}
+        className="min-h-screen bg-background font-sans antialiased"
       >
         <AdminChromeGuard>{children}</AdminChromeGuard>
         <Toaster />

@@ -1,20 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import Category from '@/lib/models/Category';
+import prisma from '@/lib/prisma';
 
 // GET - Fetch all categories
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-    
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get('isActive') !== 'false';
-    const query = isActive ? { isActive: true } : {};
     // Only select fields needed by frontend
-    const categories = await Category.find(query)
-      .sort({ sortOrder: 1, name: 1 })
-      .select('_id name slug description imageUrl isActive sortOrder')
-      .lean();
+    const rows = await prisma.category.findMany({
+      where: isActive ? { isActive: true } : undefined,
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        imageUrl: true,
+        isActive: true,
+        sortOrder: true,
+      },
+    });
+
+    const categories = rows.map((c) => ({
+      _id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+      imageUrl: c.imageUrl,
+      isActive: c.isActive,
+      sortOrder: c.sortOrder,
+    }));
 
     return NextResponse.json(
       {
@@ -39,8 +54,6 @@ export async function GET(request: NextRequest) {
 // POST - Create a new category
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-    
     const body = await request.json();
     const { name, description, imageUrl, slug, parentCategoryId, isActive = true, sortOrder = 0 } = body;
 
@@ -52,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if slug already exists
-    const existingCategory = await Category.findOne({ slug });
+    const existingCategory = await prisma.category.findUnique({ where: { slug } });
     if (existingCategory) {
       return NextResponse.json(
         { error: 'Slug already exists' },
@@ -60,21 +73,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newCategory = new Category({
-      name,
-      description,
-      imageUrl,
-      slug,
-      parentCategoryId,
-      isActive,
-      sortOrder,
+    const savedCategory = await prisma.category.create({
+      data: {
+        name,
+        description: description ?? null,
+        imageUrl: imageUrl ?? null,
+        slug,
+        parentCategoryId: parentCategoryId ?? null,
+        isActive,
+        sortOrder,
+      },
     });
-
-    const savedCategory = await newCategory.save();
 
     return NextResponse.json({
       success: true,
-      data: savedCategory
+      data: { ...savedCategory, _id: savedCategory.id }
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating category:', error);

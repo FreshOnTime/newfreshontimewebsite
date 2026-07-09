@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import Supplier, { ISupplier } from '@/lib/models/Supplier';
-import SupplierUpload from '@/lib/models/SupplierUpload';
-import User, { IUser } from '@/lib/models/User';
+import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { sendEmail } from '@/lib/services/mailService';
@@ -19,40 +17,40 @@ export const dynamic = 'force-dynamic';
 
 export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId?: string; userId?: string } }) => {
   try {
-    await connectDB();
-
     // Determine supplierId from the authenticated user record
     const authUser = request.user;
     if (!authUser) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
 
-    const userDoc = (authUser.mongoId
-      ? await User.findById(authUser.mongoId).lean()
-      : await User.findOne({ userId: authUser.userId }).lean()) as Partial<IUser> | null;
+    const uid = authUser.mongoId || authUser.userId;
+    const userDoc = uid ? await prisma.user.findUnique({ where: { id: uid } }) : null;
 
-    let resolvedSupplierId = userDoc?.supplierId?.toString?.() || null;
+    let resolvedSupplierId = userDoc?.supplierId || null;
 
     // Fallback: if the User record doesn't have supplierId, try to auto-link by email or phone
-    if (!resolvedSupplierId) {
+    if (!resolvedSupplierId && userDoc) {
       try {
-        const maybeEmail = userDoc?.email as string | undefined;
-        const maybePhone = userDoc?.phoneNumber as string | undefined;
-        let foundSupplier: Partial<ISupplier> | null = null;
+        const maybeEmail = userDoc.email || undefined;
+        const maybePhone = userDoc.phoneNumber || undefined;
+        const orConds: Prisma.SupplierWhereInput[] = [];
+        if (maybeEmail) orConds.push({ email: maybeEmail });
+        if (maybePhone) orConds.push({ phone: maybePhone });
 
-        if (maybeEmail) {
-          foundSupplier = (await Supplier.findOne({ email: maybeEmail }).lean()) as Partial<ISupplier> | null;
-        }
-        if (!foundSupplier && maybePhone) {
-          foundSupplier = (await Supplier.findOne({ phone: maybePhone }).lean()) as Partial<ISupplier> | null;
-        }
+        const foundSupplier = orConds.length
+          ? await prisma.supplier.findFirst({ where: { OR: orConds } })
+          : null;
 
-        if (foundSupplier && foundSupplier._id) {
-          resolvedSupplierId = foundSupplier._id.toString();
-          // Persist the link on the user record for future requests
+        if (foundSupplier) {
+          resolvedSupplierId = foundSupplier.id;
+          // Persist the link on the user record for future requests. Only promote a
+          // plain customer to 'supplier' — never downgrade an elevated role.
           try {
-            await User.updateOne(
-              { _id: userDoc?._id },
-              { $set: { supplierId: foundSupplier._id, role: 'supplier' } }
-            );
+            await prisma.user.update({
+              where: { id: userDoc.id },
+              data: {
+                supplierId: foundSupplier.id,
+                ...(userDoc.role === 'customer' ? { role: 'supplier' as const } : {}),
+              },
+            });
           } catch (linkErr) {
             console.warn('[WARN] /api/suppliers/upload - failed to persist auto-link on user:', linkErr);
           }
@@ -69,7 +67,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     // Support two upload modes:
     // 1) JSON body containing { fileName, fileData } where fileData is base64 (recommended for all runtimes)
     // 2) multipart/form-data with a `file` field (legacy, may not work in all environments)
-    
+
     const contentType = request.headers.get('content-type') || '';
     let file: File | (Blob & { name?: string; type?: string }) | null = null;
 
@@ -81,16 +79,16 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
         const maybeData = bodyJson?.fileData || bodyJson?.data || bodyJson?.file;
         const maybeName = bodyJson?.fileName || bodyJson?.originalName || bodyJson?.name;
         const maybeMimeType = bodyJson?.mimeType || bodyJson?.type || '';
-        
+
         console.log('[DEBUG] /api/suppliers/upload - File name:', maybeName, 'has data:', !!maybeData);
-        
+
         if (typeof maybeData === 'string' && maybeData.length > 0) {
           // Expect a base64 string (possibly with data:<mime>;base64,...)
           const base64 = maybeData.replace(/^data:.*;base64,/, '');
           const buf = Buffer.from(base64, 'base64');
-          
+
           console.log('[DEBUG] /api/suppliers/upload - Decoded buffer size:', buf.length);
-          
+
           // Create a file-like object that works in Node.js (no Blob constructor in Node)
           // Instead, create an object with the properties we need
           file = {
@@ -99,7 +97,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
             buffer: buf, // Store the buffer directly
             arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
           } as unknown as Blob & { name?: string; type?: string; buffer?: Buffer };
-          
+
           console.log('[DEBUG] /api/suppliers/upload - File object created:', file.name, file.type);
         }
       } catch (e) {
@@ -135,7 +133,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     const isServerless = process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
     let uploadsDir: string;
     let shouldStoreInDB = false;
-    
+
     if (isServerless) {
       // Use /tmp in serverless environments (writable)
       uploadsDir = path.join('/tmp', 'uploads', 'supplier-uploads');
@@ -146,7 +144,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'supplier-uploads');
       console.log('[INFO] /api/suppliers/upload - Using persistent public directory');
     }
-    
+
     // Ensure upload directory exists with proper error handling
     try {
       await fs.promises.mkdir(uploadsDir, { recursive: true });
@@ -155,8 +153,8 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       console.log('[INFO] /api/suppliers/upload - Upload directory ready:', uploadsDir);
     } catch (dirErr) {
       console.error('[ERROR] /api/suppliers/upload - Failed to create/access upload directory:', dirErr);
-      console.error('[ERROR] /api/suppliers/upload - Environment:', { 
-        cwd: process.cwd(), 
+      console.error('[ERROR] /api/suppliers/upload - Environment:', {
+        cwd: process.cwd(),
         isServerless,
         tmpExists: fs.existsSync('/tmp')
       });
@@ -170,15 +168,15 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
           console.log('[INFO] /api/suppliers/upload - Fallback to /tmp successful');
         } catch (tmpErr) {
           console.error('[ERROR] /api/suppliers/upload - /tmp fallback also failed:', tmpErr);
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'Upload directory not accessible. File system is read-only.',
-            details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined 
+            details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined
           }, { status: 500 });
         }
       } else {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: 'Upload directory not accessible. Please contact administrator.',
-          details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined 
+          details: process.env.NODE_ENV === 'development' ? String(dirErr) : undefined
         }, { status: 500 });
       }
     }
@@ -207,7 +205,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     const mimeType = typeof fileLike?.type === 'string' && fileLike.type.trim()
       ? fileLike.type
       : '';
-    
+
     // Detect MIME type from extension if not provided
     let detectedMimeType = mimeType;
     if (!detectedMimeType) {
@@ -222,12 +220,12 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
         detectedMimeType = 'application/octet-stream';
       }
     }
-    
+
     console.log('[INFO] /api/suppliers/upload - File:', originalName, 'MIME:', detectedMimeType, 'Size:', buffer.length);
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const filename = `${uniqueSuffix}-${safeOriginalName}`;
     const destPath = path.join(uploadsDir, filename);
-    
+
     try {
       await fs.promises.writeFile(destPath, buffer);
       console.log('[DEBUG] /api/suppliers/upload - File written to:', destPath);
@@ -242,9 +240,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       const lowerName = safeOriginalName.toLowerCase();
       const isCsv = detectedMimeType === 'text/csv' || lowerName.endsWith('.csv');
       const isExcel = detectedMimeType.includes('spreadsheet') || detectedMimeType.includes('excel') || lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls');
-      
+
       console.log('[INFO] /api/suppliers/upload - Parsing preview. isCsv:', isCsv, 'isExcel:', isExcel);
-      
+
       if (isCsv) {
         const text = buffer.toString('utf8');
         const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
@@ -277,12 +275,11 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     let supplierContactName: string | null = null;
     let supplierStatus: string | null = null;
     try {
-      const finalSupplierId = resolvedSupplierId;
-      const s = finalSupplierId
-        ? ((await Supplier.findById(finalSupplierId).lean()) as (Partial<ISupplier> & { companyName?: string | null }) | null)
+      const s = resolvedSupplierId
+        ? await prisma.supplier.findUnique({ where: { id: resolvedSupplierId } })
         : null;
-      supplierName = s?.name || s?.companyName || null;
-      supplierCompany = s?.companyName || s?.name || null;
+      supplierName = s?.name || null;
+      supplierCompany = s?.name || null;
       supplierEmail = s?.email || null;
       supplierPhone = s?.phone || null;
       supplierContactName = s?.contactName || null;
@@ -298,7 +295,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
 
   let uploadDoc: unknown = null;
     try {
-      const uploadData: Record<string, unknown> = {
+      const uploadData: Prisma.SupplierUploadUncheckedCreateInput = {
         supplierId: resolvedSupplierId,
         supplierName,
         supplierCompany,
@@ -310,22 +307,15 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
         originalName,
         mimeType: detectedMimeType,
         size: buffer.length,
-        preview: previewRows.slice(0, 20)
+        preview: previewRows.slice(0, 20) as Prisma.InputJsonValue,
+        // In serverless environments, store file data in DB since file system is
+        // ephemeral. In persistent environments, store the file path instead.
+        fileData: shouldStoreInDB ? buffer.toString('base64') : null,
+        path: shouldStoreInDB ? null : `/uploads/supplier-uploads/${filename}`,
       };
-      
-      // In serverless environments, store file data in DB since file system is ephemeral
-      // In persistent environments, store file path
-      if (shouldStoreInDB) {
-        console.log('[INFO] /api/suppliers/upload - Storing file data in database (serverless environment)');
-        uploadData.fileData = buffer.toString('base64');
-        uploadData.path = null; // No persistent path available
-      } else {
-        console.log('[INFO] /api/suppliers/upload - Storing file path (persistent environment)');
-        uploadData.path = `/uploads/supplier-uploads/${filename}`;
-        uploadData.fileData = null; // No need to store data in DB
-      }
-      
-      uploadDoc = await SupplierUpload.create(uploadData);
+
+      const created = await prisma.supplierUpload.create({ data: uploadData });
+      uploadDoc = { ...created, _id: created.id };
     } catch (dbErr) {
       console.error('[ERROR] /api/suppliers/upload - Failed to create DB record:', dbErr);
       const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
@@ -354,9 +344,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
   } catch (error) {
     console.error('[ERROR] /api/suppliers/upload - Upload failed:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
-    return NextResponse.json({ 
-      error: 'Failed to upload file', 
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined 
+    return NextResponse.json({
+      error: 'Failed to upload file',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
     }, { status: 500 });
   }
 });

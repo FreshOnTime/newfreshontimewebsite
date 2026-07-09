@@ -1,92 +1,86 @@
-import Role, { IRole } from "../models/Role";
-import connectDB from "../db";
+import prisma from "../prisma";
+
+type RoleInput = { name?: string; description?: string | null; permissions?: string[] };
+
+function serializeRole<T extends { id: string }>(role: T) {
+  return { ...role, _id: role.id };
+}
+
+const roleInclude = { permissions: true };
 
 export class RoleService {
-  async getAllRoles(): Promise<IRole[]> {
-    await connectDB();
-    return await Role.find().populate('permissions').sort({ createdAt: -1 });
+  async getAllRoles() {
+    const roles = await prisma.role.findMany({ include: roleInclude, orderBy: { createdAt: "desc" } });
+    return roles.map(serializeRole);
   }
 
-  async getRoleById(id: string): Promise<IRole | null> {
-    await connectDB();
-    return await Role.findById(id).populate('permissions');
+  async getRoleById(id: string) {
+    const role = await prisma.role.findUnique({ where: { id }, include: roleInclude });
+    return role ? serializeRole(role) : null;
   }
 
-  async getRoleByName(name: string): Promise<IRole | null> {
-    await connectDB();
-    return await Role.findOne({ name }).populate('permissions');
+  async getRoleByName(name: string) {
+    const role = await prisma.role.findUnique({ where: { name }, include: roleInclude });
+    return role ? serializeRole(role) : null;
   }
 
-  async createRole(roleData: Partial<IRole>): Promise<IRole> {
-    await connectDB();
-    
-    // Check if role with same name already exists
-    const existingRole = await Role.findOne({ name: roleData.name });
-    if (existingRole) {
-      throw new Error(`Role with name ${roleData.name} already exists`);
-    }
-
-    const role = new Role(roleData);
-    await role.save();
-    return await role.populate('permissions');
+  async createRole(roleData: RoleInput) {
+    if (!roleData.name) throw new Error("Role name is required");
+    const existingRole = await prisma.role.findUnique({ where: { name: roleData.name } });
+    if (existingRole) throw new Error(`Role with name ${roleData.name} already exists`);
+    return serializeRole(await prisma.role.create({
+      data: {
+        name: roleData.name,
+        description: roleData.description ?? null,
+        ...(roleData.permissions?.length
+          ? { permissions: { connect: roleData.permissions.map((id) => ({ id })) } }
+          : {}),
+      },
+      include: roleInclude,
+    }));
   }
 
-  async updateRole(id: string, updateData: Partial<IRole>): Promise<IRole | null> {
-    await connectDB();
-    
-    // If updating name, check if it's unique
+  async updateRole(id: string, updateData: RoleInput) {
     if (updateData.name) {
-      const existingRole = await Role.findOne({ 
-        name: updateData.name, 
-        _id: { $ne: id } 
-      });
-      if (existingRole) {
-        throw new Error(`Role with name ${updateData.name} already exists`);
-      }
+      const existingRole = await prisma.role.findUnique({ where: { name: updateData.name } });
+      if (existingRole && existingRole.id !== id) throw new Error(`Role with name ${updateData.name} already exists`);
     }
-
-    const role = await Role.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate('permissions');
-    
-    return role;
+    const role = await prisma.role.update({
+      where: { id },
+      data: {
+        ...(updateData.name !== undefined ? { name: updateData.name } : {}),
+        ...(updateData.description !== undefined ? { description: updateData.description } : {}),
+        ...(updateData.permissions !== undefined
+          ? { permissions: { set: updateData.permissions.map((permissionId) => ({ id: permissionId })) } }
+          : {}),
+      },
+      include: roleInclude,
+    }).catch(() => null);
+    return role ? serializeRole(role) : null;
   }
 
-  async deleteRole(id: string): Promise<void> {
-    await connectDB();
-    
-    const role = await Role.findById(id);
-    if (!role) {
-      throw new Error("Role not found");
-    }
-
-    await Role.findByIdAndDelete(id);
+  async deleteRole(id: string) {
+    const role = await prisma.role.findUnique({ where: { id } });
+    if (!role) throw new Error("Role not found");
+    await prisma.role.delete({ where: { id } });
   }
 
-  async addPermissionToRole(roleId: string, permissionId: string): Promise<IRole | null> {
-    await connectDB();
-    
-    const role = await Role.findByIdAndUpdate(
-      roleId,
-      { $addToSet: { permissions: permissionId } },
-      { new: true }
-    ).populate('permissions');
-    
-    return role;
+  async addPermissionToRole(roleId: string, permissionId: string) {
+    const role = await prisma.role.update({
+      where: { id: roleId },
+      data: { permissions: { connect: { id: permissionId } } },
+      include: roleInclude,
+    }).catch(() => null);
+    return role ? serializeRole(role) : null;
   }
 
-  async removePermissionFromRole(roleId: string, permissionId: string): Promise<IRole | null> {
-    await connectDB();
-    
-    const role = await Role.findByIdAndUpdate(
-      roleId,
-      { $pull: { permissions: permissionId } },
-      { new: true }
-    ).populate('permissions');
-    
-    return role;
+  async removePermissionFromRole(roleId: string, permissionId: string) {
+    const role = await prisma.role.update({
+      where: { id: roleId },
+      data: { permissions: { disconnect: { id: permissionId } } },
+      include: roleInclude,
+    }).catch(() => null);
+    return role ? serializeRole(role) : null;
   }
 }
 

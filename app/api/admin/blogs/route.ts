@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import connectDB from '@/lib/database';
-import Blog from '@/lib/models/Blog';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const imageSchema = z.object({
@@ -35,29 +34,45 @@ const querySchema = z.object({
   category: z.string().optional(),
 });
 
+const AUTHOR_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+} as const;
+
+type BlogWithAuthor = Prisma.BlogGetPayload<{ include: { author: { select: typeof AUTHOR_SELECT } } }>;
+
+function serializeBlog(blog: BlogWithAuthor) {
+  const { author, ...rest } = blog;
+  return {
+    ...rest,
+    _id: blog.id,
+    author: author ? { ...author, _id: author.id } : null,
+  };
+}
+
 export const GET = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    const filter: Record<string, unknown> = { isDeleted: false };
-    
+    const where: Prisma.BlogWhereInput = { isDeleted: false };
+
     if (query.search) {
-      filter.$or = [
-        { title: { $regex: query.search, $options: 'i' } },
-        { excerpt: { $regex: query.search, $options: 'i' } },
-        { tags: { $regex: query.search, $options: 'i' } },
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        { excerpt: { contains: query.search, mode: 'insensitive' } },
+        { tags: { has: query.search } },
       ];
     }
-    
+
     if (query.published !== undefined) {
-      filter.published = query.published === 'true';
+      where.published = query.published === 'true';
     }
-    
+
     if (query.category) {
-      filter.category = query.category;
+      where.category = query.category;
     }
 
     const page = query.page;
@@ -65,17 +80,18 @@ export const GET = requireAdminSimple(async (request) => {
     const skip = (page - 1) * limit;
 
     const [blogs, total] = await Promise.all([
-      Blog.find(filter)
-        .populate('author', 'name email')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Blog.countDocuments(filter),
+      prisma.blog.findMany({
+        where,
+        include: { author: { select: AUTHOR_SELECT } },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.blog.count({ where }),
     ]);
 
     return NextResponse.json({
-      blogs,
+      blogs: blogs.map(serializeBlog),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -86,7 +102,6 @@ export const GET = requireAdminSimple(async (request) => {
 
 export const POST = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const body = await request.json();
     const data = createBlogSchema.parse(body);
 
@@ -99,55 +114,70 @@ export const POST = requireAdminSimple(async (request) => {
       .replace(/-+/g, '-');
 
     // Ensure slug is unique
-    let slugExists = await Blog.findOne({ slug, isDeleted: false });
+    let slugExists = await prisma.blog.findFirst({ where: { slug, isDeleted: false } });
     let counter = 1;
     const originalSlug = slug;
-    
+
     while (slugExists) {
       slug = `${originalSlug}-${counter}`;
-      slugExists = await Blog.findOne({ slug, isDeleted: false });
+      slugExists = await prisma.blog.findFirst({ where: { slug, isDeleted: false } });
       counter++;
     }
 
     // Get author name from user
     const authorName = `${request.user?.firstName || ''} ${request.user?.lastName || ''}`.trim() || request.user?.email || 'Admin';
 
-    const blogData = {
-      ...data,
+    const blogData: Prisma.BlogUncheckedCreateInput = {
+      title: data.title,
       slug,
-      author: new mongoose.Types.ObjectId(request.user!.userId),
+      excerpt: data.excerpt,
+      content: data.content,
+      category: data.category ?? null,
+      tags: data.tags,
+      published: data.published,
+      publishedAt: data.published && !data.publishedAt
+        ? new Date()
+        : (data.publishedAt ? new Date(data.publishedAt) : null),
+      metaTitle: data.metaTitle ?? null,
+      metaDescription: data.metaDescription ?? null,
+      metaKeywords: data.metaKeywords ?? [],
+      authorId: request.user!.userId,
       authorName,
-      createdBy: request.user!.userId,
-      updatedBy: request.user!.userId,
-      publishedAt: data.published && !data.publishedAt ? new Date() : data.publishedAt,
     };
 
-    const blog = await Blog.create(blogData);
+    if (data.featuredImage !== undefined) {
+      blogData.featuredImage = data.featuredImage as Prisma.InputJsonValue;
+    }
+
+    const blog = await prisma.blog.create({
+      data: blogData,
+      include: { author: { select: AUTHOR_SELECT } },
+    });
 
     // Log audit action (using 'product' as placeholder for blog until audit log is updated)
     await logAuditAction(
       request.user!.userId,
       'create',
       'product',
-      blog._id.toString(),
+      blog.id,
       undefined,
-      blog.toObject(),
+      blog as unknown as Record<string, unknown>,
       request
     );
 
-    return NextResponse.json({ blog }, { status: 201 });
+    return NextResponse.json({ blog: serializeBlog(blog) }, { status: 201 });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
-    
-    const err = error as { code?: number; keyPattern?: Record<string, unknown> };
-    if (err && err.code === 11000) {
-      const field = err.keyPattern && Object.keys(err.keyPattern)[0];
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const target = error.meta?.target;
+      const field = Array.isArray(target) ? target[0] : undefined;
       const message = field ? `${field} already exists` : 'Duplicate key error';
       return NextResponse.json({ error: message }, { status: 400 });
     }
-    
+
     console.error('Create blog error:', error);
     return NextResponse.json({ error: 'Failed to create blog' }, { status: 500 });
   }

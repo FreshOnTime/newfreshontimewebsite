@@ -1,114 +1,98 @@
-import Permission, { IPermission } from "../models/Permission";
-import connectDB from "../db";
+import prisma from "../prisma";
+
+type PermissionInput = { resource?: string; operation?: string; description?: string };
+
+function serializePermission<T extends { id: string }>(permission: T) {
+  return { ...permission, _id: permission.id };
+}
 
 export class PermissionService {
-  async getAllPermissions(): Promise<IPermission[]> {
-    await connectDB();
-    return await Permission.find().sort({ resource: 1, operation: 1 });
+  async getAllPermissions() {
+    const permissions = await prisma.permission.findMany({ orderBy: [{ resource: "asc" }, { operation: "asc" }] });
+    return permissions.map(serializePermission);
   }
 
-  async getPermissionById(id: string): Promise<IPermission | null> {
-    await connectDB();
-    return await Permission.findById(id);
+  async getPermissionById(id: string) {
+    const permission = await prisma.permission.findUnique({ where: { id } });
+    return permission ? serializePermission(permission) : null;
   }
 
-  async createPermission(permissionData: Partial<IPermission>): Promise<IPermission> {
-    await connectDB();
-    
-    // Check if permission with same resource and operation already exists
-    const existingPermission = await Permission.findOne({ 
-      resource: permissionData.resource,
-      operation: permissionData.operation 
-    });
-    if (existingPermission) {
-      throw new Error(`Permission for ${permissionData.resource}:${permissionData.operation} already exists`);
+  async createPermission(permissionData: PermissionInput) {
+    if (!permissionData.resource || !permissionData.operation || !permissionData.description) {
+      throw new Error("Resource, operation, and description are required");
     }
-
-    const permission = new Permission(permissionData);
-    return await permission.save();
+    const existingPermission = await prisma.permission.findUnique({ where: { resource: permissionData.resource } });
+    if (existingPermission) throw new Error(`Permission for ${permissionData.resource}:${permissionData.operation} already exists`);
+    return serializePermission(await prisma.permission.create({
+      data: {
+        resource: permissionData.resource,
+        operation: permissionData.operation,
+        description: permissionData.description,
+      },
+    }));
   }
 
-  async updatePermission(id: string, updateData: Partial<IPermission>): Promise<IPermission | null> {
-    await connectDB();
-    
-    // If updating resource or operation, check if it's unique
-    if (updateData.resource || updateData.operation) {
-      const current = await Permission.findById(id);
-      if (!current) {
-        throw new Error("Permission not found");
-      }
-      
-      const resource = updateData.resource || current.resource;
-      const operation = updateData.operation || current.operation;
-      
-      const existingPermission = await Permission.findOne({ 
-        resource,
-        operation,
-        _id: { $ne: id } 
-      });
-      if (existingPermission) {
-        throw new Error(`Permission for ${resource}:${operation} already exists`);
+  async updatePermission(id: string, updateData: PermissionInput) {
+    if (updateData.resource) {
+      const existingPermission = await prisma.permission.findUnique({ where: { resource: updateData.resource } });
+      if (existingPermission && existingPermission.id !== id) {
+        throw new Error(`Permission for ${updateData.resource}:${updateData.operation || existingPermission.operation} already exists`);
       }
     }
-
-    return await Permission.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const permission = await prisma.permission.update({
+      where: { id },
+      data: {
+        ...(updateData.resource !== undefined ? { resource: updateData.resource } : {}),
+        ...(updateData.operation !== undefined ? { operation: updateData.operation } : {}),
+        ...(updateData.description !== undefined ? { description: updateData.description } : {}),
+      },
+    }).catch(() => null);
+    return permission ? serializePermission(permission) : null;
   }
 
-  async deletePermission(id: string): Promise<void> {
-    await connectDB();
-    
-    const permission = await Permission.findById(id);
-    if (!permission) {
-      throw new Error("Permission not found");
-    }
-
-    await Permission.findByIdAndDelete(id);
+  async deletePermission(id: string) {
+    const permission = await prisma.permission.findUnique({ where: { id } });
+    if (!permission) throw new Error("Permission not found");
+    await prisma.permission.delete({ where: { id } });
   }
 
-  async getPermissionsByResource(resource: string): Promise<IPermission[]> {
-    await connectDB();
-    return await Permission.find({ resource }).sort({ operation: 1 });
+  async getPermissionsByResource(resource: string) {
+    const permissions = await prisma.permission.findMany({ where: { resource }, orderBy: { operation: "asc" } });
+    return permissions.map(serializePermission);
   }
 
-  async syncPermissions(): Promise<void> {
-    await connectDB();
-    
+  async syncPermissions() {
     const defaultPermissions = [
-      { resource: 'products', operation: 'create', description: 'Create products' },
-      { resource: 'products', operation: 'read', description: 'Read products' },
-      { resource: 'products', operation: 'update', description: 'Update products' },
-      { resource: 'products', operation: 'delete', description: 'Delete products' },
-      { resource: 'brands', operation: 'create', description: 'Create brands' },
-      { resource: 'brands', operation: 'read', description: 'Read brands' },
-      { resource: 'brands', operation: 'update', description: 'Update brands' },
-      { resource: 'brands', operation: 'delete', description: 'Delete brands' },
-      { resource: 'categories', operation: 'create', description: 'Create categories' },
-      { resource: 'categories', operation: 'read', description: 'Read categories' },
-      { resource: 'categories', operation: 'update', description: 'Update categories' },
-      { resource: 'categories', operation: 'delete', description: 'Delete categories' },
-      { resource: 'users', operation: 'create', description: 'Create users' },
-      { resource: 'users', operation: 'read', description: 'Read users' },
-      { resource: 'users', operation: 'update', description: 'Update users' },
-      { resource: 'users', operation: 'delete', description: 'Delete users' },
-      { resource: 'roles', operation: 'create', description: 'Create roles' },
-      { resource: 'roles', operation: 'read', description: 'Read roles' },
-      { resource: 'roles', operation: 'update', description: 'Update roles' },
-      { resource: 'roles', operation: 'delete', description: 'Delete roles' },
-      { resource: 'storage', operation: 'create', description: 'Upload files' },
-      { resource: 'storage', operation: 'delete', description: 'Delete files' },
+      { resource: 'products:create', operation: 'create', description: 'Create products' },
+      { resource: 'products:read', operation: 'read', description: 'Read products' },
+      { resource: 'products:update', operation: 'update', description: 'Update products' },
+      { resource: 'products:delete', operation: 'delete', description: 'Delete products' },
+      { resource: 'brands:create', operation: 'create', description: 'Create brands' },
+      { resource: 'brands:read', operation: 'read', description: 'Read brands' },
+      { resource: 'brands:update', operation: 'update', description: 'Update brands' },
+      { resource: 'brands:delete', operation: 'delete', description: 'Delete brands' },
+      { resource: 'categories:create', operation: 'create', description: 'Create categories' },
+      { resource: 'categories:read', operation: 'read', description: 'Read categories' },
+      { resource: 'categories:update', operation: 'update', description: 'Update categories' },
+      { resource: 'categories:delete', operation: 'delete', description: 'Delete categories' },
+      { resource: 'users:create', operation: 'create', description: 'Create users' },
+      { resource: 'users:read', operation: 'read', description: 'Read users' },
+      { resource: 'users:update', operation: 'update', description: 'Update users' },
+      { resource: 'users:delete', operation: 'delete', description: 'Delete users' },
+      { resource: 'roles:create', operation: 'create', description: 'Create roles' },
+      { resource: 'roles:read', operation: 'read', description: 'Read roles' },
+      { resource: 'roles:update', operation: 'update', description: 'Update roles' },
+      { resource: 'roles:delete', operation: 'delete', description: 'Delete roles' },
+      { resource: 'storage:create', operation: 'create', description: 'Upload files' },
+      { resource: 'storage:delete', operation: 'delete', description: 'Delete files' },
     ];
 
     for (const permData of defaultPermissions) {
-      try {
-        await this.createPermission(permData);
-      } catch {
-        // Permission already exists, skip
-        console.log(`Permission ${permData.resource}:${permData.operation} already exists`);
-      }
+      await prisma.permission.upsert({
+        where: { resource: permData.resource },
+        update: { operation: permData.operation, description: permData.description },
+        create: permData,
+      });
     }
   }
 }

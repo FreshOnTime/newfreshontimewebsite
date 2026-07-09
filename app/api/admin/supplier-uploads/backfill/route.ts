@@ -1,39 +1,34 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import SupplierUpload from '@/lib/models/SupplierUpload';
-import Supplier from '@/lib/models/Supplier';
-import User from '@/lib/models/User';
+import prisma from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
 
 export const POST = requireAdmin(async () => {
   try {
-    await connectDB();
-    const uploads = await SupplierUpload.find().lean();
+    // In the Postgres model supplierId is a real FK to Supplier, so the legacy
+    // "supplierId actually points to a User id" case can no longer occur. This
+    // endpoint now just backfills the denormalised display fields for any upload
+    // rows that are still missing a supplierName.
+    const uploads = await prisma.supplierUpload.findMany({
+      where: { supplierName: null },
+      include: { supplier: true },
+    });
     let updated = 0;
 
-    type UploadRow = { _id: string; supplierId?: unknown } & Record<string, unknown>;
-
-    interface MaybeUser { supplierId?: { toString: () => string } }
-    for (const uRaw of uploads as unknown[]) {
-      const u = uRaw as UploadRow;
-      const candidateId = u.supplierId;
-      // check if supplier exists for the id (support string-like ids)
-      const idStr = typeof candidateId === 'string' ? candidateId : (candidateId && typeof (candidateId as { toString?: () => string }).toString === 'function' ? (candidateId as { toString: () => string }).toString() : undefined);
-      if (!idStr) continue;
-      const exists = await Supplier.findById(idStr).lean();
-      if (exists) continue;
-
-      // maybe it's a user id; try to find a user and get their supplierId
-      const maybeUser = await User.findById(idStr).lean();
-      if (maybeUser && (maybeUser as MaybeUser).supplierId) {
-        const sid = (maybeUser as MaybeUser).supplierId;
-        if (sid) {
-          const newSupplierId = sid.toString();
-          const s = await Supplier.findById(newSupplierId).lean();
-          await SupplierUpload.updateOne({ _id: u._id }, { $set: { supplierId: newSupplierId, supplierName: (s as unknown & { name?: string })?.name || null } });
-          updated++;
-        }
-      }
+    for (const u of uploads) {
+      const s = u.supplier;
+      if (!s) continue;
+      await prisma.supplierUpload.update({
+        where: { id: u.id },
+        data: {
+          supplierName: s.name,
+          supplierCompany: u.supplierCompany || s.name,
+          supplierEmail: u.supplierEmail || s.email,
+          supplierPhone: u.supplierPhone || s.phone,
+          supplierContactName: u.supplierContactName || s.contactName,
+          supplierStatus: u.supplierStatus || s.status,
+        },
+      });
+      updated++;
     }
 
     return NextResponse.json({ success: true, updated });

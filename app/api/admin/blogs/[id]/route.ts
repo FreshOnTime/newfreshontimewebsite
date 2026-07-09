@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import connectDB from '@/lib/database';
-import Blog from '@/lib/models/Blog';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const imageSchema = z.object({
@@ -27,24 +26,38 @@ const updateBlogSchema = z.object({
   metaKeywords: z.array(z.string()).optional(),
 });
 
+const AUTHOR_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+} as const;
+
+type BlogWithAuthor = Prisma.BlogGetPayload<{ include: { author: { select: typeof AUTHOR_SELECT } } }>;
+
+function serializeBlog(blog: BlogWithAuthor) {
+  const { author, ...rest } = blog;
+  return {
+    ...rest,
+    _id: blog.id,
+    author: author ? { ...author, _id: author.id } : null,
+  };
+}
+
 export const GET = requireAdmin(async (request, { params }) => {
   try {
-    await connectDB();
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
-    }
-
-    const blog = await Blog.findOne({ _id: id, isDeleted: false })
-      .populate('author', 'name email firstName lastName')
-      .lean();
+    const blog = await prisma.blog.findFirst({
+      where: { id, isDeleted: false },
+      include: { author: { select: AUTHOR_SELECT } },
+    });
 
     if (!blog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ blog });
+    return NextResponse.json({ blog: serializeBlog(blog) });
   } catch (error) {
     console.error('Get blog error:', error);
     return NextResponse.json({ error: 'Failed to fetch blog' }, { status: 500 });
@@ -53,20 +66,17 @@ export const GET = requireAdmin(async (request, { params }) => {
 
 export const PUT = requireAdmin(async (request, { params }) => {
   try {
-    await connectDB();
     const { id } = await params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
-    }
 
     const body = await request.json();
     const data = updateBlogSchema.parse(body);
 
-    const existingBlog = await Blog.findOne({ _id: id, isDeleted: false });
+    const existingBlog = await prisma.blog.findFirst({ where: { id, isDeleted: false } });
     if (!existingBlog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
+
+    const updateData: Prisma.BlogUncheckedUpdateInput = {};
 
     // If slug is being updated, ensure it's unique
     if (data.slug && data.slug !== existingBlog.slug) {
@@ -77,51 +87,62 @@ export const PUT = requireAdmin(async (request, { params }) => {
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-');
 
-      const slugExists = await Blog.findOne({ 
-        slug, 
-        isDeleted: false, 
-        _id: { $ne: id } 
+      const slugExists = await prisma.blog.findFirst({
+        where: { slug, isDeleted: false, id: { not: id } },
       });
-      
+
       if (slugExists) {
         return NextResponse.json({ error: 'Slug already exists' }, { status: 400 });
       }
-      
-      data.slug = slug;
+
+      updateData.slug = slug;
+    }
+
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.excerpt !== undefined) updateData.excerpt = data.excerpt;
+    if (data.content !== undefined) updateData.content = data.content;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.tags !== undefined) updateData.tags = data.tags;
+    if (data.published !== undefined) updateData.published = data.published;
+    if (data.metaTitle !== undefined) updateData.metaTitle = data.metaTitle;
+    if (data.metaDescription !== undefined) updateData.metaDescription = data.metaDescription;
+    if (data.metaKeywords !== undefined) updateData.metaKeywords = data.metaKeywords;
+    if (data.featuredImage !== undefined) {
+      updateData.featuredImage = data.featuredImage === null
+        ? Prisma.JsonNull
+        : (data.featuredImage as Prisma.InputJsonValue);
+    }
+    if (data.publishedAt !== undefined) {
+      updateData.publishedAt = data.publishedAt === null ? null : new Date(data.publishedAt);
     }
 
     // Update publishedAt if publishing for the first time
-    const updateData: Record<string, unknown> = { ...data };
-    if (data.published && !existingBlog.published && !data.publishedAt) {
+    if (data.published && !existingBlog.published && data.publishedAt == null) {
       updateData.publishedAt = new Date();
     }
 
-    const before = existingBlog.toObject();
-    const updated = await Blog.findByIdAndUpdate(
-      id,
-      { 
-        ...updateData, 
-        updatedBy: request.user!.userId 
-      },
-      { new: true, runValidators: true }
-    ).populate('author', 'name email firstName lastName');
+    const updated = await prisma.blog.update({
+      where: { id },
+      data: updateData,
+      include: { author: { select: AUTHOR_SELECT } },
+    });
 
     await logAuditAction(
       request.user!.userId,
       'update',
       'product',
       id,
-      before,
-      updated?.toObject(),
+      existingBlog as unknown as Record<string, unknown>,
+      updated as unknown as Record<string, unknown>,
       request
     );
 
-    return NextResponse.json({ blog: updated });
+    return NextResponse.json({ blog: serializeBlog(updated) });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
-    
+
     console.error('Update blog error:', error);
     return NextResponse.json({ error: 'Failed to update blog' }, { status: 500 });
   }
@@ -129,32 +150,22 @@ export const PUT = requireAdmin(async (request, { params }) => {
 
 export const DELETE = requireAdmin(async (request, { params }) => {
   try {
-    await connectDB();
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
-    }
-
-    const blog = await Blog.findOne({ _id: id, isDeleted: false });
+    const blog = await prisma.blog.findFirst({ where: { id, isDeleted: false } });
     if (!blog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
 
-    const before = blog.toObject();
-    
     // Soft delete
-    await Blog.findByIdAndUpdate(id, { 
-      isDeleted: true, 
-      updatedBy: request.user!.userId 
-    });
+    await prisma.blog.update({ where: { id }, data: { isDeleted: true } });
 
     await logAuditAction(
       request.user!.userId,
       'delete',
       'product',
       id,
-      before,
+      blog as unknown as Record<string, unknown>,
       undefined,
       request
     );

@@ -2,8 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { BlogPost } from '@/components/blog/BlogPost';
-import connectDB from '@/lib/database';
-import Blog from '@/lib/models/Blog';
+import prisma from '@/lib/prisma';
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -18,16 +17,34 @@ export const revalidate = 60;
 
 // Helper function to get blog data (shared between metadata and page)
 async function getBlogData(slug: string) {
-  await connectDB();
-  const blog = await Blog.findOne({ 
-    slug, 
-    isDeleted: false,
-    published: true,
-  })
-  .select('title slug excerpt content featuredImage category tags publishedAt views authorName metaTitle metaDescription metaKeywords')
-  .lean();
-  
-  return blog as any;
+  const blog = await prisma.blog.findFirst({
+    where: {
+      slug,
+      isDeleted: false,
+      published: true,
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      content: true,
+      featuredImage: true,
+      category: true,
+      tags: true,
+      publishedAt: true,
+      views: true,
+      authorName: true,
+      metaTitle: true,
+      metaDescription: true,
+      metaKeywords: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!blog) return null;
+  return { ...blog, _id: blog.id } as any;
 }
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
@@ -95,15 +112,15 @@ export default async function BlogPostPage({ params }: BlogPageProps) {
     }
 
     // Increment view count in background (non-blocking)
-    Blog.updateOne(
-      { slug, isDeleted: false, published: true },
-      { $inc: { views: 1 } }
-    ).exec().catch(() => {});
+    prisma.blog.update({
+      where: { id: blogData.id },
+      data: { views: { increment: 1 } },
+    }).catch(() => {});
 
     // Convert to plain object and serialize dates
     const serializedBlog = {
       ...blogData,
-      _id: blogData._id?.toString?.() || blogData._id,
+      _id: blogData._id || blogData.id,
       createdAt: blogData.createdAt?.toISOString?.() || blogData.createdAt,
       updatedAt: blogData.updatedAt?.toISOString?.() || blogData.updatedAt,
       publishedAt: blogData.publishedAt?.toISOString?.() || blogData.publishedAt,

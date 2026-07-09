@@ -1,56 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import EnhancedOrderModel from '@/lib/models/EnhancedOrder';
-import EnhancedProduct, { IProduct } from '@/lib/models/EnhancedProduct';
-import SubscriptionPlan from '@/lib/models/SubscriptionPlan';
-import mongoose from 'mongoose';
-import User from '@/lib/models/User';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { sendOrderEmail } from '@/lib/services/mailService';
 
-// GET - Fetch all orders for a user
+const ORDER_INCLUDE = {
+  items: {
+    include: {
+      product: { select: { id: true, name: true, price: true, images: true, stockQty: true, sku: true } },
+    },
+  },
+} satisfies Prisma.OrderInclude;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serializeOrder(o: any) {
+  return {
+    ...o,
+    subtotal: Number(o.subtotal),
+    tax: Number(o.tax),
+    shipping: Number(o.shipping),
+    discount: Number(o.discount),
+    total: Number(o.total),
+    // Backward-compatible recurring indicator.
+    isRecurring: Boolean(
+      o?.isRecurring || o?.scheduleStatus || o?.nextDeliveryAt ||
+      (o?.recurrence && typeof o.recurrence === 'object' && Object.keys(o.recurrence).length > 0)
+    ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    items: (o.items || []).map((it: any) => ({
+      ...it,
+      price: Number(it.price),
+      total: Number(it.total),
+    })),
+  };
+}
+
+// GET - Fetch orders for the authenticated user (admins may query another user)
 export const GET = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
   try {
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
-    // Prefer authenticated user's mongoId; fallback to explicit userId only for admins querying others
     const queryUserId = searchParams.get('userId');
     const authUser = request.user;
-    const userId = (authUser?.mongoId || authUser?.userId);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const userId = authUser?.mongoId || authUser?.userId;
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '10'));
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const skip = (page - 1) * limit;
-    // If admin and a different userId is provided, allow querying that user's orders
-    const effectiveUserId = (authUser?.role === 'admin' && queryUserId) ? queryUserId : userId;
+    const effectiveUserId = authUser?.role === 'admin' && queryUserId ? queryUserId : userId;
 
     const [ordersRaw, total] = await Promise.all([
-      EnhancedOrderModel.find({ customerId: effectiveUserId })
-        .populate({ path: 'items.productId', model: 'EnhancedProduct', select: 'name price images stockQty sku' })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      EnhancedOrderModel.countDocuments({ customerId: effectiveUserId })
+      prisma.order.findMany({
+        where: { customerId: effectiveUserId },
+        include: ORDER_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.order.count({ where: { customerId: effectiveUserId } }),
     ]);
 
-    // Backward-compatible recurring indicator: mark as recurring if any recurrence-related data exists
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const orders: any[] = (ordersRaw as any[]).map((o) => ({
-      ...o,
-      isRecurring: Boolean(o?.isRecurring || o?.scheduleStatus || o?.nextDeliveryAt || (o?.recurrence && (
-        (Array.isArray(o.recurrence.daysOfWeek) && o.recurrence.daysOfWeek.length) ||
-        (Array.isArray(o.recurrence.includeDates) && o.recurrence.includeDates.length) ||
-        (Array.isArray(o.recurrence.excludeDates) && o.recurrence.excludeDates.length) ||
-        (Array.isArray(o.recurrence.selectedDates) && o.recurrence.selectedDates.length) ||
-        o.recurrence.startDate || o.recurrence.endDate || o.recurrence.notes
-      )))
-    }));
+    const orders = ordersRaw.map(serializeOrder);
 
     return NextResponse.json({
       success: true,
@@ -62,30 +74,24 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
           total,
           pages: Math.ceil(total / limit),
           hasNext: page < Math.ceil(total / limit),
-          hasPrev: page > 1
-        }
-      }
+          hasPrev: page > 1,
+        },
+      },
     });
   } catch (error) {
     console.error('Error fetching orders:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch orders' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 });
 
-// POST - Create a new order
+// POST - Create a new order (transactional stock reservation)
 export const POST = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
   try {
-    await connectDB();
-
     const body = await request.json();
     const { items, shippingAddress, paymentMethod, notes, discount = 0, bagId, bagName, useRegisteredAddress } = body;
     const authUser = request.user;
-    const effectiveUserId = authUser?.mongoId || authUser?.userId;
-    // Accept isRecurring/recurrence from client, but also infer recurring when recurrence content is present
-    const rawIsRecurring = body.isRecurring;
+    const customerId = authUser?.mongoId || authUser?.userId;
+
     const recurrence = body.recurrence as {
       startDate?: string;
       endDate?: string;
@@ -104,154 +110,69 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         (Array.isArray(recurrence.selectedDates) && recurrence.selectedDates.length > 0)
       )
     );
-    const isRecurring = Boolean(rawIsRecurring) || hasRecurrenceSignals;
+    const isRecurring = Boolean(body.isRecurring) || hasRecurrenceSignals;
 
-    if (!effectiveUserId || !items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Authentication and items are required' },
-        { status: 400 }
-      );
+    if (!customerId || !items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'Authentication and items are required' }, { status: 400 });
     }
 
-    // Load user (for optional address mapping), best-effort
-    const userDoc = (await User.findById(effectiveUserId).lean().catch(() => null)) as (null | {
-      firstName?: string;
-      lastName?: string;
-      email?: string;
-      phoneNumber?: string;
-      registrationAddress?: {
-        recipientName?: string;
-        streetAddress?: string;
-        streetAddress2?: string;
-        town?: string;
-        city?: string;
-        state?: string;
-        postalCode?: string;
-        countryCode?: string;
-        phoneNumber?: string;
-      };
+    const userDoc = await prisma.user.findUnique({
+      where: { id: customerId },
+      include: { addresses: true },
     });
 
-    // Validate products and calculate totals
-    const validatedItems: Array<{ productId: mongoose.Types.ObjectId; sku: string; name: string; qty: number; price: number; total: number }> = [];
+    // Resolve each requested product (by id, sku, or slug) and compute totals.
+    const validatedItems: Array<{ productId: string; sku: string; name: string; qty: number; price: number; total: number }> = [];
     let subtotal = 0;
 
     for (const item of items) {
-      // Support ObjectId, SKU, or slug identifiers
-      let product: IProduct | null = null;
-      if (mongoose.Types.ObjectId.isValid(item.productId)) {
-        product = await EnhancedProduct.findById(item.productId);
+      const qty = Number(item.quantity);
+      if (!Number.isFinite(qty) || qty <= 0) {
+        return NextResponse.json({ error: 'Invalid item quantity' }, { status: 400 });
       }
-
-      // If not in products, check subscription plans
-      if (!product) {
-        product = await EnhancedProduct.findOne({ $or: [{ sku: item.productId }, { slug: item.productId }] });
-      }
-
-      let isSubscription = false;
-      if (!product) {
-        // Try SubscriptionPlan in DB
-        let plan = null;
-        if (mongoose.Types.ObjectId.isValid(item.productId)) {
-          plan = await SubscriptionPlan.findById(item.productId);
-        }
-        if (!plan) {
-          plan = await SubscriptionPlan.findOne({ slug: item.productId });
-        }
-
-        // If not in DB, check default plans (fallback for mock IDs "1", "2" etc)
-        if (!plan) {
-          const defaultPlans = (await import('@/lib/data/subscriptionPlans')).defaultSubscriptionPlans;
-          const defaultPlan = defaultPlans.find(p => p._id === item.productId || p.slug === item.productId);
-
-          if (defaultPlan) {
-            // Check one last time by slug in DB to avoid dupes if ID didn't match
-            plan = await SubscriptionPlan.findOne({ slug: defaultPlan.slug });
-
-            if (!plan) {
-              // Create it in DB to get a real ObjectId
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { _id, ...planData } = defaultPlan;
-              plan = await SubscriptionPlan.create(planData);
-            }
-          }
-        }
-
-        if (plan) {
-          isSubscription = true;
-          product = {
-            _id: plan._id,
-            name: plan.name,
-            sku: plan.slug, // Use slug as SKU
-            slug: plan.slug,
-            price: plan.price,
-            stockQty: 999999, // Infinite stock for plans
-            images: plan.image ? [{ url: plan.image, alt: plan.name }] : [],
-            measurementUnit: 'box',
-          } as any;
-        }
-      }
-
-      if (!product) {
-        return NextResponse.json(
-          { error: `Product with ID ${item.productId} not found` },
-          { status: 400 }
-        );
-      }
-
-      if ((product.stockQty ?? 0) < item.quantity) {
-        return NextResponse.json(
-          { error: `Insufficient stock for product ${product.name}` },
-          { status: 400 }
-        );
-      }
-
-      const unitPrice = Number(product.price ?? 0);
-      const itemTotal = unitPrice * item.quantity;
-      subtotal += itemTotal;
-
-      validatedItems.push({
-        productId: product._id as unknown as mongoose.Types.ObjectId,
-        sku: product.sku,
-        name: product.name,
-        qty: item.quantity,
-        price: unitPrice,
-        total: itemTotal,
+      const product = await prisma.product.findFirst({
+        where: { OR: [{ id: item.productId }, { sku: item.productId }, { slug: item.productId }] },
       });
-
-      // Reduce stock only if it's a real product
-      if (!isSubscription) {
-        await EnhancedProduct.updateOne({ _id: product._id }, { $inc: { stockQty: -item.quantity } });
+      if (!product) {
+        return NextResponse.json({ error: `Product with ID ${item.productId} not found` }, { status: 400 });
       }
+      if (product.stockQty < qty) {
+        return NextResponse.json({ error: `Insufficient stock for product ${product.name}` }, { status: 400 });
+      }
+      const unitPrice = Number(product.price);
+      const itemTotal = unitPrice * qty;
+      subtotal += itemTotal;
+      validatedItems.push({ productId: product.id, sku: product.sku, name: product.name, qty, price: unitPrice, total: itemTotal });
     }
 
-    // Calculate shipping/tax/total (example logic)
     const tax = 0;
-    const shipping = subtotal > 50 ? 0 : 5; // Free shipping over 50
-    const total = subtotal + tax + shipping - Number(discount || 0);
+    const shipping = subtotal > 50 ? 0 : 5;
+    // Clamp discount to a valid, non-negative amount that can't exceed the order value.
+    const requestedDiscount = Number(discount || 0);
+    const discountAmount = Math.min(
+      Math.max(0, Number.isFinite(requestedDiscount) ? requestedDiscount : 0),
+      subtotal + shipping + tax
+    );
+    const total = subtotal + tax + shipping - discountAmount;
 
-    // Generate order number
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-    // Map payment method to schema enum
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 11).toUpperCase()}`;
     const pm = paymentMethod === 'cash_on_delivery' ? 'cash' : (paymentMethod || 'cash');
 
-    // Compute nextDeliveryAt if recurring
-    let nextDeliveryAt: Date | undefined = undefined;
+    // Compute nextDeliveryAt if recurring.
+    let nextDeliveryAt: Date | undefined;
     if (isRecurring && recurrence) {
       const now = new Date();
       const start = recurrence.startDate ? new Date(recurrence.startDate) : now;
-      const days = Array.isArray(recurrence.daysOfWeek) ? recurrence.daysOfWeek.filter((d: unknown): d is number => typeof d === 'number') : [];
-      const includes = Array.isArray(recurrence.includeDates) ? recurrence.includeDates.map((d: unknown) => new Date(d as string)) : [];
-      const excludesKey = new Set((Array.isArray(recurrence.excludeDates) ? recurrence.excludeDates : []).map((d: unknown) => new Date(d as string).toDateString()));
-      const selected = Array.isArray(recurrence.selectedDates) ? recurrence.selectedDates.map((d: unknown) => new Date(d as string)) : [];
+      const days = Array.isArray(recurrence.daysOfWeek) ? recurrence.daysOfWeek.filter((d): d is number => typeof d === 'number') : [];
+      const includes = Array.isArray(recurrence.includeDates) ? recurrence.includeDates.map((d) => new Date(d)) : [];
+      const excludesKey = new Set((Array.isArray(recurrence.excludeDates) ? recurrence.excludeDates : []).map((d) => new Date(d).toDateString()));
+      const selected = Array.isArray(recurrence.selectedDates) ? recurrence.selectedDates.map((d) => new Date(d)) : [];
       const candidates: Date[] = [];
-      // Priority: explicit selected -> includeDates -> next matching weekday
       for (const d of [...selected, ...includes]) {
         if (d >= start && !excludesKey.has(d.toDateString())) candidates.push(d);
       }
       if (!candidates.length && days.length) {
-        for (let i = 0; i < 28; i++) { // look ahead 4 weeks
+        for (let i = 0; i < 28; i++) {
           const d = new Date(start);
           d.setDate(d.getDate() + i);
           if (days.includes(d.getDay()) && !excludesKey.has(d.toDateString())) {
@@ -263,35 +184,16 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       nextDeliveryAt = candidates.sort((a, b) => +a - +b)[0];
     }
 
-    // Resolve shipping address: prefer explicit shippingAddress, otherwise use user's registrationAddress when flagged or missing
-    let resolvedShipping: {
-      name: string;
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-      phone?: string;
-    } | undefined = undefined;
+    // Resolve shipping address: explicit -> user's registration address.
+    let resolvedShipping: Record<string, unknown> | undefined;
     if (shippingAddress && typeof shippingAddress === 'object') {
       resolvedShipping = shippingAddress;
-    } else if (useRegisteredAddress || (!shippingAddress && userDoc?.registrationAddress)) {
-      const ra = userDoc?.registrationAddress as {
-        recipientName?: string;
-        streetAddress?: string;
-        streetAddress2?: string;
-        town?: string;
-        city?: string;
-        state?: string;
-        postalCode?: string;
-        countryCode?: string;
-        phoneNumber?: string;
-      } | undefined;
+    } else if (useRegisteredAddress || !shippingAddress) {
+      const ra = userDoc?.addresses.find((a) => a.isRegistration) || userDoc?.addresses[0];
       if (ra) {
-        const street = [ra.streetAddress, ra.streetAddress2].filter(Boolean).join(', ');
         resolvedShipping = {
           name: ra.recipientName || `${userDoc?.firstName || ''}`.trim() || 'Customer',
-          street,
+          street: [ra.streetAddress, ra.streetAddress2].filter(Boolean).join(', '),
           city: ra.city || ra.town || '',
           state: ra.state || '',
           zipCode: ra.postalCode || '',
@@ -300,81 +202,69 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         };
       }
     }
-
-    // If still no shipping address, block order creation
     if (!resolvedShipping) {
       return NextResponse.json({ error: 'Shipping address is required' }, { status: 400 });
     }
 
-    const newOrder = new EnhancedOrderModel({
-      orderNumber,
-      bagId: bagId && mongoose.Types.ObjectId.isValid(bagId) ? new mongoose.Types.ObjectId(bagId) : undefined,
-      bagName,
-      customerId: effectiveUserId,
-      items: validatedItems,
-      subtotal,
-      tax,
-      shipping,
-      discount: Number(discount || 0),
-      total,
-      paymentMethod: pm,
-      shippingAddress: resolvedShipping,
-      notes,
-      isRecurring,
-      recurrence: isRecurring ? {
-        startDate: recurrence?.startDate,
-        endDate: recurrence?.endDate,
-        daysOfWeek: recurrence?.daysOfWeek,
-        includeDates: recurrence?.includeDates,
-        excludeDates: recurrence?.excludeDates,
-        selectedDates: recurrence?.selectedDates,
-        notes: recurrence?.notes,
-      } : undefined,
-      nextDeliveryAt,
-      scheduleStatus: isRecurring ? 'active' : undefined,
-    });
-
-    const savedOrder = await newOrder.save();
-
-    const populatedOrder = await EnhancedOrderModel.findById(savedOrder._id)
-      .populate({ path: 'items.productId', model: 'EnhancedProduct', select: 'name price images stockQty sku' });
-
-    // send order confirmation email to customer (non-blocking)
-    try {
-      // Try to get an email address for the customer. If not available from userDoc, try loading full user record.
-      let customerEmail: string | null = null;
-      if (userDoc && userDoc.email) customerEmail = userDoc.email;
-      if (!customerEmail) {
-        const fullUser = await User.findById(effectiveUserId).lean().catch(() => null) as (null | { email?: string; phoneNumber?: string });
-        if (fullUser?.email) customerEmail = fullUser.email;
-        else if (fullUser?.phoneNumber) customerEmail = fullUser.phoneNumber;
+    // Atomically reserve stock and create the order. Conditional decrements
+    // (stockQty >= qty) prevent overselling under concurrency; any failure rolls
+    // back every decrement AND the order together.
+    const created = await prisma.$transaction(async (tx) => {
+      for (const it of validatedItems) {
+        const res = await tx.product.updateMany({
+          where: { id: it.productId, stockQty: { gte: it.qty } },
+          data: { stockQty: { decrement: it.qty } },
+        });
+        if (res.count !== 1) {
+          throw new Error(`INSUFFICIENT_STOCK:${it.name}`);
+        }
       }
 
+      return tx.order.create({
+        data: {
+          orderNumber,
+          customerId,
+          bagId: bagId || null,
+          bagName: bagName || null,
+          subtotal,
+          tax,
+          shipping,
+          discount: discountAmount,
+          total,
+          paymentMethod: pm,
+          shippingAddress: resolvedShipping as Prisma.InputJsonValue,
+          notes: notes || null,
+          isRecurring,
+          recurrence: isRecurring && recurrence ? (recurrence as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+          nextDeliveryAt: nextDeliveryAt || null,
+          scheduleStatus: isRecurring ? 'active' : null,
+          items: { create: validatedItems },
+        },
+        include: ORDER_INCLUDE,
+      });
+    });
+
+    // Send order confirmation email (non-blocking).
+    try {
+      const customerEmail = userDoc?.email || userDoc?.phoneNumber || null;
       if (customerEmail) {
-        const orderObj = populatedOrder?.toObject ? populatedOrder.toObject() : populatedOrder;
-        // Ensure we never pass null or a complex mongoose document to sendOrderEmail;
-        // build a minimal plain object with the fields the mail service expects.
-        if (orderObj) {
-          const mailOrder = {
-            _id: orderObj._id ? String(orderObj._id) : undefined,
-            total: (typeof orderObj.total === 'number' ? orderObj.total : (typeof orderObj.subtotal === 'number' ? orderObj.subtotal : undefined))
-          };
-          sendOrderEmail(customerEmail, mailOrder).catch(e => console.error('sendOrderEmail error', e));
-        }
+        sendOrderEmail(customerEmail, { _id: String(created.id), total: Number(created.total) }).catch((e) =>
+          console.error('sendOrderEmail error', e)
+        );
       }
     } catch (e) {
       console.error('Order email error:', e);
     }
 
-    return NextResponse.json({
-      success: true,
-      data: populatedOrder
-    }, { status: 201 });
+    return NextResponse.json({ success: true, data: serializeOrder(created) }, { status: 201 });
   } catch (error) {
+    if (error instanceof Error && error.message.startsWith('INSUFFICIENT_STOCK:')) {
+      return NextResponse.json(
+        { error: `Insufficient stock for product ${error.message.split(':')[1]}` },
+        { status: 400 }
+      );
+    }
     console.error('Error creating order:', error);
-    return NextResponse.json(
-      { error: 'Failed to create order' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
   }
 });

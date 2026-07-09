@@ -1,60 +1,55 @@
-import ProductCategory, { IProductCategory } from "../models/ProductCategory";
-import connectDB from "../db";
+import prisma from "../prisma";
+
+type CategoryInput = { code?: string; description?: string; name?: string };
+
+function serializeCategory<T extends { id: string; slug: string; name: string; description: string | null }>(category: T) {
+  return { ...category, _id: category.id, code: category.slug };
+}
 
 export class ProductCategoryService {
-  async getAllCategories(): Promise<IProductCategory[]> {
-    await connectDB();
-    return await ProductCategory.find().sort({ createdAt: -1 });
+  async getAllCategories() {
+    const categories = await prisma.category.findMany({ orderBy: { createdAt: "desc" } });
+    return categories.map(serializeCategory);
   }
 
-  async getCategoryById(id: string): Promise<IProductCategory | null> {
-    await connectDB();
-    return await ProductCategory.findById(id);
+  async getCategoryById(id: string) {
+    const category = await prisma.category.findUnique({ where: { id } });
+    return category ? serializeCategory(category) : null;
   }
 
-  async createCategory(categoryData: Partial<IProductCategory>): Promise<IProductCategory> {
-    await connectDB();
-    
-    // Check if category with same code already exists
-    const existingCategory = await ProductCategory.findOne({ code: categoryData.code });
-    if (existingCategory) {
-      throw new Error(`Category with code ${categoryData.code} already exists`);
-    }
-
-    const category = new ProductCategory(categoryData);
-    return await category.save();
+  async createCategory(categoryData: CategoryInput) {
+    if (!categoryData.code || !categoryData.description) throw new Error("Code and description are required");
+    const existingCategory = await prisma.category.findUnique({ where: { slug: categoryData.code } });
+    if (existingCategory) throw new Error(`Category with code ${categoryData.code} already exists`);
+    return serializeCategory(await prisma.category.create({
+      data: {
+        slug: categoryData.code,
+        name: categoryData.name || categoryData.description,
+        description: categoryData.description,
+      },
+    }));
   }
 
-  async updateCategory(id: string, updateData: Partial<IProductCategory>): Promise<IProductCategory | null> {
-    await connectDB();
-    
-    // If updating code, check if it's unique
+  async updateCategory(id: string, updateData: CategoryInput) {
     if (updateData.code) {
-      const existingCategory = await ProductCategory.findOne({ 
-        code: updateData.code, 
-        _id: { $ne: id } 
-      });
-      if (existingCategory) {
-        throw new Error(`Category with code ${updateData.code} already exists`);
-      }
+      const existingCategory = await prisma.category.findUnique({ where: { slug: updateData.code } });
+      if (existingCategory && existingCategory.id !== id) throw new Error(`Category with code ${updateData.code} already exists`);
     }
-
-    return await ProductCategory.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const category = await prisma.category.update({
+      where: { id },
+      data: {
+        ...(updateData.code !== undefined ? { slug: updateData.code } : {}),
+        ...(updateData.name !== undefined ? { name: updateData.name } : {}),
+        ...(updateData.description !== undefined ? { description: updateData.description } : {}),
+      },
+    }).catch(() => null);
+    return category ? serializeCategory(category) : null;
   }
 
-  async deleteCategory(id: string): Promise<void> {
-    await connectDB();
-    
-    const category = await ProductCategory.findById(id);
-    if (!category) {
-      throw new Error("Category not found");
-    }
-
-    await ProductCategory.findByIdAndDelete(id);
+  async deleteCategory(id: string) {
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) throw new Error("Category not found");
+    await prisma.category.delete({ where: { id } });
   }
 }
 

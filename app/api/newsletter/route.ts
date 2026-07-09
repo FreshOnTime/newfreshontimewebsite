@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/database";
-import { Subscriber } from "@/lib/models/Subscriber";
+import prisma from "@/lib/prisma";
 import { sendEmail } from "@/lib/services/mailService";
+
+const VALID_SOURCES = ["homepage", "checkout", "popup", "footer"] as const;
+type SubscriberSource = (typeof VALID_SOURCES)[number];
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
     const email = String(data.email || "").toLowerCase().trim();
-    const source = data.source || "homepage";
+    const source: SubscriberSource = VALID_SOURCES.includes(data.source)
+      ? data.source
+      : "homepage";
 
     // Validate email
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
@@ -17,10 +21,8 @@ export async function POST(request: Request) {
       );
     }
 
-    await dbConnect();
-
     // Check if already subscribed
-    const existing = await Subscriber.findOne({ email });
+    const existing = await prisma.subscriber.findUnique({ where: { email } });
 
     if (existing) {
       if (existing.isActive) {
@@ -28,16 +30,15 @@ export async function POST(request: Request) {
           { ok: false, error: "You're already subscribed!" },
           { status: 409 }
         );
-      } else {
-        // Reactivate subscription
-        existing.isActive = true;
-        existing.subscribedAt = new Date();
-        existing.unsubscribedAt = undefined;
-        await existing.save();
       }
+      // Reactivate subscription
+      await prisma.subscriber.update({
+        where: { email },
+        data: { isActive: true, subscribedAt: new Date(), unsubscribedAt: null },
+      });
     } else {
       // Create new subscriber
-      await Subscriber.create({ email, source });
+      await prisma.subscriber.create({ data: { email, source } });
     }
 
     // Send welcome email (async, don't wait)

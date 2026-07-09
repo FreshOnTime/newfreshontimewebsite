@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import User from '@/lib/models/User';
-import EmailToken from '@/lib/models/EmailToken';
+import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/services/mailService';
@@ -9,7 +7,6 @@ import { isRateLimited, makeKey } from '@/lib/middleware/rateLimiter';
 
 export const POST = async (request: NextRequest) => {
   try {
-    await connectDB();
     const body = await request.json();
     const email = body?.email?.toLowerCase?.();
 
@@ -26,7 +23,7 @@ export const POST = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Too many requests from this network. Try again later.' }, { status: 429 });
     }
 
-    const user = await User.findOne({ email }).exec();
+    const user = await prisma.user.findUnique({ where: { email } });
 
     // Always respond with a success message to avoid leaking which emails exist
     if (!user) {
@@ -37,7 +34,7 @@ export const POST = async (request: NextRequest) => {
     const tokenHash = await bcrypt.hash(rawToken, 10);
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
 
-    await EmailToken.create({ userId: user._id, tokenHash, type: 'reset', expiresAt });
+    await prisma.emailToken.create({ data: { userId: user.id, tokenHash, type: 'reset', expiresAt } });
 
     // send reset email (non-blocking)
     sendPasswordResetEmail(user.email as string, rawToken).catch((e) => console.error('sendPasswordResetEmail error', e));

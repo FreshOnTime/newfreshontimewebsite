@@ -4,7 +4,7 @@ import { signupSchema, validateInput } from '@/lib/utils/validation';
 import { setAuthCookies } from '@/lib/utils/cookies';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import EmailToken from '@/lib/models/EmailToken';
+import prisma from '@/lib/prisma';
 import { sendVerificationEmail } from '@/lib/services/mailService';
 import { withRateLimit } from '@/lib/utils/rateLimit';
 
@@ -46,11 +46,13 @@ async function handleSignup(request: NextRequest) {
       const tokenHash = await bcrypt.hash(rawToken, 10);
       const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
 
-      await EmailToken.create({
-        userId: result.user._id,
-        tokenHash,
-        type: 'verify',
-        expiresAt,
+      await prisma.emailToken.create({
+        data: {
+          userId: result.user._id,
+          tokenHash,
+          type: 'verify',
+          expiresAt,
+        },
       });
 
       // send verification email (non-blocking)

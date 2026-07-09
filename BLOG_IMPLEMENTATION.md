@@ -123,14 +123,14 @@ A complete blog system has been implemented for your Fresh Pick application with
 ### Performance
 - Pagination for large datasets
 - Excluded full content from list views
-- Lean queries for better performance
+- Prisma-select queries for better performance
 - Text search indexing
 - Responsive image handling
 
 ## File Structure
 ```
-lib/models/
-  └── Blog.ts                          # Blog mongoose model
+prisma/
+  └── schema.prisma                    # Blog model
 
 app/api/
   ├── admin/blogs/

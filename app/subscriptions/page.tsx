@@ -1,12 +1,11 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
-import dbConnect from '@/lib/database';
-import SubscriptionPlan from '@/lib/models/SubscriptionPlan';
 import SubscriptionHero from '@/components/subscriptions/SubscriptionHero';
 import SubscriptionPlanCard from '@/components/subscriptions/SubscriptionPlanCard';
 import { Check, HelpCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { defaultSubscriptionPlans } from '@/lib/data/subscriptionPlans';
+import prisma from '@/lib/prisma';
 
 export const metadata: Metadata = {
     title: 'Recurring Orders & Subscription Boxes | Fresh Pick',
@@ -19,11 +18,18 @@ export const revalidate = 300;
 
 async function getSubscriptionPlans() {
     try {
-        await dbConnect();
-        const plans = await SubscriptionPlan.find({ isActive: true })
-            .sort({ price: 1 })
-            .lean();
-        return JSON.parse(JSON.stringify(plans));
+        const plans = await prisma.subscriptionPlan.findMany({
+            where: { isActive: true },
+            orderBy: { price: 'asc' },
+            include: { contents: true },
+        });
+
+        return JSON.parse(JSON.stringify(plans.map((plan) => ({
+            ...plan,
+            _id: plan.id,
+            price: Number(plan.price),
+            originalPrice: plan.originalPrice == null ? undefined : Number(plan.originalPrice),
+        }))));
     } catch (error) {
         console.error('Error fetching subscription plans:', error);
         return [];

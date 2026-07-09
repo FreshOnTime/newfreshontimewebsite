@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import connectDB from '@/lib/database';
-import Supplier from '@/lib/models/Supplier';
+import { Prisma, PaymentTerms, Supplier } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const supplierSchema = z.object({
@@ -28,18 +28,49 @@ const querySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
+// The UI uses hyphenated payment terms (net-30); the DB enum uses underscores (net_30).
+function termsToDb(t: string): PaymentTerms {
+  return t.replace('-', '_') as PaymentTerms;
+}
+function termsToApi(t: string): string {
+  return t.replace('_', '-');
+}
+
+// Map a Prisma Supplier row back to the shape the old Mongoose route returned
+// (nested `address` object, hyphenated `paymentTerms`, `_id`).
+function serializeSupplier(s: Supplier) {
+  return {
+    _id: s.id,
+    name: s.name,
+    contactName: s.contactName,
+    email: s.email ?? '',
+    phone: s.phone,
+    address: {
+      street: s.street ?? '',
+      city: s.city ?? '',
+      state: s.state ?? '',
+      zipCode: s.zipCode ?? '',
+      country: s.country ?? '',
+    },
+    paymentTerms: termsToApi(s.paymentTerms),
+    notes: s.notes ?? undefined,
+    status: s.status,
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+  };
+}
+
 export const GET = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    const filter: Record<string, unknown> = {};
-    if (query.status) filter.status = query.status;
+    const where: Prisma.SupplierWhereInput = {};
+    if (query.status) where.status = query.status;
     if (query.search) {
-      filter.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { email: { $regex: query.search, $options: 'i' } },
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
       ];
     }
 
@@ -48,11 +79,14 @@ export const GET = requireAdminSimple(async (request) => {
     const skip = (page - 1) * limit;
 
     const [suppliers, total] = await Promise.all([
-      Supplier.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Supplier.countDocuments(filter),
+      prisma.supplier.findMany({ where, orderBy: { createdAt: 'desc' }, skip, take: limit }),
+      prisma.supplier.count({ where }),
     ]);
 
-    return NextResponse.json({ suppliers, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+    return NextResponse.json({
+      suppliers: suppliers.map(serializeSupplier),
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error('Get suppliers error:', error);
     return NextResponse.json({ error: 'Failed to fetch suppliers' }, { status: 500 });
@@ -61,18 +95,42 @@ export const GET = requireAdminSimple(async (request) => {
 
 export const POST = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const body = await request.json();
     const data = supplierSchema.parse(body);
 
-    const existing = await Supplier.findOne({ email: data.email });
+    const existing = await prisma.supplier.findFirst({ where: { email: data.email } });
     if (existing) {
       return NextResponse.json({ error: 'Supplier with this email already exists' }, { status: 400 });
     }
 
-    const supplier = await Supplier.create(data);
-    await logAuditAction(request.user!.userId, 'create', 'supplier', supplier._id.toString(), undefined, supplier.toObject(), request);
-    return NextResponse.json({ supplier }, { status: 201 });
+    const supplier = await prisma.supplier.create({
+      data: {
+        name: data.name,
+        contactName: data.contactName,
+        email: data.email,
+        phone: data.phone,
+        street: data.address.street,
+        city: data.address.city,
+        state: data.address.state,
+        zipCode: data.address.zipCode,
+        country: data.address.country,
+        paymentTerms: termsToDb(data.paymentTerms),
+        notes: data.notes ?? null,
+        status: data.status,
+      },
+    });
+
+    const serialized = serializeSupplier(supplier);
+    await logAuditAction(
+      request.user!.userId,
+      'create',
+      'supplier',
+      supplier.id,
+      undefined,
+      serialized as unknown as Record<string, unknown>,
+      request
+    );
+    return NextResponse.json({ supplier: serialized }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });

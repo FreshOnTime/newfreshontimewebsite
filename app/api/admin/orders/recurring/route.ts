@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import connectDB from '@/lib/database';
-import Order from '@/lib/models/EnhancedOrder';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 interface AuthenticatedRequest extends NextRequest {
@@ -12,7 +11,6 @@ interface AuthenticatedRequest extends NextRequest {
   };
 }
 
-// Enhanced query schema for admin with more filtering options
 const adminQuerySchema = z.object({
   page: z.string().transform(Number).pipe(z.number().min(1)).default('1'),
   limit: z.string().transform(Number).pipe(z.number().min(1).max(100)).default('10'),
@@ -26,10 +24,22 @@ const adminQuerySchema = z.object({
   dateTo: z.string().datetime().optional(),
 });
 
-// GET - fetch all recurring orders for admin with advanced filtering
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serializeOrder(o: any) {
+  return {
+    ...o,
+    _id: o.id,
+    subtotal: Number(o.subtotal),
+    tax: Number(o.tax),
+    shipping: Number(o.shipping),
+    discount: Number(o.discount),
+    total: Number(o.total),
+    items: (o.items || []).map((it: any) => ({ ...it, _id: it.id, price: Number(it.price), total: Number(it.total) })),
+  };
+}
+
 export const GET = requireAdminSimple(async (request: NextRequest) => {
   try {
-    await connectDB();
     const url = new URL(request.url);
     const query = adminQuerySchema.parse({
       page: url.searchParams.get('page') || '1',
@@ -47,215 +57,115 @@ export const GET = requireAdminSimple(async (request: NextRequest) => {
     const { page, limit, status, customerId, orderStatus, sortBy, sortOrder, search, dateFrom, dateTo } = query;
     const skip = (page - 1) * limit;
 
-    // Build filter for recurring orders
-    const filter: Record<string, unknown> = {
-      isRecurring: true,
-    };
-
-    if (status) {
-      filter.scheduleStatus = status;
-    }
-
-    if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
-      filter.customerId = customerId;
-    }
-
-    if (orderStatus) {
-      filter.status = orderStatus;
-    }
-
-    // Date range filter
+    const where: Prisma.OrderWhereInput = { isRecurring: true };
+    if (status) where.scheduleStatus = status;
+    if (customerId) where.customerId = customerId;
+    if (orderStatus) where.status = orderStatus;
     if (dateFrom || dateTo) {
-      const dateFilter: Record<string, Date> = {};
-      if (dateFrom) dateFilter.$gte = new Date(dateFrom);
-      if (dateTo) dateFilter.$lte = new Date(dateTo);
-      filter.createdAt = dateFilter;
+      where.createdAt = {
+        ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+        ...(dateTo ? { lte: new Date(dateTo) } : {}),
+      };
     }
-
-    // Search functionality
     if (search) {
-      filter.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { 'shippingAddress.name': { $regex: search, $options: 'i' } },
-        { 'shippingAddress.city': { $regex: search, $options: 'i' } },
-        { notes: { $regex: search, $options: 'i' } },
+      where.OR = [
+        { orderNumber: { contains: search, mode: 'insensitive' } },
+        { notes: { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    // Get total count
-    const total = await Order.countDocuments(filter);
-
-    // Get orders with pagination and sorting
-    const sortOptions: Record<string, 1 | -1> = {};
-    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
-
-    const orders = await Order.find(filter)
-      .populate({ 
-        path: 'items.productId', 
-        model: 'EnhancedProduct', 
-        select: 'name price images stockQty sku' 
-      })
-      .populate({
-        path: 'customerId',
-        model: 'Customer',
-        select: 'name email phone',
-      })
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const orderBy = { [sortBy]: sortOrder } as Prisma.OrderOrderByWithRelationInput;
+    const [orders, total, allRecurring] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: { items: { include: { product: { select: { name: true, price: true, images: true, stockQty: true, sku: true } } } }, customer: true },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({ where }),
+      prisma.order.findMany({ where: { isRecurring: true }, select: { scheduleStatus: true, total: true } }),
+    ]);
 
     const totalPages = Math.ceil(total / limit);
-
-    // Calculate analytics
-    const analytics = await Order.aggregate([
-      { $match: { isRecurring: true } },
-      {
-        $group: {
-          _id: null,
-          totalRecurringOrders: { $sum: 1 },
-          activeOrders: {
-            $sum: { $cond: [{ $eq: ['$scheduleStatus', 'active'] }, 1, 0] }
-          },
-          pausedOrders: {
-            $sum: { $cond: [{ $eq: ['$scheduleStatus', 'paused'] }, 1, 0] }
-          },
-          endedOrders: {
-            $sum: { $cond: [{ $eq: ['$scheduleStatus', 'ended'] }, 1, 0] }
-          },
-          totalValue: { $sum: '$total' },
-          averageOrderValue: { $avg: '$total' },
-        }
-      }
-    ]);
+    const totalValue = allRecurring.reduce((sum, o) => sum + Number(o.total), 0);
+    const analytics = {
+      totalRecurringOrders: allRecurring.length,
+      activeOrders: allRecurring.filter((o) => o.scheduleStatus === 'active').length,
+      pausedOrders: allRecurring.filter((o) => o.scheduleStatus === 'paused').length,
+      endedOrders: allRecurring.filter((o) => o.scheduleStatus === 'ended').length,
+      totalValue,
+      averageOrderValue: allRecurring.length ? totalValue / allRecurring.length : 0,
+    };
 
     return NextResponse.json({
       success: true,
       data: {
-        orders,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
-          hasNext: page < totalPages,
-          hasPrev: page > 1,
-        },
-        analytics: analytics[0] || {
-          totalRecurringOrders: 0,
-          activeOrders: 0,
-          pausedOrders: 0,
-          endedOrders: 0,
-          totalValue: 0,
-          averageOrderValue: 0,
-        },
+        orders: orders.map(serializeOrder),
+        pagination: { page, limit, total, totalPages, hasNext: page < totalPages, hasPrev: page > 1 },
+        analytics,
       },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid query parameters', 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid query parameters', details: error.errors }, { status: 400 });
     }
     console.error('Error fetching recurring orders (admin):', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch recurring orders' 
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch recurring orders' }, { status: 500 });
   }
 });
 
-// POST - admin bulk actions on recurring orders
 export const POST = requireAdminSimple(async (request: NextRequest) => {
   try {
-    await connectDB();
     const body = await request.json();
-
     const bulkActionSchema = z.object({
       action: z.enum(['pause', 'resume', 'end', 'delete']),
       orderIds: z.array(z.string()).min(1),
     });
 
     const { action, orderIds } = bulkActionSchema.parse(body);
-
-    // Validate all order IDs
-    const invalidIds = orderIds.filter(id => !mongoose.Types.ObjectId.isValid(id));
-    if (invalidIds.length > 0) {
-      return NextResponse.json({ 
-        error: 'Invalid order IDs', 
-        invalidIds 
-      }, { status: 400 });
+    const found = await prisma.order.findMany({ where: { id: { in: orderIds }, isRecurring: true }, select: { id: true } });
+    if (found.length !== orderIds.length) {
+      return NextResponse.json({ error: 'Some orders were not found or are not recurring orders' }, { status: 404 });
     }
 
-    // Find all orders
-    const orders = await Order.find({
-      _id: { $in: orderIds },
-      isRecurring: true,
-    });
-
-    if (orders.length !== orderIds.length) {
-      return NextResponse.json({ 
-        error: 'Some orders were not found or are not recurring orders' 
-      }, { status: 404 });
-    }
-
-    let updateResult;
-    let deletedCount = 0;
-
+    let affected = 0;
+    let result: Record<string, unknown>;
     switch (action) {
       case 'pause':
-        updateResult = await Order.updateMany(
-          { _id: { $in: orderIds } },
-          { $set: { scheduleStatus: 'paused' } }
-        );
+        affected = (await prisma.order.updateMany({ where: { id: { in: orderIds } }, data: { scheduleStatus: 'paused' } })).count;
+        result = { modifiedCount: affected };
         break;
       case 'resume':
-        updateResult = await Order.updateMany(
-          { _id: { $in: orderIds } },
-          { $set: { scheduleStatus: 'active' } }
-        );
+        affected = (await prisma.order.updateMany({ where: { id: { in: orderIds } }, data: { scheduleStatus: 'active' } })).count;
+        result = { modifiedCount: affected };
         break;
       case 'end':
-        updateResult = await Order.updateMany(
-          { _id: { $in: orderIds } },
-          { $set: { scheduleStatus: 'ended', nextDeliveryAt: null } }
-        );
+        affected = (await prisma.order.updateMany({ where: { id: { in: orderIds } }, data: { scheduleStatus: 'ended', nextDeliveryAt: null } })).count;
+        result = { modifiedCount: affected };
         break;
       case 'delete':
-        // Actually delete the orders (admin only)
-        const deleteResult = await Order.deleteMany({
-          _id: { $in: orderIds }
-        });
-        deletedCount = deleteResult.deletedCount || 0;
+        affected = (await prisma.order.deleteMany({ where: { id: { in: orderIds } } })).count;
+        result = { deletedCount: affected };
         break;
     }
 
-    // Log audit action
     await logAuditAction(
       (request as AuthenticatedRequest).user.userId,
       'bulk_update',
       'order',
       orderIds.join(','),
       { action, orderIds },
-      { result: updateResult || { deletedCount } },
+      { result },
       request
     );
 
-    return NextResponse.json({
-      success: true,
-      message: `Bulk ${action} completed successfully`,
-      affected: action === 'delete' ? deletedCount : updateResult?.modifiedCount || 0,
-    });
+    return NextResponse.json({ success: true, message: `Bulk ${action} completed successfully`, affected });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid request data', 
-        details: error.errors 
-      }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request data', details: error.errors }, { status: 400 });
     }
     console.error('Error performing bulk action on recurring orders:', error);
-    return NextResponse.json({ 
-      error: 'Failed to perform bulk action' 
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to perform bulk action' }, { status: 500 });
   }
 });

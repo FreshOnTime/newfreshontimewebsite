@@ -6,23 +6,21 @@ import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { Product } from "@/models/product";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 
-import connectDB from '@/lib/database';
-import CategoryModel from '@/lib/models/Category';
-import EnhancedProduct from '@/lib/models/EnhancedProduct';
+import prisma from '@/lib/prisma';
+import { serializeProductForUi } from '@/lib/productSerializer';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
 // Helper to get category details
 async function getCategoryBySlug(slug: string) {
   try {
-    await connectDB();
-    const cat = await CategoryModel.findOne({ slug }).lean();
+    const cat = await prisma.category.findUnique({ where: { slug } });
     if (!cat) return null;
     return {
-      id: String((cat as any)._id),
-      name: (cat as any).name || slug,
-      slug: (cat as any).slug || slug,
-      description: (cat as any).description || null,
+      id: cat.id,
+      name: cat.name || slug,
+      slug: cat.slug || slug,
+      description: cat.description || null,
     };
   } catch {
     return null;
@@ -31,42 +29,15 @@ async function getCategoryBySlug(slug: string) {
 
 async function getCategoryProductsBySlug(slug: string): Promise<Product[]> {
   try {
-    await connectDB();
-    const cat = await CategoryModel.findOne({ slug }).lean();
+    const cat = await prisma.category.findUnique({ where: { slug } });
     if (!cat) return [];
 
-    const raw = await EnhancedProduct.find({ categoryId: String((cat as any)._id), archived: { $ne: true } }).lean();
-    // map shape similar to products API
-    const products: Product[] = raw.map((p: any) => {
-      const img = Array.isArray(p.images) && p.images[0] ? String(p.images[0]) : (p.image ? String(p.image) : '/placeholder.svg');
-      return {
-        sku: String(p.sku || p._id),
-        name: p.name || '',
-        image: { url: img, filename: '', contentType: '', path: img, alt: p.name || undefined },
-        description: p.description || '',
-        category: { id: String(p.categoryId), name: (cat as any).name || '', slug: (cat as any).slug || '' },
-        baseMeasurementQuantity: 1,
-        pricePerBaseQuantity: Number(p.price ?? 0),
-        measurementUnit: 'ea',
-        isSoldAsUnit: true,
-        minOrderQuantity: 1,
-        maxOrderQuantity: 9999,
-        stepQuantity: 1,
-        stockQuantity: Number(p.stockQty ?? 0),
-        isOutOfStock: Number(p.stockQty ?? 0) <= 0,
-        totalSales: 0,
-        isFeatured: false,
-        discountPercentage: 0,
-        lowStockThreshold: Number(p.minStockLevel ?? 0),
-        createdAt: p.createdAt as unknown as Date | undefined,
-        createdBy: undefined,
-        updatedAt: p.updatedAt as unknown as Date | undefined,
-        updatedBy: undefined,
-        ingredients: undefined,
-        nutritionFacts: undefined,
-      } as Product;
+    const raw = await prisma.product.findMany({
+      where: { categoryId: cat.id, archived: false },
+      orderBy: { createdAt: 'desc' },
+      include: { category: { select: { name: true, slug: true } } },
     });
-    return products;
+    return raw.map((p) => serializeProductForUi(p) as Product);
   } catch (err) {
     console.error('Failed to get category products by slug:', err);
     return [];

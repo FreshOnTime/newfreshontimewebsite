@@ -4,8 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import SupplierDashboard from '@/components/supplier/SupplierDashboard';
+import CustomerDashboard from '@/components/customer/CustomerDashboard';
 
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
@@ -53,44 +53,7 @@ export default function DashboardPage() {
       {user.role === 'supplier' ? (
         <SupplierDashboard />
       ) : (
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Welcome, {user.firstName}!</CardTitle>
-              <CardDescription>
-                Your account dashboard
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-                <p><strong>Email:</strong> {user.email || 'Not provided'}</p>
-                <p><strong>Phone:</strong> {user.phoneNumber}</p>
-                <p><strong>Role:</strong> {user.role}</p>
-                <p><strong>User ID:</strong> {user.userId}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" onClick={() => router.push('/products')}>
-                  Browse Products
-                </Button>
-                <Button variant="outline" onClick={() => router.push('/orders')}>
-                  View Orders
-                </Button>
-                <Button variant="outline" onClick={() => router.push('/bags')}>
-                  My Bags
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <CustomerDashboard />
       )}
     </div>
   );

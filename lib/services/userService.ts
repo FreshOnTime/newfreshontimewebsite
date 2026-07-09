@@ -1,87 +1,94 @@
-import User, { IUser } from "../models/User";
-import Customer from "../models/Customer";
+import prisma from "../prisma";
+
+type UserInput = {
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string | null;
+  phoneNumber?: string;
+  role?: "customer" | "supplier" | "admin" | "manager" | "delivery_staff" | "customer_support" | "marketing_specialist" | "order_processor" | "inventory_manager";
+  passwordHash?: string | null;
+};
+
+function serializeUser<T extends { id: string }>(user: T) {
+  return { ...user, _id: user.id, userId: user.id };
+}
 
 export class UserService {
-  async createUser(userData: Partial<IUser>): Promise<IUser> {
-    const user = new User(userData);
-    const saved = await user.save();
-
-    // Mirror into Customer collection if role is customer
-    try {
-      const role = saved.role || 'customer';
-      if (role === 'customer') {
-        const fullName = `${saved.firstName} ${saved.lastName || ''}`.trim();
-        const address = saved.registrationAddress ? {
-          street: [saved.registrationAddress.streetAddress, saved.registrationAddress.streetAddress2].filter(Boolean).join(', '),
-          city: saved.registrationAddress.city || saved.registrationAddress.town,
-          state: saved.registrationAddress.state,
-          zipCode: saved.registrationAddress.postalCode,
-          country: saved.registrationAddress.countryCode,
-        } : undefined;
-
-        const email = saved.email || `${saved.userId}@placeholder.local`;
-        const existing = await Customer.findOne({ email });
-        if (!existing) {
-          await Customer.create({
-            name: fullName || saved.phoneNumber,
-            email,
-            phone: saved.phoneNumber,
-            address,
-          });
-        }
-      }
-    } catch (e) {
-      console.error('Customer sync from createUser failed:', e);
-    }
-
-    return saved;
+  async createUser(userData: UserInput) {
+    if (!userData.firstName || !userData.phoneNumber) throw new Error("firstName and phoneNumber are required");
+    const user = await prisma.user.create({
+      data: {
+        ...(userData.userId ? { id: userData.userId } : {}),
+        firstName: userData.firstName,
+        lastName: userData.lastName ?? null,
+        email: userData.email ?? null,
+        phoneNumber: userData.phoneNumber,
+        role: userData.role ?? "customer",
+        passwordHash: userData.passwordHash ?? null,
+      },
+    });
+    return serializeUser(user);
   }
 
-  async findUserByEmail(email: string): Promise<IUser | null> {
-    return await User.findOne({ email });
+  async findUserByEmail(email: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    return user ? serializeUser(user) : null;
   }
 
-  async findUserById(userId: string): Promise<IUser | null> {
-    return await User.findOne({ userId: userId });
+  async findUserById(userId: string) {
+    const user = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
+    return user ? serializeUser(user) : null;
   }
 
-  async findUserByPhone(phone: string): Promise<IUser | null> {
-    return await User.findOne({ phoneNumber: phone });
+  async findUserByPhone(phone: string) {
+    const user = await prisma.user.findUnique({ where: { phoneNumber: phone } });
+    return user ? serializeUser(user) : null;
   }
 
-  async updateUser(userId: string, updateData: Partial<IUser>): Promise<IUser | null> {
-    return await User.findOneAndUpdate(
-      { userId },
-      updateData,
-      { new: true, runValidators: true }
-    );
+  async updateUser(userId: string, updateData: UserInput) {
+    const existing = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
+    if (!existing) return null;
+    const user = await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        ...(updateData.firstName !== undefined ? { firstName: updateData.firstName } : {}),
+        ...(updateData.lastName !== undefined ? { lastName: updateData.lastName } : {}),
+        ...(updateData.email !== undefined ? { email: updateData.email } : {}),
+        ...(updateData.phoneNumber !== undefined ? { phoneNumber: updateData.phoneNumber } : {}),
+        ...(updateData.role !== undefined ? { role: updateData.role } : {}),
+        ...(updateData.passwordHash !== undefined ? { passwordHash: updateData.passwordHash } : {}),
+      },
+    });
+    return serializeUser(user);
   }
 
-  async deleteUser(userId: string): Promise<IUser | null> {
-    return await User.findOneAndDelete({ userId });
+  async deleteUser(userId: string) {
+    const existing = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
+    if (!existing) return null;
+    const user = await prisma.user.delete({ where: { id: existing.id } });
+    return serializeUser(user);
   }
 
-  async getAllUsers(
-    page: number = 1,
-    limit: number = 10,
-    filters?: Record<string, any>
-  ): Promise<{ users: IUser[]; total: number; page: number; limit: number }> {
+  async getAllUsers(page = 1, limit = 10, filters?: Record<string, unknown>) {
     const skip = (page - 1) * limit;
-    
-    const query = filters ? { ...filters, isDeleted: { $ne: true } } : { isDeleted: { $ne: true } };
-    
-    const users = await User.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-    
-    const total = await User.countDocuments(query);
-    
-    return {
-      users,
-      total,
-      page,
-      limit,
+    const where = {
+      ...(filters?.role ? { role: filters.role as never } : {}),
+      ...(filters?.search
+        ? {
+            OR: [
+              { firstName: { contains: String(filters.search), mode: "insensitive" as const } },
+              { lastName: { contains: String(filters.search), mode: "insensitive" as const } },
+              { email: { contains: String(filters.search), mode: "insensitive" as const } },
+              { phoneNumber: { contains: String(filters.search), mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
     };
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({ where, skip, take: limit, orderBy: { createdAt: "desc" } }),
+      prisma.user.count({ where }),
+    ]);
+    return { users: users.map(serializeUser), total, page, limit };
   }
 }

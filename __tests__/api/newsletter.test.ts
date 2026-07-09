@@ -1,19 +1,14 @@
-import { NextResponse } from "next/server";
-
-// Mock database connection
-jest.mock("@/lib/database", () => ({
-    __esModule: true,
-    default: jest.fn().mockResolvedValue(undefined),
-}));
-
-// Mock Subscriber model
-const mockSubscriber = {
-    findOne: jest.fn(),
-    create: jest.fn(),
+const mockPrisma = {
+    subscriber: {
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+    },
 };
 
-jest.mock("@/lib/models/Subscriber", () => ({
-    Subscriber: mockSubscriber,
+jest.mock("@/lib/prisma", () => ({
+    __esModule: true,
+    default: mockPrisma,
 }));
 
 // Mock mail service
@@ -65,7 +60,7 @@ describe("Newsletter API", () => {
         });
 
         it("should handle already subscribed emails", async () => {
-            mockSubscriber.findOne.mockResolvedValue({
+            mockPrisma.subscriber.findUnique.mockResolvedValue({
                 email: "existing@example.com",
                 isActive: true,
             });
@@ -89,8 +84,8 @@ describe("Newsletter API", () => {
         });
 
         it("should successfully subscribe new email", async () => {
-            mockSubscriber.findOne.mockResolvedValue(null);
-            mockSubscriber.create.mockResolvedValue({
+            mockPrisma.subscriber.findUnique.mockResolvedValue(null);
+            mockPrisma.subscriber.create.mockResolvedValue({
                 email: "new@example.com",
                 isActive: true,
             });
@@ -110,19 +105,23 @@ describe("Newsletter API", () => {
 
             expect(response.status).toBe(200);
             expect(data.ok).toBe(true);
-            expect(mockSubscriber.create).toHaveBeenCalledWith({
-                email: "new@example.com",
-                source: "homepage",
+            expect(mockPrisma.subscriber.create).toHaveBeenCalledWith({
+                data: {
+                    email: "new@example.com",
+                    source: "homepage",
+                },
             });
         });
 
         it("should reactivate inactive subscription", async () => {
-            const mockInactive = {
+            mockPrisma.subscriber.findUnique.mockResolvedValue({
                 email: "inactive@example.com",
                 isActive: false,
-                save: jest.fn().mockResolvedValue(undefined),
-            };
-            mockSubscriber.findOne.mockResolvedValue(mockInactive);
+            });
+            mockPrisma.subscriber.update.mockResolvedValue({
+                email: "inactive@example.com",
+                isActive: true,
+            });
 
             const { POST } = await import(
                 "@/app/api/newsletter/route"
@@ -139,8 +138,14 @@ describe("Newsletter API", () => {
 
             expect(response.status).toBe(200);
             expect(data.ok).toBe(true);
-            expect(mockInactive.isActive).toBe(true);
-            expect(mockInactive.save).toHaveBeenCalled();
+            expect(mockPrisma.subscriber.update).toHaveBeenCalledWith({
+                where: { email: "inactive@example.com" },
+                data: {
+                    isActive: true,
+                    subscribedAt: expect.any(Date),
+                    unsubscribedAt: null,
+                },
+            });
         });
     });
 });

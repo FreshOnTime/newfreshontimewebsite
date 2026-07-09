@@ -12,10 +12,8 @@ import Link from "next/link";
 import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 
-import connectDB from '@/lib/database';
-import EnhancedProduct from '@/lib/models/EnhancedProduct';
-import Category from '@/lib/models/Category';
-import type { IProduct as IEnhancedProduct } from '@/lib/models/EnhancedProduct';
+import prisma from '@/lib/prisma';
+import { serializeProductForUi } from '@/lib/productSerializer';
 
 // ISR: product details change occasionally; revalidate every 5 minutes.
 // Works alongside generateStaticParams to pre-render top products at build time
@@ -25,80 +23,18 @@ export const revalidate = 300;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
 async function getProduct(id: string): Promise<Product | null> {
-  // ... (keep existing getProduct logic exactly as is)
   try {
-    console.log('ProductPage - getProduct id:', id);
-    await connectDB();
-    const mongoose = await import('mongoose');
-    let p: Partial<IEnhancedProduct> | null = null;
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      p = await EnhancedProduct.findById(id).lean() as Partial<IEnhancedProduct> | null;
-    }
-    if (!p) {
-      p = await EnhancedProduct.findOne({ $or: [{ sku: id }, { slug: id }] }).lean() as Partial<IEnhancedProduct> | null;
-    }
+    const p = await prisma.product.findFirst({
+      where: { OR: [{ id }, { sku: id }, { slug: id }] },
+      include: { category: { select: { name: true, slug: true } } },
+    });
+
     if (!p) {
       console.log('ProductPage - product not found in DB for id:', id);
       return null;
     }
 
-    let categoryMeta: { id: string; name: string; slug: string } | undefined;
-    if (p?.categoryId) {
-      try {
-        const cat = await Category.findById(p.categoryId).select('name slug').lean() as { name?: string; slug?: string } | null;
-        if (cat) categoryMeta = { id: String(p.categoryId), name: cat.name || '', slug: cat.slug || '' };
-      } catch { }
-    }
-
-    const attrs = p.attributes || {};
-    const maybeUnitOptions = attrs.unitOptions;
-    const unitOptions = Array.isArray(maybeUnitOptions)
-      ? maybeUnitOptions
-        .map((o: { unit?: string; quantity?: number; price?: number; label?: string }) => {
-          const unit = typeof o.unit === 'string' && ['g', 'kg', 'ml', 'l', 'ea', 'lb'].includes(o.unit) ? o.unit : undefined;
-          const quantity = typeof o.quantity === 'number' ? o.quantity : undefined;
-          const price = typeof o.price === 'number' ? o.price : undefined;
-          if (!unit || !quantity || price === undefined) return null;
-          return { label: o.label || `${quantity}${unit}`, quantity, unit, price };
-        })
-        .filter(Boolean)
-      : undefined;
-
-    const product = {
-      _id: String(p._id),
-      sku: String(p.sku || p._id),
-      name: p.name || '',
-      image: {
-        url: Array.isArray(p.images) && p.images[0] ? String(p.images[0]) : (p.image ? String(p.image) : '/placeholder.svg'),
-        filename: '',
-        contentType: '',
-        path: Array.isArray(p.images) && p.images[0] ? String(p.images[0]) : (p.image ? String(p.image) : '/placeholder.svg'),
-        alt: p.name || undefined,
-      },
-      description: p.description || '',
-      category: categoryMeta,
-      baseMeasurementQuantity: 1,
-      pricePerBaseQuantity: Number(p.price ?? 0),
-      measurementUnit: 'ea' as const,
-      isSoldAsUnit: true,
-      minOrderQuantity: 1,
-      maxOrderQuantity: 9999,
-      stepQuantity: 1,
-      stockQuantity: Number(p.stockQty ?? 0),
-      isOutOfStock: Number(p.stockQty ?? 0) <= 0,
-      totalSales: 0,
-      isFeatured: false,
-      discountPercentage: 0,
-      lowStockThreshold: Number(p.minStockLevel ?? 0),
-      createdAt: p.createdAt as unknown as Date | undefined,
-      updatedAt: p.updatedAt as unknown as Date | undefined,
-      ingredients: undefined,
-      nutritionFacts: undefined,
-      unitOptions,
-      tags: p.tags || [], // Ensure tags are passed
-    };
-
-    return product as Product;
+    return serializeProductForUi(p) as Product;
   } catch (error) {
     console.error('Failed to load product from DB:', error);
     // ... (keep fallback logic)
@@ -122,21 +58,15 @@ async function getProduct(id: string): Promise<Product | null> {
 // Enable SSG for top products to improve performance
 export async function generateStaticParams() {
   try {
-    await connectDB();
-    const mongoose = await import('mongoose');
-    // Fetch top 50 active products for static generation
-    // Prioritize by newest or best sellers if available
-    const products = await EnhancedProduct.find({
-      'settings.archived': { $ne: true },
-      isPublished: true
-    })
-      .select('sku slug _id')
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+    const products = await prisma.product.findMany({
+      where: { archived: false },
+      select: { sku: true, slug: true, id: true },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
 
-    return products.map((p: any) => ({
-      id: p.sku || p.slug || String(p._id),
+    return products.map((p) => ({
+      id: p.sku || p.slug || p.id,
     }));
   } catch (error) {
     console.error('Error generating static params:', error);

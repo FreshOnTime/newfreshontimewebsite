@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/database';
-import Customer from '@/lib/models/Customer';
-import User from '@/lib/models/User';
-import Product from '@/lib/models/EnhancedProduct';
-import Order from '@/lib/models/EnhancedOrder';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 // Ensure this route is always dynamic (no static caching) so dashboard reflects recent changes
@@ -12,76 +8,53 @@ export const dynamic = 'force-dynamic';
 // GET /api/admin/analytics/overview
 export const GET = requireAdminSimple(async () => {
   try {
-    await connectDB();
+    const now = new Date();
+    const in14 = new Date();
+    in14.setDate(in14.getDate() + 14);
 
-    // Determine total customers. If the Customer collection is empty, fall back to counting
-    // users with role "customer" (the same behavior as the customers listing endpoint).
-    let totalCustomers = 0;
-    const customerEstimate = await Customer.estimatedDocumentCount();
-    if (customerEstimate === 0) {
-      totalCustomers = await User.countDocuments({ role: 'customer' });
-    } else {
-      totalCustomers = await Customer.countDocuments();
-    }
-
-    // Run the remaining analytics queries in parallel
     const [
+      totalCustomers,
       totalProducts,
       totalOrders,
       revenueResult,
-      lowStockProducts,
+      activeProductsForStock,
       pendingOrders,
-      // Recurring-specific metrics
       activeRecurring,
       recurringRevenueResult,
       upcomingRecurring,
     ] = await Promise.all([
-      Product.countDocuments({ archived: false }),
-      Order.countDocuments(),
-      // Revenue should be based on delivered orders or any order with paymentStatus=paid
-      Order.aggregate([
-        { $match: { $or: [ { status: 'delivered' }, { paymentStatus: 'paid' } ] } },
-        { $group: { _id: null, total: { $sum: '$total' } } }
-      ]),
-      Product.countDocuments({ 
-        archived: false,
-        $expr: { $lte: ['$stockQty', '$minStockLevel'] }
+      prisma.user.count({ where: { role: 'customer' } }),
+      prisma.product.count({ where: { archived: false } }),
+      prisma.order.count(),
+      prisma.order.aggregate({
+        where: { OR: [{ status: 'delivered' }, { paymentStatus: 'paid' }] },
+        _sum: { total: true },
       }),
-      Order.countDocuments({ status: 'pending' }),
-      // Active recurring schedules (not ended)
-      Order.countDocuments({
-        isRecurring: true,
-        scheduleStatus: 'active',
-        $or: [
-          { 'recurrence.endDate': { $exists: false } },
-          { 'recurrence.endDate': { $gte: new Date() } },
-        ],
+      prisma.product.findMany({
+        where: { archived: false },
+        select: { stockQty: true, minStockLevel: true },
       }),
-      // Revenue from recurring orders (delivered or marked paid)
-      Order.aggregate([
-        { $match: { isRecurring: true, $or: [ { status: 'delivered' }, { paymentStatus: 'paid' } ] } },
-        { $group: { _id: null, total: { $sum: '$total' } } }
-      ]),
-      // Next 10 upcoming recurring deliveries in next 14 days
-      (async () => {
-        const now = new Date();
-        const in14 = new Date();
-        in14.setDate(in14.getDate() + 14);
-        const docs = await Order.find({
+      prisma.order.count({ where: { status: 'pending' } }),
+      prisma.order.count({ where: { isRecurring: true, scheduleStatus: 'active' } }),
+      prisma.order.aggregate({
+        where: { isRecurring: true, OR: [{ status: 'delivered' }, { paymentStatus: 'paid' }] },
+        _sum: { total: true },
+      }),
+      prisma.order.findMany({
+        where: {
           isRecurring: true,
           scheduleStatus: 'active',
-          nextDeliveryAt: { $gte: now, $lte: in14 },
-        })
-          .sort({ nextDeliveryAt: 1 })
-          .limit(10)
-          .select('orderNumber nextDeliveryAt total customerId')
-          .lean();
-        return docs;
-      })(),
+          nextDeliveryAt: { gte: now, lte: in14 },
+        },
+        orderBy: { nextDeliveryAt: 'asc' },
+        take: 10,
+        select: { orderNumber: true, nextDeliveryAt: true, total: true, customerId: true },
+      }),
     ]);
 
-    const totalRevenue = revenueResult[0]?.total || 0;
-    const recurringRevenue = recurringRevenueResult[0]?.total || 0;
+    const lowStockProducts = activeProductsForStock.filter((p) => p.stockQty <= p.minStockLevel).length;
+    const totalRevenue = Number(revenueResult._sum.total || 0);
+    const recurringRevenue = Number(recurringRevenueResult._sum.total || 0);
 
     const stats = {
       totalCustomers,
@@ -92,7 +65,7 @@ export const GET = requireAdminSimple(async () => {
       pendingOrders,
       activeRecurring,
       recurringRevenue,
-      upcomingRecurring,
+      upcomingRecurring: upcomingRecurring.map((o) => ({ ...o, total: Number(o.total) })),
     };
 
     return NextResponse.json({ stats });

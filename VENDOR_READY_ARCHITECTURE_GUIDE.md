@@ -26,32 +26,32 @@ Design API endpoints that work for both single-seller and multi-vendor scenarios
 
 ### Product Model Enhancement
 
-**Current State** (`lib/models/Product.ts`):
+**Current State** (`prisma/schema.prisma`):
 ```typescript
-export interface IProduct extends Document {
+type Product = {
   name: string;
-  brand: mongoose.Types.ObjectId;
-  supplier?: mongoose.Types.ObjectId;  // Already exists!
-  category: mongoose.Types.ObjectId;
+  brandId: string;
+  supplierId?: string;  // Already exists!
+  categoryId: string;
   // ... other fields
 }
 ```
 
 **Phase 1 Enhancement** (Vendor-Ready):
 ```typescript
-export interface IProduct extends Document {
+type Product = {
   name: string;
-  brand: mongoose.Types.ObjectId;
-  supplier?: mongoose.Types.ObjectId;
+  brandId: string;
+  supplierId?: string;
   
   // New fields for vendor support
-  vendorId?: mongoose.Types.ObjectId;      // null = platform-owned
+  vendorId?: string;                       // null = platform-owned
   vendorSku?: string;                       // Vendor's internal SKU
   isVendorManaged: boolean;                 // false by default
   vendorCommissionRate?: number;            // % platform takes (null = N/A)
   
   // Existing fields...
-  category: mongoose.Types.ObjectId;
+  categoryId: string;
   // ...
 }
 ```
@@ -60,16 +60,16 @@ export interface IProduct extends Document {
 
 **Recommended Structure**:
 ```typescript
-export interface IOrder extends Document {
+type Order = {
   orderNumber: string;
-  customer: mongoose.Types.ObjectId;
+  customerId: string;
   
   // Items with vendor context
   items: Array<{
-    product: mongoose.Types.ObjectId;
+    productId: string;
     quantity: number;
     price: number;
-    vendorId?: mongoose.Types.ObjectId;  // Track which vendor owns each item
+    vendorId?: string;  // Track which vendor owns each item
   }>;
   
   // Financial breakdown
@@ -80,8 +80,8 @@ export interface IOrder extends Document {
   
   // Vendor-aware splitting (null in Phase 1, populated in Phase 3)
   vendorSplits?: Array<{
-    vendorId: mongoose.Types.ObjectId;
-    items: mongoose.Types.ObjectId[];    // References to items above
+    vendorId: string;
+    items: string[];                     // References to items above
     subtotal: number;
     commission: number;
     vendorPayout: number;
@@ -123,7 +123,7 @@ export interface IUser extends Document {
     };
     isApproved: boolean;
     approvedAt?: Date;
-    approvedBy?: mongoose.Types.ObjectId;
+    approvedBy?: string;
   };
   
   // Existing fields...
@@ -148,7 +148,7 @@ export class ProductService {
    * @param createdBy User ID (admin or vendor)
    */
   async createProduct(data: CreateProductDTO, createdBy: string) {
-    const user = await User.findById(createdBy);
+    const user = await prisma.user.findUnique({ where: { id: createdBy } });
     
     const productData = {
       ...data,
@@ -159,7 +159,7 @@ export class ProductService {
       isVendorManaged: user.roles.includes('vendor'),
     };
     
-    return await Product.create(productData);
+    return await prisma.product.create({ data: productData });
   }
 
   /**
@@ -168,29 +168,29 @@ export class ProductService {
    * @param userId Current user ID
    */
   async getProducts(filters: ProductFilters, userId?: string) {
-    const query: any = { isDeleted: false };
+    const where: any = { isDeleted: false };
     
     // If user is a vendor, only show their products
-    const user = userId ? await User.findById(userId) : null;
+    const user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
     if (user?.roles.includes('vendor')) {
-      query.vendorId = userId;
+      where.vendorId = userId;
     }
     
     // Apply other filters
-    if (filters.category) query.category = filters.category;
-    if (filters.brand) query.brand = filters.brand;
+    if (filters.category) where.categoryId = filters.category;
+    if (filters.brand) where.brandId = filters.brand;
     
-    return await Product.find(query).populate('category brand');
+    return await prisma.product.findMany({ where, include: { category: true, brand: true } });
   }
 
   /**
    * Update product - with ownership check
    */
   async updateProduct(productId: string, data: UpdateProductDTO, userId: string) {
-    const product = await Product.findById(productId);
+    const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) throw new Error('Product not found');
     
-    const user = await User.findById(userId);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     
     // Check permissions
     if (user.roles.includes('vendor')) {
@@ -201,11 +201,10 @@ export class ProductService {
     }
     // Admins can update any product
     
-    return await Product.findByIdAndUpdate(
-      productId,
-      { ...data, updatedBy: userId },
-      { new: true }
-    );
+    return await prisma.product.update({
+      where: { id: productId },
+      data: { ...data, updatedBy: userId },
+    });
   }
 }
 ```
@@ -584,4 +583,3 @@ The key insight is that **every product can optionally have a vendor**, but when
 4. **Test** with mock vendor accounts
 5. **Document** vendor onboarding process for Phase 3
 6. **Plan** payment integration strategy
-

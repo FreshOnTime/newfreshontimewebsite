@@ -1,20 +1,46 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import connectDB from '@/lib/database';
-import mongoose from 'mongoose';
-import Order from '@/lib/models/EnhancedOrder';
-import Customer from '@/lib/models/Customer';
-import User from '@/lib/models/User';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 export const dynamic = 'force-dynamic';
+
+const ORDER_INCLUDE = {
+  items: true,
+  customer: { select: { firstName: true, lastName: true, email: true } },
+} satisfies Prisma.OrderInclude;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serializeOrder(o: any) {
+  const customerName = o.customer
+    ? [o.customer.firstName, o.customer.lastName].filter(Boolean).join(' ') || o.customer.email || ''
+    : '';
+
+  return {
+    ...o,
+    _id: o.id,
+    customerName,
+    subtotal: Number(o.subtotal),
+    tax: Number(o.tax),
+    shipping: Number(o.shipping),
+    discount: Number(o.discount),
+    total: Number(o.total),
+    items: (o.items || []).map((it: any) => ({
+      ...it,
+      _id: it.id,
+      price: Number(it.price),
+      total: Number(it.total),
+    })),
+  };
+}
 
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
   limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),
   status: z.enum(['pending','confirmed','processing','shipped','delivered','cancelled','refunded']).optional(),
   search: z.string().optional(),
-  isRecurring: z.string().optional(), // 'true'|'false'
+  isRecurring: z.string().optional(),
   scheduleStatus: z.enum(['active','paused','ended']).optional(),
   sort: z.enum(['created-desc','created-asc','next-asc','next-desc']).optional(),
   customerId: z.string().optional(),
@@ -23,108 +49,52 @@ const querySchema = z.object({
 
 export const GET = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-  const filter: Record<string, unknown> = {};
-    if (query.status) filter.status = query.status;
-    if (query.search) {
-      filter.$or = [
-        { orderNumber: { $regex: query.search, $options: 'i' } },
-      ];
-    }
-  if (query.isRecurring === 'true') filter.isRecurring = true;
-  if (query.isRecurring === 'false') filter.isRecurring = { $in: [false, undefined] };
-  if (query.scheduleStatus) filter.scheduleStatus = query.scheduleStatus;
-
-  // Filtering logic supporting both stored Customer._id and (legacy) User._id in orders
-  if (query.customerId || query.userId) {
-    const ids: mongoose.Types.ObjectId[] = [];
-    if (query.userId) {
-      if (!mongoose.Types.ObjectId.isValid(query.userId)) {
-        return NextResponse.json({ error: 'Invalid userId' }, { status: 400 });
-      }
-      ids.push(new mongoose.Types.ObjectId(query.userId));
-    }
-    if (query.customerId) {
-      if (!mongoose.Types.ObjectId.isValid(query.customerId)) {
-        return NextResponse.json({ error: 'Invalid customerId' }, { status: 400 });
-      }
-      const custId = new mongoose.Types.ObjectId(query.customerId);
-      ids.push(custId);
-      // Try map to a related User._id via email/phone
-      try {
-        const customerDoc = await Customer.findById(custId, { email: 1, phone: 1 }).lean<{ _id: mongoose.Types.ObjectId; email?: string; phone?: string } | null>();
-        if (customerDoc) {
-          const orConditions: Array<Record<string, unknown>> = [];
-          if (customerDoc.email) orConditions.push({ email: customerDoc.email.toLowerCase() });
-          if (customerDoc.phone) orConditions.push({ phoneNumber: customerDoc.phone });
-          const userMatch = await User.findOne({ $or: orConditions }, { _id: 1 }).lean<{ _id: mongoose.Types.ObjectId } | null>();
-          if (userMatch?._id) ids.push(userMatch._id);
-        }
-      } catch {
-        // non-fatal
-      }
-    }
-    if (ids.length > 0) {
-      filter.customerId = ids.length === 1 ? ids[0] : { $in: ids };
-    }
-  }
+    const where: Prisma.OrderWhereInput = {};
+    if (query.status) where.status = query.status;
+    if (query.search) where.orderNumber = { contains: query.search, mode: 'insensitive' };
+    if (query.isRecurring === 'true') where.isRecurring = true;
+    if (query.isRecurring === 'false') where.isRecurring = false;
+    if (query.scheduleStatus) where.scheduleStatus = query.scheduleStatus;
+    if (query.customerId || query.userId) where.customerId = query.customerId || query.userId;
 
     const page = query.page;
     const limit = query.limit;
     const skip = (page - 1) * limit;
 
-    let sort: Record<string, 1 | -1>;
+    let orderBy: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[];
     switch (query.sort) {
       case 'created-asc':
-        sort = { createdAt: 1 };
+        orderBy = { createdAt: 'asc' };
         break;
       case 'next-asc':
-        sort = { nextDeliveryAt: 1, createdAt: -1 };
+        orderBy = [{ nextDeliveryAt: 'asc' }, { createdAt: 'desc' }];
         break;
       case 'next-desc':
-        sort = { nextDeliveryAt: -1, createdAt: -1 };
+        orderBy = [{ nextDeliveryAt: 'desc' }, { createdAt: 'desc' }];
         break;
       default:
-        sort = { createdAt: -1 };
+        orderBy = { createdAt: 'desc' };
         break;
     }
 
     const [orders, total] = await Promise.all([
-      Order.find(filter).sort(sort).skip(skip).limit(limit).lean(),
-      Order.countDocuments(filter),
+      prisma.order.findMany({ where, orderBy, skip, take: limit, include: ORDER_INCLUDE }),
+      prisma.order.count({ where }),
     ]);
 
-    // Enrich with customer name (from Customer) or fallback to User name if orders used User _id
-    const customerIds = Array.from(new Set(orders.map(o => o.customerId?.toString()).filter(Boolean)));
-    const customers = await Customer.find({ _id: { $in: customerIds } }, { name: 1 }).lean<{ _id: mongoose.Types.ObjectId; name?: string }[]>();
-    const knownCustomerIds = new Set(customers.map(c => String(c._id)));
-    const missingIds = customerIds.filter(id => !knownCustomerIds.has(id));
-    const users = missingIds.length > 0
-      ? await User.find({ _id: { $in: missingIds } }, { firstName: 1, lastName: 1 }).lean<{ _id: mongoose.Types.ObjectId; firstName?: string; lastName?: string }[]>()
-      : [];
-
-    const nameMap = new Map<string, string>();
-    for (const c of customers) {
-      nameMap.set(String(c._id), String(c.name || ''));
-    }
-    for (const u of users) {
-      const full = `${u.firstName || ''} ${u.lastName || ''}`.trim();
-      nameMap.set(String(u._id), full || '');
-    }
-
-    const results = orders.map(o => ({ ...o, customerName: nameMap.get(o.customerId?.toString() || '') || '' }));
-
-    return NextResponse.json({ orders: results, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+    return NextResponse.json({
+      orders: orders.map(serializeOrder),
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error('Get orders error:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 });
 
-// POST - Create a new order (regular or recurring) by admin
 const createOrderSchema = z.object({
   customerId: z.string().min(1, 'customerId is required'),
   items: z.array(z.object({
@@ -142,117 +112,56 @@ const createOrderSchema = z.object({
   total: z.number().min(0),
   paymentMethod: z.enum(['card', 'cash', 'bank_transfer', 'digital_wallet']),
   paymentStatus: z.enum(['pending','paid','failed','refunded']).optional().default('pending'),
-  shippingAddress: z.object({
-  name: z.string().optional(),
-  street: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
-  country: z.string().optional(),
-    phone: z.string().optional(),
-  }),
-  billingAddress: z.object({
-  name: z.string().optional(),
-  street: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
-  country: z.string().optional(),
-  }).optional(),
+  shippingAddress: z.record(z.unknown()),
+  billingAddress: z.record(z.unknown()).optional(),
   notes: z.string().max(1000).optional(),
-  // Optional bag metadata
   bagId: z.string().optional(),
   bagName: z.string().optional(),
-
-  // Recurring controls (optional)
   isRecurring: z.boolean().optional().default(false),
   scheduleStatus: z.enum(['active','paused','ended']).optional(),
   nextDeliveryAt: z.string().datetime().optional(),
-  recurrence: z.object({
-    startDate: z.string().datetime().optional(),
-    endDate: z.string().datetime().optional(),
-    daysOfWeek: z.array(z.number().min(0).max(6)).optional(),
-    includeDates: z.array(z.string().datetime()).optional(),
-    excludeDates: z.array(z.string().datetime()).optional(),
-    selectedDates: z.array(z.string().datetime()).optional(),
-    notes: z.string().max(1000).optional(),
-  }).optional(),
+  recurrence: z.record(z.unknown()).optional(),
 });
 
 export const POST = requireAdminSimple(async (request) => {
   try {
-    await connectDB();
     const body = await request.json();
     const data = createOrderSchema.parse(body);
 
-    // Basic customer existence check (optional but helpful)
-    const customer = await Customer.findById(data.customerId).lean();
-    if (!customer) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
-    }
+    const customer = await prisma.user.findUnique({ where: { id: data.customerId } });
+    if (!customer) return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
 
-    // Build order payload
     const orderNumber = `ADM-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const created = await prisma.order.create({
+      data: {
+        orderNumber,
+        customerId: data.customerId,
+        bagId: data.bagId || null,
+        bagName: data.bagName || null,
+        subtotal: data.subtotal,
+        tax: data.tax,
+        shipping: data.shipping,
+        discount: data.discount ?? 0,
+        total: data.total,
+        status: 'pending',
+        paymentMethod: data.paymentMethod,
+        paymentStatus: data.paymentStatus ?? 'pending',
+        shippingAddress: data.shippingAddress as Prisma.InputJsonValue,
+        billingAddress: (data.billingAddress ?? data.shippingAddress) as Prisma.InputJsonValue,
+        notes: data.notes ?? null,
+        isRecurring: data.isRecurring,
+        scheduleStatus: data.isRecurring ? (data.scheduleStatus ?? 'active') : null,
+        nextDeliveryAt: data.nextDeliveryAt ? new Date(data.nextDeliveryAt) : null,
+        recurrence: data.recurrence ? (data.recurrence as Prisma.InputJsonValue) : Prisma.JsonNull,
+        items: { create: data.items },
+      },
+      include: ORDER_INCLUDE,
+    });
 
-    const orderDoc: Record<string, unknown> = {
-      orderNumber,
-      customerId: data.customerId,
-      items: data.items,
-      subtotal: data.subtotal,
-      tax: data.tax,
-      shipping: data.shipping,
-      discount: data.discount ?? 0,
-      total: data.total,
-      status: 'pending',
-      paymentMethod: data.paymentMethod,
-      paymentStatus: data.paymentStatus ?? 'pending',
-      shippingAddress: data.shippingAddress,
-      billingAddress: data.billingAddress ?? data.shippingAddress,
-      notes: data.notes,
-      bagId: data.bagId,
-      bagName: data.bagName,
-    };
+    const serialized = serializeOrder(created);
+    await logAuditAction(request.user!.userId, 'create', 'order', created.id, undefined, serialized, request);
 
-    // Recurring attributes
-    if (data.isRecurring) {
-      orderDoc.isRecurring = true;
-      if (data.scheduleStatus) orderDoc.scheduleStatus = data.scheduleStatus;
-      if (data.nextDeliveryAt) orderDoc.nextDeliveryAt = new Date(data.nextDeliveryAt);
-      if (data.recurrence) {
-        orderDoc.recurrence = {
-          ...data.recurrence,
-          startDate: data.recurrence.startDate ? new Date(data.recurrence.startDate) : undefined,
-          endDate: data.recurrence.endDate ? new Date(data.recurrence.endDate) : undefined,
-          includeDates: data.recurrence.includeDates?.map(d => new Date(d)),
-          excludeDates: data.recurrence.excludeDates?.map(d => new Date(d)),
-          selectedDates: data.recurrence.selectedDates?.map(d => new Date(d)),
-        };
-      }
-    }
-
-    const created = await Order.create(orderDoc);
-
-    const createdDoc = created as unknown as { _id?: unknown; toObject?: () => unknown };
-    const createdId = (() => {
-      const id = createdDoc._id as unknown;
-      if (id && typeof id === 'object' && 'toString' in id) {
-        try { return (id as { toString: () => string }).toString(); } catch { return undefined; }
-      }
-      return undefined;
-    })();
-    const afterPayload = createdDoc.toObject ? createdDoc.toObject() : (created as unknown);
-
-    await logAuditAction(
-      request.user!.userId,
-      'create',
-      'order',
-      createdId,
-      undefined,
-      afterPayload as Record<string, unknown>,
-      request
-    );
-
-    return NextResponse.json({ order: created }, { status: 201 });
+    return NextResponse.json({ order: serialized }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
