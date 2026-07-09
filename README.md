@@ -1,88 +1,87 @@
-# 🥬 Fresh Pick - Premium Grocery Delivery Platform
+# Fresh Pick - Premium Grocery Delivery Platform
 
-**Pick Fresh, Live Easy** — Sri Lanka's premium online grocery delivery service with subscriptions, B2B supply, and diaspora gifting.
+**Pick Fresh, Live Easy** — Sri Lanka's premium online grocery delivery service with subscriptions, supplier operations, and recurring order flows.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://mongodb.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://typescriptlang.org/)
-
----
-
-## 🎯 The Problem We Solve
-
-Getting fresh, quality groceries in Sri Lanka is inconvenient and unreliable. We're building the modern infrastructure for food commerce.
-
-## 💡 Our Unique Approach
-
-| Market Segment | Description | Status |
-|----------------|-------------|--------|
-| **B2C Subscriptions** | Weekly/monthly grocery boxes for families | ✅ Live |
-
+![Next.js](https://img.shields.io/badge/Next.js-App%20Router-black)
+![Postgres](https://img.shields.io/badge/Postgres-Supabase-green)
+![Prisma](https://img.shields.io/badge/ORM-Prisma-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
 ---
 
-## 🚀 Platform Features
+## What this platform does
 
-### Customer Acquisition
-- ✅ **Referral System** — Rs. 200 reward per successful referral
-- ✅ **First Order Discount** — Popup with newsletter signup
-- ✅ **Social Proof** — Live order counter, "X just purchased" notifications
+Fresh Pick is a commerce platform for fresh products, private client ordering, subscriptions, supplier uploads, dashboards, and customer ordering flows.
 
-### Shopping Experience
-- ✅ **Curated Bags** — Pre-built grocery bundles
-- ✅ **Subscriptions** — Weekly, bi-weekly, monthly plans
-- ✅ **Quick Reorder** — One-click repeat from previous orders
-- ✅ **Smart Search** — Autocomplete with recent searches
-- ✅ **Wishlist** — Save items for later
-
-### Reviews & Trust
-- ✅ **Product Reviews** — Star ratings with verified purchase badges
-- ✅ **Low Stock Alerts** — "Only 3 left!" urgency indicators
-- ✅ **Trust Badges** — Freshness guarantee, secure checkout
-
-### Technical Excellence
-- ✅ **PWA Support** — Offline-ready, installable
-- ✅ **SEO Optimized** — Schema markup, sitemaps
-- ✅ **Mobile-First** — Responsive design with bottom navigation
+The current codebase has moved toward a relational backend using **Prisma + Postgres**. Authentication is still handled by the app through **JWT access/refresh tokens stored in HTTP-only cookies**.
 
 ---
 
-## 🛠️ Tech Stack
+## Platform features
 
-```
-Frontend:     Next.js 15, React 18, TypeScript, Tailwind CSS
-Backend:      Next.js API Routes, MongoDB, Mongoose
-Auth:         JWT with HTTP-only cookies, role-based access
-Payments:     Integration-ready (Stripe/PayHere)
-Storage:      Azure Blob Storage
-Analytics:    Google Analytics 4
+### Customer experience
+- Product browsing with category sections and featured product cards
+- Recurring order and subscription flows
+- Private client call-to-action sections
+- Mobile-first storefront UI
+- SEO-friendly Next.js pages
+
+### Commerce and operations
+- Product, category, supplier, order, subscription, wishlist, review, and notification data models
+- Supplier upload support
+- Customer and supplier dashboard work in progress
+- Email verification and password reset email hooks through SendGrid
+
+### Security and auth
+- Password hashing with bcrypt
+- JWT access and refresh tokens
+- Refresh tokens stored as hashed database rows
+- HTTP-only auth cookies
+- Rate-limited auth endpoints
+- Role-based user model
+
+---
+
+## Tech stack
+
+```txt
+Frontend:       Next.js App Router, React, TypeScript, Tailwind CSS
+Backend:        Next.js API Routes
+Database:       Supabase Postgres / PostgreSQL
+ORM:            Prisma
+Auth:           JWT with HTTP-only cookies, bcrypt password hashing
+Email:          SendGrid optional integration
+Storage:        Azure Blob Storage optional integration
+Testing:        Jest
+Deployment:     Netlify-ready Next.js setup
 ```
 
 ---
 
-## 📊 API Endpoints
+## Core API endpoints
 
-### Core Commerce
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/signup` | Register a user and set auth cookies |
+| POST | `/api/auth/signin` | Sign in with email/phone and password |
+| POST | `/api/auth/logout` | Log out current session |
+| GET | `/api/auth/me` | Return current authenticated user |
+
+### Commerce
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/products` | List products with filters |
-| GET | `/api/categories` | Category tree |
-| POST | `/api/bags/reorder` | Quick reorder from past orders |
-| GET/POST | `/api/reviews` | Product reviews & ratings |
-| GET/POST | `/api/referrals` | Referral code management |
+| GET | `/api/categories` | List active categories |
 | GET/POST/PATCH | `/api/subscriptions` | Subscription management |
-
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | User registration |
-| POST | `/api/auth/signin` | Login |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/me` | Current user |
+| GET/POST | `/api/reviews` | Product reviews |
+| GET/POST | `/api/referrals` | Referral management |
 
 ---
 
-## 🚀 Quick Start
+## Quick start
 
 ```bash
 # Clone and install
@@ -92,113 +91,124 @@ npm install
 
 # Configure environment
 cp .env.example .env.local
-# Edit .env.local with your values
+# Edit .env.local with your real values
 
-# Run development server
+# Generate Prisma client
+npx prisma generate
+
+# Run database migrations
+npm run db:migrate
+
+# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## ⚙️ Environment Variables
+## Environment variables
+
+Use `.env.example` as the starting point.
 
 ```bash
 # Database
-MONGODB_URI=mongodb+srv://...
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?schema=public"
 
 # Authentication
-JWT_SECRET=your_32_char_secret_key
-JWT_ACCESS_EXPIRES=15m
-JWT_REFRESH_EXPIRES=30d
+JWT_SECRET="replace-with-a-long-random-secret"
+JWT_ACCESS_EXPIRES="7d"
+JWT_REFRESH_EXPIRES="30d"
 
-# Storage (optional)
-AZURE_STORAGE_CONNECTION_STRING=...
+# App URL
+FRONTEND_URL="http://localhost:3000"
 
-# Analytics (optional)
-NEXT_PUBLIC_GA_ID=G-XXXXXXXX
+# Email, optional
+SENDGRID_API_KEY=""
+SENDGRID_FROM_EMAIL="hello@freshpick.lk"
 
-# Email (optional)
-SENDGRID_API_KEY=SG.xxx
-SENDGRID_FROM_EMAIL=hello@freshpick.lk
+# Storage, optional
+AZURE_STORAGE_CONNECTION_STRING=""
+AZURE_STORAGE_CONTAINER_NAME=""
+
+# Analytics, optional
+NEXT_PUBLIC_GA_ID=""
 ```
 
 ---
 
-## 🏗️ Architecture
+## Database
 
-```
-app/
-├── api/           # API routes
-│   ├── auth/      # Authentication
-│   ├── products/  # Product CRUD
-│   ├── bags/      # Shopping bags & reorder
-│   ├── reviews/   # Product reviews
-│   ├── referrals/ # Referral system
-│   └── subscriptions/
-├── (pages)/       # Frontend routes
-components/
-├── home/          # Homepage sections
-├── products/      # Product cards, ratings
-├── subscriptions/ # Subscription cards
-└── layout/        # Navbar, Footer
-lib/
-├── models/        # Mongoose schemas
-├── auth.ts        # JWT verification
-└── database.ts    # MongoDB connection
-```
+The Prisma schema is stored in `prisma/schema.prisma` and targets PostgreSQL through `DATABASE_URL`.
 
----
+Useful commands:
 
-## 🔒 Security
-
-- Password hashing with bcrypt (12 rounds)
-- JWT with short-lived access tokens (15m)
-- HTTP-only secure cookies
-- Rate limiting on auth endpoints
-- Input validation with Zod
-- Role-based access control
-
----
-
-## 📱 Progressive Web App
-
-Fresh Pick is installable on mobile devices:
-- Offline product browsing
-- Push notification ready
-- Add to home screen prompt
-
----
-
-## 🚢 Deployment
-
-### Netlify (Recommended)
 ```bash
-npm install -g netlify-cli
-netlify login
-netlify deploy --prod --build
+npm run db:migrate       # apply migrations in deployed/stable environments
+npm run db:migrate:dev   # create/apply migrations during development
+npm run db:seed          # seed database data
+npm run db:studio        # open Prisma Studio
 ```
 
-### Environment Setup
-Set all required variables in your deployment platform's environment settings.
+---
+
+## Architecture
+
+```txt
+app/
+├── api/                 # Next.js API routes
+│   ├── auth/            # Signup, signin, logout, current user
+│   ├── products/        # Product APIs
+│   ├── categories/      # Category APIs
+│   ├── subscriptions/   # Subscription APIs
+│   └── referrals/       # Referral APIs
+components/
+├── home/                # Homepage sections
+├── products/            # Product display components
+├── ui/                  # Shared UI primitives
+lib/
+├── services/            # Auth, mail, and domain services
+├── utils/               # Validation, cookies, rate limiting
+├── jwt.ts               # Token signing and verification
+└── prisma.ts            # Prisma client
+prisma/
+└── schema.prisma        # Relational schema
+```
 
 ---
 
-## 📄 License
+## Current product roadmap links
 
-MIT License — © 2024 Fresh Pick
+Open GitHub issues currently track the next platform moves:
 
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
+- Authentication migration planning
+- Supabase/Postgres migration work
+- Customer and supplier dashboard views
+- Mobile application development
+- Wider marketplace / Pola model direction
 
 ---
 
-**Built with ❤️ in Sri Lanka**
+## Deployment
+
+The production build currently runs:
+
+```bash
+npm run build
+npm run start
+```
+
+`npm run build` generates Prisma client code, initializes upload directories, and runs the Next.js build.
+
+---
+
+## Contributing
+
+1. Create a feature branch.
+2. Keep changes small and reviewable.
+3. Run the relevant checks locally.
+4. Open a pull request with a clear summary and test notes.
+
+---
+
+Built in Sri Lanka.
