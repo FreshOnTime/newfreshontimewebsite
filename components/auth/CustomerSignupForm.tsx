@@ -85,7 +85,7 @@ export function CustomerSignupForm() {
     <div className="w-full min-h-screen grid lg:grid-cols-2 bg-white dark:bg-zinc-900">
       {/* Left Side - Visual */}
       <div className="relative hidden lg:block h-full bg-zinc-900 sticky top-0 h-screen">
-        <div className="absolute inset-0 bg-[url('/bgs/landing-page-bg-1.jpg')] bg-cover bg-center opacity-60 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('/bgs/home-hero.jpg')] bg-cover bg-center opacity-60 mix-blend-overlay"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         <div className="relative h-full flex flex-col justify-end p-16 text-white">
           <h2 className="text-5xl font-serif font-bold mb-6">

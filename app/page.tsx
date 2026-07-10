@@ -20,9 +20,11 @@ import TrustBadges from "@/components/home/TrustBadges";
 import prisma from "@/lib/prisma";
 import { serializeProductForUi } from "@/lib/productSerializer";
 
-// Use ISR (Incremental Static Regeneration) for fast loading
-// Revalidate every 60 seconds to keep data fresh
-export const revalidate = 60;
+// Keep the landing page at the CDN. Product changes do not need to force a
+// database-backed render for every visitor, and Netlify can regenerate this
+// page in the background when its cache expires.
+export const dynamic = "force-static";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Fresh Pick | Fresh Products & Recurring Orders - #1 in Sri Lanka",
@@ -108,10 +110,10 @@ async function getHomeData(): Promise<HomeData> {
 }
 
 const promoImages = [
-  "/bannermaterial/1.png",
-  "/bannermaterial/2.png",
-  "/bannermaterial/3.png",
-  "/bannermaterial/4.png",
+  "/bannermaterial/1.jpg",
+  "/bannermaterial/2.jpg",
+  "/bannermaterial/3.jpg",
+  "/bannermaterial/4.jpg",
 ];
 
 export default async function Home() {

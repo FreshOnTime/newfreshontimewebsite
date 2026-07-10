@@ -1,14 +1,12 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 
 export default function BannerGrid() {
   const banners = [
-    { title: "Organic Picks", sub: "Fresh from farm", href: "/categories/produce", image: "/bannermaterial/1.png" },
-    { title: "Weekly Deals", sub: "Curated offers", href: "/deals", image: "/bannermaterial/2.png" },
-    { title: "New Arrivals", sub: "Just In", href: "/products?sort=new", image: "/bannermaterial/3.png" },
-    { title: "Concierge Delivery", sub: "At service", href: "/delivery-info", image: "/bannermaterial/4.png" },
+    { title: "Organic Picks", sub: "Fresh from farm", href: "/categories", image: "/bannermaterial/1.jpg" },
+    { title: "Weekly Deals", sub: "Curated offers", href: "/deals", image: "/bannermaterial/2.jpg" },
+    { title: "New Arrivals", sub: "Just In", href: "/products?sort=new", image: "/bannermaterial/3.jpg" },
+    { title: "Concierge Delivery", sub: "At service", href: "/help", image: "/bannermaterial/4.jpg" },
   ];
 
   return (

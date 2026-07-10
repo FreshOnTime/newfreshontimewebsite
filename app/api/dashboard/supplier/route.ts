@@ -84,7 +84,6 @@ export const GET = requireAuth(
         prisma.message.count({ where: { recipientId: userId, isRead: false } }),
       ]);
 
-      const productIds = products.map((p) => p.id);
       const totalProducts = products.length;
       const activeProducts = products.filter((p) => !p.archived).length;
       const lowStock = products.filter((p) => !p.archived && p.stockQty <= p.minStockLevel);
@@ -99,29 +98,25 @@ export const GET = requireAuth(
       }));
 
       // Demand for this supplier's products (matching line items only).
-      let orders = 0;
-      let unitsSold = 0;
-      let revenue = 0;
-      if (productIds.length > 0) {
-        const [orderCount, lineAgg] = await Promise.all([
-          prisma.order.count({
-            where: {
-              status: { notIn: [...NON_BILLABLE_STATUSES] },
-              items: { some: { productId: { in: productIds } } },
-            },
-          }),
-          prisma.orderItem.aggregate({
-            where: {
-              productId: { in: productIds },
-              order: { status: { notIn: [...NON_BILLABLE_STATUSES] } },
-            },
-            _sum: { qty: true, total: true },
-          }),
-        ]);
-        orders = orderCount;
-        unitsSold = lineAgg._sum.qty || 0;
-        revenue = Number(lineAgg._sum.total || 0);
-      }
+      // Filter through the Product relation instead of constructing an
+      // ever-growing `IN (...)` list from the supplier's entire catalog.
+      const [orders, lineAgg] = await Promise.all([
+        prisma.order.count({
+          where: {
+            status: { notIn: [...NON_BILLABLE_STATUSES] },
+            items: { some: { product: { supplierId } } },
+          },
+        }),
+        prisma.orderItem.aggregate({
+          where: {
+            product: { supplierId },
+            order: { status: { notIn: [...NON_BILLABLE_STATUSES] } },
+          },
+          _sum: { qty: true, total: true },
+        }),
+      ]);
+      const unitsSold = lineAgg._sum.qty || 0;
+      const revenue = Number(lineAgg._sum.total || 0);
 
       const recentUploads = uploads.map((u) => ({
         _id: u.id,

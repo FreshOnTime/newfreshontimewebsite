@@ -162,7 +162,7 @@ export default function PhoneAuthPage() {
     <PageContainer className="min-h-screen flex items-center justify-center py-12">
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/bgs/landing-page-bg-1.jpg"
+          src="/bgs/home-hero.jpg"
           alt="Fresh vegetables background"
           fill
           className="object-cover"

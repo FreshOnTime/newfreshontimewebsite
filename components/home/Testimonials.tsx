@@ -8,21 +8,21 @@ const testimonials = [
     role: "Colombo 07",
     quote:
       "Easily the freshest produce I've found online. The spinach was crisp and the mangoes were perfect!",
-    avatar: "/bgs/landing-page-bg-1.jpg",
+    avatar: "/bgs/home-hero.jpg",
   },
   {
     name: "Ravin M.",
     role: "Battaramulla",
     quote:
       "Delivery was right on time and the quality is consistently top‑notch. My go‑to for weekly groceries.",
-    avatar: "/bgs/landing-page-bg-1.jpg",
+    avatar: "/bgs/home-hero.jpg",
   },
   {
     name: "Ishara D.",
     role: "Dehiwala",
     quote:
       "Love the curated bags—great value and everything tastes amazing. Highly recommend!",
-    avatar: "/bgs/landing-page-bg-1.jpg",
+    avatar: "/bgs/home-hero.jpg",
   },
 ];
 

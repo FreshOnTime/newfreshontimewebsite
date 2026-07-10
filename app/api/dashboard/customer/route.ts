@@ -23,7 +23,31 @@ export const GET = requireAuth(
 
       const now = new Date();
 
-      const [orders, subscriptions, wishlistCount, savedBags] = await Promise.all([
+      // Keep each query bounded. The previous implementation loaded every order
+      // for a customer just to calculate counts and sums, which gets slower as
+      // an account ages.
+      const [
+        totalOrders,
+        totalSpentAggregate,
+        openOrders,
+        activeSubscriptions,
+        wishlistCount,
+        savedBags,
+        recentOrders,
+        upcomingSubscriptions,
+        upcomingOrders,
+      ] = await Promise.all([
+        prisma.order.count({ where: { customerId } }),
+        prisma.order.aggregate({
+          where: { customerId, status: { notIn: [...NON_BILLABLE_STATUSES] } },
+          _sum: { total: true },
+        }),
+        prisma.order.count({
+          where: { customerId, status: { in: [...OPEN_ORDER_STATUSES] } },
+        }),
+        prisma.subscription.count({ where: { userId: customerId, status: 'active' } }),
+        prisma.wishlistItem.count({ where: { userId: customerId } }),
+        prisma.bag.count({ where: { userId: customerId, isActive: true } }),
         prisma.order.findMany({
           where: { customerId },
           select: {
@@ -38,26 +62,33 @@ export const GET = requireAuth(
             _count: { select: { items: true } },
           },
           orderBy: { createdAt: 'desc' },
+          take: 5,
         }),
         prisma.subscription.findMany({
-          where: { userId: customerId },
+          where: {
+            userId: customerId,
+            status: 'active',
+            nextDeliveryDate: { gte: now },
+          },
           select: { status: true, nextDeliveryDate: true, plan: { select: { name: true } } },
+          orderBy: { nextDeliveryDate: 'asc' },
+          take: 5,
         }),
-        prisma.wishlistItem.count({ where: { userId: customerId } }),
-        prisma.bag.count({ where: { userId: customerId, isActive: true } }),
+        prisma.order.findMany({
+          where: {
+            customerId,
+            nextDeliveryAt: { gte: now },
+            OR: [{ scheduleStatus: { not: 'ended' } }, { scheduleStatus: null }],
+          },
+          select: { orderNumber: true, nextDeliveryAt: true },
+          orderBy: { nextDeliveryAt: 'asc' },
+          take: 5,
+        }),
       ]);
 
-      const totalOrders = orders.length;
-      const totalSpent = orders
-        .filter((o) => !NON_BILLABLE_STATUSES.includes(o.status as (typeof NON_BILLABLE_STATUSES)[number]))
-        .reduce((sum, o) => sum + Number(o.total), 0);
-      const openOrders = orders.filter((o) =>
-        OPEN_ORDER_STATUSES.includes(o.status as (typeof OPEN_ORDER_STATUSES)[number])
-      ).length;
+      const totalSpent = Number(totalSpentAggregate._sum.total ?? 0);
 
-      const activeSubscriptions = subscriptions.filter((s) => s.status === 'active').length;
-
-      const recentOrders = orders.slice(0, 5).map((o) => ({
+      const recentOrderData = recentOrders.map((o) => ({
         _id: o.id,
         orderNumber: o.orderNumber,
         status: o.status,
@@ -70,13 +101,13 @@ export const GET = requireAuth(
       type Upcoming = { type: 'order' | 'subscription'; label: string; date: string };
       const upcoming: Upcoming[] = [];
 
-      for (const o of orders) {
-        if (o.nextDeliveryAt && o.nextDeliveryAt >= now && o.scheduleStatus !== 'ended') {
+      for (const o of upcomingOrders) {
+        if (o.nextDeliveryAt) {
           upcoming.push({ type: 'order', label: `Recurring order ${o.orderNumber}`, date: o.nextDeliveryAt.toISOString() });
         }
       }
-      for (const s of subscriptions) {
-        if (s.status === 'active' && s.nextDeliveryDate && s.nextDeliveryDate >= now) {
+      for (const s of upcomingSubscriptions) {
+        if (s.nextDeliveryDate) {
           upcoming.push({
             type: 'subscription',
             label: s.plan?.name ? `${s.plan.name} subscription` : 'Subscription delivery',
@@ -97,7 +128,7 @@ export const GET = requireAuth(
             wishlistCount,
             savedBags,
           },
-          recentOrders,
+          recentOrders: recentOrderData,
           upcomingDeliveries: upcoming.slice(0, 5),
         },
       });

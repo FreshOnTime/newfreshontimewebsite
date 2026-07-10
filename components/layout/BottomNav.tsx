@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Grid3X3, ShoppingBag, User } from "lucide-react";
+import { House, Search, LayoutGrid, ShoppingBag, CircleUserRound } from "lucide-react";
 import { useBag } from "@/contexts/BagContext";
 
 const navItems = [
-    { href: "/", icon: Home, label: "Home" },
+    { href: "/", icon: House, label: "Home" },
     { href: "/search", icon: Search, label: "Search" },
-    { href: "/categories", icon: Grid3X3, label: "Categories" },
+    { href: "/categories", icon: LayoutGrid, label: "Categories" },
     { href: "/bags", icon: ShoppingBag, label: "Cart", showBadge: true },
-    { href: "/profile", icon: User, label: "Profile" },
+    { href: "/profile", icon: CircleUserRound, label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -26,8 +26,11 @@ export default function BottomNav() {
     }
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-zinc-200 md:hidden safe-area-bottom">
-            <div className="flex items-center justify-around h-16">
+        <nav
+            aria-label="Mobile navigation"
+            className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(24,24,27,0.08)] backdrop-blur-xl md:hidden"
+        >
+            <div className="mx-auto grid h-[4.5rem] max-w-lg grid-cols-5 items-center px-2">
                 {navItems.map(({ href, icon: Icon, label, showBadge }) => {
                     const isActive = pathname === href ||
                         (href !== "/" && pathname.startsWith(href));
@@ -36,25 +39,30 @@ export default function BottomNav() {
                         <Link
                             key={href}
                             href={href}
-                            className={`flex flex-col items-center justify-center w-full h-full px-2 relative transition-colors ${isActive
-                                ? "text-emerald-900"
-                                : "text-zinc-400 hover:text-zinc-600"
+                            aria-current={isActive ? "page" : undefined}
+                            className={`group relative flex h-full min-w-0 flex-col items-center justify-center gap-1 px-1 transition-colors ${isActive
+                                ? "text-emerald-800"
+                                : "text-zinc-400 hover:text-zinc-700"
                                 }`}
                         >
-                            <div className="relative">
+                            <div
+                                className={`relative flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-200 ${isActive
+                                    ? "bg-emerald-50 shadow-sm ring-1 ring-emerald-100"
+                                    : "group-hover:bg-zinc-100"
+                                    }`}
+                            >
                                 <Icon
-                                    className="w-7 h-7 transition-all duration-200"
-                                    strokeWidth={isActive ? 2 : 1.5}
-                                    fill={isActive ? "currentColor" : "none"}
+                                    className="h-5 w-5 transition-transform duration-200 group-active:scale-90"
+                                    strokeWidth={isActive ? 2.2 : 1.8}
                                 />
                                 {showBadge && itemCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white">
+                                    <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-emerald-600 px-1 text-[10px] font-bold text-white shadow-sm">
                                         {itemCount > 99 ? "99+" : itemCount}
                                     </span>
                                 )}
                             </div>
                             <span
-                                className={`text-[10px] mt-1 tracking-wide ${isActive ? "font-semibold" : "font-medium"
+                                className={`max-w-full truncate text-[10px] tracking-wide ${isActive ? "font-semibold" : "font-medium"
                                     }`}
                             >
                                 {label}

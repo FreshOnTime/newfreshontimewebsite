@@ -1,163 +1,115 @@
-"use client";
-
-import React, { useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { HeartHandshake, PackageCheck, Sprout } from "lucide-react";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Product } from "@/models/product";
 
 interface HomemadeContentProps {
-    products: Product[];
+  products: Product[];
 }
+
+const values = [
+  {
+    title: "Made in Small Batches",
+    description: "Thoughtful, limited-run products made with the attention and character of a home kitchen.",
+    icon: PackageCheck,
+  },
+  {
+    title: "Directly Supporting Makers",
+    description: "Every order helps independent Sri Lankan food makers grow their craft and their businesses.",
+    icon: HeartHandshake,
+  },
+  {
+    title: "Rooted in Local Ingredients",
+    description: "Familiar ingredients, honest methods, and flavours that belong at your table.",
+    icon: Sprout,
+  },
+];
 
 export default function HomemadeContent({ products }: HomemadeContentProps) {
-    return (
-        <div className="relative bg-zinc-900 text-zinc-100 selection:bg-amber-900 selection:text-amber-100 overflow-clip">
-            {/* Cinematic Grain Overlay */}
-            <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.03] mix-blend-overlay">
-                <svg className="h-full w-full">
-                    <filter id="noise">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-                    </filter>
-                    <rect width="100%" height="100%" filter="url(#noise)" />
-                </svg>
-            </div>
-
-            {/* Hero Section */}
-            <HeroSection />
-
-            {/* Philosophy/Intro Section */}
-            <PhilosophySection />
-
-            {/* Products Section */}
-            <ProductDisplaySection products={products} />
+  return (
+    <div className="min-h-screen bg-transparent text-zinc-900">
+      <section className="relative flex h-[80vh] items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/bgs/home-hero.jpg"
+            alt="Fresh local produce for homemade favourites"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-white/10" />
         </div>
-    );
-}
 
-// --- Sections ---
+        <div className="container relative z-10 mx-auto max-w-5xl px-4 pt-20 text-center text-white">
+          <span className="mb-6 inline-block rounded-full border border-white/30 px-6 py-3 text-xs font-bold uppercase tracking-[0.3em] text-white/90 backdrop-blur-sm">
+            The Artisan Collection
+          </span>
+          <h1 className="mb-8 font-serif text-6xl leading-[0.9] tracking-tight text-white drop-shadow-2xl md:text-8xl lg:text-9xl">
+            Homemade <br />
+            <span className="italic text-emerald-100">&amp; Handcrafted</span>
+          </h1>
+          <p className="mx-auto max-w-2xl text-xl font-light leading-relaxed text-zinc-100 drop-shadow-md md:text-2xl">
+            Small-batch favourites from local makers, chosen for the care, flavour, and stories behind every product.
+          </p>
+        </div>
 
-function HeroSection() {
-    const ref = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: ref,
-        offset: ["start start", "end start"],
-    });
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce opacity-80">
+          <div className="h-16 w-px bg-gradient-to-b from-transparent via-white to-transparent" />
+        </div>
+      </section>
 
-    const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-    const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
-    return (
-        <section ref={ref} className="relative h-[85vh] flex items-center justify-center overflow-hidden z-10 bg-zinc-950">
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
-                <motion.div style={{ y, opacity }} className="absolute inset-0">
-                    <Image
-                        src="https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=2670&auto=format&fit=crop"
-                        alt="Handcrafted Background"
-                        fill
-                        className="object-cover opacity-60 grayscale-[0.8]"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/20 to-zinc-950" />
-                </motion.div>
+      <section className="relative bg-zinc-50 py-24">
+        <div className="container relative z-20 mx-auto max-w-[1400px] px-4">
+          <div className="-mt-32 rounded-2xl bg-white p-6 shadow-xl md:p-10">
+            <div className="mb-10 flex flex-col gap-4 border-b border-zinc-100 pb-8 md:flex-row md:items-end md:justify-between">
+              <div>
+                <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-600">The Collection</span>
+                <h2 className="font-serif text-4xl text-zinc-900 md:text-5xl">Made with care</h2>
+              </div>
+              <span className="text-sm font-light text-zinc-500">
+                {products.length} {products.length === 1 ? "artisan product" : "artisan products"} available
+              </span>
             </div>
 
-            {/* Content */}
-            <div className="container mx-auto px-4 relative z-10 h-full flex flex-col justify-center items-center text-center">
-                <div className="space-y-10 max-w-5xl">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="inline-block"
-                    >
-                        <span className="inline-flex items-center gap-3 border-y border-amber-500/30 py-3 px-6 text-amber-500 text-xs md:text-sm tracking-[0.4em] uppercase font-bold">
-                            Curated Excellence
-                        </span>
-                    </motion.div>
+            {products.length > 0 ? (
+              <ProductGrid
+                products={products}
+                className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5"
+              />
+            ) : (
+              <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50 px-6 text-center">
+                <p className="mb-3 font-serif text-2xl text-zinc-900">The collection is coming together</p>
+                <p className="max-w-md font-light leading-relaxed text-zinc-500">
+                  We are selecting the next set of homemade favourites. Please check back soon.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
-                    <motion.h1
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1.2, ease: "circOut", delay: 0.2 }}
-                        className="font-serif text-6xl md:text-8xl tracking-tight text-white leading-[0.9]"
-                    >
-                        Homemade & <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 italic pr-2">Handcrafted.</span>
-                    </motion.h1>
+      <section className="bg-white py-32">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="mb-20 text-center">
+            <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-600">Our Promise</span>
+            <h2 className="font-serif text-5xl text-zinc-900 md:text-6xl">The Homemade Standard</h2>
+          </div>
 
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.6 }}
-                        className="text-lg md:text-2xl font-light text-zinc-300 max-w-3xl mx-auto leading-relaxed"
-                    >
-                        A tribute to the artisans. Discover a curated collection of premium domestic produce from small entrepreneurs, where every item tells a story of passion.
-                    </motion.p>
+          <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+            {values.map(({ title, description, icon: Icon }) => (
+              <article key={title} className="group rounded-2xl border border-zinc-100 bg-zinc-50 p-8 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-xl md:p-10">
+                <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                  <Icon className="h-5 w-5" />
                 </div>
-            </div>
-        </section>
-    );
-}
-
-function PhilosophySection() {
-    return (
-        <section className="relative z-20 py-24 container mx-auto px-4 border-t border-white/5">
-            <div className="max-w-7xl mx-auto">
-                <div className="grid md:grid-cols-3 gap-12 text-center md:text-left">
-                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
-                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Authentic Origins</h3>
-                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
-                            Sourced directly from home kitchens. No factories. No assembly lines. Just pure, unadulterated craft.
-                        </p>
-                    </div>
-                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
-                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Small Batch</h3>
-                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
-                            Limited quantities ensure meticulous attention to detail. When it's gone, it's gone until the next harvest.
-                        </p>
-                    </div>
-                    <div className="space-y-4 p-8 bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition-colors duration-500 group">
-                        <h3 className="text-lg font-bold tracking-widest uppercase text-white group-hover:text-amber-400 transition-colors">Community First</h3>
-                        <p className="text-zinc-500 font-light leading-relaxed group-hover:text-zinc-400 transition-colors">
-                            Every purchase directly supports a local entrepreneur, fueling the domestic economy from the ground up.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-}
-
-function ProductDisplaySection({ products }: { products: Product[] }) {
-    return (
-        <section className="relative bg-zinc-950 z-20 py-32 min-h-[50vh]">
-            <div className="container mx-auto px-4">
-                <div className="flex items-end justify-between mb-20 border-b border-white/10 pb-8">
-                    <div>
-                        <span className="text-amber-500 text-xs font-bold tracking-[0.3em] uppercase mb-4 block">The Collection</span>
-                        <h2 className="text-4xl md:text-5xl font-serif text-white">
-                            Limited Releases
-                        </h2>
-                    </div>
-                    <span className="hidden md:block text-sm text-zinc-500 font-medium tracking-widest uppercase pb-2">
-                        {products.length} {products.length === 1 ? 'Masterpiece' : 'Masterpieces'} Available
-                    </span>
-                </div>
-
-                <ProductGrid products={products} />
-
-                {products.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-32 bg-white/5 border border-white/5 border-dashed">
-                        <div className="w-16 h-16 mb-6 rounded-full bg-white/5 flex items-center justify-center">
-                            <span className="text-2xl">✨</span>
-                        </div>
-                        <p className="text-2xl text-zinc-300 font-serif mb-3">Curating Excellence...</p>
-                        <p className="text-zinc-500 font-light max-w-md text-center">We are currently selecting the finest homemade products for you. Check back soon for our latest drops.</p>
-                    </div>
-                )}
-            </div>
-        </section>
-    );
+                <h3 className="mb-3 font-serif text-2xl text-zinc-900">{title}</h3>
+                <p className="font-light leading-relaxed text-zinc-500">{description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

@@ -76,22 +76,14 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
                     onTouchEnd={handleTouchEnd}
                 >
                     <div className="w-full h-48 sm:h-64 md:h-[28rem] lg:h-[32rem] relative">
-                        {images.map((src, i) => (
-                            <div
-                                key={src}
-                                className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-                                    }`}
-                            >
-                                <Image
-                                    src={src}
-                                    alt={`Promo ${i + 1}`}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, 90vw"
-                                    className="object-cover"
-                                    priority={i === 0}
-                                />
-                            </div>
-                        ))}
+                        <Image
+                            key={images[currentIndex]}
+                            src={images[currentIndex]}
+                            alt={`Promo ${currentIndex + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 90vw"
+                            className="object-cover transition-opacity duration-700"
+                        />
                     </div>
 
                     {/* Controls */}

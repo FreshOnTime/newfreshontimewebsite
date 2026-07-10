@@ -4,6 +4,10 @@ import { Product } from "@/models/product";
 import prisma from '@/lib/prisma';
 import { serializeProductForUi } from '@/lib/productSerializer';
 
+// Match the subscription collection's cache behaviour: curated inventory does
+// not need a database-backed page render for each visitor.
+export const revalidate = 300;
+
 // --- Super Best SEO Configuration ---
 export const metadata: Metadata = {
     title: "Premium Homemade Products in Sri Lanka | Domestic Produce | Fresh Pick",
@@ -48,17 +52,19 @@ export const metadata: Metadata = {
 // Reusing logic to fetch products
 async function getDomesticProducts(): Promise<Product[]> {
     try {
-        const cat = await prisma.category.findFirst({
+        const categories = await prisma.category.findMany({
             where: { slug: { in: ['domestic-produce', 'homemade', 'small-business'] } },
             orderBy: { sortOrder: 'asc' },
+            select: { id: true },
         });
 
-        if (!cat) return [];
+        if (categories.length === 0) return [];
 
         const raw = await prisma.product.findMany({
-            where: { categoryId: cat.id, archived: false },
+            where: { categoryId: { in: categories.map((category) => category.id) }, archived: false },
             orderBy: { createdAt: 'desc' },
             include: { category: { select: { name: true, slug: true } } },
+            take: 48,
         });
 
         return raw.map((p) => serializeProductForUi(p) as Product);

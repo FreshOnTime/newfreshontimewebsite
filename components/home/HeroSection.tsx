@@ -7,7 +7,7 @@ export default function HeroSection() {
         <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950">
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="/bgs/landing-page-bg-1.jpg"
+                    src="/bgs/home-hero.jpg"
                     alt="Fresh vegetables and groceries delivered in Colombo"
                     fill
                     sizes="100vw"
