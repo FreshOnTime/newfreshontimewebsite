@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
 interface AnimatedSectionProps {
@@ -10,20 +7,14 @@ interface AnimatedSectionProps {
 }
 
 export function AnimatedSection({
-    children,
-    className = "",
-    delay = 0,
+  children,
+  className = "",
+  delay: _delay = 0,
 }: AnimatedSectionProps) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay }}
-            className={className}
-        >
-            {children}
-        </motion.div>
+  return (
+    <div className={className}>
+      {children}
+    </div>
     );
 }
 
@@ -33,19 +24,13 @@ interface AnimatedProductGridProps {
 }
 
 export function AnimatedProductGrid({
-    children,
-    className = "",
+  children,
+  className = "",
 }: AnimatedProductGridProps) {
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.4 }}
-            className={className}
-        >
-            {children}
-        </motion.div>
+  return (
+    <div className={className}>
+      {children}
+    </div>
     );
 }
 
@@ -55,17 +40,12 @@ interface AnimatedProductItemProps {
 }
 
 export function AnimatedProductItem({
-    children,
-    index,
+  children,
+  index: _index,
 }: AnimatedProductItemProps) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5, delay: index * 0.05 }}
-        >
-            {children}
-        </motion.div>
-    );
+  return (
+    <div>
+      {children}
+    </div>
+  );
 }

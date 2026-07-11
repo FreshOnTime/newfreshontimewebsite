@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { sendOrderEmail } from '@/lib/services/mailService';
+import { RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
 const ORDER_INCLUDE = {
   items: {
@@ -99,6 +100,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       includeDates?: string[];
       excludeDates?: string[];
       selectedDates?: string[];
+      rruleString?: string;
       notes?: string;
     } | undefined;
     const hasRecurrenceSignals = Boolean(
@@ -158,30 +160,38 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 11).toUpperCase()}`;
     const pm = paymentMethod === 'cash_on_delivery' ? 'cash' : (paymentMethod || 'cash');
 
-    // Compute nextDeliveryAt if recurring.
+    // A checkout creates the first real order now, plus a separate recurring
+    // template for future deliveries. Keeping them separate prevents the cron
+    // processor from creating a duplicate for the first booked delivery.
+    let firstRecurringDelivery: Date | undefined;
     let nextDeliveryAt: Date | undefined;
-    if (isRecurring && recurrence) {
-      const now = new Date();
-      const start = recurrence.startDate ? new Date(recurrence.startDate) : now;
-      const days = Array.isArray(recurrence.daysOfWeek) ? recurrence.daysOfWeek.filter((d): d is number => typeof d === 'number') : [];
-      const includes = Array.isArray(recurrence.includeDates) ? recurrence.includeDates.map((d) => new Date(d)) : [];
-      const excludesKey = new Set((Array.isArray(recurrence.excludeDates) ? recurrence.excludeDates : []).map((d) => new Date(d).toDateString()));
-      const selected = Array.isArray(recurrence.selectedDates) ? recurrence.selectedDates.map((d) => new Date(d)) : [];
-      const candidates: Date[] = [];
-      for (const d of [...selected, ...includes]) {
-        if (d >= start && !excludesKey.has(d.toDateString())) candidates.push(d);
+    if (isRecurring) {
+      if (!recurrence) {
+        return NextResponse.json({ error: 'A recurrence pattern is required' }, { status: 400 });
       }
-      if (!candidates.length && days.length) {
-        for (let i = 0; i < 28; i++) {
-          const d = new Date(start);
-          d.setDate(d.getDate() + i);
-          if (days.includes(d.getDay()) && !excludesKey.has(d.toDateString())) {
-            candidates.push(d);
-            break;
-          }
-        }
+      const recurrenceForCalculation = {
+        ...recurrence,
+        startDate: recurrence.startDate ? new Date(recurrence.startDate) : undefined,
+        endDate: recurrence.endDate ? new Date(recurrence.endDate) : undefined,
+        includeDates: recurrence.includeDates?.map((date) => new Date(date)),
+        excludeDates: recurrence.excludeDates?.map((date) => new Date(date)),
+        selectedDates: recurrence.selectedDates?.map((date) => new Date(date)),
+      };
+      const validation = RecurringOrderService.validateRecurrencePattern(recurrenceForCalculation);
+      if (!validation.valid) {
+        return NextResponse.json({ error: 'Invalid recurrence pattern', details: validation.errors }, { status: 400 });
       }
-      nextDeliveryAt = candidates.sort((a, b) => +a - +b)[0];
+      const pattern = { recurrence: recurrenceForCalculation } as RecurringOrderPattern;
+      const firstDelivery = RecurringOrderService.calculateNextDelivery(pattern, new Date());
+      if (!firstDelivery) {
+        return NextResponse.json({ error: 'A recurring order must contain at least two future delivery dates' }, { status: 400 });
+      }
+      const followingDelivery = RecurringOrderService.calculateNextDelivery(pattern, firstDelivery);
+      if (!followingDelivery) {
+        return NextResponse.json({ error: 'A recurring order must contain at least two future delivery dates' }, { status: 400 });
+      }
+      firstRecurringDelivery = firstDelivery;
+      nextDeliveryAt = followingDelivery;
     }
 
     // Resolve shipping address: explicit -> user's registration address.
@@ -220,7 +230,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         }
       }
 
-      return tx.order.create({
+      const initialOrder = await tx.order.create({
         data: {
           orderNumber,
           customerId,
@@ -234,21 +244,48 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
           paymentMethod: pm,
           shippingAddress: resolvedShipping as Prisma.InputJsonValue,
           notes: notes || null,
-          isRecurring,
-          recurrence: isRecurring && recurrence ? (recurrence as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
-          nextDeliveryAt: nextDeliveryAt || null,
-          scheduleStatus: isRecurring ? 'active' : null,
+          estimatedDelivery: firstRecurringDelivery || null,
+          isRecurring: false,
+          recurrence: Prisma.JsonNull,
+          nextDeliveryAt: null,
+          scheduleStatus: null,
           items: { create: validatedItems },
         },
         include: ORDER_INCLUDE,
       });
+
+      if (!isRecurring || !recurrence || !nextDeliveryAt) return { initialOrder, recurringSchedule: null };
+
+      const recurringSchedule = await tx.order.create({
+        data: {
+          orderNumber: `REC-${Date.now()}-${Math.random().toString(36).slice(2, 11).toUpperCase()}`,
+          customerId,
+          bagId: bagId || null,
+          bagName: bagName || null,
+          subtotal,
+          tax,
+          shipping,
+          discount: discountAmount,
+          total,
+          status: 'confirmed',
+          paymentMethod: pm,
+          shippingAddress: resolvedShipping as Prisma.InputJsonValue,
+          notes: notes || null,
+          isRecurring: true,
+          recurrence: recurrence as unknown as Prisma.InputJsonValue,
+          nextDeliveryAt,
+          scheduleStatus: 'active',
+          items: { create: validatedItems },
+        },
+      });
+      return { initialOrder, recurringSchedule };
     });
 
     // Send order confirmation email (non-blocking).
     try {
       const customerEmail = userDoc?.email || userDoc?.phoneNumber || null;
       if (customerEmail) {
-        sendOrderEmail(customerEmail, { _id: String(created.id), total: Number(created.total) }).catch((e) =>
+        sendOrderEmail(customerEmail, { _id: String(created.initialOrder.id), total: Number(created.initialOrder.total) }).catch((e) =>
           console.error('sendOrderEmail error', e)
         );
       }
@@ -256,7 +293,11 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       console.error('Order email error:', e);
     }
 
-    return NextResponse.json({ success: true, data: serializeOrder(created) }, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      data: serializeOrder(created.initialOrder),
+      recurringScheduleId: created.recurringSchedule?.id,
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.startsWith('INSUFFICIENT_STOCK:')) {
       return NextResponse.json(

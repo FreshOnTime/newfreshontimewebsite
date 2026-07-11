@@ -33,17 +33,45 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBag } from "@/contexts/BagContext";
-import { useLocalStorageCache, CACHE_TTL } from "@/lib/hooks/useLocalStorageCache";
 
 interface NavCategory {
   name: string;
   slug: string;
 }
 
+const NAV_CATEGORIES_CACHE_KEY = "freshpick_nav_categories_v1";
+const NAV_CATEGORIES_CACHE_TTL = 60 * 60 * 1000;
+
+function readCachedCategories(): NavCategory[] | null {
+  try {
+    const raw = localStorage.getItem(NAV_CATEGORIES_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as { timestamp?: unknown; categories?: unknown };
+    if (
+      typeof cached.timestamp !== "number" ||
+      Date.now() - cached.timestamp > NAV_CATEGORIES_CACHE_TTL ||
+      !Array.isArray(cached.categories)
+    ) {
+      localStorage.removeItem(NAV_CATEGORIES_CACHE_KEY);
+      return null;
+    }
+    return cached.categories.filter(
+      (category): category is NavCategory =>
+        Boolean(category) &&
+        typeof category.name === "string" &&
+        typeof category.slug === "string"
+    );
+  } catch {
+    return null;
+  }
+}
+
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [navCategories, setNavCategories] = useState<NavCategory[]>([]);
+  const [hasRequestedCategories, setHasRequestedCategories] = useState(false);
   const { user, logout } = useAuth();
   const { bags } = useBag();
   const bagCount = bags?.length || 0;
@@ -59,14 +87,25 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const { data: navCategories } = useLocalStorageCache<NavCategory[]>(
-    "navbar_categories",
-    async () => {
+  // The collection menu is hidden until a visitor opens it. Fetching its data
+  // on every landing-page visit was competing with the hero image and auth
+  // requests, even though most visitors never use this menu.
+  const loadCategories = async () => {
+    if (hasRequestedCategories) return;
+    setHasRequestedCategories(true);
+
+    const cached = readCachedCategories();
+    if (cached) {
+      setNavCategories(cached);
+      return;
+    }
+
+    try {
       const res = await fetch("/api/categories");
-      if (!res.ok) return [];
+      if (!res.ok) return;
       const json = await res.json();
       const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
-      return items
+      const categories = items
         .map((c) => {
           if (typeof c === "object" && c && "name" in c && "slug" in c) {
             const cc = c as { name?: unknown; slug?: unknown };
@@ -78,9 +117,15 @@ export function Navbar() {
           return { name: "", slug: "" };
         })
         .filter((c) => Boolean(c.name) && Boolean(c.slug));
-    },
-    { ttl: CACHE_TTL.LONG, initialFetch: "idle" }
-  );
+      setNavCategories(categories);
+      localStorage.setItem(
+        NAV_CATEGORIES_CACHE_KEY,
+        JSON.stringify({ timestamp: Date.now(), categories })
+      );
+    } catch {
+      // A navigation menu failure should never affect the page itself.
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +187,11 @@ export function Navbar() {
                     Homemade
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
-                  <div className="relative group">
+                  <div
+                    className="relative group"
+                    onMouseEnter={loadCategories}
+                    onFocus={loadCategories}
+                  >
                     <button className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                       Collections
                       <ChevronDown className="w-3 h-3 opacity-50" />

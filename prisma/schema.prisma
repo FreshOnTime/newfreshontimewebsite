@@ -94,6 +94,14 @@ enum SubscriptionStatus {
   pending
 }
 
+enum SubscriptionDeliveryStatus {
+  pending
+  confirmed
+  delivered
+  cancelled
+  skipped
+}
+
 enum SubscriptionPaymentMethod {
   cod
   card
@@ -347,6 +355,9 @@ model Order {
   notes             String?
 
   isRecurring    Boolean         @default(false)
+  recurringSourceOrderId String?
+  recurringSourceOrder   Order?   @relation("RecurringOrderInstances", fields: [recurringSourceOrderId], references: [id], onDelete: SetNull)
+  recurringInstances     Order[]  @relation("RecurringOrderInstances")
   recurrence     Json?
   nextDeliveryAt DateTime?
   scheduleStatus ScheduleStatus?
@@ -359,6 +370,7 @@ model Order {
   @@index([paymentStatus])
   @@index([createdAt])
   @@index([isRecurring, scheduleStatus, nextDeliveryAt])
+  @@index([recurringSourceOrderId])
   @@map("orders")
 }
 
@@ -482,6 +494,7 @@ model Subscription {
   skippedDates      DateTime[] @default([])
   excludeItems      String[]   @default([])
   preferences       String?
+  deliveries        SubscriptionDelivery[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -491,6 +504,28 @@ model Subscription {
   @@index([status])
   @@index([nextDeliveryDate])
   @@map("subscriptions")
+}
+
+model SubscriptionDelivery {
+  id               String                     @id @default(uuid())
+  subscriptionId   String
+  subscription     Subscription               @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  scheduledFor     DateTime
+  status           SubscriptionDeliveryStatus @default(pending)
+  planName         String
+  price            Decimal                    @db.Decimal(12, 2)
+  contentsSnapshot Json
+  deliveryAddress  Json
+  deliverySlotDay  String
+  deliverySlotTime String
+  deliveredAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subscriptionId, scheduledFor])
+  @@index([status, scheduledFor])
+  @@map("subscription_deliveries")
 }
 
 // ----------------------------------------------------------------------------

@@ -1,8 +1,5 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 interface Category {
@@ -50,13 +47,9 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                     else gridClass = "md:col-span-1 md:row-span-1";
 
                     return (
-                        <motion.div
+                        <div
                             key={category.slug}
                             className={`relative group overflow-hidden ${gridClass} cursor-pointer bg-zinc-100`}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 0.8, delay: index * 0.1 }}
                         >
                             <Link href={`/categories/${category.slug}`} className="block h-full w-full">
                                 <div className="absolute inset-0 bg-zinc-200">
@@ -84,7 +77,7 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                                     </p>
                                 </div>
                             </Link>
-                        </motion.div>
+                        </div>
                     );
                 })}
             </div>

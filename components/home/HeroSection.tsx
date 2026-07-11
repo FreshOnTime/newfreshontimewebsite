@@ -14,6 +14,10 @@ export default function HeroSection() {
                     className="object-cover opacity-55 scale-105 animate-subtle-zoom"
                     priority
                     fetchPriority="high"
+                    // The source image is already a small, production-ready JPG.
+                    // Serving it directly avoids a cold Next image-optimization
+                    // function before the above-the-fold content can paint.
+                    unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-zinc-950" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.82)_100%)] opacity-80" />

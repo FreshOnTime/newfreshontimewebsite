@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-// Reuse a single PrismaClient across hot-reloads / serverless invocations to
-// avoid exhausting Postgres connections. Mirrors the cached-connection pattern
-// used by the legacy Mongoose helper in lib/database.ts.
+// Reuse a single PrismaClient for the lifetime of a serverless worker. Netlify
+// can keep a worker warm across requests; recreating the client each time adds
+// a new Supabase connection handshake to otherwise fast API calls.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 const prisma =
@@ -11,8 +11,6 @@ const prisma =
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;
 
 export default prisma;

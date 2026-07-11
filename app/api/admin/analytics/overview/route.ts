@@ -25,19 +25,19 @@ export const GET = requireAdminSimple(async () => {
     ] = await Promise.all([
       prisma.user.count({ where: { role: 'customer' } }),
       prisma.product.count({ where: { archived: false } }),
-      prisma.order.count(),
+      prisma.order.count({ where: { isRecurring: false } }),
       prisma.order.aggregate({
-        where: { OR: [{ status: 'delivered' }, { paymentStatus: 'paid' }] },
+        where: { isRecurring: false, OR: [{ status: 'delivered' }, { paymentStatus: 'paid' }] },
         _sum: { total: true },
       }),
       prisma.product.findMany({
         where: { archived: false },
         select: { stockQty: true, minStockLevel: true },
       }),
-      prisma.order.count({ where: { status: 'pending' } }),
+      prisma.order.count({ where: { isRecurring: false, status: 'pending' } }),
       prisma.order.count({ where: { isRecurring: true, scheduleStatus: 'active' } }),
       prisma.order.aggregate({
-        where: { isRecurring: true, OR: [{ status: 'delivered' }, { paymentStatus: 'paid' }] },
+        where: { recurringSourceOrderId: { not: null }, OR: [{ status: 'delivered' }, { paymentStatus: 'paid' }] },
         _sum: { total: true },
       }),
       prisma.order.findMany({

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
+import { hydrateRecurrence, RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
 interface AuthenticatedRequest extends NextRequest {
   user: {
@@ -36,6 +37,13 @@ function serializeOrder(o: any) {
     total: Number(o.total),
     items: (o.items || []).map((it: any) => ({ ...it, _id: it.id, price: Number(it.price), total: Number(it.total) })),
   };
+}
+
+function getFollowingDelivery(recurrence: Prisma.JsonValue | null, from: Date): Date | null {
+  return RecurringOrderService.calculateNextDelivery(
+    { recurrence: hydrateRecurrence(recurrence) } as RecurringOrderPattern,
+    from
+  );
 }
 
 export const GET = requireAdminSimple(async (request: NextRequest) => {
@@ -137,7 +145,25 @@ export const POST = requireAdminSimple(async (request: NextRequest) => {
         result = { modifiedCount: affected };
         break;
       case 'resume':
-        affected = (await prisma.order.updateMany({ where: { id: { in: orderIds } }, data: { scheduleStatus: 'active' } })).count;
+        {
+          const schedules = await prisma.order.findMany({
+            where: { id: { in: orderIds }, isRecurring: true },
+            select: { id: true, recurrence: true, nextDeliveryAt: true },
+          });
+          const now = new Date();
+          const updates = await Promise.all(schedules.map((schedule) => {
+            const nextDelivery = schedule.nextDeliveryAt && schedule.nextDeliveryAt > now
+              ? schedule.nextDeliveryAt
+              : getFollowingDelivery(schedule.recurrence, now);
+            return prisma.order.update({
+              where: { id: schedule.id },
+              data: nextDelivery
+                ? { scheduleStatus: 'active', nextDeliveryAt: nextDelivery }
+                : { scheduleStatus: 'ended', nextDeliveryAt: null },
+            });
+          }));
+          affected = updates.length;
+        }
         result = { modifiedCount: affected };
         break;
       case 'end':

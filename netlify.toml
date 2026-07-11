@@ -15,3 +15,15 @@
   # Increase timeout to 60 seconds for file processing (Netlify Pro: up to 26 seconds, Business: up to 60 seconds)
   # Note: The Next.js plugin manages most settings automatically
   node_bundler = "esbuild"
+
+# These pre-compressed marketing assets can be delivered directly from the CDN.
+# Keep them fresh within a day if an editor replaces a file under the same name.
+[[headers]]
+  for = "/bgs/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/bannermaterial/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"

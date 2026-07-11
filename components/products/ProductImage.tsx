@@ -22,8 +22,10 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         className="object-cover transition-transform duration-1000 ease-out hover:scale-105"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-        priority
+        // Product cards are below the hero. Eager-loading every product image
+        // was creating dozens of competing downloads on the first page view.
+        loading="lazy"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
       />
     </div>
   );

@@ -60,8 +60,29 @@ async function getHomeData(): Promise<HomeData> {
         prisma.product.findMany({
           where: { archived: false },
           orderBy: { createdAt: 'desc' },
-          take: 20,
-          include: { category: { select: { name: true, slug: true } } },
+          // Two rows on wide screens is enough for the home page and keeps the
+          // server payload, hydration work, and below-the-fold image queue small.
+          take: 12,
+          select: {
+            id: true,
+            name: true,
+            sku: true,
+            slug: true,
+            description: true,
+            price: true,
+            discountPercentage: true,
+            stockQty: true,
+            minStockLevel: true,
+            image: true,
+            images: true,
+            isFeatured: true,
+            attributes: true,
+            tags: true,
+            categoryId: true,
+            createdAt: true,
+            updatedAt: true,
+            category: { select: { name: true, slug: true } },
+          },
         }),
         prisma.category.findMany({
           where: { isActive: true },

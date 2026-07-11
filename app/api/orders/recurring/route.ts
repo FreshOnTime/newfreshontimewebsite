@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
 type AuthUser = { userId: string; role: string; mongoId?: string };
 
@@ -148,6 +149,33 @@ export const POST = requireAuth(async (request: NextRequest) => {
     // Validate the request body
     const data = recurringOrderSchema.parse(body);
 
+    if (!data.isRecurring || !data.recurrence) {
+      return NextResponse.json({ error: 'A recurrence pattern is required' }, { status: 400 });
+    }
+
+    const recurrenceForCalculation = {
+      ...data.recurrence,
+      startDate: data.recurrence.startDate ? new Date(data.recurrence.startDate) : undefined,
+      endDate: data.recurrence.endDate ? new Date(data.recurrence.endDate) : undefined,
+      includeDates: data.recurrence.includeDates?.map((date) => new Date(date)),
+      excludeDates: data.recurrence.excludeDates?.map((date) => new Date(date)),
+      selectedDates: data.recurrence.selectedDates?.map((date) => new Date(date)),
+    };
+    const validation = RecurringOrderService.validateRecurrencePattern(recurrenceForCalculation);
+    if (!validation.valid) {
+      return NextResponse.json({ error: 'Invalid recurrence pattern', details: validation.errors }, { status: 400 });
+    }
+
+    const nextDeliveryAt = data.nextDeliveryAt
+      ? new Date(data.nextDeliveryAt)
+      : RecurringOrderService.calculateNextDelivery(
+          { recurrence: recurrenceForCalculation } as RecurringOrderPattern,
+          new Date()
+        );
+    if (!nextDeliveryAt) {
+      return NextResponse.json({ error: 'The recurrence has no future delivery date' }, { status: 400 });
+    }
+
     // Check if sourceOrderId is provided to copy from existing order
     if (!body.sourceOrderId) {
       return NextResponse.json({
@@ -194,10 +222,8 @@ export const POST = requireAuth(async (request: NextRequest) => {
             : (sourceOrder.billingAddress as Prisma.InputJsonValue),
         notes: sourceOrder.notes,
         isRecurring: data.isRecurring,
-        recurrence: data.recurrence
-          ? (data.recurrence as unknown as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-        nextDeliveryAt: data.nextDeliveryAt ? new Date(data.nextDeliveryAt) : null,
+        recurrence: data.recurrence as unknown as Prisma.InputJsonValue,
+        nextDeliveryAt,
         scheduleStatus: data.scheduleStatus,
         items: {
           create: sourceOrder.items.map((it) => ({

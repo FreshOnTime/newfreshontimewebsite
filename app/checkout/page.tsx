@@ -64,6 +64,11 @@ export default function CheckoutPage() {
   type PreviewItem = { product: { id: string; name: string; price: number; unit?: string; images?: Array<Partial<Image>> }, quantity: number };
   type EffectiveItem = { product: { id: string; name: string; price: number; unit?: string; images?: Array<Partial<Image>> }, quantity: number };
   const [previewBag, setPreviewBag] = useState<null | { id: string; name?: string; items: PreviewItem[] }>(null);
+  const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<{
+    id: string;
+    name: string;
+    frequency: 'weekly' | 'biweekly' | 'monthly';
+  } | null>(null);
 
   const [orderingViaWhatsapp, setOrderingViaWhatsapp] = useState(false);
   const WHATSAPP_NUMBER = "94767319134"; // Placeholder - Replace with actual business number
@@ -89,25 +94,57 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!planSlug) return;
 
-    const plan = defaultSubscriptionPlans.find(p => p.slug === planSlug);
-    if (plan) {
+    const fallbackPlan = defaultSubscriptionPlans.find(p => p.slug === planSlug);
+    if (fallbackPlan) {
       const item: PreviewItem = {
         product: {
-          id: plan._id,
-          name: plan.name,
-          price: plan.price,
+          id: fallbackPlan._id,
+          name: fallbackPlan.name,
+          price: fallbackPlan.price,
           unit: 'box',
-          images: [{ url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop', alt: plan.name }] // Placeholder or plan image
+          images: [{ url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop', alt: fallbackPlan.name }] // Placeholder or plan image
         },
         quantity: 1,
       };
-      setPreviewBag({ id: `plan-${plan._id}`, name: plan.name, items: [item] });
+      setPreviewBag({ id: `plan-${fallbackPlan._id}`, name: fallbackPlan.name, items: [item] });
 
       // Setup recurring
       setIsRecurring(true);
-      if (plan.frequency === 'weekly') setRecurrenceFreq(RRule.WEEKLY);
-      if (plan.frequency === 'monthly') setRecurrenceFreq(RRule.MONTHLY);
+      if (fallbackPlan.frequency === 'weekly') setRecurrenceFreq(RRule.WEEKLY);
+      if (fallbackPlan.frequency === 'monthly') setRecurrenceFreq(RRule.MONTHLY);
+      setRecurrenceByWeekday([5]); // Saturday, in RRule's Monday-first indexing
     }
+
+    let cancelled = false;
+    fetch('/api/subscription-plans')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        const plan = data?.plans?.find((candidate: { slug?: string }) => candidate.slug === planSlug);
+        if (!cancelled && plan) {
+          setSelectedSubscriptionPlan({ id: plan._id, name: plan.name, frequency: plan.frequency });
+          if (!fallbackPlan) {
+            setPreviewBag({
+              id: `plan-${plan._id}`,
+              name: plan.name,
+              items: [{
+                product: {
+                  id: plan._id,
+                  name: plan.name,
+                  price: Number(plan.price),
+                  unit: 'box',
+                  images: [{ url: plan.image || '/images/subscription-default.jpg', alt: plan.name }],
+                },
+                quantity: 1,
+              }],
+            });
+            setIsRecurring(true);
+            setRecurrenceByWeekday([5]);
+          }
+        }
+      })
+      .catch(() => undefined);
+
+    return () => { cancelled = true; };
   }, [planSlug]);
 
   // If quickSku is present and there's no bag, fetch product and set preview
@@ -186,6 +223,38 @@ export default function CheckoutPage() {
       setSubmitting(true);
       if (isWhatsapp) setOrderingViaWhatsapp(true);
       setError(null);
+
+      if (planSlug) {
+        if (!selectedSubscriptionPlan) {
+          throw new Error('This subscription plan is not available. Please select an active plan.');
+        }
+        const slotIndex = recurrenceByWeekday[0];
+        const slotDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        const day = slotIndex === undefined ? undefined : slotDays[slotIndex];
+        if (!day) throw new Error('Please select a delivery day for your subscription.');
+
+        const deliveryAddress = useAccountAddress
+          ? user.registrationAddress
+          : { name: shipName, street: shipStreet, city: shipCity, state: shipState, zipCode: shipZip, country: shipCountry, phone: shipPhone };
+        const subscriptionResponse = await fetch('/api/subscriptions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            planId: selectedSubscriptionPlan.id,
+            deliveryAddress,
+            deliverySlot: { day, timeSlot: 'Any time' },
+            paymentMethod: 'cod',
+            startDate: startDate || undefined,
+          }),
+        });
+        const subscriptionData = await subscriptionResponse.json();
+        if (!subscriptionResponse.ok || !subscriptionData.success) {
+          throw new Error(subscriptionData.message || 'Subscription could not be created');
+        }
+        router.replace('/profile/subscriptions');
+        return;
+      }
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

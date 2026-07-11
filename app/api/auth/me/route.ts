@@ -1,25 +1,38 @@
-import { NextResponse } from 'next/server';
-import { withAuth, AuthenticatedRequest } from '@/lib/middleware/authNew';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 
-async function handleMe(req: AuthenticatedRequest) {
+export async function GET(req: NextRequest) {
   try {
-    if (!req.user) {
+    const accessToken = req.cookies.get('accessToken')?.value;
+    if (!accessToken) {
       return NextResponse.json(
         { error: 'User not authenticated' },
         { status: 401 }
       );
     }
 
-    // Fetch the latest user data from DB to ensure role and profile are up to date
+    let payload;
+    try {
+      payload = verifyToken(accessToken);
+    } catch {
+      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
+    }
+
+    if (payload.type !== 'access') {
+      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
+    }
+
+    // This is the only database query for /api/auth/me. Previously withAuth
+    // queried the user and this handler queried the same user again.
     const dbUser = await prisma.user.findUnique({
-      where: { id: req.user.userId },
+      where: { id: payload.userId },
       include: { addresses: true },
     });
-    if (!dbUser) {
+    if (!dbUser || dbUser.isBanned) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'User not authenticated' },
+        { status: 401 }
       );
     }
 
@@ -74,5 +87,3 @@ async function handleMe(req: AuthenticatedRequest) {
     );
   }
 }
-
-export const GET = withAuth(handleMe);

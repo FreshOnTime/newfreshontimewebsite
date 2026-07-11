@@ -83,6 +83,9 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
                             fill
                             sizes="(max-width: 768px) 100vw, 90vw"
                             className="object-cover transition-opacity duration-700"
+                            // Promo sources are pre-compressed JPGs; use Netlify's
+                            // static CDN instead of invoking the image function.
+                            unoptimized
                         />
                     </div>
 

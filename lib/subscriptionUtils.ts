@@ -10,12 +10,17 @@ const DAY_MAP: Record<string, number> = {
   saturday: 6,
 };
 
+export function isValidDeliveryDay(day: string): boolean {
+  return Object.prototype.hasOwnProperty.call(DAY_MAP, (day || '').toLowerCase());
+}
+
 /**
  * Next occurrence of the delivery weekday strictly after `from`.
  * Used when first scheduling a subscription.
  */
 export function nextWeekday(from: Date, day: string): Date {
-  const target = DAY_MAP[(day || '').toLowerCase()] ?? 6; // default Saturday
+  const target = DAY_MAP[(day || '').toLowerCase()];
+  if (target === undefined) throw new Error('Invalid delivery day');
   const d = new Date(from);
   do {
     d.setDate(d.getDate() + 1);

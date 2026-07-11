@@ -37,19 +37,19 @@ export const GET = requireAuth(
         upcomingSubscriptions,
         upcomingOrders,
       ] = await Promise.all([
-        prisma.order.count({ where: { customerId } }),
+        prisma.order.count({ where: { customerId, isRecurring: false } }),
         prisma.order.aggregate({
-          where: { customerId, status: { notIn: [...NON_BILLABLE_STATUSES] } },
+          where: { customerId, isRecurring: false, status: { notIn: [...NON_BILLABLE_STATUSES] } },
           _sum: { total: true },
         }),
         prisma.order.count({
-          where: { customerId, status: { in: [...OPEN_ORDER_STATUSES] } },
+          where: { customerId, isRecurring: false, status: { in: [...OPEN_ORDER_STATUSES] } },
         }),
         prisma.subscription.count({ where: { userId: customerId, status: 'active' } }),
         prisma.wishlistItem.count({ where: { userId: customerId } }),
         prisma.bag.count({ where: { userId: customerId, isActive: true } }),
         prisma.order.findMany({
-          where: { customerId },
+          where: { customerId, isRecurring: false },
           select: {
             id: true,
             orderNumber: true,
@@ -77,6 +77,7 @@ export const GET = requireAuth(
         prisma.order.findMany({
           where: {
             customerId,
+            isRecurring: true,
             nextDeliveryAt: { gte: now },
             OR: [{ scheduleStatus: { not: 'ended' } }, { scheduleStatus: null }],
           },

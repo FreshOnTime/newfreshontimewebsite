@@ -1,15 +1,11 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = "freshpick-v1";
-const STATIC_CACHE = "freshpick-static-v1";
-const DYNAMIC_CACHE = "freshpick-dynamic-v1";
+const CACHE_NAME = "freshpick-v2";
+const STATIC_CACHE = "freshpick-static-v2";
+const DYNAMIC_CACHE = "freshpick-dynamic-v2";
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
-    "/",
-    "/products",
-    "/categories",
-    "/deals",
     "/offline",
     "/fresh-pick.svg",
     "/placeholder.svg",
@@ -61,26 +57,13 @@ self.addEventListener("fetch", (event) => {
     // Skip Chrome extension requests
     if (url.protocol === "chrome-extension:") return;
 
-    // For navigation requests (pages)
+    // Do not pre-cache or cache page HTML. It can contain user-specific content,
+    // and caching it causes extra server requests during installation as well as
+    // stale navigation responses after a deployment.
     if (request.mode === "navigate") {
         event.respondWith(
             fetch(request)
-                .then((response) => {
-                    // Cache successful responses
-                    if (response.ok) {
-                        const responseClone = response.clone();
-                        caches.open(DYNAMIC_CACHE).then((cache) => {
-                            cache.put(request, responseClone);
-                        });
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    // Fallback to cache, then offline page
-                    return caches.match(request).then((cached) => {
-                        return cached || caches.match("/offline");
-                    });
-                })
+                .catch(() => caches.match("/offline"))
         );
         return;
     }

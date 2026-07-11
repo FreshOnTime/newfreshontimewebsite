@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { hydrateRecurrence, RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
 interface AuthenticatedRequest extends NextRequest {
   user: {
@@ -15,6 +16,14 @@ const ORDER_INCLUDE = {
   items: { include: { product: { select: { name: true, price: true, images: true, stockQty: true, sku: true } } } },
   customer: { select: { firstName: true, lastName: true, email: true, phoneNumber: true } },
 } satisfies Prisma.OrderInclude;
+
+function getFollowingDelivery(recurrence: Prisma.JsonValue | null, from: Date): Date | null {
+  const hydrated = hydrateRecurrence(recurrence);
+  return RecurringOrderService.calculateNextDelivery(
+    { recurrence: hydrated } as RecurringOrderPattern,
+    from
+  );
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeOrder(o: any) {
@@ -141,7 +150,7 @@ export const DELETE = requireAdmin(async (request: NextRequest, { params }: { pa
     if (!before.isRecurring) return NextResponse.json({ error: 'Order is not a recurring order' }, { status: 400 });
 
     await prisma.$transaction(async (tx) => {
-      if (!['delivered', 'shipped'].includes(before.status)) {
+      if (!['delivered', 'shipped', 'cancelled', 'refunded'].includes(before.status)) {
         for (const item of before.items) {
           await tx.product.update({ where: { id: item.productId }, data: { stockQty: { increment: item.qty } } }).catch(() => null);
         }
@@ -217,7 +226,16 @@ export const PATCH = requireAdmin(async (request: NextRequest, { params }: { par
         message = 'Recurring order paused successfully';
         break;
       case 'resume':
-        update = { scheduleStatus: 'active' };
+        {
+          const now = new Date();
+          const nextDelivery = before.nextDeliveryAt && before.nextDeliveryAt > now
+            ? before.nextDeliveryAt
+            : getFollowingDelivery(before.recurrence, now);
+          if (!nextDelivery) {
+            return NextResponse.json({ error: 'Cannot resume without a future recurrence date' }, { status: 400 });
+          }
+          update = { scheduleStatus: 'active', nextDeliveryAt: nextDelivery };
+        }
         message = 'Recurring order resumed successfully';
         break;
       case 'end':
@@ -231,9 +249,10 @@ export const PATCH = requireAdmin(async (request: NextRequest, { params }: { par
         break;
       case 'skip_next_delivery': {
         if (!before.nextDeliveryAt) return NextResponse.json({ error: 'Cannot skip delivery without a current next delivery date' }, { status: 400 });
-        const newNext = new Date(before.nextDeliveryAt);
-        newNext.setDate(newNext.getDate() + 7);
-        update = { nextDeliveryAt: newNext };
+        const newNext = getFollowingDelivery(before.recurrence, before.nextDeliveryAt);
+        update = newNext
+          ? { nextDeliveryAt: newNext }
+          : { scheduleStatus: 'ended', nextDeliveryAt: null };
         message = 'Next delivery skipped successfully';
         break;
       }

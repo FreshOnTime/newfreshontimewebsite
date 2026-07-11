@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
-import { nextWeekday, serializeSubscription } from '@/lib/subscriptionUtils';
+import { isValidDeliveryDay, nextWeekday, serializeSubscription } from '@/lib/subscriptionUtils';
 
 // GET user's subscriptions
 export async function GET(request: NextRequest) {
@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (typeof deliverySlot.day !== 'string' || !isValidDeliveryDay(deliverySlot.day)) {
+      return NextResponse.json({ success: false, message: 'A valid delivery day is required' }, { status: 400 });
+    }
 
     const plan = await prisma.subscriptionPlan.findUnique({ where: { id: planId } });
     if (!plan || !plan.isActive) {
@@ -55,6 +58,9 @@ export async function POST(request: NextRequest) {
     }
 
     const start = new Date(startDate || Date.now());
+    if (Number.isNaN(start.getTime())) {
+      return NextResponse.json({ success: false, message: 'Invalid subscription start date' }, { status: 400 });
+    }
     const nextDelivery = nextWeekday(start, deliverySlot.day);
 
     try {
