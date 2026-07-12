@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Search, LayoutGrid, ShoppingBag, CircleUserRound } from "lucide-react";
+import { House, Search, LayoutGrid, ShoppingBag, CircleUserRound, LayoutDashboard } from "lucide-react";
 import { useBag } from "@/contexts/BagContext";
+import { useAuth } from "@/contexts/AuthContext";
 
-const navItems = [
+const publicNavItems = [
     { href: "/", icon: House, label: "Home" },
     { href: "/search", icon: Search, label: "Search" },
     { href: "/categories", icon: LayoutGrid, label: "Categories" },
@@ -16,6 +17,15 @@ const navItems = [
 export default function BottomNav() {
     const pathname = usePathname();
     const { bags } = useBag();
+    const { user } = useAuth();
+    const hasDashboard = ["customer", "supplier"].includes(user?.role?.toLowerCase() ?? "");
+    const navItems = hasDashboard
+        ? [
+            ...publicNavItems.slice(0, 4),
+            { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+            publicNavItems[4],
+        ]
+        : publicNavItems;
     // Sum items across all bags for the cart badge
     const itemCount = bags.reduce((total, bag) =>
         total + bag.items.reduce((sum, item) => sum + item.quantity, 0), 0);
@@ -30,7 +40,7 @@ export default function BottomNav() {
             aria-label="Mobile navigation"
             className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(24,24,27,0.08)] backdrop-blur-xl md:hidden"
         >
-            <div className="mx-auto grid h-[4.5rem] max-w-lg grid-cols-5 items-center px-2">
+            <div className={`mx-auto grid h-[4.5rem] max-w-lg items-center px-2 ${hasDashboard ? "grid-cols-6" : "grid-cols-5"}`}>
                 {navItems.map(({ href, icon: Icon, label, showBadge }) => {
                     const isActive = pathname === href ||
                         (href !== "/" && pathname.startsWith(href));

@@ -98,6 +98,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Check if user is authenticated on mount
   useEffect(() => {
+    // The session is already known during client-side navigation. Rechecking
+    // `/api/auth/me` on every route change made protected pages wait for an
+    // unnecessary database round trip before they could load their own data.
+    if (user) {
+      setLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         setLoading(true);
@@ -130,7 +138,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       pathname.startsWith('/admin') ||
       pathname.startsWith('/profile') ||
       pathname.startsWith('/orders') ||
+      pathname.startsWith('/dashboard') ||
       pathname.startsWith('/bags') ||
+      pathname.startsWith('/wishlist') ||
       pathname.startsWith('/checkout') ||
       pathname.startsWith('/wishlist');
 
@@ -140,14 +150,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const deferredTask = scheduleIdleTask(checkAuth, {
-      timeout: 1200,
-      fallbackDelayMs: 1200,
+      // Public page navigation should win over checking an existing session.
+      // Protected routes still check immediately above.
+      timeout: 4000,
+      fallbackDelayMs: 2500,
     });
 
     return () => {
       deferredTask.cancel();
     };
-  }, [pathname, refreshAuth]);
+  }, [pathname, refreshAuth, user]);
 
   const login = async (identifier: string, password: string) => {
     try {

@@ -12,10 +12,10 @@ interface SectionHeaderProps {
 
 export default function SectionHeader({ title, subtitle, ctaHref, ctaLabel = "View all", className }: SectionHeaderProps) {
   return (
-    <div className={`mb-14 flex flex-col justify-between gap-7 border-b border-[#d8d0c1] pb-10 md:flex-row md:items-end ${className ?? ""}`}>
+    <div className={`mb-14 flex flex-col justify-between gap-7 border-b border-[#e4e4e7] pb-10 md:flex-row md:items-end ${className ?? ""}`}>
       <div>
-        <span className="mb-5 block text-[10px] font-bold uppercase tracking-[0.32em] text-[#8b6d32]">The FreshPick edit</span>
-        <h2 className="font-serif text-4xl font-normal leading-tight text-[#142019] md:text-6xl">{title}</h2>
+        <span className="mb-5 block text-[10px] font-bold uppercase tracking-[0.32em] text-[#047857]">The FreshPick edit</span>
+        <h2 className="font-serif text-4xl font-normal leading-tight text-[#09090b] md:text-6xl">{title}</h2>
         {subtitle && <p className="mt-5 max-w-2xl text-base font-light leading-7 text-zinc-500">{subtitle}</p>}
       </div>
       {ctaHref && (

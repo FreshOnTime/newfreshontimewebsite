@@ -18,7 +18,7 @@ function ProductImage({ src, alt, priority = false }: { src: string; alt: string
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#eeebe4]">
+    <div className="relative h-full w-full overflow-hidden bg-[#f4f4f5]">
       <Image
         src={src}
         alt={alt}

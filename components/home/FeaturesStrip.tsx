@@ -39,8 +39,8 @@ const colorClasses = {
     icon: "bg-blue-100 text-blue-600",
   },
   amber: {
-    bg: "bg-amber-50",
-    icon: "bg-amber-100 text-amber-600",
+    bg: "bg-emerald-50",
+    icon: "bg-emerald-100 text-emerald-600",
   },
   violet: {
     bg: "bg-violet-50",

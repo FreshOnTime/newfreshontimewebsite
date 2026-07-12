@@ -39,7 +39,7 @@ export function ProductCard({
   return (
     <article className="group relative w-full border-b border-[#d9d3c8] pb-7">
       <div className="relative">
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#eeebe4]">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#f4f4f5]">
           <Link href={`/products/${sku}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
             <div className="relative h-full w-full transition-transform duration-1000 ease-out group-hover:scale-[1.025]">
               <ProductImage src={imageUrl} alt={name} priority={priority} />
@@ -47,14 +47,14 @@ export function ProductCard({
           </Link>
 
           {showDiscountBadge && (
-            <div className="absolute left-0 top-0 bg-[#142019] px-4 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[#f2dfb2]">
+            <div className="absolute left-0 top-0 bg-[#09090b] px-4 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[#ecfdf5]">
               {discountPercentage}% off
             </div>
           )}
         </div>
 
         <div className="pt-5">
-          <div className="mb-3 flex items-center justify-between gap-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[#8b6d32]">
+          <div className="mb-3 flex items-center justify-between gap-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[#047857]">
             <span>{isDiscreteItem ? "By the piece" : "Fresh selection"}</span>
             <span className="text-zinc-500">
               {isDiscreteItem ? "Each" : `${baseMeasurementQuantity !== 1 ? baseMeasurementQuantity : ""}${(measurementType || "g").toLowerCase()}`}
@@ -62,7 +62,7 @@ export function ProductCard({
           </div>
 
           <Link href={`/products/${sku}`} prefetch={false} className="block">
-            <h3 className="line-clamp-2 min-h-[3.25rem] font-serif text-xl font-normal leading-snug text-[#142019] transition-colors group-hover:text-emerald-800">
+            <h3 className="line-clamp-2 min-h-[3.25rem] font-serif text-xl font-normal leading-snug text-[#09090b] transition-colors group-hover:text-emerald-800">
               {name}
             </h3>
           </Link>
@@ -94,7 +94,7 @@ function PriceDisplay({
 }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="font-serif text-xl font-normal text-[#142019]">
+      <span className="font-serif text-xl font-normal text-[#09090b]">
         Rs. {formatPrice(price)}
       </span>
       {originalPrice && (

@@ -13,7 +13,7 @@ export default function BannerGrid() {
       <div className="container mx-auto max-w-[1500px] px-4 md:px-8">
         <div className="mb-16 flex flex-col justify-between gap-6 text-white md:flex-row md:items-end">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.34em] text-[#d8bd7a]">Seasonal stories</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.34em] text-[#6ee7b7]">Seasonal stories</span>
             <h2 className="mt-6 font-serif text-5xl font-normal md:text-7xl">The FreshPick <span className="italic text-emerald-200">world.</span></h2>
           </div>
           <p className="max-w-md text-sm font-light leading-7 text-white/55">A collection of ingredients, prepared food, and services shaped around how you want to live.</p>
@@ -32,13 +32,13 @@ export default function BannerGrid() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity duration-700 group-hover:opacity-70" />
 
-              <div className="absolute inset-0 m-4 flex flex-col items-start justify-end border border-white/15 p-8 transition-colors duration-700 group-hover:border-[#d8bd7a]/50 md:p-12">
-                <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#d8bd7a]">
+              <div className="absolute inset-0 m-4 flex flex-col items-start justify-end border border-white/15 p-8 transition-colors duration-700 group-hover:border-[#6ee7b7]/50 md:p-12">
+                <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#6ee7b7]">
                   {b.sub}
                 </p>
                 <h3 className="mb-8 font-serif text-4xl font-normal leading-none text-white transition-transform duration-500 group-hover:-translate-y-1 md:text-5xl">{b.title}</h3>
 
-                <span className="inline-flex border-b border-white/40 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-all group-hover:border-[#d8bd7a] group-hover:text-[#ead69f]">
+                <span className="inline-flex border-b border-white/40 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-all group-hover:border-[#6ee7b7] group-hover:text-[#d1fae5]">
                   Discover
                 </span>
               </div>

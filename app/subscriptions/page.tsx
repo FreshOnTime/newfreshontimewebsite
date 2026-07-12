@@ -1,10 +1,8 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
-import SubscriptionHero from '@/components/subscriptions/SubscriptionHero';
 import SubscriptionPlanCard from '@/components/subscriptions/SubscriptionPlanCard';
-import { Check, HelpCircle, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { ChevronDown } from 'lucide-react';
 import { defaultSubscriptionPlans } from '@/lib/data/subscriptionPlans';
 import prisma from '@/lib/prisma';
 
@@ -49,8 +47,8 @@ export default async function SubscriptionsPage() {
 
     return (
         <div className="min-h-screen bg-transparent text-zinc-900">
-            {/* Editorial Hero - Real Imagery */}
-            <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+            {/* Editorial Hero */}
+            <section className="relative flex min-h-[620px] items-center justify-center overflow-hidden md:min-h-[700px]">
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="/bgs/home-hero.jpg"
@@ -62,33 +60,33 @@ export default async function SubscriptionsPage() {
                         sizes="100vw"
                         unoptimized
                     />
-                    <div className="absolute inset-0 bg-black/40" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-white/10" />
+                    <div className="absolute inset-0 bg-black/55" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/90" />
                 </div>
 
-                <div className="container mx-auto max-w-5xl text-center relative z-10 text-white pt-20">
-                    <span className="inline-block mb-6 text-xs font-bold tracking-[0.3em] uppercase text-white/90 border border-white/30 px-6 py-3 rounded-full backdrop-blur-sm">
+                <div className="relative z-10 mx-auto max-w-4xl px-6 pt-20 text-center text-white">
+                    <span className="mb-6 inline-block rounded-full border border-white/30 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur-sm">
                         Private Client Services
                     </span>
-                    <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl mb-8 leading-[0.9] tracking-tight text-white drop-shadow-2xl">
+                    <h1 className="mb-7 font-serif text-5xl leading-[0.9] tracking-tight text-white drop-shadow-2xl md:text-7xl lg:text-[6.5rem]">
                         The Weekly<br />
                         <span className="italic text-emerald-100">Curation</span>
                     </h1>
-                    <p className="text-xl md:text-2xl font-light text-zinc-100 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
+                    <p className="mx-auto max-w-2xl text-lg font-light leading-relaxed text-zinc-100 drop-shadow-md md:text-xl">
                         Weekly provisions of the world's finest produce, curated into elegant boxes for the discerning home.
                     </p>
                 </div>
 
                 {/* Scroll Indicator */}
-                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce opacity-80">
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-80 md:bottom-12">
                     <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-white to-transparent" />
                 </div>
             </section>
 
             {/* Plans Grid */}
-            <section className="py-24 bg-zinc-50 relative">
+            <section className="relative bg-zinc-50 py-20 md:py-28">
                 <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-[1400px] mx-auto -mt-32 relative z-20">
+                    <div className="relative z-20 mx-auto grid max-w-[1400px] grid-cols-1 gap-5 -mt-20 md:-mt-24 lg:grid-cols-4 lg:gap-6">
                         {plans.map((plan: any) => (
                             <SubscriptionPlanCard key={plan._id} plan={plan} />
                         ))}
@@ -97,16 +95,16 @@ export default async function SubscriptionsPage() {
             </section>
 
             {/* The FreshPick Standard Section */}
-            <section className="py-32 bg-white">
+            <section className="bg-white py-20 md:py-28">
                 <div className="container mx-auto px-4 max-w-7xl">
-                    <div className="text-center mb-24">
-                        <span className="text-emerald-600 text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Our Promise</span>
-                        <h2 className="font-serif text-5xl md:text-6xl text-zinc-900">
+                    <div className="mb-16 text-center md:mb-20">
+                        <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Our Promise</span>
+                        <h2 className="font-serif text-4xl text-zinc-950 md:text-6xl">
                             The FreshPick Standard
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-10">
                         <div className="group">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-zinc-100">
                                 <Image
@@ -118,12 +116,12 @@ export default async function SubscriptionsPage() {
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                             </div>
-                            <h3 className="text-2xl font-serif text-zinc-900 mb-3">Harvested Daily</h3>
+                            <h3 className="mb-3 text-2xl font-serif text-zinc-950">Harvested Daily</h3>
                             <p className="text-zinc-500 font-light leading-relaxed">
                                 Picked at sunrise and delivered to your doorstep by sunset. We guarantee peak ripeness and flavor in every box.
                             </p>
                         </div>
-                        <div className="group md:mt-16">
+                        <div className="group">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-zinc-100">
                                 <Image
                                     src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=2670&auto=format&fit=crop"
@@ -134,12 +132,12 @@ export default async function SubscriptionsPage() {
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                             </div>
-                            <h3 className="text-2xl font-serif text-zinc-900 mb-3">Farmer Direct</h3>
+                            <h3 className="mb-3 text-2xl font-serif text-zinc-950">Farmer Direct</h3>
                             <p className="text-zinc-500 font-light leading-relaxed">
                                 100% of your subscription goes directly to supporting local sustainable agriculture. No middlemen, just honest food.
                             </p>
                         </div>
-                        <div className="group md:mt-32">
+                        <div className="group">
                             <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-zinc-100">
                                 <Image
                                     src="https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?q=80&w=2670&auto=format&fit=crop"
@@ -150,7 +148,7 @@ export default async function SubscriptionsPage() {
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                             </div>
-                            <h3 className="text-2xl font-serif text-zinc-900 mb-3">Zero-Plastic Promise</h3>
+                            <h3 className="mb-3 text-2xl font-serif text-zinc-950">Zero-Plastic Promise</h3>
                             <p className="text-zinc-500 font-light leading-relaxed">
                                 Our packaging is fully biodegradable and plastic-free. We believe luxury shouldn't cost the earth.
                             </p>
@@ -160,21 +158,27 @@ export default async function SubscriptionsPage() {
             </section>
 
             {/* FAQ - Minimal */}
-            <section className="py-24 bg-transparent">
+            <section className="bg-zinc-50 py-20 md:py-28">
                 <div className="container mx-auto px-4 max-w-3xl">
-                    <div className="text-center mb-16">
-                        <h2 className="font-serif text-3xl md:text-4xl">Common Questions</h2>
+                    <div className="mb-12 text-center">
+                        <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Support</span>
+                        <h2 className="font-serif text-3xl text-zinc-950 md:text-4xl">Common Questions</h2>
                     </div>
-                    <div className="space-y-8">
+                    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
                         {[
                             { q: "What makes FreshPick boxes unique?", a: "Each FreshPick collection is curated from the top 1% of harvests. Our expert agrarians hand-select produce at peak ripeness for unmatched flavor." },
                             { q: "Can I customize my FreshPick box?", a: "Certainly. Your personal concierge can tailor your weekly delivery to accommodate preferences, allergies, or specific culinary requirements." },
                             { q: "Is the service flexible?", a: "As a FreshPick subscriber, you enjoy complete freedom. Pause your deliveries during travel or cancel indefinitely with a single click." },
-                        ].map((item, i) => (
-                            <div key={i} className="border-b border-zinc-100 pb-8">
-                                <h3 className="font-medium text-lg mb-2">{item.q}</h3>
-                                <p className="text-zinc-500 font-light leading-relaxed">{item.a}</p>
-                            </div>
+                        ].map((item) => (
+                            <details key={item.q} className="group border-b border-zinc-200 bg-white transition-colors last:border-b-0 open:bg-emerald-50/40">
+                                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 px-6 py-6 text-left text-lg font-medium text-zinc-950 transition-colors hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">
+                                    {item.q}
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-emerald-700 transition-all duration-300 group-open:rotate-180 group-open:border-emerald-200 group-open:bg-emerald-100">
+                                        <ChevronDown className="h-4 w-4" />
+                                    </span>
+                                </summary>
+                                <p className="max-w-2xl px-6 pb-6 pr-16 font-light leading-relaxed text-zinc-600">{item.a}</p>
+                            </details>
                         ))}
                     </div>
                 </div>

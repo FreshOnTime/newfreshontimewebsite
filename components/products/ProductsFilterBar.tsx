@@ -10,6 +10,34 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, SlidersHorizontal, Search } from "lucide-react";
 
+type FilterCategory = { _id: string; name: string };
+const FILTER_CATEGORIES_CACHE_KEY = "freshpick_filter_categories_v2";
+const FILTER_CATEGORIES_CACHE_TTL = 60 * 60 * 1000;
+
+function readCachedFilterCategories(): FilterCategory[] | null {
+  try {
+    const raw = localStorage.getItem(FILTER_CATEGORIES_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as { timestamp?: unknown; categories?: unknown };
+    if (
+      typeof cached.timestamp !== "number" ||
+      Date.now() - cached.timestamp > FILTER_CATEGORIES_CACHE_TTL ||
+      !Array.isArray(cached.categories)
+    ) {
+      localStorage.removeItem(FILTER_CATEGORIES_CACHE_KEY);
+      return null;
+    }
+    return cached.categories.filter(
+      (category): category is FilterCategory =>
+        Boolean(category) &&
+        typeof category._id === "string" &&
+        typeof category.name === "string"
+    );
+  } catch {
+    return null;
+  }
+}
+
 export default function ProductsFilterBar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -23,7 +51,7 @@ export default function ProductsFilterBar() {
   const [inStock, setInStock] = useState<boolean>(params.get("inStock") === "true");
   const [sort, setSort] = useState<string>(params.get("sort") || "");
   const [selectedTags, setSelectedTags] = useState<string[]>(params.get("tags")?.split(",").filter(Boolean) || []);
-  const [categories, setCategories] = useState<Array<{ _id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<FilterCategory[]>([]);
 
   // Mock tags for now - typically these might come from an API
   const filterTags = ["Organic", "Gluten-Free", "Vegan", "Keto", "Halal", "Local", "Imported"];
@@ -41,12 +69,25 @@ export default function ProductsFilterBar() {
 
   // Fetch categories
   useEffect(() => {
+    const cached = readCachedFilterCategories();
+    if (cached) {
+      setCategories(cached);
+      return;
+    }
+
     fetch("/api/categories")
       .then((r) => r.ok ? r.json() : Promise.reject())
       .then((j) => {
         const arr = j?.data ?? j;
         if (Array.isArray(arr)) {
-          setCategories(arr.map((c: any) => ({ _id: c._id, name: c.name || c.description })).filter(c => c.name));
+          const nextCategories = arr
+            .map((c: any) => ({ _id: c._id, name: c.name || c.description }))
+            .filter((c): c is FilterCategory => typeof c._id === "string" && typeof c.name === "string" && Boolean(c.name));
+          setCategories(nextCategories);
+          localStorage.setItem(
+            FILTER_CATEGORIES_CACHE_KEY,
+            JSON.stringify({ timestamp: Date.now(), categories: nextCategories })
+          );
         }
       })
       .catch(() => { });

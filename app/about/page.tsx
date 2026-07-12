@@ -9,7 +9,7 @@ const values = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#faf8f3] text-[#142019]">
+    <div className="min-h-screen bg-[#ffffff] text-[#09090b]">
       <PremiumPageHeader
         title="A house built around freshness."
         subtitle="FreshPick began with a simple belief: everyday food deserves the same care as the most considered table."
@@ -20,7 +20,7 @@ export default function AboutPage() {
       <section className="px-4 py-24 md:py-36">
         <div className="container mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.75fr_1.25fr]">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#8b6d32]">Colombo · Est. 2024</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#047857]">Colombo · Est. 2024</span>
             <p className="mt-8 font-serif text-3xl font-normal leading-snug md:text-4xl">“If it is not good enough for our own table, it does not leave ours.”</p>
           </div>
           <div className="space-y-8 text-lg font-light leading-9 text-zinc-600">
@@ -33,13 +33,13 @@ export default function AboutPage() {
       <section className="bg-white px-4 py-24 md:py-32">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-16 max-w-3xl">
-            <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#8b6d32]">The FreshPick standard</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#047857]">The FreshPick standard</span>
             <h2 className="mt-6 font-serif text-5xl font-normal leading-tight md:text-7xl">Care, made <span className="italic text-emerald-800">visible.</span></h2>
           </div>
           <div className="grid border-y border-zinc-200 md:grid-cols-3">
             {values.map(({ icon: Icon, number, title, text }, index) => (
               <article key={number} className={`min-h-80 px-6 py-10 md:px-10 md:py-12 ${index > 0 ? "border-t border-zinc-200 md:border-l md:border-t-0" : ""}`}>
-                <div className="flex items-center justify-between"><span className="font-serif italic text-[#a07e3e]">{number}</span><Icon className="h-5 w-5 stroke-1 text-emerald-800" /></div>
+                <div className="flex items-center justify-between"><span className="font-serif italic text-[#059669]">{number}</span><Icon className="h-5 w-5 stroke-1 text-emerald-800" /></div>
                 <h3 className="mt-16 font-serif text-3xl font-normal">{title}</h3>
                 <p className="mt-5 text-sm font-light leading-7 text-zinc-500">{text}</p>
               </article>

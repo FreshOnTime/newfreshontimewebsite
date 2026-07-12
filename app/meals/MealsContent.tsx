@@ -55,7 +55,7 @@ export default function MealsContent({ products }: MealsContentProps) {
 
         <div className="container relative z-10 mx-auto max-w-5xl px-4 pt-20 text-center text-white">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.3em] text-white/90 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4 text-amber-400" />
+            <Sparkles className="h-4 w-4 text-emerald-400" />
             FreshPick Meals on Deals
           </div>
           <h1 className="mb-8 font-serif text-6xl leading-[0.9] tracking-tight text-white drop-shadow-2xl md:text-8xl lg:text-9xl">
@@ -74,14 +74,14 @@ export default function MealsContent({ products }: MealsContentProps) {
             {benefits.map(({ icon: Icon, title, description }, index) => {
               const isFeatured = index === 1;
               return (
-                <article key={title} className={`relative flex min-h-[340px] flex-col overflow-hidden border border-[#e2ddd3] p-8 text-center transition-all duration-500 md:p-10 ${isFeatured ? "z-20 bg-[#142019] text-white shadow-2xl lg:-mt-4 lg:-mb-4" : "z-10 bg-white text-[#142019]"}`}>
+                <article key={title} className={`relative flex min-h-[340px] flex-col overflow-hidden border border-[#e4e4e7] p-8 text-center transition-all duration-500 md:p-10 ${isFeatured ? "z-20 bg-[#09090b] text-white shadow-2xl lg:-mt-4 lg:-mb-4" : "z-10 bg-white text-[#09090b]"}`}>
                   {isFeatured && <div className="absolute inset-x-0 top-0 h-1 bg-emerald-500" />}
                   <Icon className={`mx-auto mb-6 h-7 w-7 ${isFeatured ? "text-emerald-400" : "text-emerald-700"}`} />
                   <h2 className="font-serif text-3xl">{title}</h2>
                   <p className={`mx-auto mt-4 max-w-[240px] text-sm font-light leading-relaxed ${isFeatured ? "text-zinc-400" : "text-zinc-500"}`}>{description}</p>
                   <div className={`my-7 border-t ${isFeatured ? "border-white/10" : "border-zinc-100"}`} />
                   <p className={`text-xs uppercase tracking-[0.16em] ${isFeatured ? "text-zinc-500" : "text-zinc-400"}`}>FreshPick meals</p>
-                  <Link href="/products" className={`mt-auto inline-flex h-12 items-center justify-center text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${isFeatured ? "bg-[#f0dfb6] text-[#142019] hover:bg-white" : "bg-[#142019] text-white hover:bg-emerald-900"}`}>Explore menu</Link>
+                  <Link href="/products" className={`mt-auto inline-flex h-12 items-center justify-center text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${isFeatured ? "bg-[#d1fae5] text-[#09090b] hover:bg-white" : "bg-[#09090b] text-white hover:bg-emerald-900"}`}>Explore menu</Link>
                 </article>
               );
             })}

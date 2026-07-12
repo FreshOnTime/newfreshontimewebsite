@@ -13,14 +13,37 @@ export async function GET(request: NextRequest) {
 
     const subscriptions = await prisma.subscription.findMany({
       where: { userId: user.mongoId },
-      include: { plan: { include: { contents: true } } },
+      select: {
+        id: true,
+        status: true,
+        startDate: true,
+        nextDeliveryDate: true,
+        pausedUntil: true,
+        cancelledAt: true,
+        cancelReason: true,
+        deliveryAddress: true,
+        deliverySlotDay: true,
+        deliverySlotTime: true,
+        paymentMethod: true,
+        totalDeliveries: true,
+        skippedDeliveries: true,
+        skippedDates: true,
+        excludeItems: true,
+        preferences: true,
+        createdAt: true,
+        updatedAt: true,
+        plan: { select: { name: true, icon: true, price: true, frequency: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({
-      success: true,
-      subscriptions: subscriptions.map(serializeSubscription),
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        subscriptions: subscriptions.map(serializeSubscription),
+      },
+      { headers: { 'Cache-Control': 'private, max-age=30' } }
+    );
   } catch (error) {
     console.error('Error fetching subscriptions:', error);
     return NextResponse.json(

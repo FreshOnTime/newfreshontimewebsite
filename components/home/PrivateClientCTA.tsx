@@ -8,12 +8,12 @@ export default function PrivateClientCTA() {
             <div className="pointer-events-none absolute inset-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_34%),linear-gradient(180deg,#090b0a_0%,#050606_52%,#020303_100%)]" />
                 <div className="absolute left-1/2 top-0 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
-                <div className="absolute bottom-0 left-1/2 h-px w-[58%] -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent" />
+                <div className="absolute bottom-0 left-1/2 h-px w-[58%] -translate-x-1/2 bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent" />
                 <div className="absolute inset-x-8 top-16 h-48 rounded-full bg-emerald-500/5 blur-3xl" />
             </div>
 
             <div className="container relative z-10 mx-auto px-4 text-center sm:px-6 lg:px-8">
-                <span className="inline-block rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-amber-300 shadow-[0_0_28px_rgba(245,158,11,0.08)] backdrop-blur-sm">
+                <span className="inline-block rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-emerald-300 shadow-[0_0_28px_rgba(245,158,11,0.08)] backdrop-blur-sm">
                     Private Client Services
                 </span>
 
@@ -38,8 +38,8 @@ export default function PrivateClientCTA() {
                 </div>
 
                 <div className="mt-12 flex flex-col items-center justify-center gap-5 text-sm font-medium uppercase tracking-widest text-white/40 sm:flex-row sm:gap-8">
-                    <div className="flex items-center gap-2 text-amber-300/80">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <div className="flex items-center gap-2 text-emerald-300/80">
+                        <Star className="h-4 w-4 fill-emerald-400 text-emerald-400" />
                         Priority Access
                     </div>
                     <div className="hidden h-1 w-1 rounded-full bg-white/20 sm:block" />

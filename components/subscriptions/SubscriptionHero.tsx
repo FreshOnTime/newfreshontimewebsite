@@ -20,7 +20,7 @@ export default function SubscriptionHero() {
                 <div className="max-w-4xl mx-auto text-center">
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-                        <Sparkles className="w-4 h-4 text-amber-400" />
+                        <Sparkles className="w-4 h-4 text-emerald-400" />
                         <span className="text-sm font-medium">New! Subscription Boxes</span>
                     </div>
 
@@ -41,22 +41,22 @@ export default function SubscriptionHero() {
                     {/* Features Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-12">
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                            <Package className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+                            <Package className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
                             <h3 className="font-semibold text-sm">Curated Boxes</h3>
                             <p className="text-xs text-emerald-200 mt-1">Hand-picked fresh items</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                            <Clock className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+                            <Clock className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
                             <h3 className="font-semibold text-sm">Flexible Schedule</h3>
                             <p className="text-xs text-emerald-200 mt-1">Skip or pause anytime</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                            <Shield className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+                            <Shield className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
                             <h3 className="font-semibold text-sm">Quality Guaranteed</h3>
                             <p className="text-xs text-emerald-200 mt-1">100% satisfaction</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                            <Leaf className="w-8 h-8 mx-auto mb-2 text-amber-400" />
+                            <Leaf className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
                             <h3 className="font-semibold text-sm">Farm Fresh</h3>
                             <p className="text-xs text-emerald-200 mt-1">Direct from local farms</p>
                         </div>

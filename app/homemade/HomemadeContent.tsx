@@ -62,7 +62,7 @@ export default function HomemadeContent({ products }: HomemadeContentProps) {
 
       <section className="relative bg-zinc-50 py-24">
         <div className="container relative z-20 mx-auto max-w-[1400px] px-4">
-          <div className="-mt-32 border border-[#e2ddd3] bg-white p-6 shadow-[0_24px_70px_rgba(20,32,25,0.08)] md:p-10">
+          <div className="-mt-32 border border-[#e4e4e7] bg-white p-6 shadow-[0_24px_70px_rgba(20,32,25,0.08)] md:p-10">
             <div className="mb-10 flex flex-col gap-4 border-b border-zinc-100 pb-8 md:flex-row md:items-end md:justify-between">
               <div>
                 <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-600">The Collection</span>
@@ -99,7 +99,7 @@ export default function HomemadeContent({ products }: HomemadeContentProps) {
 
           <div className="grid gap-6 md:grid-cols-3 md:gap-8">
             {values.map(({ title, description, icon: Icon }) => (
-              <article key={title} className="group border border-[#e2ddd3] bg-[#faf8f3] p-8 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-xl md:p-10">
+              <article key={title} className="group border border-[#e4e4e7] bg-[#ffffff] p-8 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-xl md:p-10">
                 <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
                   <Icon className="h-5 w-5" />
                 </div>

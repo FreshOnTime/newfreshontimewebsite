@@ -9,7 +9,10 @@ const NON_BILLABLE_STATUSES = ['cancelled', 'refunded'] as const;
  * supplier by email/phone (persisting the link when found).
  */
 async function resolveSupplierId(userId: string): Promise<string | null> {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, supplierId: true, email: true, phoneNumber: true },
+  });
   if (!user) return null;
   if (user.supplierId) return user.supplierId;
 
@@ -68,12 +71,34 @@ export const GET = requireAuth(
         });
       }
 
-      const [products, uploads, totalUploads, unreadMessages] = await Promise.all([
-        prisma.product.findMany({
-          where: { supplierId },
-          select: { id: true, name: true, sku: true, stockQty: true, minStockLevel: true, archived: true },
-          orderBy: { stockQty: 'asc' },
-        }),
+      type ProductStats = {
+        totalProducts: number;
+        activeProducts: number;
+        lowStockProducts: number;
+        outOfStockProducts: number;
+      };
+
+      // Aggregate in Postgres instead of transferring every product for this
+      // supplier to the server and filtering it in JavaScript.
+      const [productStatsRows, lowStockList, uploads, totalUploads, unreadMessages] = await Promise.all([
+        prisma.$queryRaw<ProductStats[]>`
+          SELECT
+            COUNT(*)::int AS "totalProducts",
+            COUNT(*) FILTER (WHERE NOT archived)::int AS "activeProducts",
+            COUNT(*) FILTER (WHERE NOT archived AND "stockQty" <= "minStockLevel")::int AS "lowStockProducts",
+            COUNT(*) FILTER (WHERE "stockQty" <= 0)::int AS "outOfStockProducts"
+          FROM products
+          WHERE "supplierId" = ${supplierId}
+        `,
+        prisma.$queryRaw<Array<{ id: string; name: string; sku: string; stockQty: number; minStockLevel: number }>>`
+          SELECT id, name, sku, "stockQty", "minStockLevel"
+          FROM products
+          WHERE "supplierId" = ${supplierId}
+            AND NOT archived
+            AND "stockQty" <= "minStockLevel"
+          ORDER BY "stockQty" ASC, name ASC
+          LIMIT 8
+        `,
         prisma.supplierUpload.findMany({
           where: { supplierId },
           select: { id: true, originalName: true, filename: true, preview: true, createdAt: true },
@@ -84,12 +109,13 @@ export const GET = requireAuth(
         prisma.message.count({ where: { recipientId: userId, isRead: false } }),
       ]);
 
-      const totalProducts = products.length;
-      const activeProducts = products.filter((p) => !p.archived).length;
-      const lowStock = products.filter((p) => !p.archived && p.stockQty <= p.minStockLevel);
-      const lowStockProducts = lowStock.length;
-      const outOfStockProducts = products.filter((p) => p.stockQty <= 0).length;
-      const lowStockList = lowStock.slice(0, 8).map((p) => ({
+      const productStats = productStatsRows[0] ?? {
+        totalProducts: 0,
+        activeProducts: 0,
+        lowStockProducts: 0,
+        outOfStockProducts: 0,
+      };
+      const lowStockItems = lowStockList.map((p) => ({
         _id: p.id,
         name: p.name,
         sku: p.sku,
@@ -130,20 +156,20 @@ export const GET = requireAuth(
         data: {
           linked: true,
           stats: {
-            totalProducts,
-            activeProducts,
-            lowStockProducts,
-            outOfStockProducts,
+            totalProducts: productStats.totalProducts,
+            activeProducts: productStats.activeProducts,
+            lowStockProducts: productStats.lowStockProducts,
+            outOfStockProducts: productStats.outOfStockProducts,
             totalUploads,
             unreadMessages,
             orders,
             unitsSold,
             revenue,
           },
-          lowStockList,
+          lowStockList: lowStockItems,
           recentUploads,
         },
-      });
+      }, { headers: { 'Cache-Control': 'private, max-age=30' } });
     } catch (error) {
       console.error('Error building supplier dashboard:', error);
       return NextResponse.json({ error: 'Failed to load dashboard' }, { status: 500 });

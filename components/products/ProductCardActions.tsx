@@ -74,7 +74,7 @@ export default function ProductCardActions({ id, sku, name, image, price }: Prod
         type="button"
         onClick={quickAdd}
         disabled={loading && Boolean(user && currentBag)}
-        className="flex h-12 flex-1 items-center justify-center gap-2 bg-[#142019] px-3 text-[9px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-emerald-900 disabled:cursor-wait disabled:opacity-60"
+        className="flex h-12 flex-1 items-center justify-center gap-2 bg-[#09090b] px-3 text-[9px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-emerald-900 disabled:cursor-wait disabled:opacity-60"
       >
         <ShoppingBag className="h-3.5 w-3.5 stroke-1" />
         {currentBag ? `Add to ${currentBag.name}` : "Add to bag"}
@@ -83,7 +83,7 @@ export default function ProductCardActions({ id, sku, name, image, price }: Prod
         type="button"
         onClick={toggleWishlist}
         className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center border border-l-0 border-[#142019] bg-transparent text-[#142019] transition-colors hover:bg-[#f0eadf]",
+          "flex h-12 w-12 shrink-0 items-center justify-center border border-l-0 border-[#09090b] bg-transparent text-[#09090b] transition-colors hover:bg-[#ecfdf5]",
           isWishlisted && "text-[#8b2635]"
         )}
         aria-label={isWishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}

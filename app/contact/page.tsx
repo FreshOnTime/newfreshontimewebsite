@@ -54,16 +54,16 @@ export default function ContactPage() {
   const fieldClass = "h-12 rounded-none border-0 border-b border-zinc-300 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:border-emerald-800";
 
   return (
-    <main className="min-h-screen bg-[#faf8f3] text-[#142019]">
+    <main className="min-h-screen bg-[#ffffff] text-[#09090b]">
       <PremiumPageHeader title="Speak with FreshPick." subtitle="For orders, private sourcing, recurring plans, and general care, our Colombo team is here to help." eyebrow="The concierge" />
       <section className="px-4 py-24 md:py-32">
       <div className="container mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.65fr_1.35fr]">
         <aside>
-          <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#8b6d32]">Client care</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#047857]">Client care</span>
           <h2 className="mt-7 font-serif text-4xl font-normal leading-tight md:text-5xl">A human answer,<br /><span className="italic text-emerald-800">when you need one.</span></h2>
           <div className="mt-12 space-y-6 border-t border-zinc-300 pt-8 text-sm font-light text-zinc-600">
-            <p className="flex gap-3"><Mail className="h-5 w-5 stroke-1 text-[#8b6d32]" /> concierge@freshpick.lk</p>
-            <p className="flex gap-3"><MapPin className="h-5 w-5 stroke-1 text-[#8b6d32]" /> Greater Colombo, Sri Lanka</p>
+            <p className="flex gap-3"><Mail className="h-5 w-5 stroke-1 text-[#047857]" /> concierge@freshpick.lk</p>
+            <p className="flex gap-3"><MapPin className="h-5 w-5 stroke-1 text-[#047857]" /> Greater Colombo, Sri Lanka</p>
           </div>
         </aside>
 
@@ -102,11 +102,11 @@ export default function ContactPage() {
         </div>
         <div className="col-span-1 md:col-span-2">
           <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Message</label>
-          <Textarea className="rounded-none border-zinc-300 bg-[#faf8f3] p-4 focus-visible:ring-1 focus-visible:ring-emerald-800" value={message} onChange={(e) => setMessage(e.target.value)} rows={6} required />
+          <Textarea className="rounded-none border-zinc-300 bg-[#ffffff] p-4 focus-visible:ring-1 focus-visible:ring-emerald-800" value={message} onChange={(e) => setMessage(e.target.value)} rows={6} required />
         </div>
 
         <div className="col-span-1 md:col-span-2 flex items-center gap-4">
-          <Button type="submit" className="h-14 rounded-none bg-[#142019] px-8 text-[10px] font-bold uppercase tracking-[0.18em] text-white hover:bg-emerald-900" disabled={status === 'sending'}>{status === 'sending' ? 'Sending...' : 'Send enquiry'}</Button>
+          <Button type="submit" className="h-14 rounded-none bg-[#09090b] px-8 text-[10px] font-bold uppercase tracking-[0.18em] text-white hover:bg-emerald-900" disabled={status === 'sending'}>{status === 'sending' ? 'Sending...' : 'Send enquiry'}</Button>
           {status === 'sent' && <span className="text-sm text-green-600">Message sent — thank you!</span>}
           {status === 'error' && <span className="text-sm text-red-600">Error sending message. Try again later.</span>}
         </div>

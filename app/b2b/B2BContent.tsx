@@ -61,7 +61,7 @@ const serviceAreas = ["Colombo", "Rajagiriya", "Battaramulla", "Nawala", "Nugego
 
 export default function B2BContent() {
     return (
-        <div className="overflow-hidden bg-[#fbfaf6] text-zinc-950 selection:bg-emerald-300 selection:text-zinc-950">
+        <div className="overflow-hidden bg-[#ffffff] text-zinc-950 selection:bg-emerald-300 selection:text-zinc-950">
             <HeroSection />
             <PartnerSegments />
             <EditorialSection />
@@ -74,7 +74,7 @@ export default function B2BContent() {
 
 function HeroSection() {
     return (
-        <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-zinc-950 text-white">
+        <section className="relative flex min-h-[760px] items-center justify-center overflow-hidden bg-zinc-950 text-white md:min-h-[820px]">
             <Image
                 src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"
                 alt="Fresh produce supply for restaurants, hotels, households and farmers"
@@ -84,14 +84,14 @@ function HeroSection() {
                 className="object-cover"
             />
             <div className="absolute inset-0 bg-black/45" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/30 to-[#fbfaf6]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/35 to-black/85" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(16,185,129,0.2),transparent_34%)]" />
 
-            <div className="container relative z-10 mx-auto max-w-5xl px-4 pt-20 text-center">
+            <div className="container relative z-10 mx-auto max-w-4xl px-5 pt-20 text-center md:px-8">
                 <span className="inline-flex rounded-full border border-white/30 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur-sm">
                     Fresh Pick Supply Network
                 </span>
-                <h1 className="mt-8 font-serif text-6xl font-medium leading-[0.88] tracking-tight text-white drop-shadow-2xl md:text-8xl lg:text-9xl">
+                <h1 className="mt-8 font-serif text-5xl font-normal leading-[0.9] tracking-[-0.035em] text-white drop-shadow-2xl md:text-7xl lg:text-[6rem] xl:text-[6.75rem]">
                     Produce supply,<br />
                     <span className="italic text-emerald-100">curated.</span>
                 </h1>
@@ -120,7 +120,7 @@ function PartnerSegments() {
             <div className="container mx-auto px-4">
                 <div className="mx-auto grid max-w-[1400px] grid-cols-1 border border-zinc-200 bg-white shadow-[0_30px_80px_rgba(9,14,12,0.12)] md:grid-cols-2 lg:grid-cols-4">
                     {partnerSegments.map((segment) => (
-                        <div key={segment.title} className="group min-h-[250px] border-b border-zinc-200 bg-gradient-to-b from-white to-[#fbfaf6] p-8 transition-all duration-300 hover:bg-white md:border-r lg:border-b-0">
+                        <div key={segment.title} className="group min-h-[250px] border-b border-zinc-200 bg-gradient-to-b from-white to-[#ffffff] p-8 transition-all duration-300 hover:bg-white md:border-r lg:border-b-0">
                             <div className="mb-8 flex items-center justify-between gap-4">
                                 <span className="text-[10px] font-black uppercase tracking-[0.24em] text-emerald-900">{segment.label}</span>
                                 <segment.icon className="h-5 w-5 text-emerald-800/60" />
@@ -141,7 +141,7 @@ function PartnerSegments() {
 
 function EditorialSection() {
     return (
-        <section className="bg-[#fbfaf6] pb-28 pt-8">
+        <section className="bg-[#ffffff] pb-28 pt-8">
             <div className="container mx-auto grid max-w-7xl items-center gap-16 px-4 lg:grid-cols-[0.95fr_1.05fr]">
                 <div className="relative min-h-[520px] md:min-h-[640px]">
                     <div className="absolute inset-y-0 left-0 right-16 overflow-hidden bg-zinc-100 shadow-[0_24px_70px_rgba(0,0,0,0.14)]">
@@ -153,7 +153,7 @@ function EditorialSection() {
                             className="object-cover"
                         />
                     </div>
-                    <div className="absolute bottom-16 right-0 h-[320px] w-[240px] overflow-hidden border-[12px] border-[#fbfaf6] bg-zinc-100 shadow-[0_24px_70px_rgba(0,0,0,0.14)] md:h-[360px] md:w-[270px]">
+                    <div className="absolute bottom-16 right-0 h-[320px] w-[240px] overflow-hidden border-[12px] border-[#ffffff] bg-zinc-100 shadow-[0_24px_70px_rgba(0,0,0,0.14)] md:h-[360px] md:w-[270px]">
                         <Image
                             src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=1200&auto=format&fit=crop"
                             alt="Farmer direct produce sourcing for Fresh Pick"
@@ -209,9 +209,9 @@ function SupplySystem() {
                 <div className="grid gap-7 lg:grid-cols-[1fr_390px]">
                     <div className="grid gap-5 md:grid-cols-2">
                         {processCards.map((card) => (
-                            <div key={card.number} className="flex min-h-[220px] flex-col justify-between border border-zinc-200 bg-[#fbfaf6] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                            <div key={card.number} className="flex min-h-[220px] flex-col justify-between border border-zinc-200 bg-[#ffffff] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
                                 <div className="flex items-center justify-between gap-5">
-                                    <span className="font-serif text-4xl font-medium leading-none text-amber-600">{card.number}</span>
+                                    <span className="font-serif text-4xl font-medium leading-none text-emerald-600">{card.number}</span>
                                     <span className="rounded-full border border-emerald-900/15 bg-emerald-900/[0.05] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-900">
                                         {card.tag}
                                     </span>
@@ -259,7 +259,7 @@ function SupplySystem() {
 
 function ServiceAreaSection() {
     return (
-        <section className="bg-[#fbfaf6] py-20">
+        <section className="bg-[#ffffff] py-20">
             <div className="container mx-auto max-w-7xl px-4">
                 <div className="grid items-center gap-10 border-y border-zinc-200 py-12 lg:grid-cols-[0.75fr_1.25fr]">
                     <div>
@@ -281,7 +281,7 @@ function ServiceAreaSection() {
 
 function ConciergeSection() {
     return (
-        <section id="apply" className="bg-[#fbfaf6] pb-28 pt-4">
+        <section id="apply" className="bg-[#ffffff] pb-28 pt-4">
             <div className="container mx-auto max-w-7xl px-4">
                 <div className="relative overflow-hidden bg-[#050606] p-8 text-white shadow-[0_30px_90px_rgba(5,6,6,0.2)] md:p-14 lg:p-16">
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_38%)]" />

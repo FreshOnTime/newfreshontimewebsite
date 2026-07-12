@@ -24,20 +24,20 @@
     --primary: 160 40% 18%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Warm Champagne */
-    --secondary: 42 35% 95%;
+    /* Secondary: clean neutral */
+    --secondary: 0 0% 96%;
     --secondary-foreground: 220 20% 10%;
 
     --muted: 220 14% 96%;
     --muted-foreground: 220 10% 50%;
 
-    /* Accent: Rich Gold */
-    --accent: 45 85% 55%;
+    /* Accent: Fresh emerald */
+    --accent: 160 70% 35%;
     --accent-foreground: 220 20% 10%;
 
-    /* Luxury Gold for CTAs */
-    --gold: 42 78% 60%;
-    --gold-dark: 38 80% 45%;
+    /* Legacy token names retained for existing components. */
+    --gold: 160 70% 35%;
+    --gold-dark: 160 75% 24%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -100,7 +100,7 @@
     background-color: hsl(var(--background));
     background-image:
       radial-gradient(at 0% 0%, hsla(160, 40%, 97%, 0.5) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(45, 85%, 96%, 0.5) 0px, transparent 50%);
+      radial-gradient(at 100% 0%, hsla(160, 55%, 96%, 0.5) 0px, transparent 50%);
     background-attachment: fixed;
   }
 

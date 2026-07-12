@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Star, Sparkles, Truck, Clock } from 'lucide-react';
+import { Check, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,10 +33,10 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
     return (
         <div
             className={cn(
-                "relative group flex flex-col h-full overflow-hidden border border-[#e2ddd3] p-8 transition-all duration-500 md:p-10",
+                "group relative flex h-full flex-col overflow-hidden border border-zinc-200 p-8 transition-all duration-300 md:p-9",
                 isFeatured
-                    ? "bg-[#142019] text-white shadow-2xl scale-105 lg:-mt-4 lg:-mb-4 z-20"
-                    : "bg-white text-zinc-900 hover:shadow-xl hover:-translate-y-1 z-10"
+                    ? "z-20 bg-[#09090b] text-white shadow-2xl ring-1 ring-emerald-500/50"
+                    : "z-10 bg-white text-zinc-900 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl"
             )}
         >
             {/* Featured Badge - Minimal */}
@@ -88,8 +88,8 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
                         className={cn(
                             "h-14 w-full rounded-none text-[10px] font-bold uppercase tracking-[0.18em] shadow-none transition-all duration-300",
                             isFeatured
-                                ? "bg-[#f0dfb6] text-[#142019] hover:bg-white"
-                                : "bg-[#142019] text-white hover:bg-emerald-900"
+                                ? "bg-[#d1fae5] text-[#09090b] hover:bg-white"
+                                : "bg-[#09090b] text-white hover:bg-emerald-900"
                         )}
                     >
                         Select Box

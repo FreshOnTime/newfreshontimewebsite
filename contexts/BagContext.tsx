@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Bag } from '@/models/Bag';
 // import { BagItem } from '@/models/BagItem';
 import { Product } from '@/models/product';
 import { useAuth } from './AuthContext';
+import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
 // API response interfaces
 interface ApiProduct {
@@ -60,6 +61,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
   // Use authenticated user ObjectId for database queries; don't fallback to a hardcoded id
   const userId = user?._id;
   const router = useRouter();
+  const pathname = usePathname();
 
   const fetchBags = useCallback(async () => {
     setLoading(true);
@@ -346,9 +348,27 @@ export function BagProvider({ children }: { children: ReactNode }) {
   }, [bags]);
 
   useEffect(() => {
-    fetchBags();
+    if (!userId) {
+      setBags([]);
+      setCurrentBag(null);
+      setLoading(false);
+      return;
+    }
+
+    // Load immediately when a bag page is open. On all other pages it remains
+    // an idle task so the header does not delay first content.
+    if (pathname.startsWith('/bags')) {
+      fetchBags();
+      return;
+    }
+
+    const task = scheduleIdleTask(fetchBags, {
+      timeout: 4000,
+      fallbackDelayMs: 2500,
+    });
+    return () => task.cancel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, pathname, fetchBags]);
 
   const value = {
     bags,

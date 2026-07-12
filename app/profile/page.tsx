@@ -51,6 +51,9 @@ export default function ProfilePage() {
 
   // Defensive role handling: backend may momentarily return no role on refresh
   const role = typeof user.role === 'string' && user.role ? user.role : 'customer';
+  const normalizedRole = role.toLowerCase();
+  const dashboardHref = normalizedRole === 'admin' ? '/admin' : '/dashboard';
+  const dashboardLabel = normalizedRole === 'admin' ? 'Admin Dashboard' : 'Open Dashboard';
   // local alias to access possibly-absent fields without changing global types
   const u = user as { isEmailVerified?: boolean; isPhoneVerified?: boolean };
 
@@ -94,9 +97,17 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <p className="mt-2 text-gray-600">Manage your account settings and preferences</p>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+            <p className="mt-2 text-gray-600">Manage your account settings and preferences</p>
+          </div>
+          <Link href={dashboardHref}>
+            <Button className="bg-zinc-950 text-white hover:bg-emerald-800">
+              <User className="mr-2 h-4 w-4" />
+              {dashboardLabel}
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -232,14 +243,12 @@ export default function ProfilePage() {
                     Manage Addresses
                   </Button>
                 </Link>
-                {(role === 'admin' || role === 'manager') && (
-                  <Link href="/dashboard" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <User className="w-4 h-4 mr-2" />
-                      Admin Dashboard
-                    </Button>
-                  </Link>
-                )}
+                <Link href={dashboardHref} className="block">
+                  <Button variant="outline" className="w-full justify-start">
+                    <User className="w-4 h-4 mr-2" />
+                    {dashboardLabel}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 

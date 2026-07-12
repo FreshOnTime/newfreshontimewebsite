@@ -1,8 +1,45 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = "freshpick-v2";
-const STATIC_CACHE = "freshpick-static-v2";
-const DYNAMIC_CACHE = "freshpick-dynamic-v2";
+const CACHE_NAME = "freshpick-v3";
+const STATIC_CACHE = "freshpick-static-v3";
+const DYNAMIC_CACHE = "freshpick-dynamic-v3";
+
+// These routes are public catalogue/marketing content. Account, bag, checkout,
+// order, dashboard, and admin pages are intentionally excluded so no
+// user-specific response can be stored by the browser.
+const PUBLIC_PAGE_PATHS = new Set([
+    "/",
+    "/products",
+    "/search",
+    "/meals",
+    "/homemade",
+    "/categories",
+    "/deals",
+    "/subscriptions",
+    "/meal-kits",
+    "/about",
+    "/b2b",
+]);
+
+function isCacheablePublicPage(url) {
+    return PUBLIC_PAGE_PATHS.has(url.pathname) || url.pathname.startsWith("/categories/");
+}
+
+function staleWhileRevalidate(request) {
+    return caches.open(DYNAMIC_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        const network = fetch(request)
+            .then((response) => {
+                if (response.ok) cache.put(request, response.clone());
+                return response;
+            })
+            .catch(() => cached);
+
+        // A cached response makes repeat navigation immediate while the latest
+        // public content refreshes quietly in the background.
+        return cached || network;
+    });
+}
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
@@ -57,14 +94,25 @@ self.addEventListener("fetch", (event) => {
     // Skip Chrome extension requests
     if (url.protocol === "chrome-extension:") return;
 
-    // Do not pre-cache or cache page HTML. It can contain user-specific content,
-    // and caching it causes extra server requests during installation as well as
-    // stale navigation responses after a deployment.
+    // Cache only explicitly public page HTML and Next RSC payloads. This is the
+    // path used by client-side navigation, so it removes the network wait after
+    // a visitor has opened a catalogue page once.
     if (request.mode === "navigate") {
+        if (isCacheablePublicPage(url)) {
+            event.respondWith(
+                staleWhileRevalidate(request).catch(() => caches.match("/offline"))
+            );
+            return;
+        }
         event.respondWith(
             fetch(request)
                 .catch(() => caches.match("/offline"))
         );
+        return;
+    }
+
+    if (request.headers.get("RSC") === "1" && isCacheablePublicPage(url)) {
+        event.respondWith(staleWhileRevalidate(request));
         return;
     }
 

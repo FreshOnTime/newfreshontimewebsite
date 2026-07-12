@@ -25,15 +25,15 @@ const badges = [
 
 export default function TrustBadges() {
     return (
-        <section className="border-y border-[#d8d0c1] bg-[#faf8f3]">
+        <section className="border-y border-[#e4e4e7] bg-[#ffffff]">
             <div className="container mx-auto max-w-7xl px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                     {badges.map((badge) => (
                         <div
                             key={badge.title}
-                            className="group flex min-h-32 items-center gap-5 border-b border-[#d8d0c1] px-4 py-8 last:border-b-0 md:px-8 lg:border-b-0 lg:border-r lg:last:border-r-0"
+                            className="group flex min-h-32 items-center gap-5 border-b border-[#e4e4e7] px-4 py-8 last:border-b-0 md:px-8 lg:border-b-0 lg:border-r lg:last:border-r-0"
                         >
-                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-[#8b6d32]">
+                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-[#047857]">
                                 <badge.icon className="h-5 w-5 stroke-1" />
                             </div>
                             <div>

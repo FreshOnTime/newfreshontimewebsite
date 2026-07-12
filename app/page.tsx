@@ -12,8 +12,6 @@ import { AnimatedSection, AnimatedProductItem } from "@/components/home/Animated
 import BannerGrid from "@/components/home/BannerGrid";
 import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import CategoryBento from "@/components/home/CategoryBento";
-import GuaranteeCta from "@/components/home/GuaranteeCta";
-import PrivateClientCTA from "@/components/home/PrivateClientCTA";
 import TrustBadges from "@/components/home/TrustBadges";
 import FreshPickPathways from "@/components/home/FreshPickPathways";
 
@@ -144,17 +142,17 @@ export default async function Home() {
       <CategoryBento categories={categories} />
 
       {/* Featured Products Section */}
-      <section className="bg-[#faf8f3] py-24 md:py-36">
+      <section className="bg-[#ffffff] py-24 md:py-36">
         <div className="container mx-auto px-4 md:px-8">
           <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
             <div>
-              <span className="mb-6 block text-[10px] font-bold uppercase tracking-[0.34em] text-[#8b6d32]">
+              <span className="mb-6 block text-[10px] font-bold uppercase tracking-[0.34em] text-black">
                 Fresh Today
               </span>
-              <h2 className="mb-5 font-serif text-5xl font-normal leading-[0.98] tracking-tight text-[#142019] md:text-7xl">
-                Today&apos;s <span className="italic text-emerald-800">fresh picks.</span>
+              <h2 className="mb-5 font-serif text-5xl font-normal leading-[0.98] tracking-tight text-black md:text-7xl">
+                Today&apos;s <span className="italic text-black">fresh picks.</span>
               </h2>
-              <p className="text-lg md:text-xl text-zinc-500 max-w-xl font-light leading-relaxed">
+              <p className="max-w-xl text-lg font-light leading-relaxed text-zinc-700 md:text-xl">
                 The latest FreshPick arrivals, selected for your next kitchen, table, or delivery day.
               </p>
             </div>
@@ -199,14 +197,6 @@ export default async function Home() {
           </ProductErrorBoundary>
         </div>
       </section>
-
-
-
-      {/* Guarantee CTA */}
-      <GuaranteeCta />
-
-      {/* Private Client Services CTA */}
-      <PrivateClientCTA />
     </div>
   );
 }

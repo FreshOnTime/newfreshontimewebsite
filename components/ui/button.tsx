@@ -18,7 +18,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-emerald-50 hover:text-emerald-700",
         link: "text-primary underline-offset-4 hover:underline",
-        "elite": "bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 text-amber-950 hover:to-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.4)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6)] hover:-translate-y-0.5 border border-amber-400/20",
+        "elite": "bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-500 text-emerald-950 hover:to-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.28)] hover:shadow-[0_0_30px_rgba(16,185,129,0.42)] hover:-translate-y-0.5 border border-emerald-400/20",
         "luxury": "bg-primary text-white border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 backdrop-blur-md",
       },
       size: {

@@ -42,8 +42,8 @@ export default function FreshPickPathways() {
       <div className="container mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-16 grid gap-8 md:grid-cols-[1fr_0.75fr] md:items-end md:mb-24">
           <div>
-          <span className="mb-6 block text-[10px] font-bold uppercase tracking-[0.34em] text-[#8b6d32]">A house of fresh</span>
-          <h2 className="font-serif text-5xl font-normal leading-[0.95] text-[#142019] md:text-7xl">
+          <span className="mb-6 block text-[10px] font-bold uppercase tracking-[0.34em] text-[#047857]">A house of fresh</span>
+          <h2 className="font-serif text-5xl font-normal leading-[0.95] text-[#09090b] md:text-7xl">
             Four ways to live <span className="italic text-emerald-800">well.</span>
           </h2>
           </div>
@@ -57,13 +57,13 @@ export default function FreshPickPathways() {
             <Link
               key={title}
               href={href}
-              className={`group flex min-h-[360px] flex-col px-5 py-10 transition-colors duration-500 hover:bg-[#f5f1e8] md:px-8 md:py-12 ${index > 0 ? "border-t border-zinc-200 md:border-l md:border-t-0" : ""}`}
+              className={`group flex min-h-[360px] flex-col px-5 py-10 transition-colors duration-500 hover:bg-[#ecfdf5] md:px-8 md:py-12 ${index > 0 ? "border-t border-zinc-200 md:border-l md:border-t-0" : ""}`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-serif text-sm italic text-[#a07e3e]">{number}</span>
+                <span className="font-serif text-sm italic text-[#059669]">{number}</span>
                 <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">{eyebrow}</span>
               </div>
-              <h3 className="mt-16 font-serif text-3xl font-normal leading-tight text-[#142019]">{title}</h3>
+              <h3 className="mt-16 font-serif text-3xl font-normal leading-tight text-[#09090b]">{title}</h3>
               <p className="mt-5 text-sm font-light leading-7 text-zinc-500">{description}</p>
               <span className="mt-auto inline-flex items-center pt-8 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-800">
                 {action} <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

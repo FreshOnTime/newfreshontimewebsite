@@ -9,7 +9,7 @@ const features = [
         icon: Sparkles,
         title: "Hand-Selected Quality",
         description: "Every item is carefully inspected and selected by our expert buyers to ensure only the finest products reach your table.",
-        gradient: "from-amber-400 to-orange-500",
+        gradient: "from-emerald-400 to-emerald-500",
     },
     {
         icon: Leaf,
@@ -43,7 +43,7 @@ export default function WhyChooseUs() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-20"
                 >
-                    <span className="text-amber-600 font-medium tracking-[0.2em] text-xs uppercase mb-6 block">
+                    <span className="text-emerald-600 font-medium tracking-[0.2em] text-xs uppercase mb-6 block">
                         Our Promise
                     </span>
                     <h2 className="text-4xl md:text-6xl font-heading font-medium text-zinc-900 mb-6 drop-shadow-sm">

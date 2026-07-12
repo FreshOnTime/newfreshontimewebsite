@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -12,13 +12,14 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBag } from "@/contexts/BagContext";
+import { scheduleIdleTask } from "@/lib/utils/idleCallback";
 
 interface NavCategory {
   name: string;
   slug: string;
 }
 
-const NAV_CATEGORIES_CACHE_KEY = "freshpick_nav_categories_v1";
+const NAV_CATEGORIES_CACHE_KEY = "freshpick_nav_categories_v2";
 const NAV_CATEGORIES_CACHE_TTL = 60 * 60 * 1000;
 
 function readCachedCategories(): NavCategory[] | null {
@@ -57,6 +58,26 @@ export function Navbar() {
   const bagCount = bags?.length || 0;
   const router = useRouter();
   const pathname = usePathname();
+  const prefetchedRoutes = useRef(new Set<string>());
+
+  // Do not prefetch every visible link on initial load. Instead, begin loading
+  // the route when a visitor signals intent by hovering or focusing it.
+  const prefetchRoute = useCallback((href: string) => {
+    if (prefetchedRoutes.current.has(href)) return;
+    prefetchedRoutes.current.add(href);
+    router.prefetch(href);
+  }, [router]);
+
+  // Preload the routes people use most after the first screen has had a
+  // chance to render. This makes both desktop and compact-menu navigation
+  // feel immediate without the original first-paint prefetch storm.
+  useEffect(() => {
+    const task = scheduleIdleTask(() => {
+      ["/products", "/meals", "/homemade", "/categories"].forEach(prefetchRoute);
+    }, { timeout: 2500, fallbackDelayMs: 1800 });
+
+    return () => task.cancel();
+  }, [prefetchRoute]);
 
   // Handle scroll effect for glassmorphism
   useEffect(() => {
@@ -126,7 +147,7 @@ export function Navbar() {
 
   const isHome = pathname === "/";
   const textColor = isHome && !scrolled ? "text-white" : "text-zinc-900";
-  const hoverColor = isHome && !scrolled ? "hover:text-amber-200" : "hover:text-emerald-700";
+  const hoverColor = isHome && !scrolled ? "hover:text-emerald-200" : "hover:text-emerald-700";
   const iconColor = isHome && !scrolled ? "text-white" : "text-zinc-600";
 
   return (
@@ -143,10 +164,10 @@ export function Navbar() {
             : "bg-transparent py-6"
             }`}
         >
-          <div className="container mx-auto px-6 md:px-12">
-            <div className="flex items-center justify-between">
+          <div className="container mx-auto max-w-[1800px] px-5 md:px-8 xl:px-12">
+            <div className="flex min-w-0 items-center justify-between gap-3 xl:gap-6">
               {/* Logo area */}
-              <div className="flex items-center gap-12">
+              <div className="flex min-w-0 items-center gap-4 xl:gap-8 2xl:gap-12">
                 <Link href="/" className="relative z-50 group">
                   <div className="flex flex-col">
                     <span className={`font-serif text-2xl md:text-3xl font-bold tracking-tight transition-colors duration-300 ${isHome && !scrolled ? "text-white" : "text-emerald-950"}`}>
@@ -159,25 +180,31 @@ export function Navbar() {
                 </Link>
 
                 {/* Desktop Navigation - Minimal & Elegant */}
-                <nav className="hidden lg:flex items-center gap-5">
-                  <Link prefetch={false} href="/products" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                <nav className="hidden lg:flex items-center gap-3 xl:gap-4 2xl:gap-5 whitespace-nowrap">
+                  <Link prefetch={false} href="/products" onMouseEnter={() => prefetchRoute("/products")} onFocus={() => prefetchRoute("/products")} className={`whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
                     Shop
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
-                  <Link prefetch={false} href="/homemade" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/homemade" onMouseEnter={() => prefetchRoute("/homemade")} onFocus={() => prefetchRoute("/homemade")} className={`whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
                     Homemade
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
-                  <Link prefetch={false} href="/meals" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/meals" onMouseEnter={() => prefetchRoute("/meals")} onFocus={() => prefetchRoute("/meals")} className={`whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
                     Meals on Deals
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
                   <div
                     className="relative group"
-                    onMouseEnter={loadCategories}
-                    onFocus={loadCategories}
+                    onMouseEnter={() => {
+                      loadCategories();
+                      prefetchRoute("/categories");
+                    }}
+                    onFocus={() => {
+                      loadCategories();
+                      prefetchRoute("/categories");
+                    }}
                   >
-                    <button className={`flex items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    <button className={`flex whitespace-nowrap items-center gap-1 text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                       Collections
                       <ChevronDown className="w-3 h-3 opacity-50" />
                     </button>
@@ -202,26 +229,29 @@ export function Navbar() {
                       </div>
                     </div>
                   </div>
-                  <Link prefetch={false} href="/subscriptions" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/subscriptions" onMouseEnter={() => prefetchRoute("/subscriptions")} onFocus={() => prefetchRoute("/subscriptions")} className={`whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Subscriptions
                   </Link>
-                  <Link prefetch={false} href="/b2b" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/contact" onMouseEnter={() => prefetchRoute("/contact")} onFocus={() => prefetchRoute("/contact")} className={`whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                    Contact
+                  </Link>
+                  <Link prefetch={false} href="/b2b" onMouseEnter={() => prefetchRoute("/b2b")} onFocus={() => prefetchRoute("/b2b")} className={`hidden whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 xl:block ${textColor} ${hoverColor}`}>
                     Business
                   </Link>
-                  <Link prefetch={false} href="/blog" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/blog" onMouseEnter={() => prefetchRoute("/blog")} onFocus={() => prefetchRoute("/blog")} className={`hidden whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 2xl:block ${textColor} ${hoverColor}`}>
                     Blog
                   </Link>
-                  <Link prefetch={false} href="/about" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/about" onMouseEnter={() => prefetchRoute("/about")} onFocus={() => prefetchRoute("/about")} className={`hidden whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 2xl:block ${textColor} ${hoverColor}`}>
                     Our Story
                   </Link>
                 </nav>
               </div>
 
               {/* Right Actions */}
-              <div className="flex items-center gap-6">
+              <div className="flex shrink-0 items-center gap-3 xl:gap-5">
                 {/* Expandable Search */}
                 <div className="hidden md:flex items-center">
-                  <div className={`relative flex items-center rounded-full px-4 py-2.5 transition-all duration-300 focus-within:ring-1 w-[250px] focus-within:w-[320px] ${scrolled || !isHome
+                  <div className={`relative flex items-center rounded-full px-4 py-2.5 transition-all duration-300 focus-within:ring-1 lg:w-[165px] xl:w-[200px] 2xl:w-[250px] xl:focus-within:w-[260px] 2xl:focus-within:w-[320px] ${scrolled || !isHome
                     ? "bg-zinc-100 focus-within:bg-white focus-within:ring-zinc-200"
                     : "bg-white/10 backdrop-blur-md border border-white/20 focus-within:bg-white/20 focus-within:border-white/40 focus-within:ring-white/0"
                     }`}>
@@ -242,7 +272,7 @@ export function Navbar() {
                 </div>
 
                 {/* Account */}
-                <div className="relative hidden md:block">
+                <div className="relative hidden lg:block">
                   <button
                     type="button"
                     aria-expanded={isAccountOpen}
@@ -262,6 +292,7 @@ export function Navbar() {
                       ) : (
                         <>
                           <Link prefetch={false} href="/profile" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">My Profile</Link>
+                          <Link prefetch={false} href="/dashboard" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">Dashboard</Link>
                           <Link prefetch={false} href="/orders" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">Orders</Link>
                           <div className="my-2 border-t border-zinc-100" />
                           <button type="button" onClick={handleLogout} className="block w-full rounded-xl px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 hover:text-red-600">Sign Out</button>
@@ -288,7 +319,7 @@ export function Navbar() {
 
                 {/* Mobile Menu Toggle */}
                 <button
-                  className={`md:hidden p-2 ${iconColor}`}
+                  className={`lg:hidden p-2 ${iconColor}`}
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
                   {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -308,12 +339,14 @@ export function Navbar() {
             <Link href="/meals" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Meals on Deals</Link>
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
             <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
+            <Link href="/contact" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Contact</Link>
             <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Business</Link>
             <Link href="/blog" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Blog</Link>
             <div className="h-px bg-gray-100 w-24 mx-auto my-2" />
             {user ? (
               <>
                 <Link href="/profile" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>My Profile</Link>
+                <Link href="/dashboard" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
                 <Link href="/orders" className="text-lg text-gray-600" onClick={() => setIsMenuOpen(false)}>My Orders</Link>
                 <button
                   className="text-lg text-red-600 font-medium"

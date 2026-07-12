@@ -118,21 +118,27 @@ export const GET = requireAuth(
       }
       upcoming.sort((a, b) => +new Date(a.date) - +new Date(b.date));
 
-      return NextResponse.json({
-        success: true,
-        data: {
-          stats: {
-            totalOrders,
-            openOrders,
-            totalSpent,
-            activeSubscriptions,
-            wishlistCount,
-            savedBags,
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            stats: {
+              totalOrders,
+              openOrders,
+              totalSpent,
+              activeSubscriptions,
+              wishlistCount,
+              savedBags,
+            },
+            recentOrders: recentOrderData,
+            upcomingDeliveries: upcoming.slice(0, 5),
           },
-          recentOrders: recentOrderData,
-          upcomingDeliveries: upcoming.slice(0, 5),
         },
-      });
+        // This is personalized data, so it must never enter a shared cache.
+        // A short browser-only cache avoids repeating the same aggregate work
+        // when the user leaves and returns to their dashboard.
+        { headers: { 'Cache-Control': 'private, max-age=30' } }
+      );
     } catch (error) {
       console.error('Error building customer dashboard:', error);
       return NextResponse.json({ error: 'Failed to load dashboard' }, { status: 500 });

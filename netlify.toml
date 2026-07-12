@@ -34,3 +34,22 @@
   for = "/uploads/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# These catalogue views contain only public data. Cache their rendered output
+# at the edge so repeat visits and client-side navigations do not wait for a
+# serverless function or the remote database. Query strings are cached as
+# separate variants by the CDN, preserving filters and search results.
+[[headers]]
+  for = "/products"
+  [headers.values]
+    Cache-Control = "public, s-maxage=300, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/search"
+  [headers.values]
+    Cache-Control = "public, s-maxage=300, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/categories/*"
+  [headers.values]
+    Cache-Control = "public, s-maxage=300, stale-while-revalidate=86400"

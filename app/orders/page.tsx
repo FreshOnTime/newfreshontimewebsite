@@ -78,10 +78,10 @@ export default function OrdersPage() {
     const load = async () => {
       setLoading(true);
       try {
-        let res = await fetch(`/api/orders?limit=50`, { credentials: 'include', cache: 'no-store' });
+        let res = await fetch(`/api/orders?limit=20&summary=1`, { credentials: 'include' });
         if (res.status === 401) {
           await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-          res = await fetch(`/api/orders?limit=50`, { credentials: 'include', cache: 'no-store' });
+          res = await fetch(`/api/orders?limit=20&summary=1`, { credentials: 'include' });
         }
         if (res.status === 401) {
           router.push(`/auth/login?redirect=/orders`);

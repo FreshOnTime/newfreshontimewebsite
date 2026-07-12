@@ -4,6 +4,8 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { useAuth } from './AuthContext';
 import { Product } from '@/models/product';
 import { toast } from 'sonner';
+import { scheduleIdleTask } from '@/lib/utils/idleCallback';
+import { usePathname } from 'next/navigation';
 
 interface WishlistContextType {
     wishlistItems: Product[];
@@ -19,15 +21,26 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const { user } = useAuth();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (user?._id) {
-            fetchWishlist();
+            // Do not make a visitor wait for the idle timer on the page that
+            // actually needs this data. Other routes keep the deferred load.
+            if (pathname.startsWith('/wishlist')) {
+                fetchWishlist();
+                return;
+            }
+            const task = scheduleIdleTask(fetchWishlist, {
+                timeout: 4000,
+                fallbackDelayMs: 2500,
+            });
+            return () => task.cancel();
         } else {
             setWishlistItems([]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?._id]);
+    }, [user?._id, pathname]);
 
     const fetchWishlist = async () => {
         if (!user?._id) return;

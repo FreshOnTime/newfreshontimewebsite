@@ -13,6 +13,21 @@ const ORDER_INCLUDE = {
   },
 } satisfies Prisma.OrderInclude;
 
+// The order-list page only needs these fields. Keeping the product and item
+// graph out of that request substantially reduces payload and join work.
+const ORDER_SUMMARY_SELECT = {
+  id: true,
+  orderNumber: true,
+  createdAt: true,
+  total: true,
+  status: true,
+  bagName: true,
+  isRecurring: true,
+  scheduleStatus: true,
+  nextDeliveryAt: true,
+  recurrence: true,
+} satisfies Prisma.OrderSelect;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeOrder(o: any) {
   return {
@@ -44,7 +59,8 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     const authUser = request.user;
     const userId = authUser?.mongoId || authUser?.userId;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.max(1, parseInt(searchParams.get('limit') || '10'));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const summaryOnly = searchParams.get('summary') === '1';
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -53,32 +69,43 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     const effectiveUserId = authUser?.role === 'admin' && queryUserId ? queryUserId : userId;
 
     const [ordersRaw, total] = await Promise.all([
-      prisma.order.findMany({
-        where: { customerId: effectiveUserId },
-        include: ORDER_INCLUDE,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
+      summaryOnly
+        ? prisma.order.findMany({
+          where: { customerId: effectiveUserId },
+          select: ORDER_SUMMARY_SELECT,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        })
+        : prisma.order.findMany({
+          where: { customerId: effectiveUserId },
+          include: ORDER_INCLUDE,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
       prisma.order.count({ where: { customerId: effectiveUserId } }),
     ]);
 
     const orders = ordersRaw.map(serializeOrder);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        orders,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-          hasNext: page < Math.ceil(total / limit),
-          hasPrev: page > 1,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          orders,
+          pagination: {
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit),
+            hasNext: page < Math.ceil(total / limit),
+            hasPrev: page > 1,
+          },
         },
       },
-    });
+      summaryOnly ? { headers: { 'Cache-Control': 'private, max-age=30' } } : undefined
+    );
   } catch (error) {
     console.error('Error fetching orders:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });

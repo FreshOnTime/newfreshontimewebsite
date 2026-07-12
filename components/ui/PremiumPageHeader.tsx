@@ -36,9 +36,9 @@ export default function PremiumPageHeader({
             unoptimized={backgroundImage.startsWith('http')}
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-[#06100c]/60" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#06100c]/90 via-[#06100c]/45 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#06100c] via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-[#09090b]/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/90 via-[#09090b]/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-black/30" />
         </div>
       )}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(216,189,122,0.08),transparent_32%),radial-gradient(circle_at_85%_70%,rgba(255,255,255,0.05),transparent_28%)]" />
@@ -52,16 +52,16 @@ export default function PremiumPageHeader({
           </div>
         ) : (
           <div className="max-w-5xl">
-            <span className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-[#d8bd7a]">
-              <span className="h-px w-10 bg-[#d8bd7a]/70" /> {eyebrow}
+            <span className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-[#6ee7b7]">
+              <span className="h-px w-10 bg-[#6ee7b7]/70" /> {eyebrow}
             </span>
-            <h1 className="mt-7 max-w-5xl font-serif text-5xl font-normal leading-[0.9] tracking-[-0.035em] text-[#faf7ef] md:text-7xl lg:text-8xl">
+            <h1 className="mt-7 max-w-5xl font-serif text-5xl font-normal leading-[0.9] tracking-[-0.035em] text-[#ffffff] md:text-7xl lg:text-8xl">
               {title}
             </h1>
             <div className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               {subtitle && <p className="max-w-2xl text-base font-light leading-8 text-white/65 md:text-lg">{subtitle}</p>}
               {count !== undefined && (
-                <span className="w-fit border-b border-[#d8bd7a]/60 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#ead69f]">
+                <span className="w-fit border-b border-[#6ee7b7]/60 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d1fae5]">
                   {count} curated {count === 1 ? "item" : "items"}
                 </span>
               )}
