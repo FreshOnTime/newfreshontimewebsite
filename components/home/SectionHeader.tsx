@@ -1,8 +1,5 @@
-"use client";
-
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 interface SectionHeaderProps {
   title: string;
@@ -13,45 +10,18 @@ interface SectionHeaderProps {
   className?: string;
 }
 
-const accentMap: Record<NonNullable<SectionHeaderProps["accent"]>, string> = {
-  green: "text-green-600 border-green-500 hover:bg-green-500 hover:text-white",
-  orange: "text-green-600 border-green-500 hover:bg-green-500 hover:text-white",
-  purple: "text-purple-600 border-purple-500 hover:bg-purple-500 hover:text-white",
-  red: "text-red-600 border-red-500 hover:bg-red-500 hover:text-white",
-  blue: "text-blue-600 border-blue-500 hover:bg-blue-500 hover:text-white",
-};
-
-export default function SectionHeader({
-  title,
-  subtitle,
-  ctaHref,
-  ctaLabel = "View all",
-  accent = "green",
-  className,
-}: SectionHeaderProps) {
+export default function SectionHeader({ title, subtitle, ctaHref, ctaLabel = "View all", className }: SectionHeaderProps) {
   return (
-    <div
-      className={`flex items-center justify-between mb-10 ${className ?? ""}`}
-    >
+    <div className={`mb-14 flex flex-col justify-between gap-7 border-b border-[#d8d0c1] pb-10 md:flex-row md:items-end ${className ?? ""}`}>
       <div>
-        <h2 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-lg text-gray-600 max-w-2xl">{subtitle}</p>
-        )}
+        <span className="mb-5 block text-[10px] font-bold uppercase tracking-[0.32em] text-[#8b6d32]">The FreshPick edit</span>
+        <h2 className="font-serif text-4xl font-normal leading-tight text-[#142019] md:text-6xl">{title}</h2>
+        {subtitle && <p className="mt-5 max-w-2xl text-base font-light leading-7 text-zinc-500">{subtitle}</p>}
       </div>
       {ctaHref && (
-        <Button
-          asChild
-          variant="outline"
-          className={`hidden md:flex border-2 ${accentMap[accent]}`}
-        >
-          <Link href={ctaHref}>
-            {ctaLabel}
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Link>
-        </Button>
+        <Link href={ctaHref} className="group inline-flex items-center text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-800">
+          {ctaLabel}<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Link>
       )}
     </div>
   );

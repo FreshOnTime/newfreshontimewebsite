@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma, Product } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
+import { revalidateTag } from 'next/cache';
 
 const createProductSchema = z.object({
   name: z.string().min(1).max(200),
@@ -173,6 +174,7 @@ export const POST = requireAdminSimple(async (request) => {
 
     const serialized = serializeAdminProduct(product);
     await logAuditAction(request.user!.userId, 'create', 'product', product.id, undefined, serialized, request);
+    revalidateTag('products', 'max');
 
     return NextResponse.json({ success: true, product: serialized }, { status: 201 });
   } catch (error: unknown) {

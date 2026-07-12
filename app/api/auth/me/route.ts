@@ -3,24 +3,27 @@ import { verifyToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
+  const canRefresh = Boolean(req.cookies.get('refreshToken')?.value);
+  const unauthenticated = () => NextResponse.json(
+    { error: 'User not authenticated', canRefresh },
+    { status: 401 }
+  );
+
   try {
     const accessToken = req.cookies.get('accessToken')?.value;
     if (!accessToken) {
-      return NextResponse.json(
-        { error: 'User not authenticated' },
-        { status: 401 }
-      );
+      return unauthenticated();
     }
 
     let payload;
     try {
       payload = verifyToken(accessToken);
     } catch {
-      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
+      return unauthenticated();
     }
 
     if (payload.type !== 'access') {
-      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
+      return unauthenticated();
     }
 
     // This is the only database query for /api/auth/me. Previously withAuth
@@ -30,10 +33,7 @@ export async function GET(req: NextRequest) {
       include: { addresses: true },
     });
     if (!dbUser || dbUser.isBanned) {
-      return NextResponse.json(
-        { error: 'User not authenticated' },
-        { status: 401 }
-      );
+      return unauthenticated();
     }
 
     const reg = dbUser.addresses.find((a) => a.isRegistration) || dbUser.addresses[0];

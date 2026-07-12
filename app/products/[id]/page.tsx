@@ -5,6 +5,7 @@ import ProductImage from "@/components/products/ProductImage";
 import { Product } from "@/models/product";
 import Markdown from "react-markdown";
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import { ProductControls } from "./ProductControls";
 // import { PageContainer } from "@/components/templates/PageContainer"; // Removed
 import rehypeSanitize from "rehype-sanitize";
@@ -22,7 +23,7 @@ export const revalidate = 300;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
-async function getProduct(id: string): Promise<Product | null> {
+const getProduct = unstable_cache(async (id: string): Promise<Product | null> => {
   try {
     const p = await prisma.product.findFirst({
       where: { OR: [{ id }, { sku: id }, { slug: id }] },
@@ -37,22 +38,9 @@ async function getProduct(id: string): Promise<Product | null> {
     return serializeProductForUi(p) as Product;
   } catch (error) {
     console.error('Failed to load product from DB:', error);
-    // ... (keep fallback logic)
-    try {
-      const { withBase } = await import('@/lib/serverUrl');
-      const absolute = withBase(`/api/products/${id}`);
-      let resp = await fetch(absolute, { next: { revalidate: 300 } });
-      if (!resp.ok) resp = await fetch(`/api/products/${id}`, { next: { revalidate: 300 } });
-      if (resp.ok) {
-        const data = await resp.json();
-        return data.data || null;
-      }
-    } catch (err) {
-      console.error('ProductPage - fallback fetch error:', err);
-    }
     return null;
   }
-}
+}, ['product-detail-v1'], { revalidate: 300, tags: ['products'] });
 
 // ... (keep generateMetadata exactly as is)
 // Enable SSG for top products to improve performance
@@ -208,7 +196,7 @@ export default async function ProductPage({
               {/* Visual */}
               <div className="md:col-span-6 lg:col-span-6 order-2 md:order-1">
                 <div className="relative aspect-[4/5] w-full max-w-lg mx-auto md:mr-auto rounded-sm overflow-hidden shadow-2xl">
-                  <ProductImage src={product.image.url} alt={product.name} />
+                  <ProductImage src={product.image.url} alt={product.name} priority />
                 </div>
               </div>
 

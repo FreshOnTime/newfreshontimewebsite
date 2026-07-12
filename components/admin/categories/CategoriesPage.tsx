@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { CategoryDialog } from '@/components/admin/categories/CategoryDialog';
 import { toast } from 'sonner';
 
-interface Category { _id: string; name: string; slug: string; isActive: boolean; sortOrder: number; createdAt: string; }
+interface Category { _id: string; name: string; slug: string; description?: string; imageUrl?: string | null; isActive: boolean; sortOrder: number; createdAt: string; }
 interface CategoriesResponse { categories: Category[]; pagination: { page: number; limit: number; total: number; pages: number } }
 
 export function CategoriesPage() {

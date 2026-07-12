@@ -1,36 +1,15 @@
 "use client";
 
-import ReferralBanner from "@/components/ReferralBanner"; // Add import
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Search,
-  ShoppingCart,
-  User,
   Menu,
   X,
-  MapPin,
-  LogOut,
-  Settings,
   ShoppingBag,
-  Package,
-  Heart,
   ChevronDown,
-  BookOpen
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBag } from "@/contexts/BagContext";
 
@@ -68,6 +47,7 @@ function readCachedCategories(): NavCategory[] | null {
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [navCategories, setNavCategories] = useState<NavCategory[]>([]);
@@ -136,6 +116,7 @@ export function Navbar() {
 
   const handleLogout = async () => {
     try {
+      setIsAccountOpen(false);
       await logout();
       router.push("/");
     } catch (error) {
@@ -179,12 +160,16 @@ export function Navbar() {
 
                 {/* Desktop Navigation - Minimal & Elegant */}
                 <nav className="hidden lg:flex items-center gap-5">
-                  <Link href="/products" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/products" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
                     Shop
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
-                  <Link href="/homemade" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/homemade" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
                     Homemade
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
+                  </Link>
+                  <Link prefetch={false} href="/meals" className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${textColor} ${hoverColor}`}>
+                    Meals on Deals
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full opacity-50" />
                   </Link>
                   <div
@@ -204,28 +189,29 @@ export function Navbar() {
                             <Link
                               key={cat.slug}
                               href={`/categories/${cat.slug}`}
+                              prefetch={false}
                               className="text-sm text-gray-600 hover:text-emerald-700 hover:bg-emerald-50/50 px-3 py-2 rounded-lg transition-colors"
                             >
                               {cat.name}
                             </Link>
                           ))}
-                          <Link href="/categories" className="text-xs font-bold uppercase tracking-wider text-emerald-600 mt-2 px-3 py-2 border-t border-gray-100 pt-3">
+                          <Link prefetch={false} href="/categories" className="text-xs font-bold uppercase tracking-wider text-emerald-600 mt-2 px-3 py-2 border-t border-gray-100 pt-3">
                             View All Collections
                           </Link>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <Link href="/subscriptions" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/subscriptions" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Subscriptions
                   </Link>
-                  <Link href="/b2b" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/b2b" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Business
                   </Link>
-                  <Link href="/blog" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/blog" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Blog
                   </Link>
-                  <Link href="/about" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
+                  <Link prefetch={false} href="/about" className={`text-sm font-medium tracking-wide transition-all duration-300 py-2 ${textColor} ${hoverColor}`}>
                     Our Story
                   </Link>
                 </nav>
@@ -256,45 +242,37 @@ export function Navbar() {
                 </div>
 
                 {/* Account */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className={`hidden md:flex items-center gap-2 text-sm font-medium transition-colors hover:opacity-80 ${textColor}`}>
-                      {user ? (
-                        <span className="max-w-[100px] truncate tracking-wide">{user.firstName}</span>
+                <div className="relative hidden md:block">
+                  <button
+                    type="button"
+                    aria-expanded={isAccountOpen}
+                    aria-haspopup="menu"
+                    onClick={() => setIsAccountOpen((open) => !open)}
+                    className={`flex items-center gap-2 text-sm font-medium transition-colors hover:opacity-80 ${textColor}`}
+                  >
+                    {user ? <span className="max-w-[100px] truncate tracking-wide">{user.firstName}</span> : "Sign In"}
+                  </button>
+                  {isAccountOpen && (
+                    <div role="menu" className="absolute right-0 mt-4 w-56 rounded-2xl border border-zinc-100 bg-white/95 p-2 shadow-2xl backdrop-blur-xl">
+                      {!user ? (
+                        <>
+                          <Link prefetch={false} href="/auth/login" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50">Access Account</Link>
+                          <Link prefetch={false} href="/auth/signup" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50">Create Account</Link>
+                        </>
                       ) : (
-                        "Sign In"
+                        <>
+                          <Link prefetch={false} href="/profile" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">My Profile</Link>
+                          <Link prefetch={false} href="/orders" onClick={() => setIsAccountOpen(false)} className="block rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">Orders</Link>
+                          <div className="my-2 border-t border-zinc-100" />
+                          <button type="button" onClick={handleLogout} className="block w-full rounded-xl px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 hover:text-red-600">Sign Out</button>
+                        </>
                       )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-zinc-100 bg-white/95 backdrop-blur-xl shadow-2xl mt-4">
-                    {!user ? (
-                      <>
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-3 px-4">
-                          <Link href="/auth/login">Access Account</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-3 px-4">
-                          <Link href="/auth/signup">Create Account</Link>
-                        </DropdownMenuItem>
-                      </>
-                    ) : (
-                      <>
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-2.5 px-4 font-medium text-zinc-600">
-                          <Link href="/profile">My Profile</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer focus:bg-zinc-50 focus:text-zinc-900 py-2.5 px-4 font-medium text-zinc-600">
-                          <Link href="/orders">Orders</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-zinc-100 my-2" />
-                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl cursor-pointer focus:bg-red-50 focus:text-red-600 py-2.5 px-4">
-                          Sign Out
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </div>
+                  )}
+                </div>
 
                 {/* Cart */}
-                <Link href="/bags" className="relative group">
+                <Link prefetch={false} href="/bags" className="relative group">
                   <div className={`p-2.5 rounded-full transition-all duration-300 ${isHome && !scrolled
                     ? "bg-white/10 hover:bg-white/20 text-white"
                     : "bg-zinc-100 hover:bg-emerald-50 text-zinc-900 hover:text-emerald-700"
@@ -327,6 +305,7 @@ export function Navbar() {
           <nav className="flex flex-col gap-6 text-center">
             <Link href="/products" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Shop</Link>
             <Link href="/homemade" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Homemade</Link>
+            <Link href="/meals" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Meals on Deals</Link>
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
             <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
             <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Business</Link>

@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
-import { serializeProductForUi } from '@/lib/productSerializer';
+import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
+
+// This endpoint backs type-ahead search and any client-side catalogue loading.
+// Its responses are public and are safe to cache at the CDN; product writes
+// already invalidate the server-side catalogue caches, while this bounds the
+// CDN's stale window for visitors that do not hit a warm serverless worker.
+const PUBLIC_CATALOG_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=86400';
 
 // GET /api/products - list products with optional filtering
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.max(1, parseInt(searchParams.get('limit') || '12'));
+    const requestedPage = parseInt(searchParams.get('page') || '1', 10);
+    const requestedLimit = parseInt(searchParams.get('limit') || '12', 10);
+    const page = Number.isFinite(requestedPage) ? Math.max(1, requestedPage) : 1;
+    // A bounded page protects the public route from an expensive unbounded
+    // fetch (and limits JSON parsing/rendering work in the browser).
+    const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(1, requestedLimit), 60) : 12;
     const search = searchParams.get('search');
     const categoryId = searchParams.get('categoryId');
     const supplierId = searchParams.get('supplierId');
@@ -48,18 +58,20 @@ export async function GET(req: NextRequest) {
     else if (sortParam === 'price-desc') orderBy = { price: 'desc' };
     else if (sortParam === 'oldest') orderBy = { createdAt: 'asc' };
 
-    const [rawProducts, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
-        include: { category: { select: { name: true, slug: true } } },
-      }),
-      prisma.product.count({ where }),
-    ]);
-
-    const products = rawProducts.map(serializeProductForUi);
+    // Fetching one extra row is much cheaper than count() over every matching
+    // product, especially through the remote Supabase connection. Product
+    // cards deliberately exclude wide JSON fields and relations.
+    const rawProducts = await prisma.product.findMany({
+      where,
+      orderBy,
+      skip: (page - 1) * limit,
+      take: limit + 1,
+      select: productCardSelect,
+    });
+    const hasNext = rawProducts.length > limit;
+    const products = rawProducts
+      .slice(0, limit)
+      .map((product) => serializeProductCardForUi(product));
 
     return NextResponse.json({
       success: true,
@@ -68,12 +80,13 @@ export async function GET(req: NextRequest) {
         pagination: {
           page,
           limit,
-          total,
-          pages: Math.ceil(total / limit),
-          hasNext: page < Math.ceil(total / limit),
+          count: products.length,
+          hasNext,
           hasPrev: page > 1,
         },
       },
+    }, {
+      headers: { 'Cache-Control': PUBLIC_CATALOG_CACHE_CONTROL },
     });
   } catch (error) {
     console.error('Get products error:', error);

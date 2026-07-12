@@ -4,7 +4,7 @@ import { Category, Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
-const schema = z.object({ name: z.string().min(1).max(100), slug: z.string().optional(), description: z.string().max(500).optional(), parentCategoryId: z.string().optional(), imageUrl: z.string().url().optional(), isActive: z.boolean().optional(), sortOrder: z.number().int().optional() });
+const schema = z.object({ name: z.string().min(1).max(100), slug: z.string().optional(), description: z.string().max(500).optional(), parentCategoryId: z.string().optional(), imageUrl: z.string().url().nullable().optional(), isActive: z.boolean().optional(), sortOrder: z.number().int().optional() });
 const querySchema = z.object({ page: z.string().optional().transform((v)=>v?parseInt(v):1), limit: z.string().optional().transform((v)=>v?Math.min(parseInt(v),100):100), search: z.string().optional() });
 
 function slugify(value: string) {

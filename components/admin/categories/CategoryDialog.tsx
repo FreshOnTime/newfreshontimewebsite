@@ -11,21 +11,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const schema = z.object({ name: z.string().min(1,'Required').max(100), slug: z.string().optional(), description: z.string().max(500).optional(), sortOrder: z.coerce.number().int().min(0).optional(), isActive: z.boolean().optional() });
+const schema = z.object({
+  name: z.string().min(1,'Required').max(100),
+  slug: z.string().optional(),
+  description: z.string().max(500).optional(),
+  imageUrl: z.union([z.string().url('Enter a valid image URL'), z.literal('')]).optional(),
+  sortOrder: z.coerce.number().int().min(0).optional(),
+  isActive: z.boolean().optional(),
+});
 type FormData = z.infer<typeof schema>;
 
-interface Category { _id?: string; name: string; slug: string; description?: string; isActive?: boolean; sortOrder?: number; }
+interface Category { _id?: string; name: string; slug: string; description?: string; imageUrl?: string | null; isActive?: boolean; sortOrder?: number; }
 
 export function CategoryDialog({ open, onOpenChange, category, onSave, readOnly = false }: { open: boolean; onOpenChange: (o: boolean) => void; category?: Partial<Category> | null; onSave: () => void; readOnly?: boolean; }) {
   const isEditing = !!category?._id;
   const [loading, setLoading] = useState(false);
-  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { name: '', slug: '', description: '', sortOrder: 0, isActive: true } });
+  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { name: '', slug: '', description: '', imageUrl: '', sortOrder: 0, isActive: true } });
 
   useEffect(() => {
     if (category) {
-      form.reset({ name: category.name, slug: category.slug, description: category.description || '', sortOrder: category.sortOrder ?? 0, isActive: category.isActive ?? true });
+      form.reset({ name: category.name, slug: category.slug, description: category.description || '', imageUrl: category.imageUrl || '', sortOrder: category.sortOrder ?? 0, isActive: category.isActive ?? true });
     } else {
-      form.reset({ name: '', slug: '', description: '', sortOrder: 0, isActive: true });
+      form.reset({ name: '', slug: '', description: '', imageUrl: '', sortOrder: 0, isActive: true });
     }
   }, [category, form]);
 
@@ -34,7 +41,8 @@ export function CategoryDialog({ open, onOpenChange, category, onSave, readOnly 
       setLoading(true);
       const url = isEditing && category?._id ? `/api/admin/categories/${category._id}` : '/api/admin/categories';
       const method = isEditing && category?._id ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) });
+      const payload = { ...data, imageUrl: data.imageUrl?.trim() || null };
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || 'Failed to save category');
@@ -75,6 +83,14 @@ export function CategoryDialog({ open, onOpenChange, category, onSave, readOnly 
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl><Textarea rows={3} {...field} disabled={readOnly} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField name="imageUrl" control={form.control} render={({ field }) => (
+              <FormItem>
+                <FormLabel>Collection image URL</FormLabel>
+                <FormControl><Input type="url" placeholder="https://…/category-image.jpg" {...field} disabled={readOnly} /></FormControl>
+                <p className="text-xs text-muted-foreground">Used on the homepage and Collections page. Leave blank for the branded fallback.</p>
                 <FormMessage />
               </FormItem>
             )} />

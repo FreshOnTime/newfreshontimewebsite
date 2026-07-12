@@ -1,8 +1,9 @@
 import { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import HomemadeContent from "@/app/homemade/HomemadeContent";
 import { Product } from "@/models/product";
 import prisma from '@/lib/prisma';
-import { serializeProductForUi } from '@/lib/productSerializer';
+import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
 
 // Match the subscription collection's cache behaviour: curated inventory does
 // not need a database-backed page render for each visitor.
@@ -50,29 +51,26 @@ export const metadata: Metadata = {
 };
 
 // Reusing logic to fetch products
-async function getDomesticProducts(): Promise<Product[]> {
+const getDomesticProducts = unstable_cache(async (): Promise<Product[]> => {
     try {
-        const categories = await prisma.category.findMany({
-            where: { slug: { in: ['domestic-produce', 'homemade', 'small-business'] } },
-            orderBy: { sortOrder: 'asc' },
-            select: { id: true },
-        });
-
-        if (categories.length === 0) return [];
-
         const raw = await prisma.product.findMany({
-            where: { categoryId: { in: categories.map((category) => category.id) }, archived: false },
+            // Use the indexed category relation directly. This avoids a
+            // category query followed by a dependent product query.
+            where: {
+                category: { slug: { in: ['domestic-produce', 'homemade', 'small-business'] } },
+                archived: false,
+            },
             orderBy: { createdAt: 'desc' },
-            include: { category: { select: { name: true, slug: true } } },
+            select: productCardSelect,
             take: 48,
         });
 
-        return raw.map((p) => serializeProductForUi(p) as Product);
+        return raw.map((p) => serializeProductCardForUi(p) as Product);
     } catch (err) {
         console.error('Failed to get domestic products:', err);
         return [];
     }
-}
+}, ['domestic-products-v1'], { revalidate: 300, tags: ['products'] });
 
 export default async function HomemadePage() {
     const products = await getDomesticProducts();

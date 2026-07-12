@@ -1,87 +1,74 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 interface PremiumPageHeaderProps {
-    title: string;
-    subtitle?: string;
-    backgroundImage?: string | null;
-    backgroundColor?: string;
-    count?: number;
-    isLoading?: boolean;
+  title: string;
+  subtitle?: string;
+  backgroundImage?: string | null;
+  backgroundColor?: string;
+  count?: number;
+  isLoading?: boolean;
+  eyebrow?: string;
 }
 
 export default function PremiumPageHeader({
-    title,
-    subtitle,
-    backgroundImage,
-    backgroundColor = "bg-zinc-900",
-    count,
-    isLoading = false
+  title,
+  subtitle,
+  backgroundImage,
+  backgroundColor = "bg-[#08140f]",
+  count,
+  isLoading = false,
+  eyebrow = "FreshPick · Colombo",
 }: PremiumPageHeaderProps) {
-    const useGradient = !backgroundImage;
+  return (
+    <section className={`relative flex min-h-[460px] items-end overflow-hidden text-white md:min-h-[560px] ${backgroundImage ? "" : backgroundColor}`}>
+      {backgroundImage && (
+        <div className="absolute inset-0">
+          <Image
+            src={backgroundImage}
+            alt=""
+            fill
+            priority
+            fetchPriority="high"
+            sizes="100vw"
+            // Remote campaign images are already CDN-resized by their URL.
+            // Deliver them directly instead of waiting for a cold serverless
+            // image-optimizer invocation on the first visitor request.
+            unoptimized={backgroundImage.startsWith('http')}
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-[#06100c]/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06100c]/90 via-[#06100c]/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#06100c] via-transparent to-black/30" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(216,189,122,0.08),transparent_32%),radial-gradient(circle_at_85%_70%,rgba(255,255,255,0.05),transparent_28%)]" />
 
-    return (
-        <section className={`relative h-[45vh] min-h-[400px] flex items-center justify-center overflow-hidden mb-16 ${useGradient ? backgroundColor : ''}`}>
-            {/* Background Image with blur and overlay */}
-            {!useGradient && (
-                <div className="absolute inset-0 z-0">
-                    <motion.div
-                        initial={{ scale: 1.1 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 1.5, ease: "easeOut" }}
-                        className="relative w-full h-full"
-                    >
-                        <Image
-                            src={backgroundImage!}
-                            alt={title}
-                            fill
-                            className="object-cover"
-                            priority
-                        />
-                    </motion.div>
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-950/20 to-transparent" />
-                </div>
-            )}
-
-            {/* Content */}
-            <div className="relative z-10 container mx-auto px-4 text-center">
-                {isLoading ? (
-                    <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-24 w-3/4 max-w-lg bg-white/10 rounded-xl mb-6" />
-                        <div className="h-8 w-1/2 max-w-md bg-white/5 rounded-lg mb-8" />
-                        <div className="h-10 w-32 bg-white/5 rounded-full" />
-                    </div>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                    >
-                        <div className="mb-6 flex justify-center">
-                            <span className="h-[1px] w-24 bg-amber-400/60 inline-block" />
-                        </div>
-                        <h1 className="text-5xl md:text-7xl font-heading font-medium text-white mb-6 tracking-wide drop-shadow-2xl">
-                            {title}
-                        </h1>
-                        {subtitle && (
-                            <p className="text-lg md:text-2xl text-zinc-200 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-md">
-                                {subtitle}
-                            </p>
-                        )}
-                        {count !== undefined && (
-                            <div className="mt-8">
-                                <span className="inline-flex items-center px-5 py-2 rounded-full border border-white/10 bg-white/5 text-amber-200/90 text-sm font-medium tracking-widest uppercase backdrop-blur-md">
-                                    {count} Items Curated
-                                </span>
-                            </div>
-                        )}
-                    </motion.div>
-                )}
+      <div className="container relative z-10 mx-auto max-w-7xl px-5 pb-16 md:px-8 md:pb-20">
+        {isLoading ? (
+          <div className="max-w-3xl animate-pulse">
+            <div className="h-3 w-48 bg-white/15" />
+            <div className="mt-8 h-20 w-3/4 bg-white/10" />
+            <div className="mt-8 h-5 w-1/2 bg-white/10" />
+          </div>
+        ) : (
+          <div className="max-w-5xl">
+            <span className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-[#d8bd7a]">
+              <span className="h-px w-10 bg-[#d8bd7a]/70" /> {eyebrow}
+            </span>
+            <h1 className="mt-7 max-w-5xl font-serif text-5xl font-normal leading-[0.9] tracking-[-0.035em] text-[#faf7ef] md:text-7xl lg:text-8xl">
+              {title}
+            </h1>
+            <div className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              {subtitle && <p className="max-w-2xl text-base font-light leading-8 text-white/65 md:text-lg">{subtitle}</p>}
+              {count !== undefined && (
+                <span className="w-fit border-b border-[#d8bd7a]/60 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#ead69f]">
+                  {count} curated {count === 1 ? "item" : "items"}
+                </span>
+              )}
             </div>
-        </section>
-    );
+          </div>
+        )}
+      </div>
+    </section>
+  );
 }
-

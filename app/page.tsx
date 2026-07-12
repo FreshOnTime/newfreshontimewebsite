@@ -8,17 +8,17 @@ import { Product } from "@/models/product";
 
 // Client Islands
 import HeroSection from "@/components/home/HeroSection";
-import HomeCarousel from "@/components/home/HomeCarousel";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
 import BannerGrid from "@/components/home/BannerGrid";
-import InfiniteMarquee from "@/components/ui/infinite-marquee";
+import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import CategoryBento from "@/components/home/CategoryBento";
 import GuaranteeCta from "@/components/home/GuaranteeCta";
 import PrivateClientCTA from "@/components/home/PrivateClientCTA";
 import TrustBadges from "@/components/home/TrustBadges";
+import FreshPickPathways from "@/components/home/FreshPickPathways";
 
 import prisma from "@/lib/prisma";
-import { serializeProductForUi } from "@/lib/productSerializer";
+import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
 
 // Keep the landing page at the CDN. Product changes do not need to force a
 // database-backed render for every visitor, and Netlify can regenerate this
@@ -27,11 +27,18 @@ export const dynamic = "force-static";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Fresh Pick | Fresh Products & Recurring Orders - #1 in Sri Lanka",
-  description: "The best place for fresh products and recurring orders in Sri Lanka. Get premium fresh produce delivered to your door with flexible weekly schedules. Same-day delivery available.",
+  title: "Fresh Groceries, Ready Meals & Recurring Delivery in Colombo",
+  description: "FreshPick brings fresh groceries, homemade favourites, cooked meals, and flexible recurring deliveries to homes and businesses across Colombo, Sri Lanka.",
+  keywords: [
+    "fresh grocery delivery Colombo",
+    "cooked food delivery Colombo",
+    "recurring grocery delivery Sri Lanka",
+    "homemade food Colombo",
+    "online groceries Sri Lanka",
+  ],
   openGraph: {
-    title: "Fresh Pick | Fresh Products & Recurring Orders Sri Lanka",
-    description: "Your premium online grocery store in Colombo. Best fresh products and recurring grocery orders.",
+    title: "FreshPick | Groceries, Ready Meals & Recurring Delivery in Colombo",
+    description: "Fresh groceries, homemade favourites, cooked meals, and flexible recurring delivery from one FreshPick basket.",
     type: "website",
     locale: "en_LK",
     url: "https://freshpick.lk",
@@ -63,26 +70,7 @@ async function getHomeData(): Promise<HomeData> {
           // Two rows on wide screens is enough for the home page and keeps the
           // server payload, hydration work, and below-the-fold image queue small.
           take: 12,
-          select: {
-            id: true,
-            name: true,
-            sku: true,
-            slug: true,
-            description: true,
-            price: true,
-            discountPercentage: true,
-            stockQty: true,
-            minStockLevel: true,
-            image: true,
-            images: true,
-            isFeatured: true,
-            attributes: true,
-            tags: true,
-            categoryId: true,
-            createdAt: true,
-            updatedAt: true,
-            category: { select: { name: true, slug: true } },
-          },
+          select: productCardSelect,
         }),
         prisma.category.findMany({
           where: { isActive: true },
@@ -91,7 +79,7 @@ async function getHomeData(): Promise<HomeData> {
         }),
       ]);
 
-      const products = rawProducts.map(serializeProductForUi);
+      const products = rawProducts.map(serializeProductCardForUi);
       const categories = allCategories.map((c) => ({
         _id: c.id,
         name: c.name,
@@ -130,13 +118,6 @@ async function getHomeData(): Promise<HomeData> {
   }
 }
 
-const promoImages = [
-  "/bannermaterial/1.jpg",
-  "/bannermaterial/2.jpg",
-  "/bannermaterial/3.jpg",
-  "/bannermaterial/4.jpg",
-];
-
 export default async function Home() {
   const { products, categories } = await getHomeData();
 
@@ -145,14 +126,14 @@ export default async function Home() {
       {/* Hero Section - Client Island */}
       <HeroSection />
 
-      {/* Infinite Marquee */}
-      <InfiniteMarquee />
-
-      {/* Promotional Carousel - Client Island */}
-      <HomeCarousel images={promoImages} />
+      {/* Editorial brand statement */}
+      <LuxuryManifesto />
 
       {/* Trust Badges */}
       <TrustBadges />
+
+      {/* FreshPick's four core shopping paths */}
+      <FreshPickPathways />
 
 
 
@@ -163,18 +144,18 @@ export default async function Home() {
       <CategoryBento categories={categories} />
 
       {/* Featured Products Section */}
-      <section className="py-24 md:py-32 bg-transparent">
+      <section className="bg-[#faf8f3] py-24 md:py-36">
         <div className="container mx-auto px-4 md:px-8">
           <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
             <div>
-              <span className="text-amber-500 text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
-                Trending Now
+              <span className="mb-6 block text-[10px] font-bold uppercase tracking-[0.34em] text-[#8b6d32]">
+                Fresh Today
               </span>
-              <h2 className="text-4xl md:text-6xl font-heading font-medium mb-4 text-zinc-900 tracking-tight leading-[1.1]">
-                Featured <span className="italic font-serif text-emerald-700">Selections</span>
+              <h2 className="mb-5 font-serif text-5xl font-normal leading-[0.98] tracking-tight text-[#142019] md:text-7xl">
+                Today&apos;s <span className="italic text-emerald-800">fresh picks.</span>
               </h2>
               <p className="text-lg md:text-xl text-zinc-500 max-w-xl font-light leading-relaxed">
-                Curated favorites, loved by our most discerning customers.
+                The latest FreshPick arrivals, selected for your next kitchen, table, or delivery day.
               </p>
             </div>
             <Button

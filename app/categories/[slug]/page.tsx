@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import ProductGrid from "@/components/products/ProductGrid";
 // import { PageContainer } from "@/components/templates/PageContainer"; 
 // import SectionHeader from "@/components/home/SectionHeader";
@@ -7,12 +8,14 @@ import { Product } from "@/models/product";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 
 import prisma from '@/lib/prisma';
-import { serializeProductForUi } from '@/lib/productSerializer';
+import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
+
+export const revalidate = 300;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
 // Helper to get category details
-async function getCategoryBySlug(slug: string) {
+const getCategoryBySlug = unstable_cache(async (slug: string) => {
   try {
     const cat = await prisma.category.findUnique({ where: { slug } });
     if (!cat) return null;
@@ -25,24 +28,22 @@ async function getCategoryBySlug(slug: string) {
   } catch {
     return null;
   }
-}
+}, ['category-by-slug-v1'], { revalidate: 300, tags: ['products'] });
 
-async function getCategoryProductsBySlug(slug: string): Promise<Product[]> {
+const getCategoryProducts = unstable_cache(async (categoryId: string): Promise<Product[]> => {
   try {
-    const cat = await prisma.category.findUnique({ where: { slug } });
-    if (!cat) return [];
-
     const raw = await prisma.product.findMany({
-      where: { categoryId: cat.id, archived: false },
+      where: { categoryId, archived: false },
       orderBy: { createdAt: 'desc' },
-      include: { category: { select: { name: true, slug: true } } },
+      select: productCardSelect,
+      take: 60,
     });
-    return raw.map((p) => serializeProductForUi(p) as Product);
+    return raw.map((p) => serializeProductCardForUi(p) as Product);
   } catch (err) {
     console.error('Failed to get category products by slug:', err);
     return [];
   }
-}
+}, ['category-products-v1'], { revalidate: 300, tags: ['products'] });
 
 // Generate dynamic metadata for category pages
 export async function generateMetadata({
@@ -102,7 +103,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
   const name = category?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
-  const products = await getCategoryProductsBySlug(slug);
+  const products = category ? await getCategoryProducts(category.id) : [];
 
   const breadcrumbItems = [
     { name: 'Home', url: SITE_URL },

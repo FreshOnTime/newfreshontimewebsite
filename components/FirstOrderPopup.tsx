@@ -8,6 +8,8 @@ import Link from 'next/link';
 export default function FirstOrderPopup() {
     const [isOpen, setIsOpen] = useState(false);
     const [email, setEmail] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         // Check if user has seen the popup before
@@ -24,13 +26,26 @@ export default function FirstOrderPopup() {
         localStorage.setItem('firstOrderPopupSeen', 'true');
     };
 
-    const handleSubscribe = () => {
-        if (email) {
-            // Save email for newsletter
+    const handleSubscribe = async () => {
+        if (!email) return;
+        setIsSubmitting(true);
+        setError('');
+        try {
+            const response = await fetch('/api/newsletter', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, source: 'popup' }),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || 'Unable to subscribe right now.');
+
             localStorage.setItem('firstOrderEmail', email);
             localStorage.setItem('firstOrderPopupSeen', 'true');
             setIsOpen(false);
-            // Could also send to API here
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Unable to subscribe right now.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -79,16 +94,20 @@ export default function FirstOrderPopup() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
+                                required
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             />
                             <Button
                                 onClick={handleSubscribe}
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold"
+                                disabled={isSubmitting || !email}
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white py-3 rounded-xl font-semibold"
                             >
-                                Get 15% Off
+                                {isSubmitting ? 'Joining…' : 'Get 15% Off'}
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </div>
+
+                        {error && <p className="mb-3 text-sm text-red-600" role="alert">{error}</p>}
 
                         <p className="text-xs text-gray-500 text-center">
                             Use code <span className="font-bold text-emerald-600">WELCOME15</span> at checkout

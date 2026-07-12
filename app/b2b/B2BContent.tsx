@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, Home, Sprout, Truck, Utensils } from "lucide-react";
+import PartnershipRequestForm from "./PartnershipRequestForm";
 
 const partnerSegments = [
     {
@@ -299,33 +300,10 @@ function ConciergeSection() {
                             </div>
                         </div>
 
-                        <form className="bg-white p-8 text-zinc-950 md:p-10" action="mailto:b2b@freshpick.lk" method="post" encType="text/plain">
-                            <div className="space-y-2">
-                                <InputLike label="Business or household name" name="name" placeholder="e.g. restaurant, office, villa, household" />
-                                <InputLike label="Contact person" name="contact" placeholder="Full name" />
-                                <InputLike label="Phone number" name="phone" placeholder="+94..." />
-                                <div>
-                                    <label className="sr-only" htmlFor="requirement">Requirement</label>
-                                    <textarea id="requirement" name="requirement" rows={4} className="w-full resize-none border-b border-zinc-200 bg-transparent py-5 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:border-emerald-700" placeholder="Weekly volume, delivery area, produce categories, or farmer partnership interest" />
-                                </div>
-                            </div>
-                            <button type="submit" className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-emerald-400 px-8 text-sm font-black uppercase tracking-[0.18em] text-zinc-950 transition-colors hover:bg-emerald-300">
-                                Request review
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </button>
-                        </form>
+                        <PartnershipRequestForm />
                     </div>
                 </div>
             </div>
         </section>
-    );
-}
-
-function InputLike({ label, name, placeholder }: { label: string; name: string; placeholder: string }) {
-    return (
-        <div>
-            <label className="sr-only" htmlFor={name}>{label}</label>
-            <input id={name} name={name} type="text" className="w-full border-b border-zinc-200 bg-transparent py-5 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:border-emerald-700" placeholder={placeholder} />
-        </div>
     );
 }

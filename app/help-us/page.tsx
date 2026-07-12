@@ -1,40 +1,47 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Lightbulb, MessageCircleWarning } from "lucide-react";
+import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
+
+const paths = [
+  {
+    icon: MessageCircleWarning,
+    label: "Client care",
+    title: "Something needs attention.",
+    copy: "Tell us about an order, checkout, delivery, or account issue. Urgent matters are prioritised by our care team.",
+    href: "/contact?type=issue",
+    action: "Report an issue",
+  },
+  {
+    icon: Lightbulb,
+    label: "The next chapter",
+    title: "You have an idea for us.",
+    copy: "Share a service, product, or experience you would like FreshPick to create. We review suggestions every week.",
+    href: "/contact?type=suggestion",
+    action: "Share an idea",
+  },
+];
 
 export default function HelpUsPage() {
   return (
-    <main className="container mx-auto px-4 py-12">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Help Us Improve</h1>
-        <p className="text-gray-700 mb-6 max-w-2xl">
-          We&apos;d love your feedback. Tell us what you like, what you don&apos;t, and how we can make shopping fresher and faster.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-2">Report an issue</h3>
-            <p className="text-sm text-gray-600 mb-4">Problems with orders, checkout, or account? Let us know and we&apos;ll investigate quickly.</p>
-            <Link href="/contact?type=issue" className="inline-block">
-              <Button className="bg-green-600 text-white">Contact support</Button>
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-2">Feature requests</h3>
-            <p className="text-sm text-gray-600 mb-4">Have an idea to improve Fresh Pick? Share the feature and we&apos;ll consider it for upcoming updates.</p>
-            <Link href="/contact?type=suggestion" className="inline-block">
-              <Button className="bg-green-600 text-white">Suggest a feature</Button>
-            </Link>
-          </div>
+    <main className="min-h-screen bg-[#faf8f3] text-[#142019]">
+      <PremiumPageHeader eyebrow="Your perspective" title="Help us make it better." subtitle="The most useful FreshPick improvements begin with the people who use it." />
+      <section className="px-4 py-24 md:py-32">
+        <div className="container mx-auto grid max-w-7xl border-y border-zinc-300 md:grid-cols-2">
+          {paths.map(({ icon: Icon, label, title, copy, href, action }, index) => (
+            <article key={title} className={`flex min-h-[30rem] flex-col px-7 py-10 md:p-14 ${index ? "border-t border-zinc-300 md:border-l md:border-t-0" : ""}`}>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8b6d32]">{label}</span>
+                <Icon className="h-6 w-6 stroke-1 text-emerald-800" />
+              </div>
+              <h2 className="mt-20 max-w-md font-serif text-4xl font-normal leading-tight md:text-5xl">{title}</h2>
+              <p className="mt-7 max-w-lg text-sm font-light leading-7 text-zinc-500">{copy}</p>
+              <Link href={href} className="mt-auto inline-flex w-fit items-center gap-4 border-b border-[#142019] pb-2 pt-12 text-[10px] font-bold uppercase tracking-[0.18em]">
+                {action}<ArrowRight className="h-4 w-4 stroke-1" />
+              </Link>
+            </article>
+          ))}
         </div>
-
-        <div className="mt-8 text-sm text-gray-600">
-          <p>Your voice matters. We review submissions weekly and respond to urgent issues faster.</p>
-        </div>
-      </motion.div>
+      </section>
     </main>
   );
 }

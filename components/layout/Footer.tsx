@@ -1,8 +1,6 @@
-"use client";
-
-import React from "react";
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Mail, MapPin } from "lucide-react";
+import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
 
 export function Footer() {
   return (
@@ -17,16 +15,7 @@ export function Footer() {
             <h3 className="mb-3 font-serif text-3xl italic text-white md:text-4xl">Join the Inner Circle</h3>
             <p className="font-light text-zinc-400">Receive exclusive invitations to seasonal harvests and private reserves.</p>
           </div>
-          <div className="flex w-full gap-4 md:w-auto">
-            <input
-              type="email"
-              placeholder="Email Address"
-              className="w-full rounded-full border border-white/10 bg-black/30 px-6 py-4 font-light text-white placeholder:text-zinc-600 transition-all focus:border-emerald-300/40 focus:outline-none md:w-80"
-            />
-            <button className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-8 py-4 font-medium tracking-wide text-emerald-50 transition-all hover:bg-emerald-300 hover:text-zinc-950">
-              Subscribe
-            </button>
-          </div>
+          <FooterNewsletterForm />
         </div>
       </div>
 

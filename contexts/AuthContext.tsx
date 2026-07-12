@@ -109,8 +109,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const data = await response.json();
           setUser(data.user);
         } else if (response.status === 401) {
-          // Try to refresh token
-          await refreshAuth();
+          // Public visitors normally have no session at all. Avoid making a
+          // second serverless request to /api/auth/refresh unless the server
+          // confirms that an expired session can actually be refreshed.
+          const data = await response.json().catch(() => null) as { canRefresh?: boolean } | null;
+          if (data?.canRefresh) {
+            await refreshAuth();
+          } else {
+            setUser(null);
+          }
         }
       } catch (error) {
         console.error('Auth check failed:', error);

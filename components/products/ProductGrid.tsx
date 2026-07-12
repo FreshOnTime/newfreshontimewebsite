@@ -1,5 +1,3 @@
-"use client";
-
 import { Product } from "@/models/product";
 import { ProductCard } from "./ProductCard";
 
@@ -8,9 +6,11 @@ import { BundleCard } from "./BundleCard";
 export default function ProductGrid({
   products,
   className,
+  priorityCount = 0,
 }: {
   products: Product[];
   className?: string;
+  priorityCount?: number;
 }) {
   if (!products?.length) {
     return (
@@ -24,7 +24,7 @@ export default function ProductGrid({
         "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
       }
     >
-      {products.map((p) => (
+      {products.map((p, index) => (
         <div key={p.sku || p._id} className="group">
           <div className="transform group-hover:scale-105 transition-transform duration-300 h-full">
             {p.isBundle ? (
@@ -40,6 +40,7 @@ export default function ProductGrid({
                 pricePerBaseQuantity={p.pricePerBaseQuantity}
                 measurementType={p.measurementUnit}
                 isDiscreteItem={p.isSoldAsUnit}
+                priority={index < priorityCount}
               />
             )}
           </div>

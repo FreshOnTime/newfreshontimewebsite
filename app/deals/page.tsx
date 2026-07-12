@@ -2,27 +2,28 @@ import ProductGrid from "@/components/products/ProductGrid";
 import SectionHeader from "@/components/home/SectionHeader";
 import { PageContainer } from "@/components/templates/PageContainer";
 import { Product } from "@/models/product";
-import { withBase } from "@/lib/serverUrl";
+import { unstable_cache } from "next/cache";
+import prisma from "@/lib/prisma";
+import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
 
 // Use ISR: deals/discounted products change infrequently; 5-minute cache
 // reduces serverless cold starts and avoids a DB/API call on every request.
 export const revalidate = 300;
 
-async function getDealProducts() {
+const getDealProducts = unstable_cache(async () => {
   try {
-    const response = await fetch(withBase('/api/products'), {
-      next: { revalidate: 300 },
+    const products = await prisma.product.findMany({
+      where: { archived: false, discountPercentage: { gt: 0 } },
+      orderBy: { createdAt: "desc" },
+      select: productCardSelect,
+      take: 60,
     });
-    if (response.ok) {
-      const data = await response.json();
-      const allProducts: Product[] = data.data?.products || [];
-      return allProducts.filter((p: Product) => (p.discountPercentage ?? 0) > 0);
-    }
+    return products.map((product) => serializeProductCardForUi(product) as Product);
   } catch (error) {
     console.error('Failed to fetch deal products:', error);
   }
   return [];
-}
+}, ["deal-products-v1"], { revalidate: 300, tags: ["products"] });
 
 export default async function DealsPage() {
   const dealProducts = await getDealProducts();

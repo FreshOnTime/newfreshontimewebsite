@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import SubscriptionHero from '@/components/subscriptions/SubscriptionHero';
 import SubscriptionPlanCard from '@/components/subscriptions/SubscriptionPlanCard';
 import { Check, HelpCircle, ArrowRight } from 'lucide-react';
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 // 5-minute revalidation avoids a DB call on every request while keeping data fresh.
 export const revalidate = 300;
 
-async function getSubscriptionPlans() {
+const getSubscriptionPlans = unstable_cache(async () => {
     try {
         const plans = await prisma.subscriptionPlan.findMany({
             where: { isActive: true },
@@ -34,7 +35,7 @@ async function getSubscriptionPlans() {
         console.error('Error fetching subscription plans:', error);
         return [];
     }
-}
+}, ['active-subscription-plans-v1'], { revalidate: 300, tags: ['subscription-plans'] });
 
 export default async function SubscriptionsPage() {
     const dbPlans = await getSubscriptionPlans();
@@ -52,12 +53,14 @@ export default async function SubscriptionsPage() {
             <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <Image
-                        src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"
+                        src="/bgs/home-hero.jpg"
                         alt="Background"
                         fill
                         className="object-cover"
                         priority
+                        fetchPriority="high"
                         sizes="100vw"
+                        unoptimized
                     />
                     <div className="absolute inset-0 bg-black/40" />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-white/10" />

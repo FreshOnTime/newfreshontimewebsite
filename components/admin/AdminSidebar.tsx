@@ -19,6 +19,7 @@ import {
   BookOpen,
   Bell,
   Layers,
+  BriefcaseBusiness,
 } from 'lucide-react';
 
 const navigation = [
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
   { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
+  { name: 'B2B Leads', href: '/admin/business-leads', icon: BriefcaseBusiness },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Blog Posts', href: '/admin/blogs', icon: BookOpen },

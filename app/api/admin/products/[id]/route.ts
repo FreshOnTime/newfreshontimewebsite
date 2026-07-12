@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma, type Product } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
+import { revalidateTag } from 'next/cache';
 
 const updateProductSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -96,6 +97,7 @@ export const PUT = requireAdmin(async (request, { params }: ProductRouteContext)
     const beforeSerialized = serializeAdminProduct(before);
     const updatedSerialized = serializeAdminProduct(updated);
     await logAuditAction(request.user!.userId, 'update', 'product', id, beforeSerialized, updatedSerialized, request);
+    revalidateTag('products', 'max');
 
     return NextResponse.json({ product: updatedSerialized });
   } catch (error) {
@@ -116,6 +118,7 @@ export const DELETE = requireAdmin(async (request, { params }: ProductRouteConte
     }
     await prisma.product.delete({ where: { id } });
     await logAuditAction(request.user!.userId, 'delete', 'product', id, serializeAdminProduct(before), undefined, request);
+    revalidateTag('products', 'max');
     return NextResponse.json({ message: 'Product deleted' });
   } catch (error) {
     console.error('Delete product error:', error);

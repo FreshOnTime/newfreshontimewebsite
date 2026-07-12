@@ -6,11 +6,13 @@ import ProductsFilterBar from "@/components/products/ProductsFilterBar";
 import ProductsPagination from "@/components/products/ProductsPagination";
 
 import { Prisma } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/prisma';
-import { serializeProductForUi } from '@/lib/productSerializer';
+import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
+import { Product } from '@/models/product';
 
 // Read directly from the database in server components to avoid relying on internal API fetch
-async function getProducts(query: string) {
+const getProducts = unstable_cache(async (query: string) => {
   try {
     const urlParams = new URLSearchParams(query);
     const pageParam = parseInt(urlParams.get('page') || '1', 10);
@@ -65,76 +67,47 @@ async function getProducts(query: string) {
     else if (sortParam === 'price-desc') orderBy = { price: 'desc' };
     else if (sortParam === 'oldest') orderBy = { createdAt: 'asc' };
 
-    const totalCount = await prisma.product.count({ where });
-    const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / limit);
-    const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
-    const skip = totalPages === 0 ? 0 : (currentPage - 1) * limit;
-
+    // Fetch one extra row to determine whether a next page exists. Supabase's
+    // transaction pool is intentionally configured with one Prisma connection
+    // per serverless worker, so a separate count() doubles uncached latency.
     const rawProducts = await prisma.product.findMany({
       where,
       orderBy,
-      skip,
-      take: limit,
-      include: { category: { select: { name: true, slug: true } } },
+      skip: Math.max(0, (page - 1) * limit),
+      take: limit + 1,
+      select: productCardSelect,
     });
-    const products = rawProducts.map(serializeProductForUi);
+    const hasNext = rawProducts.length > limit;
+    const products = rawProducts
+      .slice(0, limit)
+      .map((product) => serializeProductCardForUi(product) as Product);
 
     return {
       products,
       pagination: {
-        page: currentPage,
+        page,
         limit,
-        total: totalCount,
-        totalPages,
         count: products.length,
-        hasNext: totalPages > 0 && currentPage < totalPages,
-        hasPrev: currentPage > 1,
+        hasNext,
+        hasPrev: page > 1,
       },
     };
   } catch (error) {
     console.error('Failed to get products from DB:', error);
-    // Fallback: attempt internal API fetch (absolute with withBase then relative)
-    try {
-      const { withBase } = await import('@/lib/serverUrl');
-      const absolute = withBase(`/api/products${query ? `?${query}` : ''}`);
-      let resp = await fetch(absolute, { next: { revalidate: 300 } });
-      if (!resp.ok) {
-        resp = await fetch(`/api/products${query ? `?${query}` : ''}`, { next: { revalidate: 300 } });
-      }
-      if (resp.ok) {
-        const data = await resp.json();
-        const fallbackProducts = data.data?.products || [];
-        return {
-          products: fallbackProducts,
-          pagination: {
-            page: 1,
-            limit: Math.max(1, fallbackProducts.length || 1),
-            total: fallbackProducts.length,
-            totalPages: fallbackProducts.length > 0 ? 1 : 0,
-            count: fallbackProducts.length,
-            hasNext: false,
-            hasPrev: false,
-          },
-        };
-      }
-      console.error('Fallback API fetch failed with status', resp.status);
-    } catch (err) {
-      console.error('Fallback API fetch error:', err);
-    }
+    // Do not call our own HTTP API here. It reaches the same database and used
+    // to turn one failure into two additional slow serverless requests.
     return {
       products: [],
       pagination: {
         page: 1,
         limit: 1,
-        total: 0,
-        totalPages: 0,
         count: 0,
         hasNext: false,
         hasPrev: false,
       },
     };
   }
-}
+}, ['storefront-products-v3'], { revalidate: 300, tags: ['products'] });
 
 // Helper to safely get string values from query params
 function getString(val: string | string[] | undefined): string | undefined {
@@ -164,30 +137,14 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
   }
 
   const { products, pagination } = await getProducts(sp.toString());
-  const start = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
-  const end = pagination.total === 0 ? 0 : start + products.length - 1;
+  const start = products.length === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
+  const end = products.length === 0 ? 0 : start + products.length - 1;
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Premium Header */}
-      <div className="bg-zinc-950 text-white py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-zinc-900 to-zinc-950"></div>
+      <PremiumPageHeader title="Curated Harvests" subtitle="Exceptional groceries, pantry essentials, and local discoveries selected for freshness, provenance, and flavour." eyebrow="The collection" />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-xl">
-            <span className="text-emerald-500 font-bold tracking-[0.3em] text-xs uppercase mb-6 block">
-              The Collection
-            </span>
-            <h1 className="text-5xl md:text-6xl font-serif font-medium mb-6 tracking-tight">Curated Harvests</h1>
-            <p className="text-xl text-zinc-400 font-light leading-relaxed">
-              Explore our selection of premium groceries, sourced directly from the world's finest producers.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 md:px-8 py-16">
+      <div className="container mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-24">
 
         {/* Products Filter Bar - Horizontal */}
         <div className="sticky top-0 z-20">
@@ -197,7 +154,7 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
         <div className="mt-8">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100">
             <span className="text-zinc-500 font-serif italic text-sm">
-              {pagination.total === 0 ? 'No items found' : `Showing ${start}-${end} of ${pagination.total} results`}
+              {products.length === 0 ? 'No items found' : `Showing items ${start}-${end}`}
             </span>
           </div>
 
@@ -210,16 +167,14 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
             <ProductGrid products={products} className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12" />
           )}
 
-          {pagination.total > 0 && (
+          {(products.length > 0 || pagination.hasPrev) && (
             <div className="pt-16 mt-8 border-t border-zinc-100 flex justify-center">
               <ProductsPagination
                 page={pagination.page}
                 limit={pagination.limit}
-                total={pagination.total}
                 currentCount={products.length}
                 hasPrev={pagination.hasPrev}
                 hasNext={pagination.hasNext}
-                totalPages={pagination.totalPages}
               />
             </div>
           )}

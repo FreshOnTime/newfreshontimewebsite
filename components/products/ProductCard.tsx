@@ -1,14 +1,6 @@
-"use client";
-
-import React from "react";
 import Link from "next/link";
 import ProductImage from "./ProductImage";
-import AddToBagButton from "@/app/products/[id]/AddToBagButton";
-import type { Product } from "@/models/product";
-import { Heart } from "lucide-react";
-import { useWishlist } from "@/contexts/WishlistContext";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import DeferredProductCardActions from "./DeferredProductCardActions";
 
 interface ProductCardProps {
   id: string;
@@ -20,6 +12,7 @@ interface ProductCardProps {
   pricePerBaseQuantity: number;
   measurementType: "g" | "kg" | "ml" | "l" | "ea" | "lb";
   isDiscreteItem: boolean;
+  priority?: boolean;
 }
 
 const DISCOUNT_THRESHOLD = 0.01;
@@ -34,9 +27,8 @@ export function ProductCard({
   pricePerBaseQuantity,
   measurementType,
   isDiscreteItem,
+  priority = false,
 }: ProductCardProps) {
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-
   const pricePerBaseQuantityWithDiscount = calculateDiscountedPrice(
     pricePerBaseQuantity,
     discountPercentage
@@ -44,131 +36,52 @@ export function ProductCard({
 
   const showDiscountBadge = discountPercentage > DISCOUNT_THRESHOLD;
 
-  const productForWishlist: Product = {
-    _id: id,
-    sku,
-    name,
-    image: imageUrl
-      ? { url: imageUrl, filename: '', contentType: '', path: imageUrl, alt: name }
-      : { url: "/placeholder.svg", filename: '', contentType: '', path: "/placeholder.svg", alt: name },
-    description: "",
-    baseMeasurementQuantity,
-    pricePerBaseQuantity: pricePerBaseQuantityWithDiscount,
-    measurementType: measurementType as any,
-    isSoldAsUnit: isDiscreteItem,
-    minOrderQuantity: 1,
-    maxOrderQuantity: 9999,
-    stepQuantity: 1,
-    stockQuantity: 0,
-    isOutOfStock: false,
-    totalSales: 0,
-    lowStockThreshold: 0,
-    unitOptions: [],
-  } as unknown as Product;
-
-  const isWishlisted = isInWishlist(id);
-
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isWishlisted) {
-      removeFromWishlist(id);
-    } else {
-      addToWishlist(productForWishlist);
-    }
-  };
-
-  const buildProductForBag = (): Product => ({
-    sku,
-    name,
-    image: imageUrl
-      ? { url: imageUrl, filename: '', contentType: '', path: imageUrl, alt: name }
-      : { url: "/placeholder.svg", filename: '', contentType: '', path: "/placeholder.svg", alt: name },
-    description: "",
-    baseMeasurementQuantity,
-    baseMeasurementUnit: measurementType,
-    pricePerBaseQuantity: pricePerBaseQuantityWithDiscount,
-    measurementUnit: measurementType,
-    isSoldAsUnit: isDiscreteItem,
-    minOrderQuantity: 1,
-    maxOrderQuantity: 9999,
-    stepQuantity: 1,
-    stockQuantity: 0,
-    isOutOfStock: false,
-    totalSales: 0,
-    lowStockThreshold: 0,
-    unitOptions: [],
-  } as unknown as Product);
-
   return (
-    <div className="w-full group relative">
-      <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-sm border border-zinc-100/50 hover:shadow-premium transition-all duration-300">
-
-        {/* Image Container - Square Aspect Ratio */}
-        <div className="aspect-square relative p-6 bg-white overflow-hidden">
-          <Link href={`/products/${sku}`} className="block h-full">
-            <div className="relative h-full w-full transform transition-transform duration-700 ease-out hover:scale-105">
-              <ProductImage src={imageUrl} alt={name} />
+    <article className="group relative w-full border-b border-[#d9d3c8] pb-7">
+      <div className="relative">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#eeebe4]">
+          <Link href={`/products/${sku}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
+            <div className="relative h-full w-full transition-transform duration-1000 ease-out group-hover:scale-[1.025]">
+              <ProductImage src={imageUrl} alt={name} priority={priority} />
             </div>
           </Link>
 
-          {/* Wishlist Button - Top Right, Minimal circle */}
-          <Button
-            size="icon"
-            variant="ghost"
-            className={cn(
-              "absolute top-3 right-3 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-300 z-10 hover:bg-white",
-              isWishlisted ? "text-red-500" : "text-zinc-400 hover:text-red-500"
-            )}
-            onClick={handleWishlistClick}
-          >
-            <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
-          </Button>
-
-          {/* Discount Badge */}
           {showDiscountBadge && (
-            <div className="absolute top-3 left-3 px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold tracking-widest uppercase">
-              -{discountPercentage}%
+            <div className="absolute left-0 top-0 bg-[#142019] px-4 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[#f2dfb2]">
+              {discountPercentage}% off
             </div>
           )}
         </div>
 
-        {/* Product Info - Left Aligned */}
-        <div className="p-5 pt-2">
-          {/* Title - Serif for Premium Feel */}
-          <Link href={`/products/${sku}`} className="block group/title">
-            <h3 className="font-serif text-lg font-medium text-zinc-900 mb-1 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2">
+        <div className="pt-5">
+          <div className="mb-3 flex items-center justify-between gap-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[#8b6d32]">
+            <span>{isDiscreteItem ? "By the piece" : "Fresh selection"}</span>
+            <span className="text-zinc-500">
+              {isDiscreteItem ? "Each" : `${baseMeasurementQuantity !== 1 ? baseMeasurementQuantity : ""}${(measurementType || "g").toLowerCase()}`}
+            </span>
+          </div>
+
+          <Link href={`/products/${sku}`} prefetch={false} className="block">
+            <h3 className="line-clamp-2 min-h-[3.25rem] font-serif text-xl font-normal leading-snug text-[#142019] transition-colors group-hover:text-emerald-800">
               {name}
             </h3>
           </Link>
 
-          <div className="flex flex-col gap-4">
-            {/* Box for Price and Unit to keep them minimal */}
-            <div className="flex items-end justify-between">
+          <div className="mt-4 flex flex-col gap-5">
+            <div className="flex items-end justify-between border-t border-[#e4dfd5] pt-4">
               <PriceDisplay
                 price={pricePerBaseQuantityWithDiscount}
                 originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
               />
-
-              {/* Unit Display - Right aligned or inline? Screenshot implies stacked but let's keep it near price or title */}
-              <div className="text-sm font-medium text-zinc-500 mb-1">
-                {!isDiscreteItem && (
-                  <span>
-                    {baseMeasurementQuantity !== 1 && `${baseMeasurementQuantity}`} {(measurementType || 'g').toLowerCase()}
-                  </span>
-                )}
-                {isDiscreteItem && <span>Each</span>}
-              </div>
             </div>
 
-            {/* Button - Full Width */}
-            <div className="w-full">
-              <AddToBagButton product={buildProductForBag()} quantity={1} />
+            <div className="w-full opacity-100 transition-opacity md:opacity-90 md:group-hover:opacity-100">
+              <DeferredProductCardActions id={id} sku={sku} name={name} image={imageUrl} price={pricePerBaseQuantityWithDiscount} />
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -180,12 +93,12 @@ function PriceDisplay({
   originalPrice?: number;
 }) {
   return (
-    <div className="flex items-baseline gap-2">
-      <span className="text-xl font-bold text-zinc-900">
+    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span className="font-serif text-xl font-normal text-[#142019]">
         Rs. {formatPrice(price)}
       </span>
       {originalPrice && (
-        <span className="text-sm text-zinc-400 line-through decoration-zinc-300">
+        <span className="text-xs text-zinc-400 line-through decoration-zinc-300">
           Rs. {formatPrice(originalPrice)}
         </span>
       )}

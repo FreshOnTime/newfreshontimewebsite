@@ -33,10 +33,10 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
     return (
         <div
             className={cn(
-                "relative group flex flex-col h-full transition-all duration-500 rounded-2xl p-8 md:p-10 overflow-hidden",
+                "relative group flex flex-col h-full overflow-hidden border border-[#e2ddd3] p-8 transition-all duration-500 md:p-10",
                 isFeatured
-                    ? "bg-zinc-900 text-white shadow-2xl scale-105 lg:-mt-4 lg:-mb-4 z-20"
-                    : "bg-white text-zinc-900 shadow-sm hover:shadow-xl hover:-translate-y-1 z-10"
+                    ? "bg-[#142019] text-white shadow-2xl scale-105 lg:-mt-4 lg:-mb-4 z-20"
+                    : "bg-white text-zinc-900 hover:shadow-xl hover:-translate-y-1 z-10"
             )}
         >
             {/* Featured Badge - Minimal */}
@@ -86,10 +86,10 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
                 <Link href={`/checkout?plan=${plan.slug}`} className="block">
                     <Button
                         className={cn(
-                            "w-full h-14 text-xs font-bold uppercase tracking-[0.15em] rounded-full transition-all duration-300 shadow-lg",
+                            "h-14 w-full rounded-none text-[10px] font-bold uppercase tracking-[0.18em] shadow-none transition-all duration-300",
                             isFeatured
-                                ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                                : "bg-zinc-900 text-white hover:bg-zinc-800"
+                                ? "bg-[#f0dfb6] text-[#142019] hover:bg-white"
+                                : "bg-[#142019] text-white hover:bg-emerald-900"
                         )}
                     >
                         Select Box

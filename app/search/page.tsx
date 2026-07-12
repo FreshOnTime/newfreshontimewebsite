@@ -1,77 +1,52 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { unstable_cache } from "next/cache";
+import prisma from "@/lib/prisma";
+import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
 import ProductGrid from "@/components/products/ProductGrid";
 import SectionHeader from "@/components/home/SectionHeader";
 import { PageContainer } from "@/components/templates/PageContainer";
 import { Product } from "@/models/product";
 
-function SearchResults() {
-  const params = useSearchParams();
-  const q = params.get("q")?.toLowerCase() ?? "";
-  const [results, setResults] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+const searchProducts = unstable_cache(async (query: string) => {
+  if (!query.trim()) return [];
 
-  useEffect(() => {
-    async function searchProducts() {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/products?search=${encodeURIComponent(q)}`);
-        if (response.ok) {
-          const data = await response.json();
-          setResults(data.data?.products || []);
-        }
-      } catch (error) {
-        console.error('Failed to search products:', error);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const products = await prisma.product.findMany({
+    where: {
+      archived: false,
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { sku: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+        { tags: { has: query } },
+      ],
+    },
+    select: productCardSelect,
+    orderBy: { createdAt: "desc" },
+    take: 60,
+  });
 
-    if (q) {
-      searchProducts();
-    } else {
-      setResults([]);
-      setLoading(false);
-    }
-  }, [q]);
+  return products.map((product) => serializeProductCardForUi(product) as Product);
+}, ["storefront-search-v2"], { revalidate: 300, tags: ["products"] });
 
-  if (loading) {
-    return (
-      <PageContainer>
-        <SectionHeader
-          title="Searching..."
-          subtitle="Finding products for you"
-        />
-      </PageContainer>
-    );
-  }
+function getString(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const query = (getString(params.q) || "").trim();
+  const results = await searchProducts(query);
 
   return (
     <PageContainer>
       <SectionHeader
-        title={`Search: ${q || "All"}`}
-        subtitle={`${results.length} result${results.length !== 1 ? "s" : ""}`}
+        title={query ? `Search: ${query}` : "Search products"}
+        subtitle={query ? `${results.length} result${results.length === 1 ? "" : "s"}` : "Enter a product name in the navigation search"}
       />
       <ProductGrid products={results} />
     </PageContainer>
   );
 }
-
-export default function SearchPage() {
-  return (
-    <Suspense fallback={
-      <PageContainer>
-        <SectionHeader
-          title="Loading..."
-          subtitle="Please wait"
-        />
-      </PageContainer>
-    }>
-      <SearchResults />
-    </Suspense>
-  );
-}
-

@@ -14,11 +14,11 @@ export function PageContainer({
   disablePadding = false,
 }: PageTemplateProps) {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-[#faf8f3] text-[#142019]">
       <div
         className={cn(
-          !disablePadding && "px-4 py-8",
-          !fullWidth && " max-w-screen-xl mx-auto",
+          !disablePadding && "px-4 py-16 md:py-24",
+          !fullWidth && " max-w-7xl mx-auto",
           className
         )}
       >

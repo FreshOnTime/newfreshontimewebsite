@@ -52,15 +52,17 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                             className={`relative group overflow-hidden ${gridClass} cursor-pointer bg-zinc-100`}
                         >
                             <Link href={`/categories/${category.slug}`} className="block h-full w-full">
-                                <div className="absolute inset-0 bg-zinc-200">
+                                {category.imageUrl ? (
                                     <Image
-                                        src={category.imageUrl || "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop"}
+                                        src={category.imageUrl}
                                         alt={category.name}
                                         fill
                                         sizes={index === 0 ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 25vw"}
                                         className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100"
                                     />
-                                </div>
+                                ) : (
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(217,249,157,0.35),transparent_28%),radial-gradient(circle_at_85%_85%,rgba(251,191,36,0.25),transparent_30%),linear-gradient(135deg,#065f46,#022c22)]" />
+                                )}
 
                                 {/* Cinematic Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-700" />

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSearchParams } from 'next/navigation';
+import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
+import { Mail, MapPin } from 'lucide-react';
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -49,55 +51,68 @@ export default function ContactPage() {
     }
   }
 
-  return (
-    <main className="container mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-4">Contact Support</h1>
-      <p className="text-gray-600 mb-6">Send us a message and we will get back to you within 24 hours.</p>
+  const fieldClass = "h-12 rounded-none border-0 border-b border-zinc-300 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:border-emerald-800";
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+  return (
+    <main className="min-h-screen bg-[#faf8f3] text-[#142019]">
+      <PremiumPageHeader title="Speak with FreshPick." subtitle="For orders, private sourcing, recurring plans, and general care, our Colombo team is here to help." eyebrow="The concierge" />
+      <section className="px-4 py-24 md:py-32">
+      <div className="container mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.65fr_1.35fr]">
+        <aside>
+          <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#8b6d32]">Client care</span>
+          <h2 className="mt-7 font-serif text-4xl font-normal leading-tight md:text-5xl">A human answer,<br /><span className="italic text-emerald-800">when you need one.</span></h2>
+          <div className="mt-12 space-y-6 border-t border-zinc-300 pt-8 text-sm font-light text-zinc-600">
+            <p className="flex gap-3"><Mail className="h-5 w-5 stroke-1 text-[#8b6d32]" /> concierge@freshpick.lk</p>
+            <p className="flex gap-3"><MapPin className="h-5 w-5 stroke-1 text-[#8b6d32]" /> Greater Colombo, Sri Lanka</p>
+          </div>
+        </aside>
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-x-8 gap-y-7 bg-white p-7 shadow-[0_24px_70px_rgba(20,32,25,0.08)] md:grid-cols-2 md:p-12">
         <div className="col-span-1">
-          <label className="block text-sm font-medium mb-1">Name</label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} required />
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Name</label>
+          <Input className={fieldClass} value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div className="col-span-1">
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Email</label>
+          <Input className={fieldClass} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="col-span-1">
-          <label className="block text-sm font-medium mb-1">Type</label>
-          <select value={type} onChange={(e) => setType(e.target.value as 'issue'|'suggestion'|'other')} className="w-full rounded-md border px-3 py-2">
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Enquiry</label>
+          <select value={type} onChange={(e) => setType(e.target.value as 'issue'|'suggestion'|'other')} className="h-12 w-full border-0 border-b border-zinc-300 bg-transparent px-0 text-sm outline-none focus:border-emerald-800">
             <option value="issue">Issue</option>
             <option value="suggestion">Suggestion</option>
             <option value="other">Other</option>
           </select>
         </div>
         <div className="col-span-1">
-          <label className="block text-sm font-medium mb-1">Priority</label>
-          <select value={priority} onChange={(e) => setPriority(e.target.value as 'low'|'normal'|'high')} className="w-full rounded-md border px-3 py-2">
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Priority</label>
+          <select value={priority} onChange={(e) => setPriority(e.target.value as 'low'|'normal'|'high')} className="h-12 w-full border-0 border-b border-zinc-300 bg-transparent px-0 text-sm outline-none focus:border-emerald-800">
             <option value="low">Low</option>
             <option value="normal">Normal</option>
             <option value="high">High</option>
           </select>
         </div>
         <div className="col-span-1 md:col-span-1">
-          <label className="block text-sm font-medium mb-1">Order ID (optional)</label>
-          <Input value={orderId} onChange={(e) => setOrderId(e.target.value)} />
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Order ID (optional)</label>
+          <Input className={fieldClass} value={orderId} onChange={(e) => setOrderId(e.target.value)} />
         </div>
         <div className="col-span-1 md:col-span-1">
-          <label className="block text-sm font-medium mb-1">Subject</label>
-          <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Subject</label>
+          <Input className={fieldClass} value={subject} onChange={(e) => setSubject(e.target.value)} />
         </div>
         <div className="col-span-1 md:col-span-2">
-          <label className="block text-sm font-medium mb-1">Message</label>
-          <Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={6} required />
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Message</label>
+          <Textarea className="rounded-none border-zinc-300 bg-[#faf8f3] p-4 focus-visible:ring-1 focus-visible:ring-emerald-800" value={message} onChange={(e) => setMessage(e.target.value)} rows={6} required />
         </div>
 
         <div className="col-span-1 md:col-span-2 flex items-center gap-4">
-          <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={status === 'sending'}>{status === 'sending' ? 'Sending...' : 'Send Message'}</Button>
+          <Button type="submit" className="h-14 rounded-none bg-[#142019] px-8 text-[10px] font-bold uppercase tracking-[0.18em] text-white hover:bg-emerald-900" disabled={status === 'sending'}>{status === 'sending' ? 'Sending...' : 'Send enquiry'}</Button>
           {status === 'sent' && <span className="text-sm text-green-600">Message sent — thank you!</span>}
           {status === 'error' && <span className="text-sm text-red-600">Error sending message. Try again later.</span>}
         </div>
       </form>
+      </div>
+      </section>
     </main>
   );
 }

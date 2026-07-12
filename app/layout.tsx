@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
+import { Footer } from "@/components/layout/Footer";
 
 const SITE_URL = "https://freshpick.lk";
 const SERVICE_AREAS = [
@@ -107,9 +108,18 @@ const organizationJsonLd = {
       "logo": `${SITE_URL}/logo.png`,
       "description": "Fresh Pick is a Sri Lankan fresh grocery and produce supply service for households, restaurants, hotels, offices, and farmer sourcing partnerships.",
       "email": "concierge@freshpick.lk",
+      "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "concierge@freshpick.lk",
+        "availableLanguage": "English"
+      },
       "knowsAbout": [
         "Fresh grocery delivery in Colombo",
         "Recurring grocery orders",
+        "Cooked-food delivery in Colombo",
+        "Sri Lankan homemade food makers",
         "Restaurant produce supply",
         "Hotel produce procurement",
         "Farmer sourced produce",
@@ -122,7 +132,15 @@ const organizationJsonLd = {
       "url": SITE_URL,
       "name": "Fresh Pick Sri Lanka",
       "publisher": { "@id": `${SITE_URL}/#organization` },
-      "inLanguage": "en-LK"
+      "inLanguage": "en-LK",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": `${SITE_URL}/search?q={search_term_string}`
+        },
+        "query-input": "required name=search_term_string"
+      }
     },
     {
       "@type": "GroceryStore",
@@ -131,7 +149,10 @@ const organizationJsonLd = {
       "url": SITE_URL,
       "image": `${SITE_URL}/og-image.jpg`,
       "description": "Online fresh grocery delivery and recurring produce supply for Colombo households, restaurants, hotels, and offices.",
+      "parentOrganization": { "@id": `${SITE_URL}/#organization` },
       "priceRange": "$$",
+      "currenciesAccepted": "LKR",
+      "knowsAbout": ["Fresh groceries", "Cooked food", "Recurring delivery", "B2B produce supply"],
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", name })),
       "geo": {
         "@type": "GeoCoordinates",
@@ -149,10 +170,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-LK">
+      <head>
+        {/* Several collection pages use Unsplash photography above the fold.
+            Opening this connection while the HTML is parsed removes a DNS/TLS
+            round trip from their Largest Contentful Paint. */}
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+      </head>
       <body
         className="min-h-screen bg-background font-sans antialiased"
       >
-        <AdminChromeGuard>{children}</AdminChromeGuard>
+        <AdminChromeGuard footer={<Footer />}>{children}</AdminChromeGuard>
         <Toaster />
         <ServiceWorkerRegistration />
         {process.env.NEXT_PUBLIC_GA_ID && (

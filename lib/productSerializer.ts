@@ -2,6 +2,50 @@ import { Prisma } from '@prisma/client';
 
 export type UiUnit = 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb';
 
+// Keep catalogue list queries intentionally small. Rich descriptions,
+// attributes, tags, relations and timestamps belong on the product detail
+// route; sending them for every grid card delays DB transfer and RSC parsing.
+export const productCardSelect = {
+  id: true,
+  name: true,
+  sku: true,
+  description: true,
+  price: true,
+  discountPercentage: true,
+  stockQty: true,
+  image: true,
+  images: true,
+  isBundle: true,
+} satisfies Prisma.ProductSelect;
+
+export type ProductCardRow = Prisma.ProductGetPayload<{ select: typeof productCardSelect }>;
+
+export function serializeProductCardForUi(p: ProductCardRow) {
+  const img = p.image || p.images[0] || '/placeholder.svg';
+  return {
+    _id: p.id,
+    sku: p.sku,
+    name: p.name,
+    image: { url: img, filename: '', contentType: '', path: img, alt: p.name },
+    description: p.description || '',
+    baseMeasurementQuantity: 1,
+    pricePerBaseQuantity: Number(p.price),
+    measurementUnit: 'ea' as const,
+    isSoldAsUnit: true,
+    minOrderQuantity: 1,
+    maxOrderQuantity: 9999,
+    stepQuantity: 1,
+    stockQuantity: p.stockQty,
+    isOutOfStock: p.stockQty <= 0,
+    totalSales: 0,
+    discountPercentage: Number(p.discountPercentage),
+    lowStockThreshold: 0,
+    unitOptions: [],
+    tags: [],
+    isBundle: p.isBundle,
+  };
+}
+
 export type ProductForUi = {
   id: string;
   name: string;

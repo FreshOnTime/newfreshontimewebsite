@@ -308,6 +308,8 @@ model Product {
   @@index([supplierId])
   @@index([archived])
   @@index([stockQty])
+  @@index([archived, createdAt])
+  @@index([categoryId, archived, createdAt])
   @@map("products")
 }
 
@@ -722,6 +724,22 @@ model Subscriber {
 
   @@index([isActive])
   @@map("subscribers")
+}
+
+model BusinessLead {
+  id               String   @id @default(uuid())
+  organizationName String
+  contactName      String
+  email            String
+  phone            String
+  requirement      String   @default("")
+  status           String   @default("new")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("business_leads")
 }
 
 model Permission {
