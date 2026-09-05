@@ -143,7 +143,9 @@ model User {
   firstName       String
   lastName        String?
   email           String?    @unique
-  phoneNumber     String     @unique
+  // Social providers do not reliably expose a phone number. It is collected
+  // later, before checkout, for accounts that do not have one yet.
+  phoneNumber     String?    @unique
   passwordHash    String?
   role            UserRole   @default(customer)
   secondaryRoles  UserRole[] @default([])
@@ -157,6 +159,7 @@ model User {
 
   addresses        Address[]
   refreshTokens    RefreshToken[]
+  oauthIdentities  OAuthIdentity[]
   orders           Order[]
   bags             Bag[]
   subscriptions    Subscription[]
@@ -190,6 +193,23 @@ model RefreshToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+// A provider subject, rather than an email address, is the durable identity
+// for OAuth sign-in. Emails can be changed at the provider, while the subject
+// cannot. The composite key also leaves room for additional providers later.
+model OAuthIdentity {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String
+  providerAccountId String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_identities")
 }
 
 model Address {

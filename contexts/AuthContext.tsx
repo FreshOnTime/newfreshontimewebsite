@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { auth } from '@/config/firebase';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
 interface User {
@@ -31,6 +33,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   login: (identifier: string, password: string) => Promise<User>;
+  loginWithGoogle: () => Promise<User>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
@@ -198,6 +201,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      clearError();
+      setLoading(true);
+
+      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      const idToken = await credential.user.getIdToken();
+      const response = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ idToken }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Google sign-in failed');
+      }
+
+      setUser(data.user);
+      return data.user;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Google sign-in failed';
+      setError(message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signup = async (data: SignupData) => {
     try {
       clearError();
@@ -247,6 +280,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         method: 'POST',
         credentials: 'include'
       });
+      // Keep Firebase's client session in sync with the application's session
+      // so "Continue with Google" does not silently reuse a signed-out user.
+      await signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -260,6 +296,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loading,
     error,
     login,
+    loginWithGoogle,
     signup,
     logout,
     refreshAuth

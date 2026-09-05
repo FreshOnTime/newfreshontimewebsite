@@ -201,7 +201,7 @@ export default function ProfilePage() {
                       onChange={(e) => setEditedUser({ ...editedUser, phoneNumber: e.target.value })}
                     />
                   ) : (
-                    <p className="mt-1 text-sm text-gray-900">{user.phoneNumber}</p>
+                    <p className="mt-1 text-sm text-gray-900">{user.phoneNumber || 'Not provided'}</p>
                   )}
                 </div>
 

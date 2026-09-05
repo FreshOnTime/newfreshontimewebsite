@@ -142,6 +142,14 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
       lastName = parts.length ? parts.join(' ') : null;
     }
 
+    const phoneNumber = data.phone ?? original.phoneNumber;
+    if (data.address && !phoneNumber) {
+      return NextResponse.json(
+        { error: 'A phone number is required before adding a delivery address' },
+        { status: 400 }
+      );
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {
@@ -171,7 +179,7 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
           data: {
             userId: id,
             recipientName: updated.firstName,
-            phoneNumber: updated.phoneNumber,
+            phoneNumber: phoneNumber!,
             isRegistration: true,
             ...addrData,
           },

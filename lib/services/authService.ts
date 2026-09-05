@@ -100,7 +100,7 @@ function toSafeUser(user: UserWithAddresses): SafeUser {
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    phoneNumber: user.phoneNumber,
+    phoneNumber: user.phoneNumber || '',
     role: user.role,
     secondaryRoles: user.secondaryRoles,
     isEmailVerified: user.isEmailVerified,
@@ -194,6 +194,70 @@ export class AuthService {
     const { accessToken, refreshTokenData } = issueTokens(user);
 
     // Atomic insert of the new refresh token; prune expired ones separately.
+    await prisma.$transaction([
+      prisma.refreshToken.create({
+        data: {
+          userId: user.id,
+          hashedToken: refreshTokenData.hashedToken,
+          expiresAt: refreshTokenData.expiresAt,
+        },
+      }),
+      prisma.refreshToken.deleteMany({
+        where: { userId: user.id, expiresAt: { lt: new Date() } },
+      }),
+    ]);
+
+    return { user: toSafeUser(user), accessToken, refreshToken: refreshTokenData.token };
+  }
+
+  async loginWithGoogle(data: { providerAccountId: string; email: string; name?: string | null }): Promise<AuthResult> {
+    const provider = 'google';
+
+    const user = await prisma.$transaction(async (tx) => {
+      const existingIdentity = await tx.oAuthIdentity.findUnique({
+        where: { provider_providerAccountId: { provider, providerAccountId: data.providerAccountId } },
+        include: { user: { include: { addresses: true } } },
+      });
+
+      if (existingIdentity) return existingIdentity.user;
+
+      // An existing password account can use Google when Google verifies the
+      // same email address. The provider subject is saved on first use.
+      let account = await tx.user.findUnique({
+        where: { email: data.email },
+        include: { addresses: true },
+      });
+
+      if (!account) {
+        const nameParts = data.name?.trim().split(/\s+/).filter(Boolean) || [];
+        const firstName = nameParts[0] || data.email.split('@')[0] || 'Customer';
+        const lastName = nameParts.slice(1).join(' ') || null;
+        account = await tx.user.create({
+          data: {
+            firstName,
+            lastName,
+            email: data.email,
+            // Google does not return a phone number. It can be added in the
+            // profile or at checkout before it is needed for delivery.
+            phoneNumber: null,
+            isEmailVerified: true,
+          },
+          include: { addresses: true },
+        });
+      }
+
+      if (account.isBanned) throw new Error('Account is banned');
+
+      await tx.oAuthIdentity.create({
+        data: { userId: account.id, provider, providerAccountId: data.providerAccountId },
+      });
+
+      return account;
+    });
+
+    if (user.isBanned) throw new Error('Account is banned');
+
+    const { accessToken, refreshTokenData } = issueTokens(user);
     await prisma.$transaction([
       prisma.refreshToken.create({
         data: {

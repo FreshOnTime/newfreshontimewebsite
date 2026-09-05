@@ -18,6 +18,7 @@ jest.mock('next/server', () => ({
 
 // Set test environment variables
 process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test_jwt_secret_that_is_long_enough_for_tests';
 process.env.MONGODB_URI = 'mongodb://localhost:27017/freshpick_test';
 process.env.FIREBASE_PROJECT_ID = 'test-project';
 process.env.FIREBASE_CLIENT_EMAIL = 'test@example.com';

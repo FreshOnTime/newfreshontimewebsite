@@ -77,6 +77,7 @@ Analytics:    Google Analytics 4
 |--------|----------|-------------|
 | POST | `/api/auth/signup` | User registration |
 | POST | `/api/auth/signin` | Login |
+| POST | `/api/auth/google` | Google sign-in (Firebase ID token) |
 | POST | `/api/auth/logout` | Logout |
 | GET | `/api/auth/me` | Current user |
 
@@ -113,6 +114,11 @@ JWT_SECRET=your_32_char_secret_key
 JWT_ACCESS_EXPIRES=15m
 JWT_REFRESH_EXPIRES=30d
 
+# Firebase Admin (required for Google sign-in token verification)
+FIREBASE_PROJECT_ID=fresh-on-time
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@fresh-on-time.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
 # Storage (optional)
 AZURE_STORAGE_CONNECTION_STRING=...
 
@@ -123,6 +129,15 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXX
 SENDGRID_API_KEY=SG.xxx
 SENDGRID_FROM_EMAIL=hello@freshpick.lk
 ```
+
+### Google sign-in setup
+
+1. In the Firebase project used by the site, enable **Authentication → Sign-in method → Google**.
+2. Add each deployed domain (and `localhost`) to **Authentication → Settings → Authorized domains**.
+3. Add the Firebase Admin credentials above to the deployment environment. They are server-only; never expose them with a `NEXT_PUBLIC_` prefix.
+4. Apply the Prisma migration before deployment: `npm run db:migrate`.
+
+Google accounts are linked using their immutable Google provider ID. A verified Google email that already belongs to a password account will use that same Fresh Pick account; new Google users are created without a phone number and can add it before delivery.
 
 ---
 

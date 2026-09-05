@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,17 @@ export function LoginForm() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, error } = useAuth();
+  const { login, loginWithGoogle, error } = useAuth();
+  const searchParams = useSearchParams();
+
+  const getDestination = (role: string) => {
+    if (role === 'admin') return '/admin';
+    const requestedDestination = searchParams.get('redirect') || searchParams.get('callbackUrl');
+    // Never follow an external or protocol-relative return URL.
+    return requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
+      ? requestedDestination
+      : '/dashboard';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,13 +32,21 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       const loggedInUser = await login(identifier, password);
-      if (loggedInUser?.role === "admin") {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/dashboard";
-      }
+      window.location.href = getDestination(loggedInUser?.role);
     } catch (error) {
       console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      const loggedInUser = await loginWithGoogle();
+      window.location.href = getDestination(loggedInUser.role);
+    } catch (error) {
+      console.error('Google sign-in error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +138,27 @@ export function LoginForm() {
               disabled={isLoading || !identifier || !password}
             >
               {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200" /></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-3 text-zinc-400">or</span></div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 rounded-xl border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+              disabled={isLoading}
+              onClick={handleGoogleSignIn}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="mr-3 h-5 w-5">
+                <path fill="#4285F4" d="M21.35 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.51h3.14c1.84-1.69 2.91-4.18 2.91-7.28Z" />
+                <path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.34L15.3 16.9c-.89.6-2.03.96-3.3.96-2.54 0-4.7-1.72-5.47-4.03H3.29v2.59A9.75 9.75 0 0 0 12 21.75Z" />
+                <path fill="#FBBC05" d="M6.53 13.83A5.86 5.86 0 0 1 6.22 12c0-.64.11-1.25.31-1.83V7.58H3.29A9.74 9.74 0 0 0 2.25 12c0 1.57.38 3.05 1.04 4.42l3.24-2.59Z" />
+                <path fill="#EA4335" d="M12 6.14c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.83 3.23 14.62 2.25 12 2.25a9.75 9.75 0 0 0-8.71 5.33l3.24 2.59C7.3 7.86 9.46 6.14 12 6.14Z" />
+              </svg>
+              Continue with Google
             </Button>
 
             <div className="text-center mt-8">
