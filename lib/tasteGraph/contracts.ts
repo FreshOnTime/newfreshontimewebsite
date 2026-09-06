@@ -39,6 +39,8 @@ export const tastePreferenceSchema = z.object({
   personalizationEnabled: z.boolean().optional().default(true),
 });
 
+export const tastePreferencePatchSchema = tastePreferenceSchema.partial();
+
 export type TastePreferenceSnapshot = z.infer<typeof tastePreferenceSchema>;
 
 export type TasteEventEnvelope = TasteEventInput & {
