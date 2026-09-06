@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   Clock3,
   HeartHandshake,
+  Layers3,
   Repeat2,
   ShoppingBasket,
   Sparkles,
@@ -35,13 +36,25 @@ const discoveryJourneys = [
     ring: "bg-white/70 text-amber-900 ring-amber-900/10",
   },
   {
+    eyebrow: "FreshPick edits",
+    title: "A whole food mood, already curated",
+    description: "Explore occasion-led edits that bring recipes and hand-picked products together for weeknights, brunches, seasonal tables and more.",
+    href: "/collections",
+    action: "Explore curated edits",
+    icon: Layers3,
+    className: "xl:col-span-6 bg-[#112319] text-white border-white/10",
+    accent: "text-emerald-200",
+    body: "text-white/65",
+    ring: "bg-white/10 text-emerald-100 ring-white/10",
+  },
+  {
     eyebrow: "Discover local",
     title: "Small-batch food worth knowing about",
     description: "Meet independent Sri Lankan makers and discover products that do not feel like another supermarket aisle.",
     href: "/homemade",
     action: "Meet local makers",
     icon: HeartHandshake,
-    className: "xl:col-span-4 bg-[#f7f5f0] text-zinc-950 border-zinc-200",
+    className: "xl:col-span-6 bg-[#f7f5f0] text-zinc-950 border-zinc-200",
     accent: "text-emerald-800",
     body: "text-zinc-600",
     ring: "bg-white text-emerald-900 ring-zinc-200",
@@ -53,7 +66,7 @@ const discoveryJourneys = [
     href: "/subscriptions",
     action: "Build a recurring basket",
     icon: Repeat2,
-    className: "xl:col-span-4 bg-[#eef3ed] text-zinc-950 border-emerald-900/10",
+    className: "xl:col-span-6 bg-[#eef3ed] text-zinc-950 border-emerald-900/10",
     accent: "text-emerald-800",
     body: "text-zinc-600",
     ring: "bg-white/80 text-emerald-900 ring-emerald-900/10",
@@ -65,7 +78,7 @@ const discoveryJourneys = [
     href: "/products",
     action: "Shop the market",
     icon: ShoppingBasket,
-    className: "xl:col-span-4 bg-white text-zinc-950 border-zinc-200",
+    className: "xl:col-span-6 bg-white text-zinc-950 border-zinc-200",
     accent: "text-emerald-800",
     body: "text-zinc-600",
     ring: "bg-zinc-50 text-emerald-900 ring-zinc-200",
@@ -87,7 +100,7 @@ export default function FoodDiscovery() {
           </div>
           <div className="md:justify-self-end">
             <p className="max-w-xl text-base font-light leading-7 text-zinc-600">
-              FreshPick starts with what you want to eat, cook and repeat — then connects that intent to the groceries, meals and makers that make it happen.
+              FreshPick starts with what you want to eat, cook and repeat — then connects that intent to the recipes, products, meals and makers that make it happen.
             </p>
             <Link
               href="/discover"
@@ -111,15 +124,12 @@ export default function FoodDiscovery() {
                   <Icon className="h-5 w-5 stroke-[1.5]" />
                 </div>
               </div>
-
               <div className="mt-16 max-w-xl">
                 <h3 className="max-w-lg font-serif text-3xl font-normal leading-[1.02] md:text-4xl">{title}</h3>
                 <p className={`mt-5 max-w-lg text-sm font-light leading-7 ${body}`}>{description}</p>
               </div>
-
               <span className={`mt-auto inline-flex items-center gap-2 pt-8 text-[10px] font-bold uppercase tracking-[0.18em] ${accent}`}>
-                {action}
-                <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                {action}<ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
             </Link>
           ))}
