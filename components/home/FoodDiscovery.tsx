@@ -87,7 +87,7 @@ export default function FoodDiscovery() {
           </div>
           <div className="md:justify-self-end">
             <p className="max-w-xl text-base font-light leading-7 text-zinc-600">
-              FreshPick is being built around what you want to eat, cook and repeat — then connects that intent to the groceries, meals and makers that make it happen.
+              FreshPick starts with what you want to eat, cook and repeat — then connects that intent to the groceries, meals and makers that make it happen.
             </p>
             <Link
               href="/discover"
