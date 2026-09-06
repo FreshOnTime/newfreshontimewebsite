@@ -17,6 +17,12 @@ export const WHATSAPP_NUMBER = (
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""
 ).replace(/\D/g, "");
 
+export const SOCIAL_LINKS = {
+  instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
+  facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || "",
+  x: process.env.NEXT_PUBLIC_X_URL || "",
+} as const;
+
 export const SERVICE_AREAS = [
   "Colombo",
   "Rajagiriya",
