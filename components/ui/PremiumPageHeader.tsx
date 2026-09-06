@@ -30,10 +30,6 @@ export default function PremiumPageHeader({
             priority
             fetchPriority="high"
             sizes="100vw"
-            // Remote campaign images are already CDN-resized by their URL.
-            // Deliver them directly instead of waiting for a cold serverless
-            // image-optimizer invocation on the first visitor request.
-            unoptimized={backgroundImage.startsWith('http')}
             className="object-cover"
           />
           <div className="absolute inset-0 bg-[#09090b]/60" />
