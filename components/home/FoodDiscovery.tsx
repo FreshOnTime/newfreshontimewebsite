@@ -13,9 +13,9 @@ const discoveryJourneys = [
   {
     eyebrow: "Tonight",
     title: "Dinner without the decision fatigue",
-    description: "Start with meal kits and ready-to-cook ideas when you want a proper dinner without planning every ingredient yourself.",
-    href: "/meal-kits",
-    action: "Find tonight's dinner",
+    description: "Start with a dish, then add the whole idea to your basket. FreshPick recipes connect inspiration to live ingredients and stock-aware substitutes.",
+    href: "/recipes",
+    action: "Shop tonight's recipe",
     icon: Clock3,
     className: "xl:col-span-7 bg-[#0b1710] text-white border-white/10",
     accent: "text-emerald-200",
