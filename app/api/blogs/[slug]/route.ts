@@ -13,6 +13,7 @@ export async function GET(
         slug,
         isDeleted: false,
         published: true,
+        NOT: { category: 'recipe' },
       },
       include: {
         author: {
@@ -25,7 +26,6 @@ export async function GET(
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
 
-    // Increment view count
     await prisma.blog.update({
       where: { id: blog.id },
       data: { views: { increment: 1 } },
