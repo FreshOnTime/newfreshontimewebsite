@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ShoppingBag, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -15,10 +15,28 @@ interface RecipeAddToBagProps {
 
 export default function RecipeAddToBag({ slug, availableIngredientCount }: RecipeAddToBagProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const viewRecorded = useRef(false);
   const { user } = useAuth();
   const { currentBag, fetchBags } = useBag();
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (viewRecorded.current) return;
+    viewRecorded.current = true;
+    void fetch("/api/taste/events", {
+      method: "POST",
+      credentials: "include",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "recipe_viewed",
+        entityType: "recipe",
+        entityId: slug,
+        surface: "recipe_detail",
+      }),
+    }).catch(() => undefined);
+  }, [slug]);
 
   const addRecipe = async () => {
     if (!user) {
