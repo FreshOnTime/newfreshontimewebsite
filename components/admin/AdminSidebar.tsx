@@ -31,6 +31,7 @@ const navigation = [
   { name: 'Supplier Uploads', href: '/admin/supplier-uploads', icon: FileText },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Recipe Studio', href: '/admin/recipes', icon: ChefHat },
+  { name: 'Collection Studio', href: '/admin/collections', icon: Layers },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
   { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
   { name: 'Partnerships', href: '/admin/business-leads', icon: Handshake },
