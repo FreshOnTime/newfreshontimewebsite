@@ -15,6 +15,8 @@ const CACHE_HEADERS = {
   'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
 };
 
+const COMMERCE_CATEGORIES = ['recipe', 'collection'];
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
     const where: Prisma.BlogWhereInput = {
       isDeleted: false,
       published: true,
-      NOT: { category: 'recipe' },
+      category: { notIn: COMMERCE_CATEGORIES },
     };
 
     if (query.search) {
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (query.category && query.category !== 'recipe') {
+    if (query.category && !COMMERCE_CATEGORIES.includes(query.category)) {
       where.category = query.category;
     }
 
