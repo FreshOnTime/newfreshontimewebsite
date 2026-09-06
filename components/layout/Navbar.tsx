@@ -236,7 +236,7 @@ export function Navbar() {
                     Contact
                   </Link>
                   <Link prefetch={false} href="/b2b" onMouseEnter={() => prefetchRoute("/b2b")} onFocus={() => prefetchRoute("/b2b")} className={`hidden whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 xl:block ${textColor} ${hoverColor}`}>
-                    Business
+                    Partner with us
                   </Link>
                   <Link prefetch={false} href="/blog" onMouseEnter={() => prefetchRoute("/blog")} onFocus={() => prefetchRoute("/blog")} className={`hidden whitespace-nowrap text-sm font-medium tracking-wide transition-all duration-300 py-2 2xl:block ${textColor} ${hoverColor}`}>
                     Blog
@@ -340,7 +340,7 @@ export function Navbar() {
             <Link href="/categories" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Collections</Link>
             <Link href="/subscriptions" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Subscriptions</Link>
             <Link href="/contact" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Contact</Link>
-            <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Business</Link>
+            <Link href="/b2b" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Partner with us</Link>
             <Link href="/blog" className="text-2xl font-serif font-medium text-gray-900" onClick={() => setIsMenuOpen(false)}>Blog</Link>
             <div className="h-px bg-gray-100 w-24 mx-auto my-2" />
             {user ? (
