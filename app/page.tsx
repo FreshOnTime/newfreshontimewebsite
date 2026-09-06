@@ -1,12 +1,10 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductErrorBoundary } from "@/components/products/ProductErrorBoundary";
 import { Product } from "@/models/product";
 
-// Client Islands
 import HeroSection from "@/components/home/HeroSection";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
 import BannerGrid from "@/components/home/BannerGrid";
@@ -85,69 +83,78 @@ export default async function Home() {
   const { products, categories } = await getHomeData();
 
   return (
-    <div className="bg-transparent">
+    <main className="overflow-hidden bg-white">
       <HeroSection />
-      <LuxuryManifesto />
       <TrustBadges />
-      <FreshPickPathways />
-      <BannerGrid />
-      <CategoryBento categories={categories} />
 
-      <section className="bg-[#ffffff] py-24 md:py-36">
-        <div className="container mx-auto px-4 md:px-8">
-          <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
+      <section className="bg-[#f6f7f4] py-24 md:py-32">
+        <div className="container mx-auto max-w-7xl px-4 md:px-8">
+          <AnimatedSection className="mb-12 grid gap-7 md:mb-16 md:grid-cols-[1fr_0.72fr] md:items-end">
             <div>
-              <span className="mb-6 block text-[10px] font-bold uppercase tracking-[0.34em] text-black">
-                Fresh Today
+              <span className="mb-5 block text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-700">
+                Fresh today
               </span>
-              <h2 className="mb-5 font-serif text-5xl font-normal leading-[0.98] tracking-tight text-black md:text-7xl">
-                Today&apos;s <span className="italic text-black">fresh picks.</span>
+              <h2 className="text-balance font-serif text-5xl font-normal leading-[0.94] tracking-tight text-zinc-950 md:text-7xl">
+                Start with what looks <span className="italic text-emerald-900">good.</span>
               </h2>
-              <p className="max-w-xl text-lg font-light leading-relaxed text-zinc-700 md:text-xl">
-                The latest FreshPick arrivals, selected for your next kitchen, table, or delivery day.
-              </p>
             </div>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-6 md:mt-0 border-zinc-200 text-zinc-900 hover:bg-zinc-900 hover:text-white rounded-full px-8 py-6 text-sm font-medium tracking-wide transition-all"
-            >
-              <Link href="/products">
-                View All Products
-                <ArrowRight className="ml-2 w-4 h-4" />
+            <div className="md:justify-self-end">
+              <p className="max-w-lg text-base font-light leading-7 text-zinc-600">
+                New arrivals and everyday favourites chosen for your next kitchen, table, or delivery day.
+              </p>
+              <Link
+                href="/products"
+                className="mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-950 transition-colors hover:text-emerald-700"
+              >
+                Shop the full collection <ArrowUpRight className="h-4 w-4" />
               </Link>
-            </Button>
+            </div>
           </AnimatedSection>
 
           <ProductErrorBoundary>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-              {products.map((product, index) => (
-                <AnimatedProductItem key={product.sku} index={index}>
-                  <ProductCard
-                    id={product._id?.toString() || ""}
-                    sku={product.sku}
-                    name={product.name}
-                    image={product.image?.url || ""}
-                    discountPercentage={product.discountPercentage || 0}
-                    baseMeasurementQuantity={product.baseMeasurementQuantity}
-                    pricePerBaseQuantity={product.pricePerBaseQuantity}
-                    measurementType={
-                      product.measurementUnit as
-                      | "g"
-                      | "kg"
-                      | "ml"
-                      | "l"
-                      | "ea"
-                      | "lb"
-                    }
-                    isDiscreteItem={product.isSoldAsUnit}
-                  />
-                </AnimatedProductItem>
-              ))}
-            </div>
+            {products.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-6">
+                {products.map((product, index) => (
+                  <AnimatedProductItem key={product.sku} index={index}>
+                    <ProductCard
+                      id={product._id?.toString() || ""}
+                      sku={product.sku}
+                      name={product.name}
+                      image={product.image?.url || ""}
+                      discountPercentage={product.discountPercentage || 0}
+                      baseMeasurementQuantity={product.baseMeasurementQuantity}
+                      pricePerBaseQuantity={product.pricePerBaseQuantity}
+                      measurementType={
+                        product.measurementUnit as
+                        | "g"
+                        | "kg"
+                        | "ml"
+                        | "l"
+                        | "ea"
+                        | "lb"
+                      }
+                      isDiscreteItem={product.isSoldAsUnit}
+                      priority={index < 2}
+                    />
+                  </AnimatedProductItem>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[2rem] border border-zinc-200 bg-white px-6 py-16 text-center">
+                <p className="font-serif text-2xl text-zinc-900">The fresh shelf is being updated.</p>
+                <Link href="/products" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800">
+                  Browse all products <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </div>
+            )}
           </ProductErrorBoundary>
         </div>
       </section>
-    </div>
+
+      <FreshPickPathways />
+      <CategoryBento categories={categories} />
+      <BannerGrid />
+      <LuxuryManifesto />
+    </main>
   );
 }
