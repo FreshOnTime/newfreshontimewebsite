@@ -7,7 +7,7 @@ Fresh Pick is a Colombo, Sri Lanka-based online food service bringing fresh groc
 ## Core pages
 - Home: ${SITE_URL}
 - Products: ${SITE_URL}/products
-- B2B supply: ${SITE_URL}/b2b
+- Supplier partnerships and onboarding: ${SITE_URL}/b2b
 - Subscriptions: ${SITE_URL}/subscriptions
 - Farm to table: ${SITE_URL}/farm-to-table
 - Homemade: ${SITE_URL}/homemade
@@ -15,25 +15,28 @@ Fresh Pick is a Colombo, Sri Lanka-based online food service bringing fresh groc
 - Meal kits: ${SITE_URL}/meal-kits
 
 ## What Fresh Pick offers
-Fresh Pick helps households, restaurants, hotels, offices, cafes, and premium residences source fresh groceries and produce in Colombo.
+Fresh Pick serves food shoppers while building a curated partnership network with growers, makers, producers, distributors, and business buyers in Sri Lanka.
 
-Key services include:
+Key services and partnership areas include:
 - Fresh grocery delivery in Colombo
 - Recurring weekly household grocery plans
 - Cooked-food ordering and recurring meal deliveries
 - Homemade and small-batch products from Sri Lankan food makers
 - One-basket ordering for groceries and meals
-- B2B fresh produce supply for restaurants, hotels, offices, and cafes
+- Curated supplier onboarding for farms, growers, makers, brands, distributors, and importers
+- Business supply partnerships for restaurants, hotels, offices, cafes, and other organisations
 - Farmer-first sourcing and harvest coordination
 - Farm-to-table produce selection
 - Same-day and planned delivery support where available
+
+Fresh Pick is not presented as an open supplier marketplace. Supplier and partnership applications are reviewed for product fit, quality, consistency, commercial suitability, and operational readiness before onboarding.
 
 ## Service areas
 Fresh Pick focuses on Colombo and nearby areas such as Rajagiriya, Battaramulla, Nawala, Nugegoda, Dehiwala, Mount Lavinia, Kollupitiya, Bambalapitiya, Cinnamon Gardens, and Havelock Town.
 
 ## Contact
 General concierge: concierge@freshpick.lk
-B2B supply requests: b2b@freshpick.lk
+Partnership applications: ${SITE_URL}/b2b#apply
 `;
 
 export function GET() {
