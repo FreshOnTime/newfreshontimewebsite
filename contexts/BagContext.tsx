@@ -3,14 +3,14 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bag } from '@/models/Bag';
-// import { BagItem } from '@/models/BagItem';
 import { Product } from '@/models/product';
-import { useAuth } from './AuthContext';
+import { apiFetch } from '@/lib/api/client';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
+import { useAuth } from './AuthContext';
 
-// API response interfaces
 interface ApiProduct {
   _id?: string;
+  id?: string;
   name?: string;
   image?: { url: string; alt: string };
   measurementType?: string;
@@ -50,6 +50,37 @@ interface BagContextType {
 
 const BagContext = createContext<BagContextType | undefined>(undefined);
 
+function normalizeBag(bag: ApiBag): Bag {
+  return {
+    id: bag._id,
+    name: bag.name,
+    description: bag.description,
+    tags: bag.tags ?? [],
+    items: (bag.items || [])
+      .filter((item) => item?.product && (item.product._id || item.product.id))
+      .map((item) => {
+        const product = item.product as ApiProduct;
+        return {
+          quantity: item.quantity,
+          product: {
+            id: String(product._id || product.id || ''),
+            name: product.name || 'Unknown Product',
+            price: item.price,
+            unit: product.measurementType || 'unit',
+            stock: product.stockQuantity || 0,
+            images: product.image ? [{ url: product.image.url, alt: product.image.alt }] : [],
+          },
+        } as unknown as Bag['items'][number];
+      }),
+  };
+}
+
+function getProductId(product: Product) {
+  return (product as unknown as { _id?: string; id?: string })._id
+    || (product as unknown as { id?: string }).id
+    || (product as unknown as { sku?: string }).sku;
+}
+
 export function BagProvider({ children }: { children: ReactNode }) {
   const [bags, setBags] = useState<Bag[]>([]);
   const [currentBag, setCurrentBag] = useState<Bag | null>(null);
@@ -58,105 +89,73 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useAuth();
-  // Use authenticated user ObjectId for database queries; don't fallback to a hardcoded id
   const userId = user?._id;
   const router = useRouter();
   const pathname = usePathname();
+
+  const replaceBag = useCallback((bagId: string, nextBag: ApiBag) => {
+    const normalized = normalizeBag(nextBag);
+    setBags((previous) => previous.map((bag) => bag.id === bagId ? normalized : bag));
+    setCurrentBag((previous) => previous?.id === bagId ? normalized : previous);
+  }, []);
 
   const fetchBags = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      if (!userId) {
-        // Wait until user is available
-        return;
-      }
-      const response = await fetch(`/api/bags?userId=${userId}`);
+      if (!userId) return;
+
+      const response = await apiFetch(`/api/bags?userId=${encodeURIComponent(userId)}`);
       const data = await response.json();
 
-      if (data.success) {
-        const normalizeBag = (bag: ApiBag): Bag => ({
-          id: bag._id,
-          name: bag.name,
-          description: bag.description,
-          tags: bag.tags ?? [],
-          items: (bag.items || [])
-            .filter((it: ApiBagItem) => it && it.product && (it.product as ApiProduct)._id)
-            .map((it: ApiBagItem) => {
-              const p = it.product as ApiProduct;
-              return {
-                quantity: it.quantity,
-                product: {
-                  // UI Product shape extension
-                  id: String(p._id || ''),
-                  name: p.name || 'Unknown Product',
-                  price: it.price,
-                  unit: p.measurementType || 'unit',
-                  stock: p.stockQuantity || 0,
-                  images: p.image ? [{ url: p.image.url, alt: p.image.alt }] : [],
-                }
-              } as unknown as Bag['items'][number];
-            })
-        });
-
-        const mappedBags = (data.data || [])
-          .filter((bag: ApiBag) => bag && bag._id)
-          .map((bag: ApiBag) => normalizeBag(bag));
-        setBags(mappedBags);
-        // Set first bag as current if none selected
-        if (!currentBag && mappedBags.length > 0) {
-          setCurrentBag(mappedBags[0]);
-        }
-      } else {
-        setError(data.error || 'Failed to fetch bags');
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch bags');
       }
+
+      const mappedBags = (data.data || [])
+        .filter((bag: ApiBag) => bag && bag._id)
+        .map((bag: ApiBag) => normalizeBag(bag));
+
+      setBags(mappedBags);
+      setCurrentBag((previous) => {
+        if (previous) {
+          return mappedBags.find((bag: Bag) => bag.id === previous.id) || mappedBags[0] || null;
+        }
+        return mappedBags[0] || null;
+      });
     } catch (err) {
-      setError('Network error while fetching bags');
+      setError(err instanceof Error ? err.message : 'Network error while fetching bags');
       console.error('Error fetching bags:', err);
     } finally {
       setLoading(false);
     }
-  }, [userId, currentBag]);
+  }, [userId]);
 
   const createBag = useCallback(async (name: string, description?: string) => {
     setLoading(true);
     setError(null);
     try {
       if (!userId) {
-        // redirect unauthenticated users to login, preserving current path
         const redirectTo = typeof window !== 'undefined' ? window.location.pathname : '/';
         router.push(`/auth/login?redirect=${encodeURIComponent(redirectTo)}`);
         return;
       }
-      const response = await fetch('/api/bags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          items: [],
-          tags: []
-        }),
-        credentials: 'include'
-      });
 
+      const response = await apiFetch('/api/bags', {
+        method: 'POST',
+        body: JSON.stringify({ name, description, items: [], tags: [] }),
+      });
       const data = await response.json();
 
-      if (data.success) {
-        const mappedBag = {
-          ...data.data,
-          id: data.data._id,
-          items: []
-        };
-        setBags(prev => [mappedBag, ...prev]);
-        setCurrentBag(mappedBag);
-      } else {
-        setError(data.error || 'Failed to create bag');
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create bag');
       }
+
+      const mappedBag = normalizeBag(data.data as ApiBag);
+      setBags((previous) => [mappedBag, ...previous]);
+      setCurrentBag(mappedBag);
     } catch (err) {
-      setError('Network error while creating bag');
+      setError(err instanceof Error ? err.message : 'Network error while creating bag');
       console.error('Error creating bag:', err);
     } finally {
       setLoading(false);
@@ -167,183 +166,131 @@ export function BagProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/bags/${bagId}/items`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          // Use database _id when available; fallback to sku only if backend supports it
-          productId: (product as unknown as { _id?: string; id?: string })._id
-            || (product as unknown as { _id?: string; id?: string }).id
-            || (product as unknown as { sku?: string }).sku,
-          quantity
-        }),
-      });
+      const productId = getProductId(product);
+      if (!productId) throw new Error('Product ID is missing');
 
+      const response = await apiFetch(`/api/bags/${encodeURIComponent(bagId)}/items`, {
+        method: 'POST',
+        body: JSON.stringify({ productId, quantity }),
+      });
       const data = await response.json();
 
-      if (data.success) {
-        const normalize = (bag: ApiBag): Bag => ({
-          id: bag._id,
-          name: bag.name,
-          description: bag.description,
-          tags: bag.tags ?? [],
-          items: (bag.items || []).map((it: ApiBagItem) => {
-            const p = it.product as ApiProduct | null;
-            return {
-              quantity: it.quantity,
-              product: {
-                id: String(p?._id || ''),
-                name: p?.name || 'Unknown Product',
-                price: it.price,
-                unit: p?.measurementType || 'unit',
-                stock: p?.stockQuantity || 0,
-                images: p?.image ? [{ url: p.image.url, alt: p.image.alt }] : []
-              }
-            } as unknown as Bag['items'][number];
-          })
-        });
-
-        const normalized = normalize(data.data as ApiBag);
-        setBags(prev => prev.map(bag => bag.id === bagId ? normalized : bag));
-        if (currentBag?.id === bagId) setCurrentBag(normalized);
-      } else {
-        setError(data.error || 'Failed to add item to bag');
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to add item to bag');
       }
+
+      replaceBag(bagId, data.data as ApiBag);
     } catch (err) {
-      setError('Network error while adding item to bag');
+      setError(err instanceof Error ? err.message : 'Network error while adding item to bag');
       console.error('Error adding to bag:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentBag]);
+  }, [replaceBag]);
 
   const removeFromBag = useCallback(async (bagId: string, productId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/bags/${bagId}/items?productId=${productId}`, {
-        method: 'DELETE',
-      });
-
+      const response = await apiFetch(
+        `/api/bags/${encodeURIComponent(bagId)}/items?productId=${encodeURIComponent(productId)}`,
+        { method: 'DELETE' },
+      );
       const data = await response.json();
 
-      if (data.success) {
-        const normalize = (bag: ApiBag): Bag => ({
-          id: bag._id,
-          name: bag.name,
-          description: bag.description,
-          tags: bag.tags ?? [],
-          items: (bag.items || []).map((it: ApiBagItem) => {
-            const p = it.product as ApiProduct | null;
-            return {
-              quantity: it.quantity,
-              product: {
-                id: String(p?._id || ''),
-                name: p?.name || 'Unknown Product',
-                price: it.price,
-                unit: p?.measurementType || 'unit',
-                stock: p?.stockQuantity || 0,
-                images: p?.image ? [{ url: p.image.url, alt: p.image.alt }] : []
-              }
-            } as unknown as Bag['items'][number];
-          })
-        });
-
-        const normalized = normalize(data.data as ApiBag);
-        setBags(prev => prev.map(bag => bag.id === bagId ? normalized : bag));
-        if (currentBag?.id === bagId) setCurrentBag(normalized);
-      } else {
-        setError(data.error || 'Failed to remove item from bag');
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to remove item from bag');
       }
+
+      replaceBag(bagId, data.data as ApiBag);
     } catch (err) {
-      setError('Network error while removing item from bag');
+      setError(err instanceof Error ? err.message : 'Network error while removing item from bag');
       console.error('Error removing from bag:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentBag]);
+  }, [replaceBag]);
 
   const updateBagItem = useCallback(async (bagId: string, productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      await removeFromBag(bagId, productId);
-      return;
-    }
+    const bag = bags.find((candidate) => candidate.id === bagId);
+    const item = bag?.items.find((candidate) => candidate.product.id === productId);
+    if (!bag || !item) return;
 
-    // Optimistic update - update UI immediately
-    const bag = bags.find(b => b.id === bagId);
-    const item = bag?.items.find(i => i.product.id === productId);
-    if (!item) return;
-
-    // Store previous state for rollback
     const previousBags = bags;
     const previousCurrentBag = currentBag;
 
-    // Optimistically update the quantity in state
     const updatedBag: Bag = {
-      ...bag!,
-      items: bag!.items.map(i =>
-        i.product.id === productId ? { ...i, quantity } : i
-      )
+      ...bag,
+      items: quantity <= 0
+        ? bag.items.filter((candidate) => candidate.product.id !== productId)
+        : bag.items.map((candidate) =>
+            candidate.product.id === productId ? { ...candidate, quantity } : candidate
+          ),
     };
-    setBags(prev => prev.map(b => b.id === bagId ? updatedBag : b));
+
+    setBags((previous) => previous.map((candidate) => candidate.id === bagId ? updatedBag : candidate));
     if (currentBag?.id === bagId) setCurrentBag(updatedBag);
 
-    // Perform actual API update in background
     setUpdating(true);
+    setError(null);
     try {
-      await removeFromBag(bagId, productId);
-      await addToBag(bagId, item.product, quantity);
+      const response = await apiFetch(`/api/bags/${encodeURIComponent(bagId)}/items`, {
+        method: 'PATCH',
+        body: JSON.stringify({ productId, quantity: Math.max(0, quantity) }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update quantity');
+      }
+
+      replaceBag(bagId, data.data as ApiBag);
     } catch (err) {
-      // Rollback on error
       setBags(previousBags);
       setCurrentBag(previousCurrentBag);
+      setError(err instanceof Error ? err.message : 'Network error while updating quantity');
       console.error('Error updating quantity:', err);
+      throw err;
     } finally {
       setUpdating(false);
     }
-  }, [bags, currentBag, removeFromBag, addToBag]);
+  }, [bags, currentBag, replaceBag]);
 
   const deleteBag = useCallback(async (bagId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/bags/${bagId}`, {
+      const response = await apiFetch(`/api/bags/${encodeURIComponent(bagId)}`, {
         method: 'DELETE',
       });
       const data = await response.json();
-      if (data.success) {
-        setBags(prev => prev.filter(bag => bag.id !== bagId));
-        if (currentBag?.id === bagId) {
-          setCurrentBag(null);
-          fetchBags();
-        }
-      } else {
-        setError(data.error || 'Failed to delete bag');
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete bag');
       }
+
+      setBags((previous) => previous.filter((bag) => bag.id !== bagId));
+      setCurrentBag((previous) => previous?.id === bagId ? null : previous);
     } catch (err) {
-      setError('Network error while deleting bag');
+      setError(err instanceof Error ? err.message : 'Network error while deleting bag');
       console.error('Error deleting bag:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentBag, fetchBags]);
+  }, []);
 
   const selectBag = useCallback((bagId: string) => {
-    const bag = bags.find(b => b.id === bagId);
-    if (bag) {
-      setCurrentBag(bag);
-    }
+    const bag = bags.find((candidate) => candidate.id === bagId);
+    if (bag) setCurrentBag(bag);
   }, [bags]);
 
   const getTotalItems = useCallback((bagId: string): number => {
-    const bag = bags.find(b => b.id === bagId);
+    const bag = bags.find((candidate) => candidate.id === bagId);
     return bag?.items.reduce((total, item) => total + item.quantity, 0) || 0;
   }, [bags]);
 
   const getTotalPrice = useCallback((bagId: string): number => {
-    const bag = bags.find(b => b.id === bagId);
+    const bag = bags.find((candidate) => candidate.id === bagId);
     return bag?.items.reduce((total, item) => total + (item.product.price * item.quantity), 0) || 0;
   }, [bags]);
 
@@ -355,9 +302,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Load immediately when a bag page is open. On all other pages it remains
-    // an idle task so the header does not delay first content.
-    if (pathname.startsWith('/bags')) {
+    if (pathname.startsWith('/bags') || pathname.startsWith('/checkout')) {
       fetchBags();
       return;
     }
@@ -367,10 +312,9 @@ export function BagProvider({ children }: { children: ReactNode }) {
       fallbackDelayMs: 2500,
     });
     return () => task.cancel();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, pathname, fetchBags]);
 
-  const value = {
+  const value = useMemo<BagContextType>(() => ({
     bags,
     currentBag,
     loading,
@@ -385,15 +329,24 @@ export function BagProvider({ children }: { children: ReactNode }) {
     selectBag,
     getTotalItems,
     getTotalPrice,
-  };
+  }), [
+    bags,
+    currentBag,
+    loading,
+    updating,
+    error,
+    createBag,
+    addToBag,
+    removeFromBag,
+    updateBagItem,
+    deleteBag,
+    fetchBags,
+    selectBag,
+    getTotalItems,
+    getTotalPrice,
+  ]);
 
-  return (
-    <BagContext.Provider
-      value={useMemo(() => value, [value])}
-    >
-      {children}
-    </BagContext.Provider>
-  );
+  return <BagContext.Provider value={value}>{children}</BagContext.Provider>;
 }
 
 export function useBag() {
