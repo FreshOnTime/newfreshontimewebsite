@@ -11,25 +11,27 @@ import BannerGrid from "@/components/home/BannerGrid";
 import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import CategoryBento from "@/components/home/CategoryBento";
 import TrustBadges from "@/components/home/TrustBadges";
-import FreshPickPathways from "@/components/home/FreshPickPathways";
+import FoodDiscovery from "@/components/home/FoodDiscovery";
 import { serverApiFetch } from "@/lib/api/server";
 
 export const dynamic = "force-static";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Fresh Groceries, Ready Meals & Recurring Delivery in Colombo",
-  description: "FreshPick brings fresh groceries, homemade favourites, cooked meals, and flexible recurring deliveries to homes and businesses across Colombo, Sri Lanka.",
+  title: "Discover What to Eat | Groceries, Meal Kits & Local Food in Colombo",
+  description: "Discover what to eat, then get everything to make it. FreshPick connects groceries, meal kits, ready meals, local makers and recurring delivery across Colombo, Sri Lanka.",
   keywords: [
+    "food discovery Colombo",
     "fresh grocery delivery Colombo",
+    "meal kits Colombo",
     "cooked food delivery Colombo",
     "recurring grocery delivery Sri Lanka",
     "homemade food Colombo",
     "online groceries Sri Lanka",
   ],
   openGraph: {
-    title: "FreshPick | Groceries, Ready Meals & Recurring Delivery in Colombo",
-    description: "Fresh groceries, homemade favourites, cooked meals, and flexible recurring delivery from one FreshPick basket.",
+    title: "FreshPick | Discover What to Eat. Get Everything to Make It.",
+    description: "Start with the meal, craving or routine. FreshPick connects you to groceries, meal kits, ready meals and independent Sri Lankan makers.",
     type: "website",
     locale: "en_LK",
     url: "https://freshpick.lk",
@@ -86,6 +88,7 @@ export default async function Home() {
     <main className="overflow-hidden bg-white">
       <HeroSection />
       <TrustBadges />
+      <FoodDiscovery />
 
       <section className="bg-[#f6f7f4] py-24 md:py-32">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
@@ -95,18 +98,18 @@ export default async function Home() {
                 Fresh today
               </span>
               <h2 className="text-balance font-serif text-5xl font-normal leading-[0.94] tracking-tight text-zinc-950 md:text-7xl">
-                Start with what looks <span className="italic text-emerald-900">good.</span>
+                Now choose what looks <span className="italic text-emerald-900">good.</span>
               </h2>
             </div>
             <div className="md:justify-self-end">
               <p className="max-w-lg text-base font-light leading-7 text-zinc-600">
-                New arrivals and everyday favourites chosen for your next kitchen, table, or delivery day.
+                Fresh arrivals and everyday favourites for when you already know what belongs in the basket.
               </p>
               <Link
                 href="/products"
                 className="mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-950 transition-colors hover:text-emerald-700"
               >
-                Shop the full collection <ArrowUpRight className="h-4 w-4" />
+                Shop the full market <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
           </AnimatedSection>
@@ -151,7 +154,6 @@ export default async function Home() {
         </div>
       </section>
 
-      <FreshPickPathways />
       <CategoryBento categories={categories} />
       <BannerGrid />
       <LuxuryManifesto />
