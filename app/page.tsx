@@ -14,13 +14,8 @@ import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import CategoryBento from "@/components/home/CategoryBento";
 import TrustBadges from "@/components/home/TrustBadges";
 import FreshPickPathways from "@/components/home/FreshPickPathways";
+import { serverApiFetch } from "@/lib/api/server";
 
-import prisma from "@/lib/prisma";
-import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
-
-// Keep the landing page at the CDN. Product changes do not need to force a
-// database-backed render for every visitor, and Netlify can regenerate this
-// page in the background when its cache expires.
 export const dynamic = "force-static";
 export const revalidate = 300;
 
@@ -56,63 +51,33 @@ interface HomeData {
 
 const HOME_DATA_TIMEOUT_MS = 1200;
 
-// Single consolidated data fetch: one dbConnect, two parallel queries, no redundant round-trips
 async function getHomeData(): Promise<HomeData> {
-  try {
-    const homeDataPromise = (async (): Promise<HomeData> => {
-      // Fetch products and categories in parallel to minimise latency
-      const [rawProducts, allCategories] = await Promise.all([
-        prisma.product.findMany({
-          where: { archived: false },
-          orderBy: { createdAt: 'desc' },
-          // Two rows on wide screens is enough for the home page and keeps the
-          // server payload, hydration work, and below-the-fold image queue small.
-          take: 12,
-          select: productCardSelect,
-        }),
-        prisma.category.findMany({
-          where: { isActive: true },
-          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-          select: { id: true, name: true, slug: true, description: true, imageUrl: true },
-        }),
-      ]);
-
-      const products = rawProducts.map(serializeProductCardForUi);
-      const categories = allCategories.map((c) => ({
-        _id: c.id,
-        name: c.name,
-        slug: c.slug,
-        description: c.description ?? undefined,
-        imageUrl: c.imageUrl ?? undefined,
-      }));
-
-      return {
-        products: JSON.parse(JSON.stringify(products)),
-        categories: JSON.parse(JSON.stringify(categories)),
-      };
-    })();
-
-    const safeHomeDataPromise = homeDataPromise.catch((error) => {
+  const request = serverApiFetch('/api/storefront/home', {
+    next: { revalidate: 300, tags: ['products', 'categories'] },
+  } as RequestInit & { next: { revalidate: number; tags: string[] } })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Homepage API returned HTTP ${response.status}`);
+      }
+      return response.json() as Promise<HomeData>;
+    })
+    .catch((error) => {
       console.error("[Homepage] Failed to fetch home data:", error);
       return { products: [], categories: [] };
     });
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const timeoutPromise = new Promise<HomeData>((resolve) => {
-      timeoutId = setTimeout(() => {
-        console.warn(`[Homepage] Data fetch exceeded ${HOME_DATA_TIMEOUT_MS}ms. Rendering fast fallback.`);
-        resolve({ products: [], categories: [] });
-      }, HOME_DATA_TIMEOUT_MS);
-    });
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const timeout = new Promise<HomeData>((resolve) => {
+    timeoutId = setTimeout(() => {
+      console.warn(`[Homepage] Data fetch exceeded ${HOME_DATA_TIMEOUT_MS}ms. Rendering fast fallback.`);
+      resolve({ products: [], categories: [] });
+    }, HOME_DATA_TIMEOUT_MS);
+  });
 
-    try {
-      return await Promise.race([safeHomeDataPromise, timeoutPromise]);
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-    }
-  } catch (error) {
-    console.error("[Homepage] Failed to fetch home data:", error);
-    return { products: [], categories: [] };
+  try {
+    return await Promise.race([request, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
@@ -121,27 +86,13 @@ export default async function Home() {
 
   return (
     <div className="bg-transparent">
-      {/* Hero Section - Client Island */}
       <HeroSection />
-
-      {/* Editorial brand statement */}
       <LuxuryManifesto />
-
-      {/* Trust Badges */}
       <TrustBadges />
-
-      {/* FreshPick's four core shopping paths */}
       <FreshPickPathways />
-
-
-
-      {/* Lifestyle Banners */}
       <BannerGrid />
-
-      {/* Categories Section */}
       <CategoryBento categories={categories} />
 
-      {/* Featured Products Section */}
       <section className="bg-[#ffffff] py-24 md:py-36">
         <div className="container mx-auto px-4 md:px-8">
           <AnimatedSection className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
