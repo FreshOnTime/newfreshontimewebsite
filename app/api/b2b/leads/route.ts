@@ -28,11 +28,15 @@ export async function POST(request: Request) {
       ["Contact", lead.contactName],
       ["Email", lead.email],
       ["Phone", lead.phone],
-      ["Requirement", lead.requirement || "Not provided"],
+      ["Partnership details", lead.requirement || "Not provided"],
     ].map(([label, value]) => `<p><strong>${label}:</strong> ${escapeHtml(value)}</p>`).join("");
 
-    sendEmail(recipient, `New FreshPick B2B lead: ${lead.organizationName}`, `<h2>New B2B supply request</h2>${details}`).catch((error) => {
-      console.error("[B2B leads] Notification email failed:", error);
+    sendEmail(
+      recipient,
+      `New FreshPick partnership application: ${lead.organizationName}`,
+      `<h2>New supplier / partnership application</h2>${details}`
+    ).catch((error) => {
+      console.error("[Partnership applications] Notification email failed:", error);
     });
 
     return NextResponse.json({ ok: true, leadId: savedLead.id }, { status: 201 });
@@ -40,7 +44,7 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ ok: false, error: "Please complete the required fields with valid details." }, { status: 400 });
     }
-    console.error("[B2B leads] Failed to create lead:", error);
-    return NextResponse.json({ ok: false, error: "Unable to submit your request. Please try again." }, { status: 500 });
+    console.error("[Partnership applications] Failed to create lead:", error);
+    return NextResponse.json({ ok: false, error: "Unable to submit your application. Please try again." }, { status: 500 });
   }
 }
