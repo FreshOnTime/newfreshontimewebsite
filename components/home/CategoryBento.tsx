@@ -70,11 +70,11 @@ export default function CategoryBento({ categories }: CategoryBentoProps) {
                                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(167,243,208,0.42),transparent_30%),radial-gradient(circle_at_85%_85%,rgba(250,204,21,0.18),transparent_34%),linear-gradient(135deg,#065f46,#022c22)]" />
                             )}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/16 to-transparent transition-colors group-hover:from-black/68" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/[0.78] via-black/[0.16] to-transparent transition-colors group-hover:from-black/[0.68]" />
                             <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
                                 <div className="flex items-end justify-between gap-6">
                                     <div>
-                                        <span className="mb-3 block text-[9px] font-bold uppercase tracking-[0.24em] text-white/55">
+                                        <span className="mb-3 block text-[9px] font-bold uppercase tracking-[0.24em] text-white/[0.55]">
                                             Collection {String(index + 1).padStart(2, "0")}
                                         </span>
                                         <h3 className={`font-serif font-normal leading-none ${index === 0 ? "text-4xl md:text-6xl" : "text-3xl md:text-4xl"}`}>
