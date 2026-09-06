@@ -2,6 +2,7 @@ import { serialize, parse } from 'cookie';
 import { NextRequest, NextResponse } from 'next/server';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
+const authCookieDomain = process.env.AUTH_COOKIE_DOMAIN || undefined;
 
 export interface CookieOptions {
   httpOnly?: boolean;
@@ -9,6 +10,7 @@ export interface CookieOptions {
   sameSite?: 'strict' | 'lax' | 'none';
   maxAge?: number;
   path?: string;
+  domain?: string;
 }
 
 export function setCookie(
@@ -22,7 +24,8 @@ export function setCookie(
     secure: !isDevelopment,
     sameSite: 'lax',
     path: '/',
-    ...options
+    domain: authCookieDomain,
+    ...options,
   };
 
   const serializedCookie = serialize(name, value, defaultOptions);
@@ -39,7 +42,8 @@ export function deleteCookie(
     secure: !isDevelopment,
     sameSite: 'lax',
     path,
-    maxAge: 0
+    domain: authCookieDomain,
+    maxAge: 0,
   });
   response.headers.append('Set-Cookie', serializedCookie);
 }
@@ -57,14 +61,12 @@ export function setAuthCookies(
   accessToken: string,
   refreshToken: string
 ): void {
-  // Access token - short expiry
   setCookie(response, 'accessToken', accessToken, {
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 7 * 24 * 60 * 60,
   });
 
-  // Refresh token - long expiry
   setCookie(response, 'refreshToken', refreshToken, {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   });
 }
 

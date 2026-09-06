@@ -11,15 +11,24 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mongodb:
-        image: mongo:5.0
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: freshpick_test
         ports:
-          - 27017:27017
+          - 5432:5432
         options: >-
-          --health-cmd mongosh
+          --health-cmd "pg_isready -U postgres -d freshpick_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/freshpick_test?schema=public
+      JWT_SECRET: test_jwt_secret_that_is_long_enough_for_tests
+      NODE_ENV: test
 
     steps:
     - name: Checkout code
@@ -28,11 +37,14 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20.17.0'
         cache: 'npm'
 
     - name: Install dependencies
       run: npm ci
+
+    - name: Apply database migrations
+      run: npx prisma migrate deploy
 
     - name: Run linter
       run: npm run lint
@@ -40,11 +52,9 @@ jobs:
     - name: Run tests
       run: npm test
       env:
-        MONGODB_URI: mongodb://localhost:27017/freshpick_test
         FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
         FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
         FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-        NODE_ENV: test
 
     - name: Build application
       run: npm run build
@@ -96,7 +106,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20.17.0'
 
     - name: Install dependencies
       run: npm ci

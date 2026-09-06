@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode, useCa
 import { usePathname } from 'next/navigation';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { auth } from '@/config/firebase';
+import { apiFetch } from '@/lib/api/client';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
 interface User {
@@ -75,17 +76,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshAuth = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        credentials: 'include'
-      });
+      const response = await apiFetch('/api/auth/refresh', { method: 'POST' });
 
       if (response.ok) {
-        // Retry getting user info
-        const userResponse = await fetch('/api/auth/me', {
-          credentials: 'include'
-        });
-
+        const userResponse = await apiFetch('/api/auth/me');
         if (userResponse.ok) {
           const data = await userResponse.json();
           setUser(data.user);
@@ -99,11 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  // Check if user is authenticated on mount
   useEffect(() => {
-    // The session is already known during client-side navigation. Rechecking
-    // `/api/auth/me` on every route change made protected pages wait for an
-    // unnecessary database round trip before they could load their own data.
     if (user) {
       setLoading(false);
       return;
@@ -112,17 +102,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const checkAuth = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include'
-        });
+        const response = await apiFetch('/api/auth/me');
 
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
         } else if (response.status === 401) {
-          // Public visitors normally have no session at all. Avoid making a
-          // second serverless request to /api/auth/refresh unless the server
-          // confirms that an expired session can actually be refreshed.
           const data = await response.json().catch(() => null) as { canRefresh?: boolean } | null;
           if (data?.canRefresh) {
             await refreshAuth();
@@ -144,8 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       pathname.startsWith('/dashboard') ||
       pathname.startsWith('/bags') ||
       pathname.startsWith('/wishlist') ||
-      pathname.startsWith('/checkout') ||
-      pathname.startsWith('/wishlist');
+      pathname.startsWith('/checkout');
 
     if (shouldCheckImmediately) {
       checkAuth();
@@ -153,48 +137,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const deferredTask = scheduleIdleTask(checkAuth, {
-      // Public page navigation should win over checking an existing session.
-      // Protected routes still check immediately above.
       timeout: 4000,
       fallbackDelayMs: 2500,
     });
 
-    return () => {
-      deferredTask.cancel();
-    };
+    return () => deferredTask.cancel();
   }, [pathname, refreshAuth, user]);
 
   const login = async (identifier: string, password: string) => {
     try {
       clearError();
       setLoading(true);
-      console.log('AuthContext: Starting login request...');
 
-      const response = await fetch('/api/auth/signin', {
+      const response = await apiFetch('/api/auth/signin', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ identifier, password })
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await response.json();
-      console.log('AuthContext: Login response data:', data);
-
       if (response.ok) {
-        console.log('AuthContext: Setting user data:', data.user);
         setUser(data.user);
-        return data.user; // Return user data for immediate use
-      } else {
-        setError(data.error || 'Login failed');
-        throw new Error(data.error || 'Login failed');
+        return data.user;
       }
+
+      setError(data.error || 'Login failed');
+      throw new Error(data.error || 'Login failed');
     } catch (error) {
-      console.error('AuthContext: Login error:', error);
-      if (error instanceof Error) {
-        setError(error.message);
-      }
+      if (error instanceof Error) setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -208,17 +177,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
       const idToken = await credential.user.getIdToken();
-      const response = await fetch('/api/auth/google', {
+      const response = await apiFetch('/api/auth/google', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ idToken }),
       });
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Google sign-in failed');
-      }
+      if (!response.ok) throw new Error(data.error || 'Google sign-in failed');
 
       setUser(data.user);
       return data.user;
@@ -236,37 +201,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearError();
       setLoading(true);
 
-      const response = await fetch('/api/auth/signup', {
+      const response = await apiFetch('/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
-
       const responseData = await response.json();
 
       if (response.ok) {
         setUser(responseData.user);
-      } else {
-        // If backend returned validation details, include them on the thrown error
-        const err = new Error(responseData.error || 'Signup failed') as ServerError;
-        if (responseData.details) {
-          err.fieldErrors = responseData.details;
-        }
-        // Sometimes backend returns nested errors or arrays
-        if (responseData.errors) {
-          err.fieldErrors = { ...(err.fieldErrors || {}), ...responseData.errors };
-        }
-        setError(responseData.error || 'Signup failed');
-        throw err;
+        return;
       }
+
+      const err = new Error(responseData.error || 'Signup failed') as ServerError;
+      if (responseData.details) err.fieldErrors = responseData.details;
+      if (responseData.errors) err.fieldErrors = { ...(err.fieldErrors || {}), ...responseData.errors };
+      setError(responseData.error || 'Signup failed');
+      throw err;
     } catch (error) {
-      console.error('Signup error:', error);
-      if (error instanceof Error) {
-        setError(error.message);
-      }
+      if (error instanceof Error) setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -276,12 +228,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     try {
       setLoading(true);
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-      // Keep Firebase's client session in sync with the application's session
-      // so "Continue with Google" does not silently reuse a signed-out user.
+      await apiFetch('/api/auth/logout', { method: 'POST' });
       await signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
@@ -299,7 +246,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loginWithGoogle,
     signup,
     logout,
-    refreshAuth
+    refreshAuth,
   }), [user, loading, error, refreshAuth]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
