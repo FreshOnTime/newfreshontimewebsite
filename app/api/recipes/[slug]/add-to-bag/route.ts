@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { BAG_INCLUDE, bagTotal, serializeBag } from "@/lib/bagSerializer";
 import { getRecipeContentBySlugForCommerce } from "@/lib/recipeService";
+import { recordTasteEvent } from "@/lib/tasteGraph/eventStore";
 
 type Context = { params: Promise<{ slug: string }> };
 type AuthedRequest = NextRequest & {
@@ -116,10 +117,7 @@ export const POST = requireAuth(async (request: AuthedRequest, context: Context)
         continue;
       }
 
-      plannedByProduct.set(
-        chosen.id,
-        (plannedByProduct.get(chosen.id) || 0) + ingredient.quantity
-      );
+      plannedByProduct.set(chosen.id, (plannedByProduct.get(chosen.id) || 0) + ingredient.quantity);
       added.push({
         requestedProductId: ingredient.productId,
         productId: chosen.id,
@@ -137,38 +135,56 @@ export const POST = requireAuth(async (request: AuthedRequest, context: Context)
           const currentQuantity = reservedByProduct.get(productId) || 0;
           await tx.bagItem.upsert({
             where: { bagId_productId: { bagId: bag!.id, productId } },
-            update: {
-              quantity: currentQuantity + quantityToAdd,
-              price: Number(product.price),
-            },
-            create: {
-              bagId: bag!.id,
-              productId,
-              quantity: quantityToAdd,
-              price: Number(product.price),
-            },
+            update: { quantity: currentQuantity + quantityToAdd, price: Number(product.price) },
+            create: { bagId: bag!.id, productId, quantity: quantityToAdd, price: Number(product.price) },
           });
         }
 
-        const items = await tx.bagItem.findMany({
-          where: { bagId: bag!.id },
-          select: { price: true, quantity: true },
-        });
+        const items = await tx.bagItem.findMany({ where: { bagId: bag!.id }, select: { price: true, quantity: true } });
         await tx.bag.update({
           where: { id: bag!.id },
-          data: {
-            totalAmount: bagTotal(
-              items.map((item) => ({ price: Number(item.price), quantity: item.quantity }))
-            ),
-          },
+          data: { totalAmount: bagTotal(items.map((item) => ({ price: Number(item.price), quantity: item.quantity }))) },
         });
       });
     }
 
-    const refreshedBag = await prisma.bag.findUnique({
-      where: { id: bag.id },
-      include: BAG_INCLUDE,
-    });
+    const refreshedBag = await prisma.bag.findUnique({ where: { id: bag.id }, include: BAG_INCLUDE });
+    const sessionId = request.cookies.get("fp_taste_session")?.value || `user-${userId}`;
+    const substitutionCount = added.filter((item) => item.substituted).length;
+
+    void recordTasteEvent({
+      userId,
+      sessionId,
+      event: {
+        eventType: "whole_meal_added",
+        entityType: "recipe",
+        entityId: slug,
+        surface: "recipe_detail",
+        metadata: {
+          addedCount: added.length,
+          skippedCount: skipped.length,
+          substitutionCount,
+          cuisine: recipe.content.cuisine || "",
+          dietary: recipe.content.dietaryTags.join("|"),
+        },
+      },
+      request,
+    }).catch((error) => console.error("Failed to record whole-meal Taste Graph event:", error));
+
+    for (const item of added.filter((candidate) => candidate.substituted)) {
+      void recordTasteEvent({
+        userId,
+        sessionId,
+        event: {
+          eventType: "substitution_used",
+          entityType: "product",
+          entityId: item.productId,
+          surface: "recipe_add_to_bag",
+          metadata: { requestedProductId: item.requestedProductId, recipe: slug },
+        },
+        request,
+      }).catch((error) => console.error("Failed to record substitution Taste Graph event:", error));
+    }
 
     return NextResponse.json({
       success: true,
