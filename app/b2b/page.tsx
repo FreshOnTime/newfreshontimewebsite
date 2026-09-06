@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
+import { SITE_URL } from '@/lib/config/site';
 import B2BContent from './B2BContent';
-
-const SITE_URL = 'https://freshpick.lk';
 
 export const metadata: Metadata = {
     title: "Become a FreshPick Supplier | Partnerships & Supplier Onboarding Sri Lanka",

@@ -16,6 +16,19 @@ async function recomputeAndReturn(bagId: string) {
   return bag ? serializeBag(bag) : null;
 }
 
+async function getOwnedBagAndProduct(userId: string | undefined, bagId: string, productId: string) {
+  if (!userId) return { bag: null, product: null };
+
+  const [bag, product] = await Promise.all([
+    prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } }),
+    prisma.product.findFirst({
+      where: { OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
+    }),
+  ]);
+
+  return { bag, product };
+}
+
 // POST - Add an item to a bag (owner only)
 export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
   try {
@@ -28,12 +41,8 @@ export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
       return NextResponse.json({ error: 'Product ID and valid quantity are required' }, { status: 400 });
     }
 
-    const bag = await prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } });
+    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId);
     if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
-
-    const product = await prisma.product.findFirst({
-      where: { OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
-    });
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
     const existingItem = await prisma.bagItem.findUnique({
@@ -57,6 +66,43 @@ export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
   }
 });
 
+// PATCH - Set an item's absolute quantity in one request (owner only)
+export const PATCH = requireAuth(async (request: AuthedReq, context: Ctx) => {
+  try {
+    const userId = request.user?.mongoId || request.user?.userId;
+    const { id: bagId } = await context.params;
+    const { productId, quantity } = await request.json();
+    const qty = Number(quantity);
+
+    if (!productId || !Number.isFinite(qty) || qty < 0) {
+      return NextResponse.json({ error: 'Product ID and a non-negative quantity are required' }, { status: 400 });
+    }
+
+    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId);
+    if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
+    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+
+    if (qty === 0) {
+      await prisma.bagItem.deleteMany({ where: { bagId, productId: product.id } });
+    } else {
+      if (product.stockQty < qty) {
+        return NextResponse.json({ error: 'Insufficient stock for requested quantity' }, { status: 400 });
+      }
+
+      await prisma.bagItem.upsert({
+        where: { bagId_productId: { bagId, productId: product.id } },
+        update: { quantity: qty, price: Number(product.price) },
+        create: { bagId, productId: product.id, quantity: qty, price: Number(product.price) },
+      });
+    }
+
+    return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
+  } catch (error) {
+    console.error('Error updating bag item:', error);
+    return NextResponse.json({ error: 'Failed to update bag item' }, { status: 500 });
+  }
+});
+
 // DELETE - Remove an item from a bag (owner only)
 export const DELETE = requireAuth(async (request: AuthedReq, context: Ctx) => {
   try {
@@ -67,14 +113,9 @@ export const DELETE = requireAuth(async (request: AuthedReq, context: Ctx) => {
 
     if (!productId) return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
 
-    const bag = await prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } });
+    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId);
     if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
 
-    // productId may be a Product id, sku, or slug.
-    const product = await prisma.product.findFirst({
-      where: { OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
-      select: { id: true },
-    });
     if (product) {
       await prisma.bagItem.deleteMany({ where: { bagId, productId: product.id } });
     }

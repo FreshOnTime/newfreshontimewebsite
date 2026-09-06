@@ -30,8 +30,7 @@ export function nextWeekday(from: Date, day: string): Date {
 
 /**
  * Advance a delivery date by the plan's frequency (weekly/biweekly/monthly),
- * snapping back onto the delivery weekday. Fixes the old bug where skip/resume
- * always added exactly 7 days regardless of cadence.
+ * snapping back onto the delivery weekday.
  */
 export function advanceByFrequency(from: Date, day: string, frequency: string): Date {
   const base = new Date(from);
@@ -42,7 +41,7 @@ export function advanceByFrequency(from: Date, day: string, frequency: string): 
   } else {
     base.setDate(base.getDate() + 7);
   }
-  // Snap to the configured delivery weekday (search backward then forward one week).
+
   const target = DAY_MAP[(day || '').toLowerCase()] ?? base.getDay();
   const snapped = new Date(base);
   let guard = 0;
@@ -54,14 +53,19 @@ export function advanceByFrequency(from: Date, day: string, frequency: string): 
 }
 
 type PlanForClient = {
+  id?: string;
+  _id?: string;
   price: Prisma.Decimal | number | null;
   originalPrice?: Prisma.Decimal | number | null;
 } & Record<string, unknown>;
 
 export function serializePlan<T extends PlanForClient>(plan: T | null | undefined) {
   if (!plan) return plan;
+  const id = plan._id || plan.id;
+
   return {
     ...plan,
+    ...(id ? { _id: id } : {}),
     price: plan.price != null ? Number(plan.price) : 0,
     originalPrice: plan.originalPrice != null ? Number(plan.originalPrice) : null,
   };

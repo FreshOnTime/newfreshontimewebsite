@@ -2,8 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { auth } from '@/config/firebase';
 import { apiFetch } from '@/lib/api/client';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
@@ -64,6 +62,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
+}
+
+async function loadFirebaseAuth() {
+  const [firebaseAuth, firebaseConfig] = await Promise.all([
+    import('firebase/auth'),
+    import('@/config/firebase'),
+  ]);
+
+  return { firebaseAuth, auth: firebaseConfig.auth };
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -175,7 +182,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearError();
       setLoading(true);
 
-      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      const { firebaseAuth, auth } = await loadFirebaseAuth();
+      const credential = await firebaseAuth.signInWithPopup(auth, new firebaseAuth.GoogleAuthProvider());
       const idToken = await credential.user.getIdToken();
       const response = await apiFetch('/api/auth/google', {
         method: 'POST',
@@ -229,7 +237,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setLoading(true);
       await apiFetch('/api/auth/logout', { method: 'POST' });
-      await signOut(auth);
+      const { firebaseAuth, auth } = await loadFirebaseAuth();
+      await firebaseAuth.signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

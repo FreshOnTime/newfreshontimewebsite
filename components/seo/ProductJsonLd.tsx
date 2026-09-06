@@ -1,3 +1,5 @@
+import { absoluteUrl, SITE_NAME_LONG } from '@/lib/config/site';
+
 interface ProductJsonLdProps {
     product: {
         name: string;
@@ -10,25 +12,38 @@ interface ProductJsonLdProps {
         category?: string;
         brand?: string;
         url?: string;
+        ratingValue?: number;
+        reviewCount?: number;
     };
 }
 
 export default function ProductJsonLd({ product }: ProductJsonLdProps) {
+    const hasVerifiedRating =
+        typeof product.ratingValue === 'number' &&
+        Number.isFinite(product.ratingValue) &&
+        typeof product.reviewCount === 'number' &&
+        Number.isInteger(product.reviewCount) &&
+        product.reviewCount > 0;
+
+    const image = product.image
+        ? (product.image.startsWith('http') ? product.image : absoluteUrl(product.image))
+        : absoluteUrl('/og-image.jpg');
+
     const schema = {
         "@context": "https://schema.org",
         "@type": "Product",
         name: product.name,
-        description: product.description || `Fresh ${product.name} from Fresh Pick - Premium quality groceries delivered to your door in Colombo.`,
+        description: product.description || `Fresh ${product.name} from Fresh Pick, available for delivery in Colombo.`,
         sku: product.sku,
-        image: product.image || "https://freshpick.lk/og-image.jpg",
+        image,
         brand: {
             "@type": "Brand",
-            name: product.brand || "Fresh On Time",
+            name: product.brand || SITE_NAME_LONG,
         },
-        category: product.category || "Premium Groceries",
+        category: product.category || "Groceries",
         offers: {
             "@type": "Offer",
-            url: product.url || `https://freshpick.lk/products/${product.sku}`,
+            url: product.url || absoluteUrl(`/products/${product.sku}`),
             priceCurrency: product.currency || "LKR",
             price: product.price.toFixed(2),
             itemCondition: "https://schema.org/NewCondition",
@@ -36,73 +51,20 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
                 ? "https://schema.org/InStock"
                 : "https://schema.org/OutOfStock",
             seller: {
-                "@type": "Store",
-                name: "Fresh On Time",
-                image: "https://freshpick.lk/logo.png", // Ensure this exists or use a valid URL
+                "@type": "Organization",
+                name: SITE_NAME_LONG,
+                url: absoluteUrl(),
             },
-            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            areaServed: [
-                {
-                    "@type": "City",
-                    name: "Colombo",
-                    sameAs: "https://en.wikipedia.org/wiki/Colombo"
-                },
-                {
-                    "@type": "City",
-                    name: "Dehiwala-Mount Lavinia"
-                },
-                {
-                    "@type": "GeoCircle",
-                    geoMidpoint: {
-                        "@type": "GeoCoordinates",
-                        latitude: 6.9271,
-                        longitude: 79.8612
-                    },
-                    geoRadius: "15000" // 15km radius
-                }
-            ],
-            hasMerchantReturnPolicy: {
-                "@type": "MerchantReturnPolicy",
-                returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-                merchantReturnDays: 1,
-                returnMethod: "https://schema.org/ReturnInStore",
-                returnFees: "https://schema.org/FreeReturn"
+        },
+        ...(hasVerifiedRating ? {
+            aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: product.ratingValue!.toFixed(1),
+                reviewCount: String(product.reviewCount),
+                bestRating: "5",
+                worstRating: "1",
             },
-            shippingDetails: {
-                "@type": "OfferShippingDetails",
-                shippingRate: {
-                    "@type": "MonetaryAmount",
-                    value: 350,
-                    currency: "LKR"
-                },
-                shippingDestination: {
-                    "@type": "DefinedRegion",
-                    addressCountry: "LK"
-                },
-                deliveryTime: {
-                    "@type": "ShippingDeliveryTime",
-                    handlingTime: {
-                        "@type": "QuantitativeValue",
-                        minValue: 0,
-                        maxValue: 1,
-                        unitCode: "DAY"
-                    },
-                    transitTime: {
-                        "@type": "QuantitativeValue",
-                        minValue: 0,
-                        maxValue: 1,
-                        unitCode: "DAY"
-                    }
-                }
-            }
-        },
-        aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: "4.9",
-            reviewCount: "850",
-            bestRating: "5",
-            worstRating: "1"
-        },
+        } : {}),
     };
 
     return (

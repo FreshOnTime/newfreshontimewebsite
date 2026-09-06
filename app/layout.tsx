@@ -5,30 +5,16 @@ import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import { Footer } from "@/components/layout/Footer";
-
-const SITE_URL = "https://freshpick.lk";
-const SERVICE_AREAS = [
-  "Colombo",
-  "Rajagiriya",
-  "Battaramulla",
-  "Nawala",
-  "Nugegoda",
-  "Dehiwala",
-  "Mount Lavinia",
-  "Kollupitiya",
-  "Bambalapitiya",
-  "Cinnamon Gardens",
-  "Havelock Town",
-];
+import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: "Fresh Pick",
   title: {
-    default: "Fresh Pick Sri Lanka | Fresh Grocery Delivery, Recurring Orders & B2B Produce Supply",
+    default: "Fresh Pick Sri Lanka | Fresh Grocery Delivery & Curated Food Partnerships",
     template: "%s | Fresh Pick Sri Lanka"
   },
-  description: "Fresh Pick delivers fresh groceries, recurring household orders, and B2B produce supply for restaurants, hotels, offices, and premium homes across Colombo, Sri Lanka.",
+  description: "Fresh Pick brings fresh groceries, recurring household orders, local food discoveries, and curated supplier partnerships together across Colombo, Sri Lanka.",
   other: {
     "geo.region": "LK-11",
     "geo.placename": "Colombo, Sri Lanka",
@@ -41,13 +27,11 @@ export const metadata: Metadata = {
     "recurring grocery delivery Colombo",
     "fresh produce Sri Lanka",
     "farm fresh vegetables Colombo",
-    "B2B fresh produce supplier Colombo",
-    "restaurant vegetable supplier Colombo",
-    "hotel grocery supplier Sri Lanka",
-    "office pantry supplier Colombo",
+    "FreshPick supplier partnerships",
+    "local food makers Sri Lanka",
+    "restaurant supply Colombo",
     "premium household grocery plans",
     "farmer sourced produce Sri Lanka",
-    "same day grocery delivery Colombo",
   ],
   authors: [{ name: "Fresh Pick Team" }],
   creator: "Fresh Pick Sri Lanka",
@@ -58,8 +42,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Fresh Pick Sri Lanka | Fresh Grocery Delivery & Produce Supply",
-    description: "Fresh groceries, recurring household orders, and B2B produce supply for Colombo restaurants, hotels, offices, and premium homes.",
+    title: "Fresh Pick Sri Lanka | Fresh Grocery Delivery & Food Partnerships",
+    description: "Fresh groceries, recurring delivery, local food discoveries, and curated supplier partnerships in Sri Lanka.",
     url: SITE_URL,
     siteName: "Fresh Pick Sri Lanka",
     images: [
@@ -67,7 +51,7 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Fresh Pick Sri Lanka fresh grocery delivery and produce supply",
+        alt: "Fresh Pick Sri Lanka fresh grocery delivery and food partnerships",
       },
     ],
     locale: "en_LK",
@@ -76,7 +60,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Fresh Pick Sri Lanka | Fresh Grocery Delivery",
-    description: "Fresh groceries, recurring orders, and produce supply for homes, restaurants, hotels, and offices in Colombo.",
+    description: "Fresh groceries, recurring orders, local discoveries, and curated food partnerships in Sri Lanka.",
     images: ["/twitter-image.jpg"],
     creator: "@freshpicklk",
   },
@@ -106,13 +90,13 @@ const organizationJsonLd = {
       "name": "Fresh Pick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/logo.png`,
-      "description": "Fresh Pick is a Sri Lankan fresh grocery and produce supply service for households, restaurants, hotels, offices, and farmer sourcing partnerships.",
-      "email": "concierge@freshpick.lk",
+      "description": "Fresh Pick is a Sri Lankan fresh-food commerce service for households and a curated partnership network for growers, makers, producers, distributors, and business buyers.",
+      "email": SUPPORT_EMAIL,
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "email": "concierge@freshpick.lk",
+        "email": SUPPORT_EMAIL,
         "availableLanguage": "English"
       },
       "knowsAbout": [
@@ -120,10 +104,10 @@ const organizationJsonLd = {
         "Recurring grocery orders",
         "Cooked-food delivery in Colombo",
         "Sri Lankan homemade food makers",
-        "Restaurant produce supply",
-        "Hotel produce procurement",
+        "Supplier onboarding",
+        "Food producer partnerships",
         "Farmer sourced produce",
-        "Premium household grocery planning"
+        "Business food supply partnerships"
       ]
     },
     {
@@ -148,11 +132,11 @@ const organizationJsonLd = {
       "name": "Fresh Pick Sri Lanka",
       "url": SITE_URL,
       "image": `${SITE_URL}/og-image.jpg`,
-      "description": "Online fresh grocery delivery and recurring produce supply for Colombo households, restaurants, hotels, and offices.",
+      "description": "Online fresh grocery delivery and recurring food delivery for Colombo households.",
       "parentOrganization": { "@id": `${SITE_URL}/#organization` },
       "priceRange": "$$",
       "currenciesAccepted": "LKR",
-      "knowsAbout": ["Fresh groceries", "Cooked food", "Recurring delivery", "B2B produce supply"],
+      "knowsAbout": ["Fresh groceries", "Cooked food", "Recurring delivery", "Local food makers"],
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", name })),
       "geo": {
         "@type": "GeoCoordinates",
@@ -170,15 +154,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-LK">
-      <head>
-        {/* Several collection pages use Unsplash photography above the fold.
-            Opening this connection while the HTML is parsed removes a DNS/TLS
-            round trip from their Largest Contentful Paint. */}
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
-      </head>
-      <body
-        className="min-h-screen bg-background font-sans antialiased"
-      >
+      <body className="min-h-screen bg-background font-sans antialiased">
         <AdminChromeGuard footer={<Footer />}>{children}</AdminChromeGuard>
         <Toaster />
         <ServiceWorkerRegistration />

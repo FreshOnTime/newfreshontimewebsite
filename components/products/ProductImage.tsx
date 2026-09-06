@@ -5,12 +5,12 @@ function ProductImage({ src, alt, priority = false }: { src: string; alt: string
     return (
       <div className="relative aspect-square overflow-hidden bg-zinc-50">
         <Image
-          src="https://images.unsplash.com/photo-1588964895597-a2dd25035548?q=80&w=2574&auto=format&fit=crop"
-          alt="Fresh product"
+          src="/placeholder.svg"
+          alt="Product image unavailable"
           fill
           priority={priority}
           loading={priority ? "eager" : "lazy"}
-          className="object-cover transition-transform duration-700 hover:scale-110 opacity-90 grayscale-[0.2] hover:grayscale-0"
+          className="object-contain p-12 opacity-55"
           sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 300px"
         />
       </div>
@@ -25,8 +25,6 @@ function ProductImage({ src, alt, priority = false }: { src: string; alt: string
         fill
         priority={priority}
         className="object-cover transition-transform duration-1000 ease-out hover:scale-105"
-        // Product cards are below the hero. Eager-loading every product image
-        // was creating dozens of competing downloads on the first page view.
         loading={priority ? "eager" : "lazy"}
         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
       />

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { useAuth } from './AuthContext';
-import { Product } from '@/models/product';
-import { toast } from 'sonner';
-import { scheduleIdleTask } from '@/lib/utils/idleCallback';
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
+import { Product } from '@/models/product';
+import { apiFetch } from '@/lib/api/client';
+import { scheduleIdleTask } from '@/lib/utils/idleCallback';
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
 
 interface WishlistContextType {
     wishlistItems: Product[];
@@ -17,119 +18,124 @@ interface WishlistContextType {
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
+function getProductId(product: Product) {
+    return (product as unknown as { _id?: string; id?: string })._id
+        || (product as unknown as { id?: string }).id;
+}
+
 export function WishlistProvider({ children }: { children: ReactNode }) {
     const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const { user } = useAuth();
     const pathname = usePathname();
 
-    useEffect(() => {
-        if (user?._id) {
-            // Do not make a visitor wait for the idle timer on the page that
-            // actually needs this data. Other routes keep the deferred load.
-            if (pathname.startsWith('/wishlist')) {
-                fetchWishlist();
-                return;
-            }
-            const task = scheduleIdleTask(fetchWishlist, {
-                timeout: 4000,
-                fallbackDelayMs: 2500,
-            });
-            return () => task.cancel();
-        } else {
-            setWishlistItems([]);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?._id, pathname]);
-
-    const fetchWishlist = async () => {
+    const fetchWishlist = useCallback(async () => {
         if (!user?._id) return;
         setLoading(true);
         try {
-            const res = await fetch(`/api/wishlist?userId=${user._id}`);
+            const res = await apiFetch(`/api/wishlist?userId=${encodeURIComponent(user._id)}`);
             const data = await res.json();
-            if (data.success) {
-                setWishlistItems(data.data);
+            if (res.ok && data.success) {
+                setWishlistItems(data.data || []);
             }
         } catch (error) {
             console.error('Failed to fetch wishlist', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?._id]);
 
-    const addToWishlist = async (product: Product) => {
+    useEffect(() => {
         if (!user?._id) {
-            toast.error("Please login to add to wishlist");
+            setWishlistItems([]);
             return;
         }
 
-        // Optimistic update
-        const productId = product._id || (product as any).id;
+        if (pathname.startsWith('/wishlist')) {
+            fetchWishlist();
+            return;
+        }
+
+        const task = scheduleIdleTask(fetchWishlist, {
+            timeout: 4000,
+            fallbackDelayMs: 2500,
+        });
+        return () => task.cancel();
+    }, [user?._id, pathname, fetchWishlist]);
+
+    const isInWishlist = useCallback((productId: string) => {
+        return wishlistItems.some((item) => getProductId(item) === productId);
+    }, [wishlistItems]);
+
+    const addToWishlist = useCallback(async (product: Product) => {
+        if (!user?._id) {
+            toast.error('Please login to add to wishlist');
+            return;
+        }
+
+        const productId = getProductId(product);
         if (!productId) {
-            console.error("Product has no ID:", product);
-            toast.error("Cannot add to wishlist: Invalid product");
+            console.error('Product has no ID:', product);
+            toast.error('Cannot add to wishlist: Invalid product');
             return;
         }
 
         if (isInWishlist(productId)) return;
 
-        setWishlistItems(prev => [...prev, product]);
+        setWishlistItems((previous) => [...previous, product]);
 
         try {
-            const res = await fetch('/api/wishlist', {
+            const res = await apiFetch('/api/wishlist', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user._id, productId: productId })
+                body: JSON.stringify({ userId: user._id, productId }),
             });
             const data = await res.json();
-            if (!data.success) {
-                // Revert/Fetch on failure
-                fetchWishlist();
-                toast.error(data.error || "Failed to add to wishlist");
-            } else {
-                toast.success("Added to wishlist");
+            if (!res.ok || !data.success) {
+                await fetchWishlist();
+                toast.error(data.error || 'Failed to add to wishlist');
+                return;
             }
+            toast.success('Added to wishlist');
         } catch (error) {
             console.error(error);
-            fetchWishlist();
-            toast.error("Error adding to wishlist");
+            await fetchWishlist();
+            toast.error('Error adding to wishlist');
         }
-    };
+    }, [user?._id, isInWishlist, fetchWishlist]);
 
-    const removeFromWishlist = async (productId: string) => {
+    const removeFromWishlist = useCallback(async (productId: string) => {
         if (!user?._id) return;
 
-        // Optimistic update
-        setWishlistItems(prev => prev.filter(p => ((p as any)._id || (p as any).id) !== productId));
+        setWishlistItems((previous) => previous.filter((product) => getProductId(product) !== productId));
 
         try {
-            const res = await fetch(`/api/wishlist/${productId}?userId=${user._id}`, {
-                method: 'DELETE',
-            });
+            const res = await apiFetch(
+                `/api/wishlist/${encodeURIComponent(productId)}?userId=${encodeURIComponent(user._id)}`,
+                { method: 'DELETE' },
+            );
             const data = await res.json();
-            if (!data.success) {
-                fetchWishlist();
-                toast.error("Failed to remove from wishlist");
-            } else {
-                toast.success("Removed from wishlist");
+            if (!res.ok || !data.success) {
+                await fetchWishlist();
+                toast.error('Failed to remove from wishlist');
+                return;
             }
+            toast.success('Removed from wishlist');
         } catch (error) {
             console.error(error);
-            fetchWishlist();
-            toast.error("Error removing from wishlist");
+            await fetchWishlist();
+            toast.error('Error removing from wishlist');
         }
-    };
+    }, [user?._id, fetchWishlist]);
 
-    const isInWishlist = (productId: string) => {
-        return wishlistItems.some(item => ((item as any)._id || (item as any).id) === productId);
-    };
+    const value = useMemo<WishlistContextType>(() => ({
+        wishlistItems,
+        loading,
+        addToWishlist,
+        removeFromWishlist,
+        isInWishlist,
+    }), [wishlistItems, loading, addToWishlist, removeFromWishlist, isInWishlist]);
 
-    return (
-        <WishlistContext.Provider value={{ wishlistItems, loading, addToWishlist, removeFromWishlist, isInWishlist }}>
-            {children}
-        </WishlistContext.Provider>
-    );
+    return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 
 export function useWishlist() {
