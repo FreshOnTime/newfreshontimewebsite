@@ -9,8 +9,10 @@ export default function WhatsAppButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
 
-    // Hide on admin pages
-    if (pathname?.startsWith('/admin')) {
+    // Keep the premium homepage free of floating chat UI and hide it in admin.
+    // Support remains available on deeper customer-facing pages where it is
+    // more contextual and less distracting from the main shopping experience.
+    if (pathname === '/' || pathname?.startsWith('/admin')) {
         return null;
     }
 
