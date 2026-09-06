@@ -1,4 +1,4 @@
-const SITE_URL = "https://freshpick.lk";
+import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL } from '@/lib/config/site';
 
 const llmsText = `# Fresh Pick Sri Lanka
 
@@ -32,10 +32,10 @@ Key services and partnership areas include:
 Fresh Pick is not presented as an open supplier marketplace. Supplier and partnership applications are reviewed for product fit, quality, consistency, commercial suitability, and operational readiness before onboarding.
 
 ## Service areas
-Fresh Pick focuses on Colombo and nearby areas such as Rajagiriya, Battaramulla, Nawala, Nugegoda, Dehiwala, Mount Lavinia, Kollupitiya, Bambalapitiya, Cinnamon Gardens, and Havelock Town.
+Fresh Pick currently focuses on ${SERVICE_AREAS.join(', ')}.
 
 ## Contact
-General concierge: concierge@freshpick.lk
+General concierge: ${SUPPORT_EMAIL}
 Partnership applications: ${SITE_URL}/b2b#apply
 `;
 
