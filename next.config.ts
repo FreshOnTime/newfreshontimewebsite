@@ -11,14 +11,6 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "images.pexels.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.freshdirect.com",
-      },
-      {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
@@ -33,14 +25,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '**.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
       },
     ],
   },
