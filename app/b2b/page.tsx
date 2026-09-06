@@ -2,36 +2,25 @@ import type { Metadata } from 'next';
 import B2BContent from './B2BContent';
 
 const SITE_URL = 'https://freshpick.lk';
-const SERVICE_AREAS = [
-    'Colombo',
-    'Rajagiriya',
-    'Battaramulla',
-    'Nawala',
-    'Nugegoda',
-    'Dehiwala',
-    'Mount Lavinia',
-    'Kollupitiya',
-    'Bambalapitiya',
-];
 
 export const metadata: Metadata = {
-    title: "B2B Fresh Produce Supply Colombo | Restaurants, Hotels, Farmers & Households | Fresh Pick",
-    description: "Fresh Pick supplies restaurants, hotels, offices, premium households, and farmers with reliable fresh produce sourcing, recurring grocery plans, and Colombo delivery support.",
+    title: "Become a FreshPick Supplier | Partnerships & Supplier Onboarding Sri Lanka",
+    description: "Partner with FreshPick as a grower, food maker, producer, distributor, or business partner. Learn how our curated supplier onboarding works and apply to work with FreshPick in Sri Lanka.",
     keywords: [
-        "B2B fresh produce Colombo",
-        "restaurant vegetable supplier Colombo",
-        "hotel grocery supplier Sri Lanka",
-        "fresh produce supplier Sri Lanka",
-        "farm to table supplier Colombo",
-        "recurring grocery delivery Colombo",
-        "office pantry supplier Colombo",
-        "premium household grocery plans Sri Lanka",
-        "farmer sourcing Sri Lanka",
-        "wholesale vegetables Colombo",
+        "FreshPick supplier onboarding",
+        "become a supplier Sri Lanka",
+        "food supplier partnership Sri Lanka",
+        "farmer partnership Sri Lanka",
+        "local food producers Sri Lanka",
+        "sell food products Colombo",
+        "grocery supplier Colombo",
+        "FreshPick partnerships",
+        "restaurant supply partnership Colombo",
+        "food brand distribution Sri Lanka",
     ],
     openGraph: {
-        title: "Fresh Pick B2B Supply Network | Colombo Fresh Produce Delivery",
-        description: "Premium recurring produce supply for restaurants, hotels, offices, households, and farmer sourcing partnerships in Sri Lanka.",
+        title: "Partner with FreshPick | Supplier Onboarding & Partnerships",
+        description: "FreshPick works with selected growers, makers, producers, distributors, and business partners across Sri Lanka. Apply to join our curated supply network.",
         url: `${SITE_URL}/b2b`,
         siteName: 'Fresh Pick Sri Lanka',
         locale: 'en_LK',
@@ -41,24 +30,18 @@ export const metadata: Metadata = {
                 url: '/og-image.jpg',
                 width: 1200,
                 height: 630,
-                alt: 'Fresh Pick B2B fresh produce supply in Colombo',
+                alt: 'FreshPick supplier partnerships and onboarding in Sri Lanka',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: "Fresh Pick B2B Supply Network",
-        description: "Fresh produce sourcing and recurring supply for Colombo restaurants, hotels, offices, households, and farmers.",
+        title: "Partner with FreshPick",
+        description: "Supplier onboarding for growers, makers, producers, distributors, and strategic business partners in Sri Lanka.",
         images: ['/twitter-image.jpg'],
     },
     alternates: {
         canonical: `${SITE_URL}/b2b`,
-    },
-    other: {
-        "geo.region": "LK-11",
-        "geo.placename": "Colombo, Sri Lanka",
-        "geo.position": "6.9271;79.8612",
-        "ICBM": "6.9271, 79.8612",
     },
 };
 
@@ -70,35 +53,25 @@ export default function B2BPage() {
                 "@type": "WebPage",
                 "@id": `${SITE_URL}/b2b#webpage`,
                 "url": `${SITE_URL}/b2b`,
-                "name": "Fresh Pick B2B Fresh Produce Supply Network",
-                "description": "B2B and recurring fresh produce supply for restaurants, hotels, offices, premium households, and farmer sourcing partnerships in Colombo, Sri Lanka.",
+                "name": "FreshPick Supplier Partnerships and Onboarding",
+                "description": "Partnership and supplier onboarding information for growers, makers, producers, distributors, and business partners interested in working with FreshPick in Sri Lanka.",
                 "isPartOf": { "@id": `${SITE_URL}/#website` },
-                "about": { "@id": `${SITE_URL}/b2b#service` },
+                "about": { "@id": `${SITE_URL}/b2b#partnership-service` },
                 "inLanguage": "en-LK",
             },
             {
                 "@type": "Service",
-                "@id": `${SITE_URL}/b2b#service`,
-                "name": "Fresh Produce Supply and Recurring Grocery Procurement",
-                "serviceType": "Fresh produce supply, grocery procurement, recurring grocery delivery, farmer sourcing coordination",
+                "@id": `${SITE_URL}/b2b#partnership-service`,
+                "name": "FreshPick Supplier Partnership and Onboarding",
+                "serviceType": "Supplier onboarding, sourcing partnerships, grower partnerships, producer partnerships, distribution partnerships, and business supply collaboration",
                 "provider": { "@id": `${SITE_URL}/#organization` },
-                "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", name })),
+                "areaServed": { "@type": "Country", "name": "Sri Lanka" },
                 "audience": [
-                    { "@type": "BusinessAudience", "name": "Restaurants and cloud kitchens" },
-                    { "@type": "BusinessAudience", "name": "Hotels, cafes and offices" },
-                    { "@type": "Audience", "name": "Premium households and private residences" },
-                    { "@type": "Audience", "name": "Sri Lankan farmers and grower networks" },
+                    { "@type": "BusinessAudience", "name": "Farmers and growers" },
+                    { "@type": "BusinessAudience", "name": "Food makers and producers" },
+                    { "@type": "BusinessAudience", "name": "Distributors and importers" },
+                    { "@type": "BusinessAudience", "name": "Restaurants, hotels, offices and strategic business partners" },
                 ],
-                "offers": {
-                    "@type": "OfferCatalog",
-                    "name": "Fresh Pick B2B Supply Plans",
-                    "itemListElement": [
-                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Restaurant and hotel produce supply" } },
-                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Office pantry and staff meal supply" } },
-                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Premium household recurring grocery plans" } },
-                        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Farmer sourcing and harvest coordination" } }
-                    ]
-                }
             },
             {
                 "@type": "FAQPage",
@@ -106,18 +79,26 @@ export default function B2BPage() {
                 "mainEntity": [
                     {
                         "@type": "Question",
-                        "name": "Who can use Fresh Pick B2B supply?",
+                        "name": "Who can apply to become a FreshPick supplier?",
                         "acceptedAnswer": {
                             "@type": "Answer",
-                            "text": "Fresh Pick supports restaurants, hotels, cafes, offices, premium households, villas, and farmer sourcing partnerships that need reliable fresh produce supply in Colombo."
+                            "text": "FreshPick welcomes applications from growers, farms, local food makers, producers, established brands, distributors, importers, and other suppliers that can meet FreshPick quality, consistency, and customer experience standards."
                         }
                     },
                     {
                         "@type": "Question",
-                        "name": "Does Fresh Pick support recurring grocery orders?",
+                        "name": "Is FreshPick an open marketplace?",
                         "acceptedAnswer": {
                             "@type": "Answer",
-                            "text": "Yes. Fresh Pick supports daily, weekly, and custom recurring grocery plans for business kitchens, office pantry needs, and household staples."
+                            "text": "No. FreshPick uses a curated partnership model. Supplier applications are reviewed for product fit, quality, consistency, commercial suitability, and operational readiness before onboarding."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Can restaurants, hotels, offices, and other businesses partner with FreshPick?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Yes. FreshPick also works with business buyers and strategic partners that need recurring supply, custom sourcing, or other food-commerce partnerships."
                         }
                     }
                 ]
