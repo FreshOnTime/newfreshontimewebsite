@@ -11,7 +11,6 @@ const querySchema = z.object({
   tag: z.string().optional(),
 });
 
-// Cache headers for better performance
 const CACHE_HEADERS = {
   'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
 };
@@ -24,6 +23,7 @@ export async function GET(request: NextRequest) {
     const where: Prisma.BlogWhereInput = {
       isDeleted: false,
       published: true,
+      NOT: { category: 'recipe' },
     };
 
     if (query.search) {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (query.category) {
+    if (query.category && query.category !== 'recipe') {
       where.category = query.category;
     }
 
@@ -45,7 +45,6 @@ export async function GET(request: NextRequest) {
     const limit = query.limit;
     const skip = (page - 1) * limit;
 
-    // Optimized query with minimal fields for list view
     const [blogs, total] = await Promise.all([
       prisma.blog.findMany({
         where,
