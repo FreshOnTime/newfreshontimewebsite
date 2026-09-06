@@ -57,26 +57,26 @@ export const POST = requireAdminSimple(async (request) => {
     }
 
     const authorName = [request.user?.firstName, request.user?.lastName].filter(Boolean).join(" ");
-    const recipe = await prisma.blog.create({
-      data: {
-        title: input.title,
-        slug,
-        excerpt: input.excerpt,
-        content: stringifyRecipeContent(input.content),
-        featuredImage: input.featuredImage
-          ? (input.featuredImage as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-        authorId: request.user!.userId,
-        authorName: authorName || request.user?.email || "FreshPick",
-        category: "recipe",
-        tags: input.tags,
-        published: input.published,
-        publishedAt: input.published ? new Date() : null,
-        metaTitle: input.metaTitle || null,
-        metaDescription: input.metaDescription || null,
-        metaKeywords: input.metaKeywords,
-      },
-    });
+    const blogData: Prisma.BlogUncheckedCreateInput = {
+      title: input.title,
+      slug,
+      excerpt: input.excerpt,
+      content: stringifyRecipeContent(input.content),
+      authorId: request.user!.userId,
+      authorName: authorName || request.user?.email || "FreshPick",
+      category: "recipe",
+      tags: input.tags,
+      published: input.published,
+      publishedAt: input.published ? new Date() : null,
+      metaTitle: input.metaTitle || null,
+      metaDescription: input.metaDescription || null,
+      metaKeywords: input.metaKeywords,
+    };
+    if (input.featuredImage !== undefined) {
+      blogData.featuredImage = input.featuredImage as Prisma.InputJsonValue;
+    }
+
+    const recipe = await prisma.blog.create({ data: blogData });
 
     await prisma.auditLog.create({
       data: {
