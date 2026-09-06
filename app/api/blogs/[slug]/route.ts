@@ -13,7 +13,7 @@ export async function GET(
         slug,
         isDeleted: false,
         published: true,
-        NOT: { category: 'recipe' },
+        category: { notIn: ['recipe', 'collection'] },
       },
       include: {
         author: {
