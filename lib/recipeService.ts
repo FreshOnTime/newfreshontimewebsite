@@ -73,15 +73,6 @@ export async function listPublishedRecipes(limit = 24): Promise<RecipeSummary[]>
 }
 
 export async function getPublishedRecipeBySlug(slug: string): Promise<RecipeDetail | null> {
-  const row = await prisma.blog.findUnique({
-    where: { slug },
-    select: recipeSelect,
-  });
-
-  if (!row || row.category === "recipe") {
-    // category is not selected above; this branch is intentionally replaced below.
-  }
-
   const recipeRow = await prisma.blog.findFirst({
     where: {
       slug,
