@@ -77,6 +77,8 @@ export async function getTasteRecommendations(userId?: string | null, limit = 6)
     };
   }
 
+  const recipeBySlug = new Map(recipes.map((recipe) => [recipe.slug, recipe]));
+  const collectionBySlug = new Map(collections.map((collection) => [collection.slug, collection]));
   const signals = new Map<string, number>();
   preferences.cuisines.forEach((value) => addWeight(signals, value, 8));
   preferences.dietaryChoices.forEach((value) => addWeight(signals, value, 7));
@@ -88,6 +90,22 @@ export async function getTasteRecommendations(userId?: string | null, limit = 6)
     addWeight(signals, typeof event.metadata.dietary === "string" ? event.metadata.dietary : undefined, base * 2);
     addWeight(signals, typeof event.metadata.theme === "string" ? event.metadata.theme : undefined, base * 2);
     addWeight(signals, typeof event.metadata.tags === "string" ? event.metadata.tags : undefined, base);
+
+    if (event.entityType === "recipe" && event.entityId) {
+      const recipe = recipeBySlug.get(event.entityId);
+      if (recipe) {
+        addWeight(signals, recipe.cuisine, base * 3);
+        addWeight(signals, recipe.dietaryTags.join("|"), base * 2);
+        addWeight(signals, recipe.tags.join("|"), base);
+      }
+    }
+    if (event.entityType === "collection" && event.entityId) {
+      const collection = collectionBySlug.get(event.entityId);
+      if (collection) {
+        addWeight(signals, collection.occasion, base * 2);
+        addWeight(signals, collection.themeTags.join("|"), base * 2);
+      }
+    }
   }
 
   const disliked = preferences.dislikedIngredients.map(normalized).filter(Boolean);
