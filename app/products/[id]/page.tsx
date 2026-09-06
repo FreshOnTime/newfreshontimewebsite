@@ -1,64 +1,33 @@
-// ... imports remain the same, but let's ensure we have everything
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
+import Link from "next/link";
+import Markdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
+import { ArrowLeft, CalendarClock, ShieldCheck, Sprout, Truck } from "lucide-react";
+
 import ProductImage from "@/components/products/ProductImage";
 import { Product } from "@/models/product";
-import Markdown from "react-markdown";
-import { Suspense } from "react";
-import { unstable_cache } from "next/cache";
 import { ProductControls } from "./ProductControls";
-// import { PageContainer } from "@/components/templates/PageContainer"; // Removed
-import rehypeSanitize from "rehype-sanitize";
-import Link from "next/link";
 import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
+import { serverApiFetch } from "@/lib/api/server";
 
-import prisma from '@/lib/prisma';
-import { serializeProductForUi } from '@/lib/productSerializer';
-
-// ISR: product details change occasionally; revalidate every 5 minutes.
-// Works alongside generateStaticParams to pre-render top products at build time
-// and serve cached responses for subsequent requests.
 export const revalidate = 300;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://freshpick.lk";
 
-const getProduct = unstable_cache(async (id: string): Promise<Product | null> => {
+async function getProduct(id: string): Promise<Product | null> {
   try {
-    const p = await prisma.product.findFirst({
-      where: { OR: [{ id }, { sku: id }, { slug: id }] },
-      include: { category: { select: { name: true, slug: true } } },
-    });
+    const response = await serverApiFetch(`/api/storefront/products/${encodeURIComponent(id)}`, {
+      next: { revalidate: 300, tags: ["products"] },
+    } as RequestInit & { next: { revalidate: number; tags: string[] } });
 
-    if (!p) {
-      console.log('ProductPage - product not found in DB for id:', id);
-      return null;
-    }
-
-    return serializeProductForUi(p) as Product;
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Product API returned HTTP ${response.status}`);
+    return response.json() as Promise<Product>;
   } catch (error) {
-    console.error('Failed to load product from DB:', error);
+    console.error("[Product page] Failed to load product:", error);
     return null;
-  }
-}, ['product-detail-v1'], { revalidate: 300, tags: ['products'] });
-
-// ... (keep generateMetadata exactly as is)
-// Enable SSG for top products to improve performance
-export async function generateStaticParams() {
-  try {
-    const products = await prisma.product.findMany({
-      where: { archived: false },
-      select: { sku: true, slug: true, id: true },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
-
-    return products.map((p) => ({
-      id: p.sku || p.slug || p.id,
-    }));
-  } catch (error) {
-    console.error('Error generating static params:', error);
-    return [];
   }
 }
 
@@ -72,59 +41,36 @@ export async function generateMetadata({
 
   if (!product) {
     return {
-      title: 'Product Not Found',
-      description: 'The product you are looking for could not be found.',
+      title: "Product Not Found | FreshPick",
+      description: "The FreshPick product you are looking for could not be found.",
     };
   }
 
   const description = product.description
-    ? product.description.slice(0, 160).replace(/\s+/g, ' ').trim() + (product.description.length > 160 ? '...' : '')
-    : `Discover ${product.name}, a premium selection from our curated artisan and fresh collection. Fresh On Time brings you the finest home-made and farm-fresh products in Colombo.`;
+    ? product.description.slice(0, 160).replace(/\s+/g, " ").trim() + (product.description.length > 160 ? "..." : "")
+    : `Shop ${product.name} from FreshPick, with fresh grocery delivery across Colombo.`;
 
   const productUrl = `${SITE_URL}/products/${product.sku}`;
-  const imageUrl = product.image?.url?.startsWith('http')
+  const imageUrl = product.image?.url?.startsWith("http")
     ? product.image.url
-    : `${SITE_URL}${product.image?.url || '/og-image.jpg'}`;
-
-  const title = `${product.name} | Artisan & Premium Grocery Delivery Colombo | Fresh On Time`;
+    : `${SITE_URL}${product.image?.url || "/og-image.jpg"}`;
+  const title = `${product.name} | FreshPick Colombo`;
 
   return {
     title,
     description,
-    keywords: [
-      product.name.toLowerCase(),
-      product.category?.name?.toLowerCase() || 'artisan groceries',
-      'home made products sri lanka',
-      'artisan food delivery colombo',
-      'small batch local suppliers',
-      'fresh pick premium',
-      'grocery delivery colombo',
-      'luxury food sri lanka',
-      'high end supermarket',
-      'colombo 7 grocery',
-      'organic produce sri lanka'
-    ].filter(Boolean).join(', '),
-    alternates: {
-      canonical: productUrl,
-    },
+    alternates: { canonical: productUrl },
     openGraph: {
       title,
       description,
       url: productUrl,
-      siteName: 'Fresh On Time',
-      images: [
-        {
-          url: imageUrl,
-          width: 800,
-          height: 600,
-          alt: product.name,
-        },
-      ],
-      locale: 'en_LK',
-      type: 'website',
+      siteName: "FreshPick",
+      images: [{ url: imageUrl, width: 800, height: 600, alt: product.name }],
+      locale: "en_LK",
+      type: "website",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title,
       description,
       images: [imageUrl],
@@ -135,9 +81,9 @@ export async function generateMetadata({
       googleBot: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
   };
@@ -151,110 +97,150 @@ export default async function ProductPage({
   const { id: productId } = await params;
   const product = await getProduct(productId);
 
-  if (!product) {
-    notFound();
-  }
+  if (!product) notFound();
 
-  const pricePerBaseQuantityWithDiscount = product.discountPercentage
-    ? product.pricePerBaseQuantity -
-    (product.pricePerBaseQuantity * (product.discountPercentage || 0)) / 100
+  const discountedPrice = product.discountPercentage
+    ? product.pricePerBaseQuantity - (product.pricePerBaseQuantity * product.discountPercentage) / 100
     : product.pricePerBaseQuantity;
-  const pricePerMeasurement =
-    pricePerBaseQuantityWithDiscount / product.baseMeasurementQuantity;
+  const showDiscount = Boolean(product.discountPercentage && product.discountPercentage > 0);
 
   const breadcrumbItems = [
-    { name: 'Home', url: SITE_URL },
+    { name: "Home", url: SITE_URL },
     ...(product.category?.slug ? [{ name: product.category.name, url: `${SITE_URL}/categories/${product.category.slug}` }] : []),
     { name: product.name, url: `${SITE_URL}/products/${product.sku}` },
   ];
 
   return (
-    <>
-      <ProductJsonLd product={{
-        name: product.name,
-        description: product.description,
-        sku: product.sku,
-        image: product.image?.url,
-        price: pricePerBaseQuantityWithDiscount,
-        currency: 'LKR',
-        inStock: !product.isOutOfStock,
-        category: product.category?.name,
-        url: `${SITE_URL}/products/${product.sku}`,
-      }}
+    <main className="min-h-screen bg-[#f6f7f4]">
+      <ProductJsonLd
+        product={{
+          name: product.name,
+          description: product.description,
+          sku: product.sku,
+          image: product.image?.url,
+          price: discountedPrice,
+          currency: "LKR",
+          inStock: !product.isOutOfStock,
+          category: product.category?.name,
+          url: `${SITE_URL}/products/${product.sku}`,
+        }}
       />
       <BreadcrumbJsonLd items={breadcrumbItems} />
 
-      {/* Cinematic Content */}
-      <div className="bg-white min-h-screen">
+      <div className="container mx-auto max-w-7xl px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-12">
+        <Link
+          href="/products"
+          className="mb-8 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-colors hover:text-emerald-800"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to collection
+        </Link>
 
-        {/* Hero Section */}
-        <div className="pt-32 pb-16 md:pt-40 md:pb-20 border-b border-zinc-100 bg-zinc-50 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03]"></div>
-          <div className="container mx-auto px-4 md:px-8 relative z-10">
-            <div className="grid gap-16 md:grid-cols-12 items-center">
-
-              {/* Visual */}
-              <div className="md:col-span-6 lg:col-span-6 order-2 md:order-1">
-                <div className="relative aspect-[4/5] w-full max-w-lg mx-auto md:mr-auto rounded-sm overflow-hidden shadow-2xl">
-                  <ProductImage src={product.image.url} alt={product.name} priority />
-                </div>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:gap-14">
+          <div className="relative">
+            <div className="sticky top-28 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+              <div className="relative aspect-[4/5] w-full">
+                <ProductImage src={product.image?.url || ""} alt={product.name} priority />
               </div>
 
-              {/* Narrative */}
-              <div className="md:col-span-6 lg:col-span-6 order-1 md:order-2 flex flex-col space-y-8 md:pl-12">
-                <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
+              <div className="pointer-events-none absolute left-5 top-5 flex flex-wrap gap-2">
+                {!product.isOutOfStock && (
+                  <span className="rounded-full bg-white/90 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm backdrop-blur-md">
+                    FreshPick selection
+                  </span>
+                )}
+                {showDiscount && (
+                  <span className="rounded-full bg-zinc-950 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">
+                    {product.discountPercentage}% off
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:pt-4">
+            <div className="lg:sticky lg:top-28">
+              <div className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] md:p-8 lg:p-9">
+                <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700">
                   {product.category?.name && (
-                    <Link href={`/categories/${product.category.slug || ''}`} className="hover:text-black transition-colors">
+                    <Link href={`/categories/${product.category.slug || ""}`} className="transition-colors hover:text-zinc-950">
                       {product.category.name}
                     </Link>
                   )}
-                  <span className="text-zinc-300">•</span>
-                  <span className="text-zinc-400 font-medium tracking-widest">{product.isOutOfStock ? 'Sold Out' : 'In Stock'}</span>
+                  <span className="text-zinc-300">/</span>
+                  <span className={product.isOutOfStock ? "text-red-500" : "text-zinc-400"}>
+                    {product.isOutOfStock ? "Currently unavailable" : "In stock"}
+                  </span>
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-serif font-medium text-zinc-900 leading-[1.1] tracking-tight">
+                <h1 className="mt-5 text-balance font-serif text-5xl font-normal leading-[0.96] tracking-tight text-zinc-950 md:text-6xl">
                   {product.name}
                 </h1>
 
-                <div className="flex flex-col gap-2 border-l-2 border-emerald-500 pl-6 py-2">
-                  <div className="text-3xl font-serif font-medium text-zinc-900">
-                    Rs. {pricePerBaseQuantityWithDiscount.toFixed(2)}
-                    {/* Discount logic handled in controls/view usually, keeping simple here */}
-                  </div>
+                <div className="mt-7 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-zinc-100 pb-7">
+                  <span className="font-serif text-3xl text-zinc-950">Rs. {discountedPrice.toFixed(2)}</span>
+                  {showDiscount && (
+                    <span className="text-sm text-zinc-400 line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>
+                  )}
                   {!product.isSoldAsUnit && (
-                    <span className="text-sm font-medium tracking-wide text-zinc-500 uppercase">
+                    <span className="w-full text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-400">
                       Per {product.baseMeasurementQuantity}{product.measurementUnit}
                     </span>
                   )}
                 </div>
 
-                <div className="pt-6">
+                <div className="mt-7">
                   <ProductControls product={product} />
+                </div>
+
+                <div className="mt-8 grid gap-3 border-t border-zinc-100 pt-7 sm:grid-cols-2">
+                  <TrustItem icon={Truck} title="Considered delivery" text="FreshPick delivery across Colombo" />
+                  <TrustItem icon={CalendarClock} title="Make it recurring" text="Add it to your regular basket" />
+                  <TrustItem icon={Sprout} title="Curated quality" text="Selected for freshness and flavour" />
+                  <TrustItem icon={ShieldCheck} title="Simple guarantee" text="Easy replacement or refund support" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Story Section */}
-        <div className="container mx-auto px-4 md:px-8 py-24">
-          <div className="max-w-4xl mx-auto space-y-12">
+        <section className="mt-16 rounded-[2rem] bg-white px-6 py-10 md:mt-24 md:px-10 md:py-14 lg:px-14">
+          <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-16">
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-6">The Story</h3>
-              <div className="prose prose-lg prose-zinc font-light leading-loose text-zinc-600">
-                {product.description ? (
-                  <Markdown rehypePlugins={[rehypeSanitize]}>
-                    {product.description}
-                  </Markdown>
-                ) : (
-                  <p>A hallmark of quality and taste, selected for the discerning palate. This product represents the pinnacle of its category, sourced with care and delivered with precision.</p>
-                )}
-              </div>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">About this selection</span>
+              <h2 className="mt-4 font-serif text-3xl font-normal leading-tight text-zinc-950">Good food deserves a little context.</h2>
+            </div>
+            <div className="prose prose-zinc max-w-none font-light leading-8 text-zinc-600 prose-headings:font-serif prose-headings:font-normal prose-a:text-emerald-800">
+              {product.description ? (
+                <Markdown rehypePlugins={[rehypeSanitize]}>{product.description}</Markdown>
+              ) : (
+                <p>Selected by FreshPick for quality, freshness, and everyday usefulness. Add it to today&apos;s basket or make it part of a recurring delivery.</p>
+              )}
             </div>
           </div>
-        </div>
-
+        </section>
       </div>
-    </>
+    </main>
+  );
+}
+
+function TrustItem({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: typeof Truck;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex gap-3 rounded-2xl bg-[#f7f8f6] p-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-800 shadow-sm">
+        <Icon className="h-4 w-4 stroke-[1.5]" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-zinc-900">{title}</p>
+        <p className="mt-1 text-xs font-light leading-5 text-zinc-500">{text}</p>
+      </div>
+    </div>
   );
 }
