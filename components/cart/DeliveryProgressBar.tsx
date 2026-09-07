@@ -29,7 +29,7 @@ export default function DeliveryProgressBar({
                         <Truck className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div className="flex-1">
-                        <p className="font-semibold text-emerald-800">🎉 You've unlocked FREE delivery!</p>
+                        <p className="font-semibold text-emerald-800">🎉 You&apos;ve unlocked FREE delivery!</p>
                         <p className="text-sm text-emerald-600">No delivery charges on this order</p>
                     </div>
                 </div>
@@ -65,7 +65,6 @@ export default function DeliveryProgressBar({
         );
     }
 
-    // Min order met, show progress to free delivery
     return (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <div className="flex items-start gap-3">
