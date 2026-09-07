@@ -73,7 +73,7 @@ export default function EditorialCampaignPage({
                 <div className="flex items-center justify-between">
                   <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-400">0{index + 1}</span>
                   <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-900 ring-1 ring-emerald-900/5">
-                    <Icon className="h-4.5 w-4.5 stroke-[1.5]" />
+                    <Icon className="h-5 w-5 stroke-[1.5]" />
                   </span>
                 </div>
                 <div className="mt-auto pt-12">
