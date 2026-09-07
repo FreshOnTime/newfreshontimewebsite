@@ -1,5 +1,8 @@
 "use client";
+
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight, KeyRound, Loader2 } from 'lucide-react';
 
 export default function ForgotPage() {
   const [email, setEmail] = useState('');
@@ -7,68 +10,56 @@ export default function ForgotPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     setMessage(null);
     setError(null);
     if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address');
+      setError('Enter a valid email address.');
       return;
     }
+
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/forgot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-      const data = await res.json();
-      if (res.ok) setMessage(data.message || 'If an account exists, a reset link has been sent');
-      else setError(data.error || 'Failed to request reset');
+      const response = await fetch('/api/auth/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok) setMessage(data.message || 'If an account exists, a reset link has been sent.');
+      else setError(data.error || 'Unable to request a reset.');
     } catch {
-      setError('Network error');
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 ring-1 ring-black/5">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="flex-none h-12 w-12 rounded-lg bg-green-100 text-green-700 grid place-items-center text-xl">🔒</div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Forgot your password?</h2>
-            <p className="mt-1 text-sm text-gray-500">Enter the email associated with your account and we&apos;ll send a reset link.</p>
-          </div>
-        </div>
+    <main className="flex min-h-screen items-center justify-center bg-[#f4f5f1] px-5 py-24 text-zinc-950">
+      <section className="w-full max-w-lg">
+        <Link href="/auth/login" className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900"><ArrowLeft className="h-4 w-4" /> Back to sign in</Link>
+        <div className="mt-10 rounded-[2rem] border border-zinc-200 bg-white p-7 shadow-[0_20px_60px_rgba(15,23,42,0.04)] md:p-9">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><KeyRound className="h-5 w-5" /></span>
+          <span className="mt-7 block text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">Account recovery</span>
+          <h1 className="mt-3 font-serif text-5xl font-normal leading-none tracking-[-0.03em]">Reset your password.</h1>
+          <p className="mt-5 text-sm font-light leading-7 text-zinc-500">Enter the email attached to your FreshPick account. For privacy, the response does not confirm whether an address is registered.</p>
 
-        <form onSubmit={submit} className="space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
-              aria-label="Email address"
-              className="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-sm leading-5 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-          </label>
-
-          <div className="flex items-center justify-between">
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
-            >
-              {loading ? 'Sending...' : 'Send reset link'}
+          <form onSubmit={submit} className="mt-8">
+            <label htmlFor="email" className="text-sm font-medium text-zinc-700">Email</label>
+            <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-[#fafbf9] px-4 text-sm outline-none transition-colors focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-700/10" />
+            <button type="submit" disabled={loading} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-zinc-950 px-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white hover:bg-emerald-950 disabled:opacity-50">
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending</> : <>Send reset link <ArrowRight className="h-4 w-4" /></>}
             </button>
-            <a href="/auth/login" className="text-sm text-green-600 hover:underline">Back to sign in</a>
-          </div>
-        </form>
+          </form>
 
-        {message && <div className="mt-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{message}</div>}
-        {error && <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+          {message && <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">{message}</div>}
+          {error && <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">{error}</div>}
 
-        <div className="mt-6 text-xs text-gray-400">We&apos;ll never share your email. Reset links expire for your safety.</div>
-      </div>
-    </div>
+          <p className="mt-6 border-t border-zinc-100 pt-5 text-xs font-light leading-5 text-zinc-400">Reset links expire for security. If the message does not arrive, check the email address and your spam folder before requesting another.</p>
+        </div>
+      </section>
+    </main>
   );
 }
