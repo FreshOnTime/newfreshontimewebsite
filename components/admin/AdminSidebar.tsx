@@ -21,10 +21,12 @@ import {
   Layers,
   Handshake,
   ChefHat,
+  BrainCircuit,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Intelligence', href: '/admin/intelligence', icon: BrainCircuit },
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },

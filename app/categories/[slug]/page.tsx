@@ -1,12 +1,10 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import ProductGrid from "@/components/products/ProductGrid";
-// import { PageContainer } from "@/components/templates/PageContainer"; 
-// import SectionHeader from "@/components/home/SectionHeader";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { Product } from "@/models/product";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
-
 import prisma from '@/lib/prisma';
 import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
 
@@ -14,7 +12,6 @@ export const revalidate = 300;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
-// Helper to get category details
 const getCategoryBySlug = unstable_cache(async (slug: string) => {
   try {
     const cat = await prisma.category.findUnique({ where: { slug } });
@@ -45,7 +42,6 @@ const getCategoryProducts = unstable_cache(async (categoryId: string): Promise<P
   }
 }, ['category-products-v1'], { revalidate: 300, tags: ['products'] });
 
-// Generate dynamic metadata for category pages
 export async function generateMetadata({
   params,
 }: {
@@ -126,7 +122,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           <div className="text-center py-20">
             <p className="text-xl text-zinc-400 font-serif">No products found in this category.</p>
             <div className="mt-6">
-              <a href="/products" className="text-emerald-600 hover:underline">View all products</a>
+              <Link href="/products" className="text-emerald-600 hover:underline">View all products</Link>
             </div>
           </div>
         )}

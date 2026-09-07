@@ -36,6 +36,7 @@ export interface RecipeSummary {
   excerpt: string;
   featuredImage?: { url: string; alt?: string };
   tags: string[];
+  authorId: string;
   authorName?: string;
   publishedAt?: string;
   prepTimeMinutes: number;

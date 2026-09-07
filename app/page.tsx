@@ -7,12 +7,10 @@ import { Product } from "@/models/product";
 
 import HeroSection from "@/components/home/HeroSection";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
-import BannerGrid from "@/components/home/BannerGrid";
-import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import CategoryBento from "@/components/home/CategoryBento";
-import TrustBadges from "@/components/home/TrustBadges";
 import FoodDiscovery from "@/components/home/FoodDiscovery";
 import PlatformIntelligence from "@/components/home/PlatformIntelligence";
+import CreatorNetwork from "@/components/home/CreatorNetwork";
 import { serverApiFetch } from "@/lib/api/server";
 
 export const dynamic = "force-static";
@@ -20,7 +18,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "FreshPick | Food Discovery, Smart Grocery & Local Food in Sri Lanka",
-  description: "FreshPick is a premium food discovery and commerce platform connecting shoppable recipes, smart recurring baskets, groceries, ready meals and independent Sri Lankan makers.",
+  description: "FreshPick connects shoppable recipes, personalized replenishment, live groceries, ready meals, creators and independent Sri Lankan food makers.",
   keywords: [
     "food discovery Colombo",
     "smart grocery Sri Lanka",
@@ -31,8 +29,8 @@ export const metadata: Metadata = {
     "online groceries Sri Lanka",
   ],
   openGraph: {
-    title: "FreshPick | Food Discovery That Gets Smarter With You",
-    description: "A premium food platform connecting taste, recipes, recurring household needs, local makers and grocery commerce.",
+    title: "FreshPick | Food Discovery That Learns From Real Shopping",
+    description: "A connected food platform for discovery, replenishment, creators and grocery commerce.",
     type: "website",
     locale: "en_LK",
     url: "https://freshpick.lk",
@@ -88,30 +86,29 @@ export default async function Home() {
   return (
     <main className="overflow-hidden bg-white">
       <HeroSection />
-      <TrustBadges />
       <PlatformIntelligence />
       <FoodDiscovery />
 
-      <section className="bg-[#f3f5f1] py-24 md:py-32">
+      <section className="bg-[#f3f5f1] py-20 md:py-28">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <AnimatedSection className="mb-12 grid gap-7 md:mb-16 md:grid-cols-[1fr_0.72fr] md:items-end">
+          <AnimatedSection className="mb-10 grid gap-7 border-b border-zinc-300 pb-7 md:mb-12 md:grid-cols-[1fr_0.72fr] md:items-end">
             <div>
-              <span className="mb-5 block text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-700">
+              <span className="block text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700">
                 Live catalogue
               </span>
-              <h2 className="text-balance font-serif text-5xl font-normal leading-[0.94] tracking-tight text-zinc-950 md:text-7xl">
-                The market, when you already <span className="italic text-emerald-900">know what you need.</span>
+              <h2 className="mt-4 text-balance font-serif text-5xl font-normal leading-[0.96] tracking-tight text-zinc-950 md:text-6xl">
+                When you already know what you need.
               </h2>
             </div>
             <div className="md:justify-self-end">
-              <p className="max-w-lg text-base font-light leading-7 text-zinc-600">
-                Fresh products remain part of FreshPick, but they are no longer the whole product. Browse directly when your list is ready, or let discovery and recurring routines do more of the work.
+              <p className="max-w-lg text-sm leading-7 text-zinc-600">
+                Browse the current catalogue directly, or use Discover and For You when you want FreshPick to do more of the decision work.
               </p>
               <Link
                 href="/products"
-                className="mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-950 transition-colors hover:text-emerald-700"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-zinc-800 transition-colors hover:text-emerald-700"
               >
-                Open the live catalogue <ArrowUpRight className="h-4 w-4" />
+                Open catalogue <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
           </AnimatedSection>
@@ -145,7 +142,7 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-[2rem] border border-zinc-200 bg-white px-6 py-16 text-center shadow-[0_20px_70px_rgba(10,30,18,0.05)]">
+              <div className="border border-zinc-300 bg-white px-6 py-14 text-center">
                 <p className="font-serif text-2xl text-zinc-900">The live catalogue is being refreshed.</p>
                 <Link href="/products" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800">
                   Browse all products <ArrowUpRight className="h-4 w-4" />
@@ -156,9 +153,8 @@ export default async function Home() {
         </div>
       </section>
 
+      <CreatorNetwork />
       <CategoryBento categories={categories} />
-      <BannerGrid />
-      <LuxuryManifesto />
     </main>
   );
 }

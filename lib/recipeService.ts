@@ -15,6 +15,7 @@ type RecipeBlogRow = {
   tags: string[];
   published: boolean;
   publishedAt: Date | null;
+  authorId: string;
   authorName: string | null;
   metaTitle: string | null;
   metaDescription: string | null;
@@ -30,6 +31,7 @@ const recipeSelect = {
   tags: true,
   published: true,
   publishedAt: true,
+  authorId: true,
   authorName: true,
   metaTitle: true,
   metaDescription: true,
@@ -43,6 +45,7 @@ function toSummary(row: RecipeBlogRow, content: RecipeContent): RecipeSummary {
     excerpt: row.excerpt,
     featuredImage: normalizeFeaturedImage(row.featuredImage),
     tags: row.tags,
+    authorId: row.authorId,
     authorName: row.authorName || undefined,
     publishedAt: row.publishedAt?.toISOString(),
     prepTimeMinutes: content.prepTimeMinutes,
