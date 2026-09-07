@@ -1,159 +1,140 @@
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  BrainCircuit,
-  ChefHat,
-  PackageCheck,
-  Repeat2,
-  Sparkles,
-  Store,
-  UsersRound,
-} from "lucide-react";
+import { ArrowUpRight, BrainCircuit, ChefHat, RefreshCw, Sparkles, Store, TrendingUp } from "lucide-react";
+import prisma from "@/lib/prisma";
+import { getTrendingProducts } from "@/lib/intelligence/tasteGraph";
 
-const platformModules = [
+async function getPlatformPulse() {
+  try {
+    const [catalogue, inStock, recipes, plans, suppliers, trending] = await Promise.all([
+      prisma.product.count({ where: { archived: false } }),
+      prisma.product.count({ where: { archived: false, stockQty: { gt: 0 } } }),
+      prisma.blog.count({ where: { category: "recipe", published: true, isDeleted: false } }),
+      prisma.subscriptionPlan.count({ where: { isActive: true } }),
+      prisma.supplier.count({ where: { status: "active" } }),
+      getTrendingProducts(5),
+    ]);
+    return { catalogue, inStock, recipes, plans, suppliers, trending };
+  } catch (error) {
+    console.error("[Homepage] Failed to build platform pulse:", error);
+    return { catalogue: 0, inStock: 0, recipes: 0, plans: 0, suppliers: 0, trending: [] as Awaited<ReturnType<typeof getTrendingProducts>> };
+  }
+}
+
+const engines = [
   {
     icon: BrainCircuit,
-    label: "Taste Graph",
-    title: "FreshPick learns the food you actually come back to.",
-    copy: "Recipes viewed, products saved, repeat orders, dietary preferences and substitutions become useful context for a more personal storefront.",
-    meta: ["Preference signals", "Recipe affinity", "Household rhythm"],
+    name: "Taste Graph",
+    status: "Live",
+    description: "Ranks categories and food tags from a customer’s real orders, active baskets and wishlist signals.",
+    href: "/for-you",
   },
   {
-    icon: Repeat2,
-    label: "Smart Basket",
-    title: "Turn repeat shopping into an intelligent routine.",
-    copy: "Recurring baskets, quick reorder and meal-led additions sit in one flow so FreshPick can help households plan rather than restart every week.",
-    meta: ["Recurring delivery", "Quick reorder", "Stock-aware choices"],
+    icon: RefreshCw,
+    name: "Smart Basket",
+    status: "Live",
+    description: "Estimates replenishment timing from repeat-purchase intervals and can add predicted refills to the active basket.",
+    href: "/for-you",
   },
   {
-    icon: UsersRound,
-    label: "Creator Commerce",
-    title: "Discover food through people, then shop the idea.",
-    copy: "FreshPick is being shaped around shoppable recipes, creator-led discovery and one-action ingredient baskets instead of a wall of supermarket categories.",
-    meta: ["Shoppable recipes", "Creator storefronts", "Attribution ready"],
+    icon: TrendingUp,
+    name: "Demand Engine",
+    status: "Live",
+    description: "Uses eight weeks of order velocity to forecast next-week demand, stock cover and suggested reorder quantities.",
+    href: "/b2b",
   },
   {
-    icon: Store,
-    label: "Supply Network",
-    title: "A better operating layer behind every basket.",
-    copy: "Supplier workflows, subscriptions and demand signals create the foundation for smarter sourcing, better availability and less waste over time.",
-    meta: ["Supplier workflows", "Demand signals", "Availability intelligence"],
+    icon: ChefHat,
+    name: "Recipe Resolver",
+    status: "Live",
+    description: "Turns published recipes into baskets while checking stock and resolving editor-approved substitutions server-side.",
+    href: "/recipes",
   },
 ];
 
-const tasteRows = [
-  { label: "Weeknight cooking", width: "w-[88%]" },
-  { label: "Fresh produce", width: "w-[74%]" },
-  { label: "Local makers", width: "w-[61%]" },
-  { label: "Ready meals", width: "w-[45%]" },
-];
+export default async function PlatformIntelligence() {
+  const pulse = await getPlatformPulse();
+  const availability = pulse.catalogue > 0 ? Math.round((pulse.inStock / pulse.catalogue) * 100) : 0;
 
-export default function PlatformIntelligence() {
   return (
-    <section className="relative overflow-hidden bg-[#07100b] py-24 text-white md:py-32">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(52,211,153,0.15),transparent_30%),radial-gradient(circle_at_90%_25%,rgba(163,230,53,0.08),transparent_24%)]" />
-      <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:52px_52px]" />
-
-      <div className="container relative mx-auto max-w-7xl px-4 md:px-8">
-        <div className="grid gap-12 xl:grid-cols-[0.82fr_1.18fr] xl:items-start">
-          <div className="xl:sticky xl:top-32">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-300/[0.06] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.28em] text-emerald-200">
-              <Sparkles className="h-3.5 w-3.5" /> FreshPick intelligence
+    <section className="border-y border-zinc-200 bg-[#f4f5f2] py-20 md:py-28">
+      <div className="container mx-auto max-w-7xl px-4 md:px-8">
+        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+          <div>
+            <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700">
+              <Sparkles className="h-3.5 w-3.5" /> Live product system
             </span>
-            <h2 className="mt-7 max-w-3xl text-balance font-serif text-5xl font-normal leading-[0.92] tracking-[-0.04em] md:text-7xl">
-              More useful every time you <span className="italic text-emerald-200">use it.</span>
+            <h2 className="mt-5 max-w-3xl font-serif text-5xl font-normal leading-[0.96] tracking-tight text-zinc-950 md:text-7xl">
+              Intelligence that does something.
             </h2>
-            <p className="mt-7 max-w-xl text-base font-light leading-8 text-white/60">
-              The premium experience is not just visual. FreshPick is evolving into a food platform that connects taste, recurring household needs, creators and suppliers in one system.
+            <p className="mt-6 max-w-xl text-base leading-7 text-zinc-600">
+              FreshPick now calculates recommendations, replenishment timing and operations forecasts from real commerce data. When there is not enough data, the product says so instead of inventing a result.
             </p>
-
-            <div className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.24)] backdrop-blur-xl md:p-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-5">
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-emerald-200">Your taste profile</p>
-                  <p className="mt-2 text-sm text-white/55">Signals FreshPick can use to shape discovery.</p>
-                </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-300/10 ring-1 ring-emerald-300/15">
-                  <BrainCircuit className="h-5 w-5 text-emerald-200" />
-                </div>
-              </div>
-
-              <div className="space-y-5 py-6">
-                {tasteRows.map((row) => (
-                  <div key={row.label}>
-                    <div className="mb-2 flex items-center justify-between text-xs">
-                      <span className="text-white/70">{row.label}</span>
-                      <span className="text-[9px] uppercase tracking-[0.2em] text-white/35">signal</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-white/[0.07]">
-                      <div className={`h-full rounded-full bg-gradient-to-r from-emerald-400 to-lime-300 ${row.width}`} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-5">
-                {[
-                  ["Tonight", "Recipe-led"],
-                  ["Weekly", "Repeat-aware"],
-                  ["Discover", "Taste-led"],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl bg-black/15 px-3 py-3">
-                    <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">{label}</p>
-                    <p className="mt-1 text-xs text-white/75">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Link href="/for-you" className="mt-8 inline-flex items-center gap-2 bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-900">
+              Open your intelligence <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {platformModules.map(({ icon: Icon, label, title, copy, meta }, index) => (
-              <article
-                key={label}
-                className={`group flex min-h-[390px] flex-col rounded-[2rem] border p-7 transition-all duration-300 hover:-translate-y-1 md:p-8 ${
-                  index === 0
-                    ? "border-emerald-300/20 bg-emerald-300/[0.08]"
-                    : "border-white/10 bg-white/[0.045] hover:bg-white/[0.07]"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-emerald-200">{label}</span>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
-                    <Icon className="h-5 w-5 stroke-[1.5] text-white/75" />
-                  </span>
-                </div>
-
-                <div className="mt-12">
-                  <h3 className="font-serif text-3xl font-normal leading-[1.02] tracking-[-0.02em] text-white md:text-[2.1rem]">{title}</h3>
-                  <p className="mt-5 text-sm font-light leading-7 text-white/55">{copy}</p>
-                </div>
-
-                <div className="mt-auto flex flex-wrap gap-2 pt-9">
-                  {meta.map((item) => (
-                    <span key={item} className="rounded-full border border-white/10 bg-black/10 px-3 py-2 text-[9px] font-medium uppercase tracking-[0.14em] text-white/50">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </article>
+          <dl className="grid grid-cols-2 border border-zinc-300 bg-white sm:grid-cols-5">
+            {[
+              ["Catalogue", pulse.catalogue.toLocaleString()],
+              ["Available", `${availability}%`],
+              ["Recipes", pulse.recipes.toLocaleString()],
+              ["Recurring plans", pulse.plans.toLocaleString()],
+              ["Suppliers", pulse.suppliers.toLocaleString()],
+            ].map(([label, value], index) => (
+              <div key={label} className={`p-5 ${index > 0 ? "border-l border-zinc-200" : ""}`}>
+                <dt className="text-[9px] font-semibold uppercase tracking-[0.18em] text-zinc-400">{label}</dt>
+                <dd className="mt-3 text-2xl font-semibold tabular-nums text-zinc-950">{value}</dd>
+              </div>
             ))}
-          </div>
+          </dl>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <Link href="/recipes" className="group flex items-center justify-between rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 transition-colors hover:bg-white/[0.07]">
-            <span className="flex items-center gap-3 text-sm text-white/70"><ChefHat className="h-4 w-4 text-emerald-200" /> Explore shoppable recipes</span>
-            <ArrowUpRight className="h-4 w-4 text-white/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
-          <Link href="/subscriptions" className="group flex items-center justify-between rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 transition-colors hover:bg-white/[0.07]">
-            <span className="flex items-center gap-3 text-sm text-white/70"><PackageCheck className="h-4 w-4 text-emerald-200" /> Build a recurring basket</span>
-            <ArrowUpRight className="h-4 w-4 text-white/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
-          <Link href="/b2b" className="group flex items-center justify-between rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 transition-colors hover:bg-white/[0.07]">
-            <span className="flex items-center gap-3 text-sm text-white/70"><Store className="h-4 w-4 text-emerald-200" /> Join the partner network</span>
-            <ArrowUpRight className="h-4 w-4 text-white/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
+        <div className="mt-12 grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2 xl:grid-cols-4">
+          {engines.map(({ icon: Icon, name, status, description, href }) => (
+            <Link key={name} href={href} className="group bg-white p-6 transition-colors hover:bg-emerald-50/50">
+              <div className="flex items-center justify-between gap-3">
+                <Icon className="h-5 w-5 text-emerald-800" />
+                <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> {status}</span>
+              </div>
+              <h3 className="mt-8 text-lg font-semibold text-zinc-950">{name}</h3>
+              <p className="mt-3 text-sm leading-6 text-zinc-500">{description}</p>
+              <span className="mt-8 inline-flex items-center gap-2 text-xs font-semibold text-zinc-700">Open <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+          <section className="border border-zinc-300 bg-white">
+            <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
+              <div>
+                <p className="text-xs font-semibold text-zinc-950">30-day demand signal</p>
+                <p className="mt-1 text-xs text-zinc-400">Products ranked from actual order quantities</p>
+              </div>
+              <TrendingUp className="h-4 w-4 text-zinc-400" />
+            </div>
+            {pulse.trending.length === 0 ? (
+              <div className="px-5 py-8 text-sm text-zinc-500">No recent order activity yet. Trending products will appear automatically once real demand exists.</div>
+            ) : (
+              <div className="divide-y divide-zinc-100">
+                {pulse.trending.map((item, index) => (
+                  <Link key={item.product._id} href={`/products/${item.product.sku}`} className="grid grid-cols-[2rem_1fr_auto] items-center gap-3 px-5 py-4 hover:bg-zinc-50">
+                    <span className="text-xs tabular-nums text-zinc-400">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="text-sm font-medium text-zinc-800">{item.product.name}</span>
+                    <span className="text-xs tabular-nums text-zinc-500">{item.units} units</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="border border-zinc-300 bg-[#0b1710] p-6 text-white">
+            <Store className="h-5 w-5 text-emerald-200" />
+            <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-200">Behind the storefront</p>
+            <h3 className="mt-3 font-serif text-3xl font-normal">The same data drives operations.</h3>
+            <p className="mt-4 text-sm leading-6 text-white/60">Admin intelligence converts demand into stock-risk and reorder recommendations, while supplier health is calculated from current catalogue availability and real 30-day sales.</p>
+            <Link href="/b2b" className="mt-8 inline-flex items-center gap-2 text-xs font-semibold text-white">Partner with FreshPick <ArrowUpRight className="h-3.5 w-3.5" /></Link>
+          </section>
         </div>
       </div>
     </section>
