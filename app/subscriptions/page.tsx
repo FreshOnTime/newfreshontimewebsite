@@ -1,14 +1,21 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
-import { CalendarClock, ChevronDown, Handshake, SlidersHorizontal } from 'lucide-react';
+import {
+    BrainCircuit,
+    CalendarClock,
+    ChevronDown,
+    Handshake,
+    Repeat2,
+    SlidersHorizontal,
+    Sparkles,
+} from 'lucide-react';
 import SubscriptionPlanCard, { type SubscriptionPlan } from '@/components/subscriptions/SubscriptionPlanCard';
 import { serverApiFetch } from '@/lib/api/server';
 
 export const metadata: Metadata = {
-    title: 'Recurring Orders & Subscription Plans | Fresh Pick',
-    description: 'Explore active Fresh Pick recurring-order plans and choose a delivery schedule that fits your household.',
+    title: 'Smart Basket | Recurring Grocery Delivery | FreshPick',
+    description: 'FreshPick Smart Basket turns repeat household shopping into a flexible recurring rhythm with live subscription plans and delivery scheduling.',
 };
 
 export const revalidate = 300;
@@ -42,7 +49,7 @@ const faqs = [
     },
     {
         q: 'Where do the plan details come from?',
-        a: 'Only active plans configured by the Fresh Pick team are shown here. Prices, features, and contents come from the current plan record rather than a fallback catalogue.',
+        a: 'Only active plans configured by the FreshPick team are shown here. Prices, features, and contents come from the current plan record rather than a fallback catalogue.',
     },
     {
         q: 'Can recurring deliveries use different schedules?',
@@ -50,60 +57,81 @@ const faqs = [
     },
 ];
 
+const rhythmRows = [
+    ['Household essentials', 'Recurring'],
+    ['Delivery preference', 'Flexible'],
+    ['Changes', 'Account managed'],
+];
+
 export default async function SubscriptionsPage() {
     const plans = await getSubscriptionPlans();
 
     return (
-        <div className="min-h-screen bg-transparent text-zinc-900">
-            <section className="relative flex min-h-[600px] items-center justify-center overflow-hidden md:min-h-[680px]">
-                <div className="absolute inset-0 z-0">
-                    <Image
-                        src="/bgs/home-hero.jpg"
-                        alt="Fresh Pick recurring grocery delivery"
-                        fill
-                        className="object-cover"
-                        priority
-                        fetchPriority="high"
-                        sizes="100vw"
-                    />
-                    <div className="absolute inset-0 bg-black/55" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/90" />
-                </div>
+        <div className="min-h-screen bg-[#f4f6f2] text-zinc-900">
+            <section className="relative isolate overflow-hidden bg-[#07100b] px-4 pb-24 pt-28 text-white md:px-8 md:pb-32 md:pt-36">
+                <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_10%_15%,rgba(52,211,153,0.18),transparent_30%),radial-gradient(circle_at_85%_50%,rgba(163,230,53,0.08),transparent_24%)]" />
+                <div className="absolute inset-0 -z-10 opacity-[0.15] [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" />
 
-                <div className="relative z-10 mx-auto max-w-4xl px-6 pt-20 text-center text-white">
-                    <span className="mb-6 inline-block rounded-full border border-white/30 bg-white/5 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur-sm">
-                        Recurring delivery
-                    </span>
-                    <h1 className="mb-7 font-serif text-5xl leading-[0.9] tracking-tight text-white drop-shadow-2xl md:text-7xl lg:text-[6rem]">
-                        Your staples,<br />
-                        <span className="italic text-emerald-100">on a rhythm.</span>
-                    </h1>
-                    <p className="mx-auto max-w-2xl text-lg font-light leading-relaxed text-zinc-100 drop-shadow-md md:text-xl">
-                        Choose from the recurring plans currently available on Fresh Pick and set the schedule during checkout.
-                    </p>
+                <div className="container mx-auto max-w-7xl">
+                    <div className="grid gap-12 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-end">
+                        <div>
+                            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/15 bg-emerald-200/[0.055] px-4 py-2 text-[9px] font-bold uppercase tracking-[0.28em] text-emerald-200">
+                                <Repeat2 className="h-3.5 w-3.5" /> FreshPick Smart Basket
+                            </span>
+                            <h1 className="mt-7 max-w-5xl text-balance font-serif text-6xl font-normal leading-[0.88] tracking-[-0.045em] md:text-8xl lg:text-[7rem]">
+                                Your repeat shopping,<br /><span className="italic text-emerald-200">finally on a rhythm.</span>
+                            </h1>
+                            <p className="mt-8 max-w-2xl text-base font-light leading-8 text-white/60 md:text-lg">
+                                Smart Basket is the recurring layer of FreshPick: choose a live plan, set the delivery rhythm, and manage the routine from your account instead of rebuilding the same shop every week.
+                            </p>
+                        </div>
+
+                        <aside className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.25)] backdrop-blur-2xl md:p-6">
+                            <div className="flex items-center justify-between border-b border-white/[0.08] pb-5">
+                                <div>
+                                    <p className="text-[8px] font-bold uppercase tracking-[0.24em] text-emerald-200">Recurring context</p>
+                                    <p className="mt-2 text-sm font-light text-white/45">A household workflow, not a subscription banner.</p>
+                                </div>
+                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-300/10 ring-1 ring-emerald-300/10">
+                                    <BrainCircuit className="h-4 w-4 text-emerald-200" />
+                                </span>
+                            </div>
+                            <div className="mt-5 space-y-2">
+                                {rhythmRows.map(([label, value]) => (
+                                    <div key={label} className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-black/10 px-3.5 py-3 text-xs">
+                                        <span className="text-white/38">{label}</span>
+                                        <span className="text-white/68">{value}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-3 flex items-center gap-2 rounded-xl bg-emerald-300/[0.07] px-3.5 py-3 text-[9px] font-bold uppercase tracking-[0.17em] text-emerald-200 ring-1 ring-emerald-300/10">
+                                <Sparkles className="h-3.5 w-3.5" /> Designed to become increasingly intelligent
+                            </div>
+                        </aside>
+                    </div>
                 </div>
             </section>
 
-            <section className="relative bg-zinc-50 py-20 md:py-28">
+            <section className="relative py-16 md:py-20">
                 <div className="container mx-auto px-4">
                     {plans.length > 0 ? (
-                        <div className="relative z-20 mx-auto -mt-20 grid max-w-[1400px] grid-cols-1 gap-5 md:-mt-24 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                        <div className="relative z-20 mx-auto -mt-28 grid max-w-[1400px] grid-cols-1 gap-5 md:-mt-32 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
                             {plans.map((plan) => (
                                 <SubscriptionPlanCard key={plan._id} plan={plan} />
                             ))}
                         </div>
                     ) : (
-                        <div className="relative z-20 mx-auto -mt-16 max-w-3xl rounded-[2rem] border border-zinc-200 bg-white p-10 text-center shadow-xl md:p-14">
-                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Plans updating</span>
-                            <h2 className="mt-4 font-serif text-4xl text-zinc-950 md:text-5xl">No active recurring plans right now.</h2>
-                            <p className="mx-auto mt-5 max-w-xl leading-7 text-zinc-500">
-                                We only show plans that are currently active in the Fresh Pick system, so outdated prices or placeholder boxes are never displayed.
+                        <div className="relative z-20 mx-auto -mt-24 max-w-3xl rounded-[2rem] border border-zinc-200 bg-white p-10 text-center shadow-[0_24px_80px_rgba(10,30,18,0.08)] md:p-14">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-emerald-700">Plans updating</span>
+                            <h2 className="mt-4 font-serif text-4xl font-normal tracking-[-0.03em] text-zinc-950 md:text-5xl">No active recurring plans right now.</h2>
+                            <p className="mx-auto mt-5 max-w-xl text-sm font-light leading-7 text-zinc-500">
+                                FreshPick only shows plans that are currently active, so outdated prices or placeholder boxes never become part of the customer experience.
                             </p>
                             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                                <Link href="/products" className="rounded-full bg-zinc-950 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-900">
-                                    Shop current products
+                                <Link href="/products" className="rounded-full bg-zinc-950 px-7 py-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-emerald-950">
+                                    Open live catalogue
                                 </Link>
-                                <Link href="/contact" className="rounded-full border border-zinc-200 px-7 py-3.5 text-sm font-semibold text-zinc-700 transition-colors hover:border-emerald-300 hover:text-emerald-800">
+                                <Link href="/contact" className="rounded-full border border-zinc-200 px-7 py-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-700 transition-colors hover:border-emerald-300 hover:text-emerald-800">
                                     Ask about recurring orders
                                 </Link>
                             </div>
@@ -113,63 +141,68 @@ export default async function SubscriptionsPage() {
             </section>
 
             <section className="bg-white py-20 md:py-28">
-                <div className="container mx-auto max-w-7xl px-4">
-                    <div className="mb-14 max-w-3xl md:mb-16">
-                        <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">How it works</span>
-                        <h2 className="font-serif text-4xl leading-tight text-zinc-950 md:text-6xl">
-                            Recurring without the guesswork.
-                        </h2>
-                        <p className="mt-5 max-w-2xl text-lg font-light leading-8 text-zinc-500">
-                            The storefront now reflects live plan configuration instead of source-code assumptions about pricing, contents, delivery, or sustainability claims.
+                <div className="container mx-auto max-w-7xl px-4 md:px-8">
+                    <div className="mb-12 grid gap-7 md:grid-cols-[1fr_0.62fr] md:items-end">
+                        <div>
+                            <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-emerald-700">How Smart Basket works</span>
+                            <h2 className="mt-5 text-balance font-serif text-5xl font-normal leading-[0.95] tracking-[-0.035em] text-zinc-950 md:text-7xl">Recurring without the admin work.</h2>
+                        </div>
+                        <p className="max-w-xl text-sm font-light leading-7 text-zinc-600 md:justify-self-end">
+                            The recurring experience reads directly from live FreshPick plan configuration instead of relying on hard-coded prices, contents or delivery promises.
                         </p>
                     </div>
 
-                    <div className="grid gap-5 md:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-3">
                         {[
                             {
                                 icon: CalendarClock,
-                                title: 'Choose a current plan',
-                                copy: 'Only active plans configured in Fresh Pick are displayed, including their current price and features.',
+                                title: 'Choose a live plan',
+                                copy: 'Only active plans configured in FreshPick are displayed, including their current price and features.',
                             },
                             {
                                 icon: SlidersHorizontal,
-                                title: 'Set the schedule',
+                                title: 'Set the rhythm',
                                 copy: 'Confirm your delivery address and recurring cadence as part of the checkout flow.',
                             },
                             {
                                 icon: Handshake,
-                                title: 'Backed by the wider network',
-                                copy: 'Recurring orders can evolve alongside Fresh Pick’s curated supplier and local-maker partnerships.',
+                                title: 'Connected to the network',
+                                copy: 'Recurring demand can evolve alongside FreshPick’s curated supplier and local-maker partnerships.',
                             },
-                        ].map((item) => (
-                            <div key={item.title} className="rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-8 md:p-9">
-                                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-                                    <item.icon className="h-5 w-5" />
-                                </span>
-                                <h3 className="mt-7 font-serif text-3xl text-zinc-950">{item.title}</h3>
-                                <p className="mt-4 font-light leading-7 text-zinc-500">{item.copy}</p>
+                        ].map((item, index) => (
+                            <div key={item.title} className="flex min-h-[300px] flex-col rounded-[1.75rem] border border-zinc-200/80 bg-[#f7f8f6] p-7 md:p-8">
+                                <div className="flex items-center justify-between">
+                                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-900 ring-1 ring-zinc-200">
+                                        <item.icon className="h-4.5 w-4.5 stroke-[1.5]" />
+                                    </span>
+                                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">0{index + 1}</span>
+                                </div>
+                                <div className="mt-auto pt-12">
+                                    <h3 className="font-serif text-3xl font-normal tracking-[-0.02em] text-zinc-950">{item.title}</h3>
+                                    <p className="mt-4 text-sm font-light leading-7 text-zinc-500">{item.copy}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            <section className="bg-zinc-50 py-20 md:py-28">
+            <section className="bg-[#f4f6f2] py-20 md:py-28">
                 <div className="container mx-auto max-w-3xl px-4">
-                    <div className="mb-12 text-center">
-                        <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Support</span>
-                        <h2 className="font-serif text-3xl text-zinc-950 md:text-4xl">Common questions</h2>
+                    <div className="mb-10">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-emerald-700">Support</span>
+                        <h2 className="mt-4 font-serif text-4xl font-normal tracking-[-0.02em] text-zinc-950">Common questions</h2>
                     </div>
-                    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+                    <div className="overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-white shadow-[0_18px_60px_rgba(10,30,18,0.04)]">
                         {faqs.map((item) => (
-                            <details key={item.q} className="group border-b border-zinc-200 bg-white transition-colors last:border-b-0 open:bg-emerald-50/40">
-                                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 px-6 py-6 text-left text-lg font-medium text-zinc-950 transition-colors hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">
+                            <details key={item.q} className="group border-b border-zinc-200 bg-white transition-colors last:border-b-0 open:bg-emerald-50/30">
+                                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 px-6 py-6 text-left text-base font-medium text-zinc-950 transition-colors hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">
                                     {item.q}
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-emerald-700 transition-all duration-300 group-open:rotate-180 group-open:border-emerald-200 group-open:bg-emerald-100">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-emerald-700 transition-all duration-300 group-open:rotate-180 group-open:border-emerald-200 group-open:bg-emerald-50">
                                         <ChevronDown className="h-4 w-4" />
                                     </span>
                                 </summary>
-                                <p className="max-w-2xl px-6 pb-6 pr-16 font-light leading-relaxed text-zinc-600">{item.a}</p>
+                                <p className="max-w-2xl px-6 pb-6 pr-16 text-sm font-light leading-7 text-zinc-600">{item.a}</p>
                             </details>
                         ))}
                     </div>
