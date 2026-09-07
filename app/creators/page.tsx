@@ -1,65 +1,80 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, ChefHat, Eye, Heart, UsersRound } from "lucide-react";
+import { ArrowUpRight, UsersRound } from "lucide-react";
 import { listCreators } from "@/lib/creatorService";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Creators | FreshPick",
-  description: "Discover the people publishing shoppable recipes on FreshPick. Profiles and counts come directly from published recipe activity.",
+  title: "FreshPick Creators | Recipes & Food Ideas",
+  description: "Meet the people publishing shoppable recipes and food ideas on FreshPick.",
 };
 
 export default async function CreatorsPage() {
   const creators = await listCreators(48);
 
   return (
-    <main className="min-h-screen bg-[#f5f6f3] pb-24 pt-28 text-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 md:px-8">
-        <header className="grid gap-8 border-b border-zinc-300 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700"><UsersRound className="h-4 w-4" /> FreshPick creators</div>
-            <h1 className="mt-5 max-w-4xl font-serif text-5xl font-normal leading-none md:text-7xl">People behind shoppable food ideas.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600">This directory is generated from actual published recipe authors. No placeholder chefs or fabricated follower counts.</p>
+    <main className="min-h-screen bg-[#f5f6f3] text-zinc-950">
+      <section className="bg-[#08120d] px-4 pb-20 pt-32 text-white md:px-8 md:pb-28 md:pt-40">
+        <div className="mx-auto max-w-7xl">
+          <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200">
+            <UsersRound className="h-4 w-4" /> FreshPick creators
+          </span>
+          <h1 className="mt-6 max-w-5xl font-serif text-6xl font-normal leading-[0.9] tracking-[-0.045em] sm:text-7xl md:text-8xl lg:text-[7rem]">
+            Good food usually starts with <span className="italic text-emerald-200">someone.</span>
+          </h1>
+          <div className="mt-8 grid gap-7 md:grid-cols-[1fr_auto] md:items-end">
+            <p className="max-w-2xl text-base font-light leading-8 text-white/60 md:text-lg">
+              Discover people through the recipes they actually publish on FreshPick, then shop the ingredients straight from the idea.
+            </p>
+            <Link href="/recipes" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/75 hover:text-white">
+              Browse all recipes <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
-          <Link href="/recipes" className="inline-flex h-11 items-center gap-2 border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-700">Browse all recipes <ArrowUpRight className="h-4 w-4" /></Link>
-        </header>
+        </div>
+      </section>
 
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-24">
         {creators.length === 0 ? (
-          <div className="mt-10 border border-zinc-300 bg-white p-8 text-sm leading-6 text-zinc-500">Creator profiles appear automatically when published recipes have authors. There are no published creator profiles yet.</div>
+          <div className="rounded-[2rem] border border-zinc-200 bg-white px-6 py-16 text-center">
+            <p className="font-serif text-3xl">The creator kitchen is still taking shape.</p>
+            <p className="mx-auto mt-4 max-w-lg text-sm font-light leading-7 text-zinc-500">Profiles appear automatically as shoppable recipes are published with authors.</p>
+          </div>
         ) : (
-          <section className="mt-10 grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2 xl:grid-cols-3">
-            {creators.map((creator) => (
-              <Link key={creator.id} href={`/creators/${creator.id}`} className="group bg-white p-6 transition-colors hover:bg-emerald-50/50 md:p-7">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-950 font-serif text-lg text-white">
-                    {creator.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {creators.map((creator, index) => {
+              const image = creator.latestRecipe?.image?.url;
+              return (
+                <Link
+                  key={creator.id}
+                  href={`/creators/${creator.id}`}
+                  className={`group overflow-hidden rounded-[2rem] bg-[#102017] ${index === 0 ? "md:col-span-2 xl:col-span-2" : ""}`}
+                >
+                  <div
+                    className={`relative bg-cover bg-center ${index === 0 ? "h-[520px]" : "h-[390px]"}`}
+                    style={image ? { backgroundImage: `linear-gradient(to top, rgba(7,17,12,.92), rgba(7,17,12,.10)), url(\"${image.replace(/\"/g, "%22")}\")` } : { backgroundImage: "linear-gradient(145deg,#153223,#07110c)" }}
+                  >
+                    <div className="absolute inset-x-0 bottom-0 p-7 text-white md:p-8">
+                      <div className="flex items-end justify-between gap-6">
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-200">FreshPick creator</p>
+                          <h2 className={`mt-3 font-serif font-normal leading-tight ${index === 0 ? "text-5xl md:text-6xl" : "text-4xl"}`}>{creator.name}</h2>
+                          {creator.latestRecipe && <p className="mt-4 max-w-xl text-sm font-light leading-6 text-white/60">Latest recipe · {creator.latestRecipe.title}</p>}
+                        </div>
+                        <ArrowUpRight className="h-5 w-5 shrink-0 text-white/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" />
+                      </div>
+                      <div className="mt-5 flex flex-wrap gap-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/40">
+                        <span>{creator.recipeCount} recipe{creator.recipeCount === 1 ? "" : "s"}</span>
+                        {creator.cuisines.slice(0, 3).map((cuisine) => <span key={cuisine}>· {cuisine}</span>)}
+                      </div>
+                    </div>
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-zinc-300 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-emerald-700" />
-                </div>
-
-                <h2 className="mt-8 font-serif text-3xl font-normal text-zinc-950">{creator.name}</h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {creator.cuisines.map((cuisine) => <span key={cuisine} className="border border-zinc-200 bg-white px-2.5 py-1 text-[10px] font-medium text-zinc-500">{cuisine}</span>)}
-                </div>
-
-                <dl className="mt-8 grid grid-cols-3 gap-3 border-t border-zinc-200 pt-5 text-xs">
-                  <div><dt className="flex items-center gap-1 text-zinc-400"><ChefHat className="h-3.5 w-3.5" /> Recipes</dt><dd className="mt-1 font-semibold tabular-nums text-zinc-900">{creator.recipeCount}</dd></div>
-                  <div><dt className="flex items-center gap-1 text-zinc-400"><Eye className="h-3.5 w-3.5" /> Views</dt><dd className="mt-1 font-semibold tabular-nums text-zinc-900">{creator.totalViews.toLocaleString()}</dd></div>
-                  <div><dt className="flex items-center gap-1 text-zinc-400"><Heart className="h-3.5 w-3.5" /> Likes</dt><dd className="mt-1 font-semibold tabular-nums text-zinc-900">{creator.totalLikes.toLocaleString()}</dd></div>
-                </dl>
-
-                {creator.latestRecipe && (
-                  <div className="mt-6 border-t border-zinc-200 pt-5">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400">Latest published recipe</p>
-                    <p className="mt-2 text-sm font-medium text-zinc-800">{creator.latestRecipe.title}</p>
-                  </div>
-                )}
-              </Link>
-            ))}
-          </section>
+                </Link>
+              );
+            })}
+          </div>
         )}
-      </div>
+      </section>
     </main>
   );
 }

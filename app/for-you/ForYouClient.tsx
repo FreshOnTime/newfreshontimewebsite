@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Check, Loader2, RefreshCw, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Heart, Loader2, RefreshCw, ShoppingBag, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 
 type ProductUi = {
@@ -17,12 +17,7 @@ type ProductUi = {
   isSoldAsUnit: boolean;
 };
 
-type TasteSignal = {
-  key: string;
-  label: string;
-  score: number;
-  normalized: number;
-};
+type TasteSignal = { key: string; label: string; score: number; normalized: number };
 
 type IntelligenceData = {
   taste: {
@@ -76,10 +71,7 @@ export default function ForYouClient() {
     void load();
   }, []);
 
-  const dueNow = useMemo(
-    () => data?.smartBasket.filter((item) => item.dueInDays <= 0) || [],
-    [data],
-  );
+  const dueNow = useMemo(() => data?.smartBasket.filter((item) => item.dueInDays <= 0) || [], [data]);
 
   const buildSmartBasket = async () => {
     if (!data || building) return;
@@ -104,9 +96,9 @@ export default function ForYouClient() {
 
   if (status === "loading") {
     return (
-      <main className="min-h-[75vh] bg-[#f5f6f3] px-5 pb-24 pt-32">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 text-sm text-zinc-500">
-          <Loader2 className="h-4 w-4 animate-spin" /> Building your FreshPick view from real shopping signals…
+      <main className="min-h-[78vh] bg-[#f5f6f3] px-5 pb-24 pt-32">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 text-sm font-light text-zinc-500">
+          <Loader2 className="h-4 w-4 animate-spin" /> Finding the things that fit you…
         </div>
       </main>
     );
@@ -114,14 +106,18 @@ export default function ForYouClient() {
 
   if (status === "guest") {
     return (
-      <main className="min-h-[75vh] bg-[#f5f6f3] px-5 pb-24 pt-32">
-        <section className="mx-auto max-w-4xl border border-zinc-200 bg-white p-8 md:p-12">
-          <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700">FreshPick Intelligence</span>
-          <h1 className="mt-5 max-w-3xl font-serif text-5xl font-normal leading-[0.98] text-zinc-950 md:text-7xl">Your food graph starts with your own history.</h1>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-600">Sign in to turn past orders, saved baskets and wishlist activity into personalized recommendations and replenishment timing. FreshPick does not fabricate a profile before it has signals.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/auth/login" className="inline-flex h-12 items-center gap-2 bg-zinc-950 px-6 text-sm font-semibold text-white">Sign in <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/products" className="inline-flex h-12 items-center border border-zinc-300 px-6 text-sm font-semibold text-zinc-800">Browse catalogue</Link>
+      <main className="min-h-screen bg-[#08120d] px-5 pb-24 pt-32 text-white">
+        <section className="mx-auto max-w-6xl py-16 md:py-24">
+          <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200"><Heart className="h-4 w-4" /> For You</span>
+          <h1 className="mt-6 max-w-5xl font-serif text-6xl font-normal leading-[0.9] tracking-[-0.045em] md:text-8xl">
+            A FreshPick that becomes <span className="italic text-emerald-200">more yours.</span>
+          </h1>
+          <p className="mt-8 max-w-2xl text-base font-light leading-8 text-white/60 md:text-lg">
+            Sign in and FreshPick can use your real shopping history to bring back favourites, suggest repeat essentials and rank products around what you actually choose.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link href="/auth/login" className="inline-flex h-14 items-center gap-2 rounded-full bg-white px-7 text-[10px] font-bold uppercase tracking-[0.18em] text-[#08120d]">Sign in <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/discover" className="inline-flex h-14 items-center rounded-full border border-white/15 px-7 text-[10px] font-bold uppercase tracking-[0.18em] text-white/75">Explore FreshPick</Link>
           </div>
         </section>
       </main>
@@ -130,118 +126,109 @@ export default function ForYouClient() {
 
   if (status === "error" || !data) {
     return (
-      <main className="min-h-[75vh] bg-[#f5f6f3] px-5 pb-24 pt-32">
-        <div className="mx-auto max-w-4xl border border-zinc-200 bg-white p-8">
-          <p className="text-zinc-700">FreshPick Intelligence could not be generated right now.</p>
-          <button onClick={() => void load()} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"><RefreshCw className="h-4 w-4" /> Retry</button>
+      <main className="min-h-[78vh] bg-[#f5f6f3] px-5 pb-24 pt-32">
+        <div className="mx-auto max-w-4xl rounded-[2rem] border border-zinc-200 bg-white p-8">
+          <p className="font-serif text-2xl text-zinc-900">Your picks are unavailable right now.</p>
+          <button onClick={() => void load()} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"><RefreshCw className="h-4 w-4" /> Try again</button>
         </div>
       </main>
     );
   }
 
   const hasSignals = data.taste.signalCount > 0;
+  const tasteLabels = [...data.taste.topCategories.slice(0, 5), ...data.taste.topTags.slice(0, 4)]
+    .filter((item, index, array) => array.findIndex((candidate) => candidate.label === item.label) === index)
+    .slice(0, 7);
 
   return (
-    <main className="min-h-screen bg-[#f5f6f3] pb-24 pt-28 text-zinc-950">
+    <main className="min-h-screen bg-[#f5f6f3] pb-24 text-zinc-950">
+      <section className="bg-[#08120d] px-4 pb-20 pt-32 text-white md:px-8 md:pb-24 md:pt-40">
+        <div className="mx-auto max-w-7xl">
+          <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200"><Sparkles className="h-4 w-4" /> For You</span>
+          <div className="mt-6 grid gap-10 xl:grid-cols-[1fr_420px] xl:items-end">
+            <div>
+              <h1 className="max-w-5xl font-serif text-6xl font-normal leading-[0.9] tracking-[-0.045em] sm:text-7xl md:text-8xl lg:text-[7rem]">
+                A little more like <span className="italic text-emerald-200">you.</span>
+              </h1>
+              <p className="mt-8 max-w-2xl text-base font-light leading-8 text-white/60 md:text-lg">
+                Favourites, repeat essentials and new things worth trying — shaped by the FreshPick choices you have actually made.
+              </p>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 backdrop-blur-xl">
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-200">Your flavour of FreshPick</p>
+              {hasSignals ? (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {tasteLabels.map((signal) => (
+                    <span key={`${signal.key}-${signal.label}`} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-2 text-xs font-light text-white/70">{signal.label}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm font-light leading-6 text-white/50">Your profile will take shape as you save products, build baskets and complete orders.</p>
+              )}
+              {hasSignals && <p className="mt-5 text-[10px] font-light text-white/30">Based on {data.taste.signalCount} shopping signal{data.taste.signalCount === 1 ? "" : "s"}.</p>}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="mx-auto max-w-7xl px-4 md:px-8">
-        <header className="grid gap-8 border-b border-zinc-300 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700"><BrainCircuit className="h-4 w-4" /> FreshPick Intelligence</div>
-            <h1 className="mt-5 font-serif text-5xl font-normal leading-none md:text-7xl">For you, from your data.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600">This page is calculated from your real FreshPick behaviour. No demo preferences, invented scores or generic AI recommendations.</p>
-          </div>
-          <div className="flex gap-2 text-xs text-zinc-500">
-            <span className="border border-zinc-300 bg-white px-3 py-2">{data.taste.signalCount} signals</span>
-            <span className="border border-zinc-300 bg-white px-3 py-2">{data.taste.confidence}% profile confidence</span>
-          </div>
-        </header>
-
-        <section className="grid gap-px border-x border-b border-zinc-300 bg-zinc-300 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="bg-[#0b1710] p-7 text-white md:p-10">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200">Taste Graph</p>
-                <h2 className="mt-3 font-serif text-4xl font-normal">What your basket says you value.</h2>
-              </div>
-              <Sparkles className="h-6 w-6 text-emerald-200" />
+        <section className="-mt-8 relative z-10 rounded-[2.25rem] border border-zinc-200 bg-white p-6 shadow-[0_24px_80px_rgba(10,30,18,0.08)] md:p-9">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">Running low?</p>
+              <h2 className="mt-3 font-serif text-4xl font-normal tracking-[-0.025em] md:text-5xl">Things you may want again.</h2>
+              <p className="mt-3 max-w-2xl text-sm font-light leading-7 text-zinc-500">These only appear when repeat purchases form a real pattern.</p>
             </div>
-
-            {!hasSignals ? (
-              <div className="mt-10 border border-white/15 p-5 text-sm leading-7 text-white/65">There is not enough shopping history yet. Add products to a saved basket, wishlist items, or complete orders and this graph will form automatically.</div>
-            ) : (
-              <div className="mt-10 space-y-5">
-                {data.taste.topCategories.slice(0, 5).map((signal) => (
-                  <div key={signal.key}>
-                    <div className="mb-2 flex items-center justify-between text-sm"><span>{signal.label}</span><span className="text-white/45">{signal.normalized}</span></div>
-                    <div className="h-1.5 bg-white/10"><div className="h-full bg-emerald-300" style={{ width: `${signal.normalized}%` }} /></div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {data.taste.topTags.length > 0 && (
-              <div className="mt-9 flex flex-wrap gap-2 border-t border-white/10 pt-6">
-                {data.taste.topTags.slice(0, 8).map((tag) => <span key={tag.key} className="border border-white/15 px-3 py-2 text-xs text-white/65">{tag.label}</span>)}
-              </div>
-            )}
+            <button
+              onClick={() => void buildSmartBasket()}
+              disabled={building || data.smartBasket.length === 0}
+              className="inline-flex h-12 items-center gap-2 rounded-full bg-zinc-950 px-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {building ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
+              Add repeat essentials
+            </button>
           </div>
 
-          <div className="bg-white p-7 md:p-10">
-            <div className="flex flex-wrap items-start justify-between gap-6">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700">Smart Basket</p>
-                <h2 className="mt-3 font-serif text-4xl font-normal">What may be running out next.</h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-500">Intervals are estimated from repeat purchases. FreshPick only suggests items with at least two delivered-order signals.</p>
-              </div>
-              <button
-                onClick={() => void buildSmartBasket()}
-                disabled={building || data.smartBasket.length === 0}
-                className="inline-flex h-11 items-center gap-2 bg-zinc-950 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {building ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
-                Add predicted refills
-              </button>
-            </div>
+          {added !== null && (
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs text-emerald-900"><Check className="h-4 w-4" /> {added > 0 ? `${added} item${added === 1 ? "" : "s"} added to your basket.` : "Nothing eligible was added."}</div>
+          )}
 
-            {added !== null && (
-              <div className="mt-5 flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"><Check className="h-4 w-4" /> {added > 0 ? `${added} predicted refill${added === 1 ? "" : "s"} added to your active basket.` : "No eligible refills were added."}</div>
-            )}
-
-            <div className="mt-8 divide-y divide-zinc-200 border-y border-zinc-200">
-              {data.smartBasket.length === 0 ? (
-                <div className="py-8 text-sm leading-6 text-zinc-500">No repeat items have enough history to predict yet.</div>
-              ) : data.smartBasket.slice(0, 7).map((item) => (
-                <div key={item.product._id} className="grid gap-3 py-5 sm:grid-cols-[1fr_auto_auto] sm:items-center">
-                  <div>
-                    <div className="font-medium text-zinc-950">{item.product.name}</div>
-                    <div className="mt-1 text-xs text-zinc-500">Bought {item.purchaseCount}× · typical interval {item.averageIntervalDays} days</div>
-                  </div>
-                  <div className={`text-xs font-semibold ${item.dueInDays <= 0 ? "text-rose-700" : "text-amber-700"}`}>{item.dueInDays <= 0 ? `${Math.abs(item.dueInDays)}d overdue` : `due in ${item.dueInDays}d`}</div>
-                  <div className="text-xs text-zinc-400">{item.confidence}% confidence</div>
+          {data.smartBasket.length === 0 ? (
+            <div className="mt-8 rounded-[1.5rem] bg-[#f5f6f3] px-5 py-8 text-sm font-light text-zinc-500">No repeat products have enough history yet.</div>
+          ) : (
+            <div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {data.smartBasket.slice(0, 8).map((item) => (
+                <div key={item.product._id} className="rounded-[1.5rem] border border-zinc-200 bg-[#fbfcfa] p-5">
+                  <p className="font-serif text-2xl leading-tight text-zinc-950">{item.product.name}</p>
+                  <p className="mt-3 text-xs font-light leading-5 text-zinc-500">Usually comes back around every {item.averageIntervalDays} days.</p>
+                  <p className={`mt-5 text-[10px] font-bold uppercase tracking-[0.16em] ${item.dueInDays <= 0 ? "text-rose-700" : "text-amber-700"}`}>
+                    {item.dueInDays <= 0 ? "Might be time again" : `Around ${item.dueInDays} day${item.dueInDays === 1 ? "" : "s"} away`}
+                  </p>
                 </div>
               ))}
             </div>
+          )}
 
-            {dueNow.length > 0 && <p className="mt-5 text-xs text-zinc-500">{dueNow.length} item{dueNow.length === 1 ? " is" : "s are"} currently at or past the predicted replenishment point.</p>}
-          </div>
+          {dueNow.length > 0 && <p className="mt-5 text-xs font-light text-zinc-400">{dueNow.length} repeat item{dueNow.length === 1 ? " looks" : "s look"} due based on your previous rhythm.</p>}
         </section>
 
-        <section className="pt-16">
-          <div className="flex flex-wrap items-end justify-between gap-6 border-b border-zinc-300 pb-6">
+        <section className="pt-20 md:pt-28">
+          <div className="mb-12 grid gap-7 md:grid-cols-[1fr_0.65fr] md:items-end">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700">Recommended</p>
-              <h2 className="mt-3 font-serif text-4xl font-normal md:text-5xl">Ranked against your Taste Graph.</h2>
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">Picked for you</p>
+              <h2 className="mt-4 font-serif text-5xl font-normal leading-[0.95] tracking-[-0.03em] md:text-7xl">Things worth a look.</h2>
             </div>
-            <Link href="/products" className="text-sm font-semibold text-zinc-700">Open full catalogue →</Link>
+            <p className="max-w-lg text-base font-light leading-7 text-zinc-600 md:justify-self-end">Recommendations move as your actual FreshPick choices change.</p>
           </div>
 
           {data.recommendations.length === 0 ? (
-            <div className="border-b border-zinc-300 py-12 text-sm text-zinc-500">FreshPick needs more signals before it can produce personalized recommendations. Until then, the catalogue stays neutral.</div>
+            <div className="rounded-[2rem] border border-zinc-200 bg-white px-6 py-14 text-sm font-light text-zinc-500">FreshPick needs a little more history before it can make personal picks.</div>
           ) : (
-            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {data.recommendations.slice(0, 10).map((item, index) => (
                 <div key={item.product._id}>
-                  <div className="mb-2 min-h-10 text-xs leading-5 text-zinc-500">{item.reason}</div>
+                  <p className="mb-3 min-h-8 text-[11px] font-light leading-5 text-zinc-500">{item.reason}</p>
                   <ProductCard
                     id={item.product._id}
                     sku={item.product.sku}
@@ -258,6 +245,10 @@ export default function ForYouClient() {
               ))}
             </div>
           )}
+
+          <div className="mt-10 text-center">
+            <Link href="/products" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-800 hover:text-emerald-700">Browse everything <ArrowRight className="h-4 w-4" /></Link>
+          </div>
         </section>
       </div>
     </main>
