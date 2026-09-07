@@ -2,16 +2,17 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, LockKeyhole, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
 
 export function LoginForm() {
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, loginWithGoogle, error } = useAuth();
   const searchParams = useSearchParams();
@@ -19,7 +20,6 @@ export function LoginForm() {
   const getDestination = (role: string) => {
     if (role === 'admin') return '/admin';
     const requestedDestination = searchParams.get('redirect') || searchParams.get('callbackUrl');
-    // Never follow an external or protocol-relative return URL.
     return requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
       ? requestedDestination
       : '/dashboard';
@@ -33,8 +33,8 @@ export function LoginForm() {
       setIsLoading(true);
       const loggedInUser = await login(identifier, password);
       window.location.href = getDestination(loggedInUser?.role);
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (loginError) {
+      console.error('Login error:', loginError);
     } finally {
       setIsLoading(false);
     }
@@ -45,113 +45,65 @@ export function LoginForm() {
       setIsLoading(true);
       const loggedInUser = await loginWithGoogle();
       window.location.href = getDestination(loggedInUser.role);
-    } catch (error) {
-      console.error('Google sign-in error:', error);
+    } catch (googleError) {
+      console.error('Google sign-in error:', googleError);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full min-h-screen grid lg:grid-cols-2">
-      {/* Left Side - Visual */}
-      <div className="relative hidden lg:block h-full bg-zinc-900">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=1587&auto=format&fit=crop"
-            alt="Luxury Interior"
-            className="w-full h-full object-cover opacity-60 mix-blend-overlay"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-        <div className="relative h-full flex flex-col justify-end p-16 text-white">
-          <h2 className="text-5xl font-serif font-bold mb-6">
-            Welcome back to <span className="text-emerald-400">Fresh</span>
-          </h2>
-          <p className="text-zinc-300 text-xl leading-relaxed max-w-md">
-            Experience the finest selection of premium groceries, delivered
-            straight to your doorstep with care and precision.
-          </p>
-        </div>
-      </div>
+    <main className="min-h-screen bg-[#f4f5f1] lg:grid lg:grid-cols-[1.08fr_0.92fr]">
+      <section className="relative hidden min-h-screen overflow-hidden bg-[#08130d] lg:block">
+        <Image src="/bgs/home-hero.jpg" alt="Fresh food selected by FreshPick" fill priority sizes="55vw" className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#07110c]/30 via-[#07110c]/15 to-[#07110c]/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07110c] via-[#07110c]/30 to-black/15" />
 
-      {/* Right Side - Form */}
-      <div className="flex items-center justify-center p-8 md:p-12 lg:p-16 bg-white">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center lg:text-left">
-            <h1 className="text-4xl font-serif font-bold text-zinc-900 mb-2">
-              Sign In
-            </h1>
-            <p className="text-zinc-500 font-light">
-              Enter your details to access your account
-            </p>
+        <div className="absolute inset-x-0 bottom-0 p-10 xl:p-16">
+          <div className="max-w-2xl text-white">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/10 px-4 py-2 text-[9px] font-bold uppercase tracking-[0.24em] text-emerald-100 backdrop-blur-md"><Sparkles className="h-3.5 w-3.5" /> Your FreshPick</span>
+            <h2 className="mt-7 font-serif text-5xl font-normal leading-[0.94] tracking-[-0.035em] xl:text-7xl">Pick up where your <span className="italic text-emerald-200">taste left off.</span></h2>
+            <p className="mt-6 max-w-xl text-base font-light leading-8 text-white/68">Sign in for saved bags, repeat reminders, personal recommendations and a simpler way back to the food you actually buy.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="flex min-h-screen items-center justify-center px-5 py-24 sm:px-8 lg:px-12 xl:px-16">
+        <div className="w-full max-w-[460px]">
+          <Link href="/" className="inline-flex flex-col leading-none">
+            <span className="font-serif text-3xl font-bold tracking-[-0.035em] text-emerald-950">Fresh<span className="italic text-emerald-500">Pick</span></span>
+            <span className="mt-1 text-[8px] font-semibold uppercase tracking-[0.32em] text-emerald-950/40">Colombo</span>
+          </Link>
+
+          <div className="mt-12">
+            <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">Welcome back</span>
+            <h1 className="mt-4 font-serif text-5xl font-normal leading-none tracking-[-0.03em] text-zinc-950">Sign in.</h1>
+            <p className="mt-4 text-sm font-light leading-6 text-zinc-500">Use your email or phone number to continue.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="mt-9 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="identifier" className="text-zinc-700 font-medium tracking-wide">
-                Email or Phone Number
-              </Label>
-              <Input
-                id="identifier"
-                type="text"
-                placeholder="name@example.com"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                className="h-12 bg-zinc-50 border-zinc-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-xl transition-all"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-zinc-700 font-medium tracking-wide">
-                  Password
-                </Label>
-                <Link
-                  href="/auth/forgot"
-                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-12 bg-zinc-50 border-zinc-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-xl transition-all"
-              />
+              <Label htmlFor="identifier" className="text-sm font-medium text-zinc-700">Email or phone</Label>
+              <Input id="identifier" type="text" placeholder="name@example.com" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="h-12 rounded-[1rem] border-zinc-200 bg-white px-4 shadow-none focus-visible:ring-emerald-700/20" />
             </div>
 
-            {error && (
-              <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-600 mb-0.5"></span>
-                {error}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <Label htmlFor="password" className="text-sm font-medium text-zinc-700">Password</Label>
+                <Link href="/auth/forgot" className="text-xs font-medium text-emerald-800 transition-colors hover:text-emerald-950">Forgot password?</Link>
               </div>
-            )}
+              <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 rounded-[1rem] border-zinc-200 bg-white px-4 shadow-none focus-visible:ring-emerald-700/20" />
+            </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 text-lg font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:-translate-y-0.5"
-              disabled={isLoading || !identifier || !password}
-            >
-              {isLoading ? "Signing in..." : "Sign In"}
+            {error && <div className="rounded-[1rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+
+            <Button type="submit" className="h-12 w-full rounded-full bg-zinc-950 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-none transition-colors hover:bg-emerald-950" disabled={isLoading || !identifier || !password}>
+              {isLoading ? 'Signing in…' : <span className="inline-flex items-center gap-2">Continue <ArrowRight className="h-4 w-4" /></span>}
             </Button>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200" /></div>
-              <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-3 text-zinc-400">or</span></div>
-            </div>
+            <div className="flex items-center gap-4 py-1"><span className="h-px flex-1 bg-zinc-200" /><span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-400">or</span><span className="h-px flex-1 bg-zinc-200" /></div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 rounded-xl border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-              disabled={isLoading}
-              onClick={handleGoogleSignIn}
-            >
+            <Button type="button" variant="outline" className="h-12 w-full rounded-full border-zinc-300 bg-white text-sm font-medium text-zinc-700 shadow-none hover:bg-white" disabled={isLoading} onClick={handleGoogleSignIn}>
               <svg aria-hidden="true" viewBox="0 0 24 24" className="mr-3 h-5 w-5">
                 <path fill="#4285F4" d="M21.35 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.51h3.14c1.84-1.69 2.91-4.18 2.91-7.28Z" />
                 <path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.34L15.3 16.9c-.89.6-2.03.96-3.3.96-2.54 0-4.7-1.72-5.47-4.03H3.29v2.59A9.75 9.75 0 0 0 12 21.75Z" />
@@ -160,21 +112,13 @@ export function LoginForm() {
               </svg>
               Continue with Google
             </Button>
-
-            <div className="text-center mt-8">
-              <p className="text-zinc-500 text-sm">
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/auth/signup"
-                  className="text-emerald-700 font-bold hover:underline"
-                >
-                  Create Account
-                </Link>
-              </p>
-            </div>
           </form>
+
+          <div className="mt-8 rounded-[1.25rem] border border-zinc-200 bg-white/70 p-4"><div className="flex gap-3"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-emerald-800" /><p className="text-xs font-light leading-5 text-zinc-500">Your account keeps your orders, bags and preferences together. FreshPick does not create a personal profile until you actually use the service.</p></div></div>
+
+          <p className="mt-8 text-sm text-zinc-500">New to FreshPick? <Link href="/auth/signup" className="font-semibold text-emerald-800 hover:text-emerald-950">Create an account</Link></p>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

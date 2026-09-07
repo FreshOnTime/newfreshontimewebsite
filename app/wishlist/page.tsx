@@ -1,66 +1,70 @@
 'use client';
 
-import { useWishlist } from "@/contexts/WishlistContext"; // Assuming this is where it is
-import { PageContainer } from "@/components/templates/PageContainer"; // Assuming PageContainer exists
-import SectionHeader from "@/components/home/SectionHeader"; // Assuming SectionHeader exists
-import ProductGrid from "@/components/products/ProductGrid"; // Assuming ProductGrid exists
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import Link from 'next/link';
+import { ArrowRight, Heart, Loader2 } from 'lucide-react';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useAuth } from '@/contexts/AuthContext';
+import ProductGrid from '@/components/products/ProductGrid';
 
 export default function WishlistPage() {
-    const { wishlistItems, loading } = useWishlist();
-    const { user, loading: authLoading } = useAuth();
+  const { wishlistItems, loading } = useWishlist();
+  const { user, loading: authLoading } = useAuth();
 
-    if (authLoading || loading) {
-        return (
-            <PageContainer>
-                <div className="min-h-[60vh] flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-                </div>
-            </PageContainer>
-        );
-    }
+  if (authLoading || loading) {
+    return <main className="min-h-[70vh] bg-[#f4f5f1] px-5 py-32"><div className="mx-auto flex max-w-6xl items-center gap-3 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading saved food…</div></main>;
+  }
 
-    if (!user) {
-        return (
-            <PageContainer>
-                <div className="min-h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
-                    <h2 className="text-2xl font-bold font-serif text-gray-900">Please Login</h2>
-                    <p className="text-gray-500 max-w-md">You need to be logged in to view your wishlist.</p>
-                    <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-                        <Link href="/auth/login">Login Now</Link>
-                    </Button>
-                </div>
-            </PageContainer>
-        );
-    }
-
-    if (wishlistItems.length === 0) {
-        return (
-            <PageContainer>
-                <SectionHeader title="My Wishlist" subtitle="Your saved items" />
-                <div className="min-h-[40vh] flex flex-col items-center justify-center text-center space-y-4 rounded-xl border-2 border-dashed border-gray-100 bg-gray-50/50 p-12 mt-8">
-                    <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                        <span className="text-2xl">❤️</span>
-                    </div>
-                    <h3 className="text-xl font-medium text-gray-900">Your wishlist is empty</h3>
-                    <p className="text-gray-500 max-w-md">Start exploring our fresh products and save your favorites here!</p>
-                    <Button asChild variant="outline" className="mt-4">
-                        <Link href="/">Browse Products</Link>
-                    </Button>
-                </div>
-            </PageContainer>
-        );
-    }
-
+  if (!user) {
     return (
-        <PageContainer>
-            <SectionHeader title="My Wishlist" subtitle={`${wishlistItems.length} items saved`} />
-            <div className="mt-8">
-                <ProductGrid products={wishlistItems} />
-            </div>
-        </PageContainer>
+      <main className="min-h-[78vh] bg-[#f4f5f1] px-5 py-32 text-zinc-950">
+        <section className="mx-auto max-w-3xl rounded-[2rem] border border-zinc-200 bg-white p-10 text-center md:p-14">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><Heart className="h-5 w-5" /></div>
+          <span className="mt-6 block text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">Saved for later</span>
+          <h1 className="mt-3 font-serif text-5xl font-normal leading-none">Keep your favourites connected.</h1>
+          <p className="mx-auto mt-5 max-w-lg text-sm font-light leading-7 text-zinc-500">Sign in to keep products you want to revisit and let those saves become part of your FreshPick recommendations.</p>
+          <Link href="/auth/login?redirect=/wishlist" className="mt-7 inline-flex rounded-full bg-zinc-950 px-6 py-3 text-xs font-semibold text-white hover:bg-emerald-950">Sign in</Link>
+        </section>
+      </main>
     );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#f4f5f1] pb-24 text-zinc-950">
+      <section className="border-b border-zinc-200 bg-white px-5 pb-12 pt-28 md:px-8 md:pb-14 md:pt-32">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700"><Heart className="h-3.5 w-3.5" /> Saved</span>
+            <h1 className="mt-4 font-serif text-5xl font-normal leading-none tracking-[-0.03em] md:text-7xl">Things worth coming back to.</h1>
+            <p className="mt-5 max-w-xl text-sm font-light leading-7 text-zinc-500">Your saved products stay here until you are ready for them—and help FreshPick understand what catches your attention.</p>
+          </div>
+          <Link href="/discover" className="inline-flex h-11 w-fit items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-xs font-semibold text-zinc-700 hover:border-emerald-300 hover:text-emerald-800">Discover more <ArrowRight className="h-4 w-4" /></Link>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-6xl px-5 pt-10 md:px-8 md:pt-14">
+        {wishlistItems.length === 0 ? (
+          <section className="rounded-[2rem] border border-zinc-200 bg-white p-10 text-center md:p-14">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#f4f5f1] text-zinc-400"><Heart className="h-5 w-5" /></div>
+            <h2 className="mt-6 font-serif text-4xl font-normal">Nothing saved yet.</h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm font-light leading-7 text-zinc-500">Save something from the market when it looks worth another look, or start from a recipe and discover ingredients that way.</p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link href="/discover" className="rounded-full bg-zinc-950 px-6 py-3 text-xs font-semibold text-white hover:bg-emerald-950">Open Discover</Link>
+              <Link href="/products" className="rounded-full border border-zinc-300 px-6 py-3 text-xs font-semibold text-zinc-700">Browse Market</Link>
+            </div>
+          </section>
+        ) : (
+          <section>
+            <div className="mb-7 flex items-end justify-between gap-5 border-b border-zinc-300 pb-5">
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700">Your edit</p>
+                <h2 className="mt-2 font-serif text-3xl font-normal">{wishlistItems.length} saved item{wishlistItems.length === 1 ? '' : 's'}</h2>
+              </div>
+              <Link href="/for-you" className="text-xs font-semibold text-emerald-800">See For You</Link>
+            </div>
+            <ProductGrid products={wishlistItems} />
+          </section>
+        )}
+      </div>
+    </main>
+  );
 }

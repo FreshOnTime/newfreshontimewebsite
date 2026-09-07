@@ -2,22 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Package, RefreshCw, ShoppingBag, Truck, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Package,
-  Calendar,
-  RotateCcw,
-  ChevronRight,
-  ShoppingBag,
-  XCircle,
-  Clock,
-  CheckCircle2,
-  Truck
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 
 type OrderSummary = {
   _id: string;
@@ -31,227 +19,180 @@ type OrderSummary = {
   nextDeliveryAt?: string;
 };
 
+function statusStyle(status: string) {
+  const value = (status || '').toLowerCase();
+  if (value === 'delivered') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+  if (value === 'shipped') return 'border-sky-200 bg-sky-50 text-sky-800';
+  if (value === 'cancelled' || value === 'canceled' || value === 'refunded') return 'border-rose-200 bg-rose-50 text-rose-700';
+  if (value === 'confirmed' || value === 'processing') return 'border-amber-200 bg-amber-50 text-amber-800';
+  return 'border-zinc-200 bg-zinc-50 text-zinc-600';
+}
+
+function StatusIcon({ status }: { status: string }) {
+  const value = (status || '').toLowerCase();
+  if (value === 'delivered') return <CheckCircle2 className="h-3.5 w-3.5" />;
+  if (value === 'shipped') return <Truck className="h-3.5 w-3.5" />;
+  if (value === 'cancelled' || value === 'canceled' || value === 'refunded') return <XCircle className="h-3.5 w-3.5" />;
+  if (value === 'confirmed' || value === 'processing') return <Package className="h-3.5 w-3.5" />;
+  return <Clock3 className="h-3.5 w-3.5" />;
+}
+
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
   const hasOrders = useMemo(() => orders.length > 0, [orders]);
 
   const cancelOrder = async (id: string) => {
     try {
-      let res = await fetch(`/api/orders/${id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel' }) });
+      setCancellingId(id);
+      let res = await fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel' }),
+      });
       if (res.status === 401) {
         await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-        res = await fetch(`/api/orders/${id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel' }) });
+        res = await fetch(`/api/orders/${id}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'cancel' }),
+        });
       }
       const data = await res.json();
       if (res.ok && data?.success) {
-        setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, status: 'cancelled' } : o)));
-        toast.success('Order cancelled successfully');
+        setOrders((current) => current.map((order) => order._id === id ? { ...order, status: 'cancelled' } : order));
+        toast.success('Order cancelled');
       } else {
         toast.error(data?.error || 'Failed to cancel order');
       }
     } catch {
       toast.error('Network error');
+    } finally {
+      setCancellingId(null);
     }
   };
 
   useEffect(() => {
-    // Wait for auth to complete loading
-    if (authLoading) {
-      return;
-    }
-
-    // If no user after auth loading, redirect to login
+    if (authLoading) return;
     if (!user?._id) {
       setLoading(false);
+      router.push('/auth/login?redirect=/orders');
       return;
     }
-
-    // Only fetch once per user session
-    if (hasFetched) {
-      return;
-    }
+    if (hasFetched) return;
 
     const load = async () => {
       setLoading(true);
       try {
-        let res = await fetch(`/api/orders?limit=20&summary=1`, { credentials: 'include' });
+        let res = await fetch('/api/orders?limit=20&summary=1', { credentials: 'include' });
         if (res.status === 401) {
           await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-          res = await fetch(`/api/orders?limit=20&summary=1`, { credentials: 'include' });
+          res = await fetch('/api/orders?limit=20&summary=1', { credentials: 'include' });
         }
         if (res.status === 401) {
-          router.push(`/auth/login?redirect=/orders`);
+          router.push('/auth/login?redirect=/orders');
           return;
         }
         const data = await res.json();
-        if (res.ok && data.success) {
-          setOrders(data.data.orders || []);
-        }
+        if (res.ok && data.success) setOrders(data.data.orders || []);
         setHasFetched(true);
       } finally {
         setLoading(false);
       }
     };
 
-    load();
+    void load();
   }, [user?._id, authLoading, router, hasFetched]);
 
-  const getStatusIcon = (status: string) => {
-    const s = (status || '').toLowerCase();
-    if (s === 'delivered') return <CheckCircle2 className="w-4 h-4" />;
-    if (s === 'shipped') return <Truck className="w-4 h-4" />;
-    if (s === 'processing' || s === 'confirmed') return <Package className="w-4 h-4" />;
-    if (s === 'cancelled' || s === 'canceled') return <XCircle className="w-4 h-4" />;
-    return <Clock className="w-4 h-4" />;
-  };
-
-  const getStatusColor = (status: string) => {
-    const s = (status || '').toLowerCase();
-    if (s === 'delivered') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-200';
-    if (s === 'confirmed' || s === 'processing') return 'bg-blue-50 text-blue-700 border-blue-200';
-    if (s === 'shipped') return 'bg-purple-50 text-purple-700 border-purple-200';
-    if (s === 'cancelled' || s === 'canceled' || s === 'refunded') return 'bg-red-50 text-red-700 border-red-200';
-    return 'bg-gray-50 text-gray-700 border-gray-200';
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+    <main className="min-h-screen bg-[#f4f5f1] pb-24 text-zinc-950">
+      <section className="border-b border-zinc-200 bg-white px-5 pb-12 pt-28 md:px-8 md:pb-14 md:pt-32">
+        <div className="mx-auto flex max-w-6xl flex-col gap-7 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">My Orders</h1>
-            <p className="text-gray-600 mt-2 text-lg">Track and manage your recent orders</p>
+            <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">Your FreshPick</span>
+            <h1 className="mt-4 font-serif text-5xl font-normal leading-none tracking-[-0.03em] md:text-7xl">Orders.</h1>
+            <p className="mt-5 max-w-xl text-sm font-light leading-7 text-zinc-500">Track what is on the way, revisit past purchases and manage recurring orders without losing the thread.</p>
           </div>
-          <Link href="/products">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2">
-              <ShoppingBag className="w-4 h-4" />
-              Continue Shopping
-            </Button>
-          </Link>
+          <Link href="/discover" className="inline-flex h-11 w-fit items-center gap-2 rounded-full bg-zinc-950 px-5 text-xs font-semibold text-white transition-colors hover:bg-emerald-950">Find something next <ArrowRight className="h-4 w-4" /></Link>
         </div>
+      </section>
 
-        {/* Loading State */}
+      <div className="mx-auto max-w-6xl px-5 pt-10 md:px-8 md:pt-14">
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-48 bg-gray-200 rounded-2xl"></div>
-              </div>
-            ))}
+          <div className="space-y-3">
+            {[1, 2, 3].map((item) => <div key={item} className="h-32 animate-pulse rounded-[1.5rem] border border-zinc-200 bg-white" />)}
           </div>
         ) : !hasOrders ? (
-          /* Empty State */
-          <Card className="shadow-sm border-none ring-1 ring-black/5 overflow-hidden">
-            <CardContent className="p-12 text-center">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ShoppingBag className="w-10 h-10 text-gray-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">No orders yet</h2>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                You haven&apos;t placed any orders yet. Browse our products and place your first order today!
-              </p>
-              <Link href="/products">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 gap-2">
-                  <ShoppingBag className="w-5 h-5" />
-                  Start Shopping
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <section className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-white p-8 text-center shadow-[0_20px_60px_rgba(15,23,42,0.04)] md:p-14">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><ShoppingBag className="h-5 w-5" /></div>
+            <h2 className="mt-6 font-serif text-4xl font-normal text-zinc-950">Your first order can start with a meal.</h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm font-light leading-7 text-zinc-500">Browse the market directly, or begin in Discover if you would rather choose what to eat before choosing products.</p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link href="/discover" className="rounded-full bg-zinc-950 px-6 py-3 text-xs font-semibold text-white hover:bg-emerald-950">Open Discover</Link>
+              <Link href="/products" className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-xs font-semibold text-zinc-700">Browse Market</Link>
+            </div>
+          </section>
         ) : (
-          /* Orders Grid */
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {orders.map((o) => (
-              <Link
-                key={o._id}
-                href={`/orders/${o._id}`}
-                className="group"
-              >
-                <Card className="h-full shadow-sm border-none ring-1 ring-black/5 overflow-hidden hover:shadow-lg hover:ring-emerald-200 transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">
-                          #{o.orderNumber}
-                        </h3>
-                        <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {new Date(o.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <span className={`text-xs px-3 py-1.5 rounded-full font-semibold border flex items-center gap-1.5 ${getStatusColor(o.status)}`}>
-                        {getStatusIcon(o.status)}
-                        {o.status}
-                      </span>
-                    </div>
+          <section className="overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.035)]">
+            <div className="flex items-end justify-between gap-5 border-b border-zinc-100 px-6 py-5 md:px-8">
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700">Order history</p>
+                <p className="mt-1 text-sm font-light text-zinc-400">{orders.length} recent order{orders.length === 1 ? '' : 's'}</p>
+              </div>
+              <Link href="/bags" className="text-xs font-semibold text-emerald-800">Saved bags</Link>
+            </div>
 
-                    {/* Recurring Badge */}
-                    {(o.isRecurring || o.nextDeliveryAt || o.scheduleStatus) && (
-                      <div className="mb-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                        <div className="flex items-center gap-2 mb-1">
-                          <RotateCcw className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-semibold text-blue-700">Recurring Order</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ml-auto ${o.scheduleStatus === 'active' ? 'bg-green-100 text-green-700' :
-                            o.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
-                              'bg-gray-100 text-gray-600'
-                            }`}>
-                            {o.scheduleStatus || 'active'}
-                          </span>
+            <div className="divide-y divide-zinc-100">
+              {orders.map((order) => {
+                const cancellable = ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase());
+                return (
+                  <article key={order._id} className="group px-6 py-6 transition-colors hover:bg-[#fbfcfa] md:px-8">
+                    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                      <Link href={`/orders/${order._id}`} className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="font-serif text-2xl font-normal text-zinc-950">#{order.orderNumber}</span>
+                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold capitalize ${statusStyle(order.status)}`}><StatusIcon status={order.status} /> {order.status}</span>
+                          {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus) && <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-800"><RefreshCw className="h-3 w-3" /> Recurring</span>}
                         </div>
-                        <p className="text-xs text-blue-600">
-                          Next: {o.nextDeliveryAt ? new Date(o.nextDeliveryAt).toLocaleDateString() : '—'}
-                        </p>
-                      </div>
-                    )}
 
-                    {/* Bag Name */}
-                    {o.bagName && (
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                        <Package className="w-4 h-4" />
-                        <span>{o.bagName}</span>
-                      </div>
-                    )}
+                        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-light text-zinc-400">
+                          <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" /> {new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          {order.bagName && <span>{order.bagName}</span>}
+                          {order.nextDeliveryAt && <span>Next delivery {new Date(order.nextDeliveryAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>}
+                        </div>
+                      </Link>
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div>
-                        <span className="text-xs text-gray-500 block">Total</span>
-                        <span className="text-lg font-bold text-gray-900">Rs. {Number(o.total ?? 0).toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {['pending', 'confirmed', 'processing'].includes((o.status || '').toLowerCase()) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              cancelOrder(o._id);
-                            }}
+                      <div className="flex items-center justify-between gap-6 lg:justify-end">
+                        <div className="text-right">
+                          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Total</p>
+                          <p className="mt-1 text-lg font-semibold tabular-nums text-zinc-950">Rs. {Number(order.total ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        </div>
+                        {cancellable && (
+                          <button
+                            type="button"
+                            disabled={cancellingId === order._id}
+                            onClick={() => void cancelOrder(order._id)}
+                            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
                           >
-                            Cancel
-                          </Button>
+                            {cancellingId === order._id ? 'Cancelling…' : 'Cancel'}
+                          </button>
                         )}
-                        <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-600 transition-colors" />
-                        </div>
+                        <Link href={`/orders/${order._id}`} aria-label={`Open order ${order.orderNumber}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f4f5f1] text-zinc-500 transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-800"><ArrowRight className="h-4 w-4" /></Link>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
         )}
       </div>
-    </div>
+    </main>
   );
 }
