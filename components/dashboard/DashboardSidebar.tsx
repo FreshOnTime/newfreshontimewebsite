@@ -2,45 +2,36 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
-  Package,
-  Mail,
-  User as UserIcon,
-  ShoppingBag,
-  Repeat,
   Heart,
-  ShoppingCart,
+  LayoutDashboard,
+  Mail,
   Menu,
+  Package,
+  Repeat,
+  ShoppingBag,
+  ShoppingCart,
+  UserRound,
   X,
 } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
-
-// A nav item is either an internal dashboard section (switches the active
-// panel in place) or an external link to another part of the site.
-type NavItem = {
-  name: string;
-  icon: IconType;
-  section?: string;
-  href?: string;
-};
+type NavItem = { name: string; icon: IconType; section?: string; href?: string };
 
 const supplierNav: NavItem[] = [
   { name: 'Overview', section: 'overview', icon: LayoutDashboard },
   { name: 'Products', section: 'products', icon: Package },
   { name: 'Messages', section: 'messages', icon: Mail },
-  { name: 'Profile', section: 'profile', icon: UserIcon },
+  { name: 'Profile', section: 'profile', icon: UserRound },
 ];
 
 const customerNav: NavItem[] = [
   { name: 'Overview', section: 'overview', icon: LayoutDashboard },
-  { name: 'My Orders', href: '/orders', icon: ShoppingBag },
-  { name: 'Subscriptions', href: '/profile/subscriptions', icon: Repeat },
-  { name: 'Wishlist', href: '/wishlist', icon: Heart },
-  { name: 'My Bags', href: '/bags', icon: ShoppingCart },
-  { name: 'Profile', section: 'profile', icon: UserIcon },
+  { name: 'Orders', href: '/orders', icon: ShoppingBag },
+  { name: 'Smart Basket', href: '/profile/subscriptions', icon: Repeat },
+  { name: 'Saved', href: '/wishlist', icon: Heart },
+  { name: 'Shopping bags', href: '/bags', icon: ShoppingCart },
+  { name: 'Profile', href: '/profile', icon: UserRound },
 ];
 
 interface DashboardSidebarProps {
@@ -58,6 +49,7 @@ export function DashboardSidebar({ role, active, onSelect, title }: DashboardSid
     <SidebarContent
       nav={nav}
       active={active}
+      role={role}
       onSelect={(section) => {
         onSelect(section);
         setSidebarOpen(false);
@@ -67,111 +59,69 @@ export function DashboardSidebar({ role, active, onSelect, title }: DashboardSid
 
   return (
     <>
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-          <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
-            <div className="absolute top-0 right-0 -mr-12 pt-2">
-              <button
-                type="button"
-                className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <X className="h-6 w-6 text-white" />
-              </button>
-            </div>
+        <div className="fixed inset-0 z-[70] lg:hidden">
+          <button aria-label="Close account navigation" className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="relative h-full w-[86%] max-w-[320px] bg-[#0b1710] text-white shadow-2xl">
+            <button type="button" aria-label="Close menu" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/70" onClick={() => setSidebarOpen(false)}><X className="h-4 w-4" /></button>
             {content}
           </div>
         </div>
       )}
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
-          {content}
-        </div>
-      </div>
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-64 lg:flex-col lg:bg-[#0b1710] lg:text-white">
+        {content}
+      </aside>
 
-      {/* Mobile menu button */}
-      <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
-        <button
-          type="button"
-          className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <div className="flex-1 text-sm font-semibold leading-6 text-gray-900">{title}</div>
+      <div className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-zinc-200 bg-white/95 px-5 backdrop-blur-xl lg:hidden">
+        <button type="button" aria-label="Open account navigation" className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-700" onClick={() => setSidebarOpen(true)}><Menu className="h-4 w-4" /></button>
+        <div>
+          <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-700">FreshPick account</p>
+          <p className="mt-0.5 text-sm font-medium text-zinc-900">{title}</p>
+        </div>
       </div>
     </>
   );
 }
 
-function SidebarContent({
-  nav,
-  active,
-  onSelect,
-}: {
-  nav: NavItem[];
-  active: string;
-  onSelect: (section: string) => void;
-}) {
+function SidebarContent({ nav, active, role, onSelect }: { nav: NavItem[]; active: string; role?: string; onSelect: (section: string) => void }) {
   return (
-    <>
-      <div className="flex h-16 shrink-0 items-center">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-emerald-800 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">FP</span>
-          </div>
-          <span className="font-bold text-xl text-gray-900">Fresh Pick</span>
-        </Link>
-      </div>
-      <nav className="flex flex-1 flex-col">
-        <ul role="list" className="flex flex-1 flex-col gap-y-7">
-          <li>
-            <ul role="list" className="-mx-2 space-y-1">
-              {nav.map((item) => {
-                const isActive = item.section ? active === item.section : false;
-                const classes = cn(
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-700 hover:text-emerald-700 hover:bg-emerald-50',
-                  'group flex w-full items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                );
-                const icon = (
-                  <item.icon
-                    className={cn(
-                      isActive ? 'text-emerald-700' : 'text-gray-400 group-hover:text-emerald-700',
-                      'h-6 w-6 shrink-0'
-                    )}
-                  />
-                );
+    <div className="flex h-full flex-col px-5 pb-6 pt-6">
+      <Link href="/" className="inline-flex flex-col leading-none">
+        <span className="font-serif text-2xl font-bold tracking-[-0.03em] text-white">Fresh<span className="italic text-emerald-300">Pick</span></span>
+        <span className="mt-1 text-[7px] font-semibold uppercase tracking-[0.28em] text-white/30">{role === 'supplier' ? 'Partner workspace' : 'Your account'}</span>
+      </Link>
 
-                return (
-                  <li key={item.name}>
-                    {item.section ? (
-                      <button
-                        type="button"
-                        onClick={() => onSelect(item.section!)}
-                        className={cn(classes, 'text-left')}
-                      >
-                        {icon}
-                        {item.name}
-                      </button>
-                    ) : (
-                      <Link href={item.href!} className={classes}>
-                        {icon}
-                        {item.name}
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </li>
+      <div className="mt-9 h-px bg-white/10" />
+      <p className="mt-7 px-2 text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-200/70">Workspace</p>
+
+      <nav className="mt-3">
+        <ul className="space-y-1">
+          {nav.map((item) => {
+            const isActive = item.section ? active === item.section : false;
+            const classes = `group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors ${isActive ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/[0.06] hover:text-white'}`;
+            const icon = <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-emerald-200' : 'text-white/35 group-hover:text-emerald-200'}`} />;
+
+            return (
+              <li key={item.name}>
+                {item.section ? (
+                  <button type="button" onClick={() => onSelect(item.section!)} className={classes}>{icon}<span>{item.name}</span></button>
+                ) : (
+                  <Link href={item.href!} className={classes}>{icon}<span>{item.name}</span></Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </nav>
-    </>
+
+      <div className="mt-auto rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-4">
+        <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-200/70">Back to FreshPick</p>
+        <div className="mt-3 grid gap-2 text-xs text-white/50">
+          <Link href="/discover" className="hover:text-white">Discover food</Link>
+          <Link href="/products" className="hover:text-white">Open Market</Link>
+        </div>
+      </div>
+    </div>
   );
 }
