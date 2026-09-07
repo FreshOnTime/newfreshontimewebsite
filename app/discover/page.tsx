@@ -151,7 +151,7 @@ export default function DiscoverPage() {
                 </div>
                 <div className="mt-auto pt-14">
                   <h3 className="font-serif text-3xl font-normal leading-tight tracking-[-0.02em] text-zinc-950 md:text-4xl">{label}</h3>
-                  <p className="mt-4 max-w-lg text-sm font-light leading-7 text-zinc-550">{copy}</p>
+                  <p className="mt-4 max-w-lg text-sm font-light leading-7 text-zinc-600">{copy}</p>
                 </div>
               </Link>
             ))}
