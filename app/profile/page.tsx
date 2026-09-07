@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Check, Edit3, Loader2, Mail, MapPin, Phone, Save, UserRound, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -142,7 +141,7 @@ export default function ProfilePage() {
               <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">Delivery home</p>
               <h2 className="mt-2 font-serif text-2xl font-normal">Registration address</h2>
               {address ? (
-                <div className="mt-5 flex gap-3 text-sm font-light leading-6 text-zinc-550">
+                <div className="mt-5 flex gap-3 text-sm font-light leading-6 text-zinc-500">
                   <MapPin className="mt-1 h-4 w-4 shrink-0 text-emerald-700" />
                   <p>{[address.streetAddress, address.streetAddress2, address.town, address.city, address.state, address.postalCode].filter(Boolean).join(', ')}</p>
                 </div>
