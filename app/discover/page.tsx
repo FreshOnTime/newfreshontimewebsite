@@ -78,7 +78,7 @@ export default async function DiscoverPage() {
                 <span className="text-emerald-200">FreshPick resolves the rest.</span>
               </h1>
               <p className="mt-7 max-w-2xl text-base leading-8 text-white/60 md:text-lg">
-                Recipes, product demand, recurring behaviour and live stock all feed into the same commerce system. This page now shows real catalogue activity instead of a simulated preference dashboard.
+                Recipes, product demand, recurring behaviour and live stock feed into one connected commerce system.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/for-you" className="inline-flex h-12 items-center gap-2 bg-white px-5 text-sm font-semibold text-[#07100b]">
@@ -94,12 +94,12 @@ export default async function DiscoverPage() {
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-200">30-day demand</p>
-                  <p className="mt-1 text-xs text-white/35">Calculated from real order quantities</p>
+                  <p className="mt-1 text-xs text-white/35">Calculated from recent order quantities</p>
                 </div>
                 <TrendingUp className="h-4 w-4 text-white/40" />
               </div>
               {trending.length === 0 ? (
-                <div className="px-5 py-8 text-sm leading-6 text-white/45">No recent order activity yet. FreshPick will not invent a trending list.</div>
+                <div className="px-5 py-8 text-sm leading-6 text-white/45">Demand ranking will appear once recent order activity is available.</div>
               ) : (
                 <div className="divide-y divide-white/10">
                   {trending.slice(0, 5).map((item, index) => (
@@ -116,14 +116,14 @@ export default async function DiscoverPage() {
         </div>
       </section>
 
-      <section className="bg-[#f4f5f2] py-18 md:py-24">
+      <section className="bg-[#f4f5f2] py-20 md:py-24">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-zinc-300 pb-6">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700">Choose a flow</p>
               <h2 className="mt-3 font-serif text-4xl font-normal text-zinc-950 md:text-6xl">What are you trying to do?</h2>
             </div>
-            <p className="max-w-md text-sm leading-6 text-zinc-500">Four entry points, one connected catalogue. No fake assistant chat required.</p>
+            <p className="max-w-md text-sm leading-6 text-zinc-500">Four entry points, one connected catalogue.</p>
           </div>
 
           <div className="grid gap-px border border-zinc-300 bg-zinc-300 md:grid-cols-2">
@@ -145,7 +145,7 @@ export default async function DiscoverPage() {
         </div>
       </section>
 
-      <section className="py-18 md:py-24">
+      <section className="py-20 md:py-24">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-zinc-200 pb-6">
             <div>
@@ -156,7 +156,7 @@ export default async function DiscoverPage() {
           </div>
 
           {recipes.length === 0 ? (
-            <div className="border border-zinc-200 bg-zinc-50 px-6 py-12 text-sm text-zinc-500">No published recipes yet. Content appears here only after it exists in Recipe Studio.</div>
+            <div className="border border-zinc-200 bg-zinc-50 px-6 py-12 text-sm text-zinc-500">No published recipes yet. Content appears here after it is published from Recipe Studio.</div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {recipes.map((recipe) => (
