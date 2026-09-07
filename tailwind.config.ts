@@ -8,6 +8,7 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: ["hover:text-white", "hover:text-zinc-950"],
   theme: {
     extend: {
       colors: {
