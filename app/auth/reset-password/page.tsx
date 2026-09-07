@@ -1,6 +1,9 @@
 "use client";
+
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { ArrowLeft, ArrowRight, KeyRound, Loader2 } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const params = useSearchParams();
@@ -11,83 +14,70 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     setMessage(null);
     setError(null);
+    if (!token) {
+      setError('This reset link is missing its token. Request a new reset link.');
+      return;
+    }
     if (!password || password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError('Use at least 8 characters for the new password.');
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match');
+      setError('The two passwords do not match.');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, password }) });
-      const data = await res.json();
-      if (res.ok) setMessage(data.message || 'Password reset successful');
-      else setError(data.error || 'Failed to reset password');
+      const response = await fetch('/api/auth/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+      const data = await response.json();
+      if (response.ok) setMessage(data.message || 'Password reset successful. You can sign in now.');
+      else setError(data.error || 'Unable to reset password.');
     } catch {
-      setError('Network error');
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 ring-1 ring-black/5">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-green-100 text-green-700">🔑</div>
-          <div>
-            <h1 className="text-lg font-semibold">Reset your password</h1>
-            <p className="text-sm text-gray-500">Choose a new, secure password for your account.</p>
-          </div>
-        </div>
+    <main className="flex min-h-screen items-center justify-center bg-[#f4f5f1] px-5 py-24 text-zinc-950">
+      <section className="w-full max-w-lg">
+        <Link href="/auth/login" className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900"><ArrowLeft className="h-4 w-4" /> Back to sign in</Link>
+        <div className="mt-10 rounded-[2rem] border border-zinc-200 bg-white p-7 shadow-[0_20px_60px_rgba(15,23,42,0.04)] md:p-9">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><KeyRound className="h-5 w-5" /></span>
+          <span className="mt-7 block text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">New password</span>
+          <h1 className="mt-3 font-serif text-5xl font-normal leading-none tracking-[-0.03em]">Choose a new one.</h1>
+          <p className="mt-5 text-sm font-light leading-7 text-zinc-500">Use a password you do not reuse elsewhere. The reset link can only be used while its token remains valid.</p>
 
-        <form onSubmit={submit} className="space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">New password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-              placeholder="At least 8 characters"
-              aria-label="New password"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Confirm password</span>
-            <input
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-              placeholder="Repeat new password"
-              aria-label="Confirm password"
-            />
-          </label>
-
-          <div className="flex items-center justify-between">
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
-            >
-              {loading ? 'Resetting...' : 'Reset password'}
+          <form onSubmit={submit} className="mt-8 space-y-5">
+            <div>
+              <label htmlFor="new-password" className="text-sm font-medium text-zinc-700">New password</label>
+              <input id="new-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-[#fafbf9] px-4 text-sm outline-none focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-700/10" />
+            </div>
+            <div>
+              <label htmlFor="confirm-password" className="text-sm font-medium text-zinc-700">Confirm password</label>
+              <input id="confirm-password" type="password" value={confirm} onChange={(event) => setConfirm(event.target.value)} placeholder="Repeat the password" className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-[#fafbf9] px-4 text-sm outline-none focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-700/10" />
+            </div>
+            <button type="submit" disabled={loading} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-zinc-950 px-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white hover:bg-emerald-950 disabled:opacity-50">
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Resetting</> : <>Reset password <ArrowRight className="h-4 w-4" /></>}
             </button>
-            <a href="/auth/login" className="text-sm text-green-600 hover:underline">Back to sign in</a>
-          </div>
-        </form>
+          </form>
 
-        {message && <p className="mt-4 text-sm text-green-600">{message}</p>}
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-      </div>
-    </div>
+          {message && <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">{message}</div>}
+          {error && <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">{error}</div>}
+
+          {message && <Link href="/auth/login" className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800">Continue to sign in <ArrowRight className="h-3.5 w-3.5" /></Link>}
+        </div>
+      </section>
+    </main>
   );
 }
