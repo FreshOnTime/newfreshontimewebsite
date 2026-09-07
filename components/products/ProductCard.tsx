@@ -60,7 +60,7 @@ export function ProductCard({
         </div>
       </div>
 
-      <div className="p-4 md:p-4.5">
+      <div className="p-4 md:p-5">
         <div className="mb-2.5 flex items-center justify-between gap-3 text-[8px] font-bold uppercase tracking-[0.17em] text-zinc-400">
           <span>FreshPick</span>
           <span>{unitLabel}</span>
