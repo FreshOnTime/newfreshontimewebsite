@@ -20,14 +20,12 @@ interface NotificationForm {
 
 export default function NotificationsPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<NotificationForm>({
+    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<NotificationForm>({
         defaultValues: {
             type: "info",
             targetUserId: "all",
         }
     });
-
-    const type = watch("type");
 
     const onSubmit = async (data: NotificationForm) => {
         setIsSubmitting(true);
@@ -46,7 +44,7 @@ export default function NotificationsPage() {
             } else {
                 toast.error(result.message || "Failed to send notification");
             }
-        } catch (error) {
+        } catch {
             toast.error("An error occurred");
         } finally {
             setIsSubmitting(false);
@@ -61,7 +59,7 @@ export default function NotificationsPage() {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Notification Center</h1>
-                    <p className="text-gray-500 mt-1">Send update, alerts, and promotions to your users.</p>
+                    <p className="text-gray-500 mt-1">Send updates, alerts, and promotions to your users.</p>
                 </div>
             </div>
 
@@ -85,7 +83,7 @@ export default function NotificationsPage() {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Notification Type</label>
-                                <Select onValueChange={(val) => setValue("type", val as any)} defaultValue="info">
+                                <Select onValueChange={(val) => setValue("type", val as NotificationForm["type"])} defaultValue="info">
                                     <SelectTrigger className="bg-white/50 border-gray-200">
                                         <SelectValue placeholder="Select type" />
                                     </SelectTrigger>
@@ -119,10 +117,9 @@ export default function NotificationsPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Users (Broadcast)</SelectItem>
-                                        {/* In a real app, you'd fetch users here or have a user picker */}
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">Currently only 'All Users' broadcast is supported nicely in this UI.</p>
+                                <p className="text-xs text-gray-500">Currently only &apos;All Users&apos; broadcast is supported in this UI.</p>
                             </div>
 
                             <div className="space-y-2">
@@ -154,8 +151,6 @@ export default function NotificationsPage() {
                     </form>
                 </CardContent>
             </Card>
-
-            {/* Could list past notifications here */}
         </div>
     );
 }
