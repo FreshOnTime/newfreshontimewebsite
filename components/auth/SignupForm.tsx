@@ -4,7 +4,6 @@ import { User, Store } from "lucide-react";
 export function SignupForm() {
   return (
     <div className="w-full min-h-screen grid lg:grid-cols-2">
-      {/* Left Side - Visual */}
       <div className="relative hidden lg:block h-full bg-zinc-900">
         <div className="absolute inset-0">
           <img
@@ -19,54 +18,39 @@ export function SignupForm() {
             Join the <span className="text-emerald-400">Community</span>
           </h2>
           <p className="text-zinc-300 text-xl leading-relaxed max-w-md">
-            Whether you're looking for the freshest produce or ready to grow your business, we have a place for you.
+            Whether you&apos;re looking for the freshest produce or ready to grow your business, we have a place for you.
           </p>
         </div>
       </div>
 
-      {/* Right Side - Selection */}
       <div className="flex items-center justify-center p-8 md:p-12 lg:p-16 bg-white">
         <div className="w-full max-w-lg">
           <div className="text-center lg:text-left mb-12">
-            <h1 className="text-4xl font-serif font-bold text-zinc-900 mb-4">
-              Get Started
-            </h1>
-            <p className="text-zinc-500 text-lg">
-              Choose your account type to proceed
-            </p>
+            <h1 className="text-4xl font-serif font-bold text-zinc-900 mb-4">Get Started</h1>
+            <p className="text-zinc-500 text-lg">Choose your account type to proceed</p>
           </div>
 
           <div className="space-y-6">
-            {/* Customer Option */}
             <Link href="/auth/signup/customer" className="block group">
               <div className="p-6 rounded-2xl border border-zinc-200 bg-white hover:border-emerald-500 hover:bg-emerald-50/30 transition-all duration-300 flex items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1">
                 <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-110 transition-transform">
                   <User size={32} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-zinc-900 mb-1 group-hover:text-emerald-700 transition-colors">
-                    Customer
-                  </h3>
-                  <p className="text-zinc-500 text-sm">
-                    Shop for fresh produce & track orders
-                  </p>
+                  <h3 className="text-xl font-bold text-zinc-900 mb-1 group-hover:text-emerald-700 transition-colors">Customer</h3>
+                  <p className="text-zinc-500 text-sm">Shop for fresh produce & track orders</p>
                 </div>
               </div>
             </Link>
 
-            {/* Supplier Option */}
             <Link href="/auth/signup/supplier" className="block group">
               <div className="p-6 rounded-2xl border border-zinc-200 bg-white hover:border-amber-500 hover:bg-amber-50/30 transition-all duration-300 flex items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1">
                 <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 group-hover:scale-110 transition-transform">
                   <Store size={32} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-zinc-900 mb-1 group-hover:text-amber-700 transition-colors">
-                    Supplier
-                  </h3>
-                  <p className="text-zinc-500 text-sm">
-                    List products & grow your business
-                  </p>
+                  <h3 className="text-xl font-bold text-zinc-900 mb-1 group-hover:text-amber-700 transition-colors">Supplier</h3>
+                  <p className="text-zinc-500 text-sm">List products & grow your business</p>
                 </div>
               </div>
             </Link>
@@ -74,12 +58,7 @@ export function SignupForm() {
 
           <div className="mt-12 text-center lg:text-left text-zinc-500">
             Already have an account?{" "}
-            <Link
-              href="/auth/login"
-              className="text-emerald-600 hover:text-emerald-700 font-bold hover:underline"
-            >
-              Sign In
-            </Link>
+            <Link href="/auth/login" className="text-emerald-600 hover:text-emerald-700 font-bold hover:underline">Sign In</Link>
           </div>
         </div>
       </div>
