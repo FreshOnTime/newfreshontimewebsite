@@ -5,15 +5,15 @@ import FoodDiscovery from "@/components/home/FoodDiscovery";
 
 export const metadata: Metadata = {
   title: "Discover What to Eat | FreshPick Colombo",
-  description: "Start with the meal, moment or routine. FreshPick Discover connects what you want to eat with groceries, meal kits, ready meals and local makers in Colombo.",
+  description: "Start with the meal, moment or routine. FreshPick Discover connects what you want to eat with shoppable recipes, groceries, ready meals and local makers in Colombo.",
   alternates: { canonical: "https://freshpick.lk/discover" },
 };
 
 const startingPoints = [
   {
     label: "I need dinner",
-    copy: "Start from the meal instead of building a basket ingredient by ingredient.",
-    href: "/meal-kits",
+    copy: "Pick the dish first, then add the available ingredients for the whole meal to your basket in one action.",
+    href: "/recipes",
   },
   {
     label: "I want something ready",
@@ -51,7 +51,7 @@ export default function DiscoverPage() {
                 FreshPick starts with your intent — dinner tonight, something ready, a local discovery, or the weekly routine — and takes you directly to the food that fits.
               </p>
               <Link
-                href="/meal-kits"
+                href="/recipes"
                 className="group inline-flex h-14 w-fit items-center gap-3 rounded-full bg-white px-7 text-[11px] font-bold uppercase tracking-[0.16em] text-[#07110c] transition-all hover:-translate-y-0.5 hover:bg-emerald-50 lg:justify-self-end"
               >
                 Find dinner <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

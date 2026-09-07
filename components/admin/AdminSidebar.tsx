@@ -20,6 +20,7 @@ import {
   Bell,
   Layers,
   Handshake,
+  ChefHat,
 } from 'lucide-react';
 
 const navigation = [
@@ -29,6 +30,8 @@ const navigation = [
   { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
   { name: 'Supplier Uploads', href: '/admin/supplier-uploads', icon: FileText },
   { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Recipe Studio', href: '/admin/recipes', icon: ChefHat },
+  { name: 'Collection Studio', href: '/admin/collections', icon: Layers },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
   { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
   { name: 'Partnerships', href: '/admin/business-leads', icon: Handshake },
@@ -46,7 +49,6 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
@@ -65,14 +67,12 @@ export function AdminSidebar() {
         </div>
       )}
 
-      {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
           <SidebarContent pathname={pathname} />
         </div>
       </div>
 
-      {/* Mobile menu button */}
       <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
         <button
           type="button"
