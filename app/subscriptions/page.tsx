@@ -173,7 +173,7 @@ export default async function SubscriptionsPage() {
                             <div key={item.title} className="flex min-h-[300px] flex-col rounded-[1.75rem] border border-zinc-200/80 bg-[#f7f8f6] p-7 md:p-8">
                                 <div className="flex items-center justify-between">
                                     <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-900 ring-1 ring-zinc-200">
-                                        <item.icon className="h-4.5 w-4.5 stroke-[1.5]" />
+                                        <item.icon className="h-5 w-5 stroke-[1.5]" />
                                     </span>
                                     <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">0{index + 1}</span>
                                 </div>
