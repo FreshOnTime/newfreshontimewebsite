@@ -18,6 +18,13 @@ const eslintConfig = [
       "@next/next/no-img-element": "warn",
     },
   },
+  {
+    files: ["**/*.js"],
+    rules: {
+      // Repository utility scripts and Jest setup are intentionally CommonJS.
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ];
 
 export default eslintConfig;
