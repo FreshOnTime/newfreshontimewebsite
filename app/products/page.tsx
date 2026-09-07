@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ProductGrid from "@/components/products/ProductGrid";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import ProductsFilterBar from "@/components/products/ProductsFilterBar";
@@ -82,9 +83,9 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
             <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white px-6 py-20 text-center shadow-[0_18px_60px_rgba(10,30,18,0.035)]">
               <p className="font-serif text-3xl font-normal text-zinc-950">Nothing matches those filters yet.</p>
               <p className="mx-auto mt-3 max-w-md text-sm font-light leading-7 text-zinc-500">Try a broader search or reset the filters to see the full live catalogue.</p>
-              <a href="/products" className="mt-6 inline-flex rounded-full bg-zinc-950 px-6 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-emerald-950">
+              <Link href="/products" className="mt-6 inline-flex rounded-full bg-zinc-950 px-6 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-emerald-950">
                 Clear all filters
-              </a>
+              </Link>
             </div>
           ) : (
             <ProductGrid products={products} className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5" />
