@@ -16,7 +16,15 @@ export const GET = requireAuth(async (request: AuthedRequest) => {
     if (!userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
 
     const data = await getIntelligenceOverview(userId);
-    return NextResponse.json({ success: true, data }, { headers: { "Cache-Control": "private, no-store" } });
+    const safeData = data.taste.signalCount === 0
+      ? {
+          ...data,
+          taste: { ...data.taste, confidence: 0 },
+          recommendations: [],
+        }
+      : data;
+
+    return NextResponse.json({ success: true, data: safeData }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     console.error("[Intelligence] Failed to build customer overview:", error);
     return NextResponse.json({ error: "Failed to build your FreshPick intelligence" }, { status: 500 });
