@@ -42,7 +42,7 @@ export default function PremiumPageHeader({
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_15%,rgba(52,211,153,0.14),transparent_28%),radial-gradient(circle_at_86%_60%,rgba(163,230,53,0.07),transparent_24%)]" />
       <div className="absolute inset-0 -z-10 opacity-[0.14] [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" />
 
-      <div className="container relative z-10 mx-auto max-w-7xl px-5 pb-14 md:px-8 md:pb-18">
+      <div className="container relative z-10 mx-auto max-w-7xl px-5 pb-14 md:px-8 md:pb-20">
         {isLoading ? (
           <div className="max-w-3xl animate-pulse">
             <div className="h-3 w-48 rounded-full bg-white/15" />
