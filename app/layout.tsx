@@ -9,12 +9,12 @@ import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: "Fresh Pick",
+  applicationName: "FreshPick",
   title: {
-    default: "Fresh Pick Sri Lanka | Fresh Grocery Delivery & Curated Food Partnerships",
-    template: "%s | Fresh Pick Sri Lanka"
+    default: "FreshPick Sri Lanka | Food Discovery, Smart Grocery & Local Food",
+    template: "%s | FreshPick Sri Lanka"
   },
-  description: "Fresh Pick brings fresh groceries, recurring household orders, local food discoveries, and curated supplier partnerships together across Colombo, Sri Lanka.",
+  description: "FreshPick is a connected food discovery and commerce platform for Sri Lanka, combining shoppable recipes, smart recurring baskets, groceries, ready meals, local makers, and curated supply partnerships.",
   other: {
     "geo.region": "LK-11",
     "geo.placename": "Colombo, Sri Lanka",
@@ -22,36 +22,36 @@ export const metadata: Metadata = {
     "ICBM": "6.9271, 79.8612",
   },
   keywords: [
-    "fresh grocery delivery Sri Lanka",
-    "online grocery delivery Colombo",
+    "food discovery Sri Lanka",
+    "smart grocery Sri Lanka",
+    "shoppable recipes Colombo",
+    "fresh grocery delivery Colombo",
     "recurring grocery delivery Colombo",
-    "fresh produce Sri Lanka",
-    "farm fresh vegetables Colombo",
-    "FreshPick supplier partnerships",
     "local food makers Sri Lanka",
-    "restaurant supply Colombo",
-    "premium household grocery plans",
-    "farmer sourced produce Sri Lanka",
+    "prepared meals Colombo",
+    "FreshPick supplier partnerships",
+    "food commerce Sri Lanka",
+    "online groceries Sri Lanka",
   ],
-  authors: [{ name: "Fresh Pick Team" }],
-  creator: "Fresh Pick Sri Lanka",
-  publisher: "Fresh Pick",
+  authors: [{ name: "FreshPick Team" }],
+  creator: "FreshPick Sri Lanka",
+  publisher: "FreshPick",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: "Fresh Pick Sri Lanka | Fresh Grocery Delivery & Food Partnerships",
-    description: "Fresh groceries, recurring delivery, local food discoveries, and curated supplier partnerships in Sri Lanka.",
+    title: "FreshPick Sri Lanka | Food Discovery That Gets Smarter With You",
+    description: "Discover what to eat, shop the whole idea, automate repeat baskets, and explore Sri Lankan makers through one connected food platform.",
     url: SITE_URL,
-    siteName: "Fresh Pick Sri Lanka",
+    siteName: "FreshPick Sri Lanka",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Fresh Pick Sri Lanka fresh grocery delivery and food partnerships",
+        alt: "FreshPick Sri Lanka food discovery and commerce platform",
       },
     ],
     locale: "en_LK",
@@ -59,8 +59,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fresh Pick Sri Lanka | Fresh Grocery Delivery",
-    description: "Fresh groceries, recurring orders, local discoveries, and curated food partnerships in Sri Lanka.",
+    title: "FreshPick Sri Lanka | Connected Food Discovery & Commerce",
+    description: "Shoppable recipes, smart recurring baskets, groceries, ready meals, and local maker discovery in one FreshPick experience.",
     images: ["/twitter-image.jpg"],
     creator: "@freshpicklk",
   },
@@ -87,10 +87,10 @@ const organizationJsonLd = {
     {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
-      "name": "Fresh Pick Sri Lanka",
+      "name": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/logo.png`,
-      "description": "Fresh Pick is a Sri Lankan fresh-food commerce service for households and a curated partnership network for growers, makers, producers, distributors, and business buyers.",
+      "description": "FreshPick is a Sri Lankan food discovery and commerce platform connecting households to shoppable recipes, recurring baskets, groceries, prepared food, local makers, and curated food-supply partners.",
       "email": SUPPORT_EMAIL,
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
       "contactPoint": {
@@ -100,13 +100,14 @@ const organizationJsonLd = {
         "availableLanguage": "English"
       },
       "knowsAbout": [
+        "Food discovery in Colombo",
+        "Shoppable recipes",
         "Fresh grocery delivery in Colombo",
         "Recurring grocery orders",
-        "Cooked-food delivery in Colombo",
-        "Sri Lankan homemade food makers",
+        "Prepared food delivery in Colombo",
+        "Sri Lankan independent food makers",
         "Supplier onboarding",
         "Food producer partnerships",
-        "Farmer sourced produce",
         "Business food supply partnerships"
       ]
     },
@@ -114,7 +115,7 @@ const organizationJsonLd = {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       "url": SITE_URL,
-      "name": "Fresh Pick Sri Lanka",
+      "name": "FreshPick Sri Lanka",
       "publisher": { "@id": `${SITE_URL}/#organization` },
       "inLanguage": "en-LK",
       "potentialAction": {
@@ -129,14 +130,14 @@ const organizationJsonLd = {
     {
       "@type": "GroceryStore",
       "@id": `${SITE_URL}/#grocery-store`,
-      "name": "Fresh Pick Sri Lanka",
+      "name": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "image": `${SITE_URL}/og-image.jpg`,
-      "description": "Online fresh grocery delivery and recurring food delivery for Colombo households.",
+      "description": "The grocery-commerce layer of FreshPick, serving Colombo households with fresh products, prepared food, and recurring delivery.",
       "parentOrganization": { "@id": `${SITE_URL}/#organization` },
       "priceRange": "$$",
       "currenciesAccepted": "LKR",
-      "knowsAbout": ["Fresh groceries", "Cooked food", "Recurring delivery", "Local food makers"],
+      "knowsAbout": ["Fresh groceries", "Shoppable recipes", "Prepared food", "Recurring delivery", "Local food makers"],
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", name })),
       "geo": {
         "@type": "GeoCoordinates",
