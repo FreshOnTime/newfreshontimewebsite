@@ -9,82 +9,82 @@
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
 
-    /* Ultra-Premium Billionaire Aesthetic */
-    --background: 0 0% 100%;
-    --foreground: 220 20% 10%;
-    /* Rich charcoal */
+    /* FreshPick brand system — derived from the supplied logo. */
+    --freshpick-green: 148 54% 23%;
+    --freshpick-green-deep: 148 58% 15%;
+    --freshpick-orange: 23 78% 60%;
+    --freshpick-lime: 79 51% 50%;
+    --freshpick-cream: 48 50% 97%;
+
+    --background: var(--freshpick-cream);
+    --foreground: 148 34% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 148 34% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 148 34% 13%;
 
-    /* Primary: Deep Luxurious Forest */
-    --primary: 160 40% 18%;
+    --primary: var(--freshpick-green);
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: clean neutral */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 220 20% 10%;
+    --secondary: 79 47% 95%;
+    --secondary-foreground: 148 48% 18%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 47 25% 94%;
+    --muted-foreground: 145 10% 43%;
 
-    /* Accent: Fresh emerald */
-    --accent: 160 70% 35%;
-    --accent-foreground: 220 20% 10%;
+    --accent: var(--freshpick-orange);
+    --accent-foreground: 148 45% 14%;
 
-    /* Legacy token names retained for existing components. */
-    --gold: 160 70% 35%;
-    --gold-dark: 160 75% 24%;
+    /* Legacy names retained so older components inherit the new brand. */
+    --gold: var(--freshpick-orange);
+    --gold-dark: 23 70% 48%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 93%;
-    --input: 220 14% 93%;
-    --ring: 160 40% 25%;
+    --border: 78 22% 88%;
+    --input: 78 22% 88%;
+    --ring: var(--freshpick-green);
 
     --radius: 1rem;
 
-    /* Category Colors - Muted Luxury */
-    --fruits: 25 80% 55%;
-    --vegetables: 145 55% 40%;
-    --dairy: 48 75% 55%;
-    --meat: 350 65% 55%;
-    --grains: 30 40% 50%;
+    --fruits: 23 78% 60%;
+    --vegetables: 148 54% 36%;
+    --dairy: 79 51% 50%;
+    --meat: 355 56% 55%;
+    --grains: 38 38% 52%;
   }
 
   .dark {
-    /* Rich Dark Mode (Midnight Emerald) */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 148 50% 8%;
+    --foreground: 48 45% 96%;
 
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 98%;
+    --card: 148 39% 12%;
+    --card-foreground: 48 45% 96%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 148 50% 8%;
+    --popover-foreground: 48 45% 96%;
 
-    --primary: 158 50% 40%;
-    --primary-foreground: 222 47.4% 11.2%;
+    --primary: 79 51% 50%;
+    --primary-foreground: 148 54% 11%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 148 30% 16%;
+    --secondary-foreground: 48 45% 96%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 148 26% 16%;
+    --muted-foreground: 78 13% 69%;
 
-    --accent: 43 96% 56%;
-    --accent-foreground: 222 47.4% 11.2%;
+    --accent: 23 78% 60%;
+    --accent-foreground: 148 54% 11%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 36%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 158 50% 40%;
+    --border: 148 24% 20%;
+    --input: 148 24% 20%;
+    --ring: 79 51% 50%;
   }
 }
 
@@ -96,15 +96,13 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Clean white background for premium feel */
     background-color: hsl(var(--background));
     background-image:
-      radial-gradient(at 0% 0%, hsla(160, 40%, 97%, 0.5) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(160, 55%, 96%, 0.5) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(79, 51%, 50%, 0.08) 0px, transparent 42%),
+      radial-gradient(at 100% 0%, hsla(23, 78%, 60%, 0.08) 0px, transparent 42%);
     background-attachment: fixed;
   }
 
-  /* Premium typography defaults */
   h1,
   h2,
   h3,
@@ -114,20 +112,22 @@
     @apply tracking-tight font-semibold;
   }
 
-  /* Smoother font rendering */
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  ::selection {
+    background: hsl(var(--freshpick-lime) / 0.35);
+    color: hsl(var(--freshpick-green-deep));
+  }
 }
 
-/* Premium utility classes */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 
-  /* Premium glass effect */
   .glass {
     @apply bg-white/80 backdrop-blur-xl border border-white/20;
   }
@@ -136,34 +136,39 @@
     @apply bg-black/40 backdrop-blur-xl border border-white/10;
   }
 
-  /* Premium shadows */
   .shadow-premium {
     box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.04),
-      0 4px 8px rgba(0, 0, 0, 0.04),
-      0 16px 32px rgba(0, 0, 0, 0.04);
+      0 1px 2px rgba(27, 91, 53, 0.04),
+      0 4px 8px rgba(27, 91, 53, 0.05),
+      0 16px 32px rgba(27, 91, 53, 0.06);
   }
 
   .shadow-premium-lg {
     box-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.02),
-      0 8px 16px rgba(0, 0, 0, 0.04),
-      0 24px 48px rgba(0, 0, 0, 0.06);
+      0 2px 4px rgba(27, 91, 53, 0.03),
+      0 8px 16px rgba(27, 91, 53, 0.05),
+      0 24px 48px rgba(27, 91, 53, 0.08);
   }
 
   .shadow-premium-hover {
     box-shadow:
-      0 4px 8px rgba(0, 0, 0, 0.04),
-      0 12px 24px rgba(0, 0, 0, 0.06),
-      0 32px 64px rgba(0, 0, 0, 0.08);
+      0 4px 8px rgba(27, 91, 53, 0.05),
+      0 12px 24px rgba(27, 91, 53, 0.08),
+      0 32px 64px rgba(27, 91, 53, 0.1);
   }
 
-  /* Premium gradient text */
   .text-gradient-premium {
-    @apply bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-emerald-800 via-emerald-600 to-orange-500 bg-clip-text text-transparent;
   }
 
-  /* Premium card hover */
+  .brand-gradient {
+    background-image: linear-gradient(135deg, #1b5b35 0%, #557f37 58%, #97bf3e 100%);
+  }
+
+  .brand-accent-gradient {
+    background-image: linear-gradient(135deg, #ea8646 0%, #f1a568 100%);
+  }
+
   .card-hover-premium {
     @apply transition-all duration-300 ease-out;
   }
@@ -171,136 +176,76 @@
   .card-hover-premium:hover {
     @apply -translate-y-1;
     box-shadow:
-      0 4px 8px rgba(0, 0, 0, 0.04),
-      0 16px 32px rgba(0, 0, 0, 0.08);
+      0 4px 8px rgba(27, 91, 53, 0.05),
+      0 16px 32px rgba(27, 91, 53, 0.1);
   }
 
-  /* Premium border gradient */
   .border-gradient {
     background: linear-gradient(white, white) padding-box,
-      linear-gradient(135deg, hsl(158 64% 32%), hsl(162 63% 50%)) border-box;
+      linear-gradient(135deg, #1b5b35, #97bf3e, #ea8646) border-box;
     border: 1px solid transparent;
   }
 }
 
-/* Custom animations */
 @keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
 }
 
 @keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes fade-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
+.animate-blob { animation: blob 7s infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
 .animate-shimmer {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
+.animate-fade-up { animation: fade-up 0.6s ease-out forwards; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
 
-.animate-fade-up {
-  animation: fade-up 0.6s ease-out forwards;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Enhanced hover effects */
 .hover-lift {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 40px -12px rgba(27, 91, 53, 0.18);
 }
 
-/* Premium section backgrounds */
 .bg-section-alt {
-  background: linear-gradient(180deg, hsl(220 14% 98%) 0%, hsl(220 14% 96%) 100%);
+  background: linear-gradient(180deg, #fffdf7 0%, #f4f7ed 100%);
 }
 
 .bg-section-premium {
-  background: linear-gradient(180deg, #ffffff 0%, hsl(158 40% 98%) 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f6faef 100%);
 }
 
-/* Hide scrollbar utility */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
-}
-
-/* Premium focus states */
 .focus-premium:focus {
   @apply outline-none ring-2 ring-emerald-500/20 ring-offset-2;
 }
 
-/* Premium input styling */
 input:focus,
 textarea:focus,
 select:focus {
-  @apply outline-none ring-2 ring-emerald-500/20 border-emerald-500;
+  @apply outline-none ring-2 ring-emerald-500/20 border-emerald-600;
 }
