@@ -12,6 +12,41 @@ export default {
   theme: {
     extend: {
       colors: {
+        /* Brand palette from the FreshPick identity. Existing emerald classes now
+           inherit the same green family so older pages stay visually consistent. */
+        emerald: {
+          50: "#f3f8ef",
+          100: "#e4f0dc",
+          200: "#c9dfb9",
+          300: "#abc98c",
+          400: "#97bf3e",
+          500: "#6f9f3f",
+          600: "#4f7f39",
+          700: "#366a38",
+          800: "#245f36",
+          900: "#1b5b35",
+          950: "#123d24",
+        },
+        orange: {
+          50: "#fff7f1",
+          100: "#feebdc",
+          200: "#fbd3b7",
+          300: "#f5b384",
+          400: "#ef965e",
+          500: "#ea8646",
+          600: "#d96d31",
+          700: "#b65225",
+          800: "#923f24",
+          900: "#763621",
+          950: "#40190e",
+        },
+        brand: {
+          green: "#1b5b35",
+          "green-deep": "#123d24",
+          orange: "#ea8646",
+          lime: "#97bf3e",
+          cream: "#fbfaf4",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
