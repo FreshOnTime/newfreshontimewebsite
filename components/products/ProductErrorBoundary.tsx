@@ -39,7 +39,7 @@ export class ProductErrorBoundary extends Component<Props, State> {
             }
 
             return (
-                <div className="flex flex-col items-center justify-center p-8 bg-zinc-50 rounded-2xl text-center">
+                <div className="flex flex-col items-center justify-center p-8 bg-background rounded-xl text-center">
                     <div className="bg-amber-100 rounded-full p-3 mb-4">
                         <AlertTriangle className="w-6 h-6 text-amber-600" />
                     </div>

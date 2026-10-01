@@ -8,11 +8,11 @@ export default async function CreatorNetwork() {
   if (!creators.length) return null;
 
   return (
-    <section className="bg-background py-12 md:py-16">
+    <section className="bg-background py-6 md:py-8">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="font-heading text-3xl font-semibold text-brand-green">From local kitchens</h2>
+            <h2 className="font-sans text-3xl font-semibold text-brand-green">From local kitchens</h2>
             <p className="mt-3 text-muted-foreground">Meet the people sharing their favourite recipes.</p>
           </div>
           <Link href="/creators" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">Meet the cooks <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>

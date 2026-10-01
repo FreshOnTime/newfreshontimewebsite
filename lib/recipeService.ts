@@ -94,7 +94,7 @@ export async function getPublishedRecipeBySlug(slug: string): Promise<RecipeDeta
     new Set(
       content.ingredients.flatMap((ingredient) => [
         ingredient.productId,
-        ...ingredient.substitutionProductIds,
+        ...(ingredient.substitutionProductIds ?? []),
       ])
     )
   );
@@ -118,9 +118,9 @@ export async function getPublishedRecipeBySlug(slug: string): Promise<RecipeDeta
       productId: ingredient.productId,
       quantity: ingredient.quantity,
       note: ingredient.note || undefined,
-      optional: ingredient.optional,
+      optional: ingredient.optional ?? false,
       product: productsById.get(ingredient.productId) || null,
-      substitutions: ingredient.substitutionProductIds
+      substitutions: (ingredient.substitutionProductIds ?? [])
         .map((id) => productsById.get(id))
         .filter((product): product is NonNullable<typeof product> => Boolean(product)),
     })),

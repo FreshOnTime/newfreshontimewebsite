@@ -23,7 +23,7 @@ export function BagCard({
   const bagUrl = `/bags/${bag.id}`;
 
   return (
-    <div className="p-2 pb-0  h-fit  bg-white border rounded-lg overflow-hidden">
+    <div className="p-2 pb-0 h-fit bg-background border rounded-lg overflow-hidden">
       <div className="pt-8 pb-4 px-4">
         <div className="flex justify-between items-start mb-2">
           <Link href={bagUrl}>
@@ -65,16 +65,16 @@ export function BagCard({
       {onOrderNow ? (
         <button
           onClick={() => onOrderNow(bag.id)}
-          className="h-12 w-full bg-black text-white rounded-t-full flex items-center justify-center"
+          className="h-12 w-full bg-brand-amber text-accent-foreground rounded-t-full flex items-center justify-center"
         >
-          <ShoppingBag className="w-6 h-6 mr-2 text-white" /> Order Now
+          <ShoppingBag className="w-6 h-6 mr-2 text-foreground" /> Order Now
         </button>
       ) : (
         <Link
           href={bagUrl}
-          className="h-12 w-full bg-gray-900 text-white rounded-t-full flex items-center justify-center hover:bg-black transition-colors"
+          className="h-12 w-full bg-gray-900 text-accent-foreground rounded-t-full flex items-center justify-center hover:bg-brand-amber transition-colors"
         >
-          <ShoppingBag className="w-6 h-6 mr-2 text-white" /> View Bag
+          <ShoppingBag className="w-6 h-6 mr-2 text-foreground" /> View Bag
         </Link>
       )}
     </div>

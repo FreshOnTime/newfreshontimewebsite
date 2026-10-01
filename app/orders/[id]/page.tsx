@@ -8,20 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  Clock,
-  Home,
-  Package,
-  Truck,
-  ArrowLeft,
-  Calendar,
-  MapPin,
-  CreditCard,
-  XCircle,
-  RotateCcw,
-  ShoppingBag
-} from "lucide-react";
+import { CheckCircle2, Clock, Home, Package, Truck, ArrowLeft, Calendar, MapPin, CreditCard, XCircle, RotateCcw, ShoppingBag } from "lucide-react";
 
 type ApiOrderItem = {
   productId?: { _id: string; name: string } | null;
@@ -134,11 +121,11 @@ export default function OrderDetailPage() {
       <div className="w-full py-8 px-4">
         <div className="flex items-center justify-between relative max-w-2xl mx-auto">
           {/* Background Line */}
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full" />
+          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-background rounded-full" />
 
           {/* Active Progress Line */}
           <div
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000 ease-out"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-brand-green rounded-full transition-all duration-1000 ease-out"
             style={{ width: `${Math.max(0, (idx / (stages.length - 1)) * 100)}%` }}
           />
 
@@ -149,17 +136,14 @@ export default function OrderDetailPage() {
             return (
               <div key={stage} className="flex flex-col items-center gap-3 relative z-10">
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 border-4 shadow-sm
-                    ${isCompleted
-                      ? 'bg-emerald-500 border-white text-white shadow-lg shadow-emerald-200'
-                      : 'bg-white border-gray-100 text-gray-300'
-                    }
-                    ${isCurrent ? 'ring-4 ring-emerald-100 scale-110' : ''}
-                  `}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 border-4 shadow-sm ${isCompleted
+                      ? 'bg-brand-green border-background text-white'
+                      : 'bg-background border-gray-100 text-gray-300'
+                    }  ${isCurrent ? 'ring-4 ring-emerald-100 scale-110' : ''} `}
                 >
                   {isCompleted ? icons[i] : <div className="w-3 h-3 rounded-full bg-gray-200" />}
                 </div>
-                <span className={`text-xs font-semibold transition-colors duration-300 whitespace-nowrap ${isCompleted ? 'text-emerald-700' : 'text-gray-400'}`}>
+                <span className={`text-xs font-semibold transition-colors duration-300 whitespace-nowrap ${isCompleted ? 'text-emerald-700' : 'text-muted-foreground'} `}>
                   {labels[i]}
                 </span>
               </div>
@@ -250,9 +234,9 @@ export default function OrderDetailPage() {
   // Not Found State
   if (!loading && notFoundError) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 bg-gray-50/50">
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag className="w-10 h-10 text-gray-400" />
+      <div className="min-h-0 flex flex-col items-center justify-center p-6 bg-gray-50/50">
+        <div className="w-20 h-20 bg-background rounded-full flex items-center justify-center mb-6">
+          <ShoppingBag className="w-10 h-10 text-muted-foreground" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
         <p className="text-gray-500 mb-8 text-center max-w-md">
@@ -387,7 +371,7 @@ export default function OrderDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-6">
         {/* Header */}
         <div className="mb-8">
           <Link href="/orders" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-4">
@@ -399,7 +383,7 @@ export default function OrderDetailPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order #{order.orderNumber}</h1>
-                <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${getStatusBadge(order.status)}`}>
+                <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${getStatusBadge(order.status)} `}>
                   {order.status}
                 </span>
               </div>
@@ -454,8 +438,8 @@ export default function OrderDetailPage() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {order.items.map((it: ApiOrderItem, idx: number) => (
-                    <div key={`${it.name || it.productId?._id || idx}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                      <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-gray-400 shadow-sm border border-gray-100">
+                    <div key={`${it.name || it.productId?._id || idx}`} className="flex items-center gap-4 p-4 bg-background rounded-xl hover:bg-background transition-colors">
+                      <div className="w-16 h-16 bg-background rounded-lg flex items-center justify-center text-muted-foreground shadow-sm border border-gray-100">
                         <Package className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -482,8 +466,8 @@ export default function OrderDetailPage() {
                     </h2>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${order.scheduleStatus === 'active' ? 'bg-green-100 text-green-700' :
                       order.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
+                        'bg-background text-gray-700'
+                      } `}>
                       {order.scheduleStatus || 'active'}
                     </span>
                   </div>
@@ -511,19 +495,19 @@ export default function OrderDetailPage() {
 
                   {order.recurrence && (
                     <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-                      <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="bg-background rounded-lg p-3">
                         <span className="text-gray-500">Start Date</span>
                         <p className="font-medium">{order.recurrence.startDate ? new Date(order.recurrence.startDate).toLocaleDateString() : '—'}</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="bg-background rounded-lg p-3">
                         <span className="text-gray-500">End Date</span>
                         <p className="font-medium">{order.recurrence.endDate ? new Date(order.recurrence.endDate).toLocaleDateString() : '—'}</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="bg-background rounded-lg p-3">
                         <span className="text-gray-500">Days</span>
                         <p className="font-medium">{Array.isArray(order.recurrence.daysOfWeek) && order.recurrence.daysOfWeek.length ? order.recurrence.daysOfWeek.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ') : '—'}</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="bg-background rounded-lg p-3">
                         <span className="text-gray-500">Excludes</span>
                         <p className="font-medium">{order.recurrence.excludeDates?.length || 0} dates</p>
                       </div>
@@ -548,7 +532,7 @@ export default function OrderDetailPage() {
                       <Label className="text-sm text-gray-600 mb-3 block">Days of week</Label>
                       <div className="flex flex-wrap gap-2">
                         {[0, 1, 2, 3, 4, 5, 6].map((d) => (
-                          <label key={d} className="inline-flex items-center gap-2 bg-white border rounded-lg px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:text-emerald-700">
+                          <label key={d} className="inline-flex items-center gap-2 bg-background border rounded-lg px-4 py-2.5 cursor-pointer hover:bg-background transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:text-emerald-700">
                             <input type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} className="rounded text-emerald-600" />
                             <span className="font-medium text-sm">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]}</span>
                           </label>
@@ -640,8 +624,8 @@ export default function OrderDetailPage() {
           {/* Right summary column */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-8 space-y-6">
-              <Card className="shadow-lg border-none ring-1 ring-black/5 overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4">
+              <Card className="shadow-none border-none ring-1 ring-black/5 overflow-hidden">
+                <div className="bg-brand-green px-6 py-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <CreditCard className="w-5 h-5" />
                     Order Summary

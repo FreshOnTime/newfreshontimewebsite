@@ -10,7 +10,6 @@ import { AnimatedSection, AnimatedProductItem } from "@/components/home/Animated
 import CategoryBento from "@/components/home/CategoryBento";
 import FoodDiscovery from "@/components/home/FoodDiscovery";
 import CreatorNetwork from "@/components/home/CreatorNetwork";
-import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import { serverApiFetch } from "@/lib/api/server";
 
 export const dynamic = "force-static";
@@ -81,29 +80,17 @@ export default async function Home() {
       <HeroSection />
       <CategoryBento categories={categories} />
 
-      <section className="bg-background py-10 md:py-14">
+      <section className="bg-background py-6 md:py-8">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <AnimatedSection className="mb-7 flex flex-wrap items-end justify-between gap-5">
-            <div>
-              <span className="mb-2 block text-sm font-medium text-brand-green">The market</span>
-              <h2 className="font-heading text-3xl font-semibold leading-tight text-brand-green md:text-4xl">
-                Fresh from the market
-              </h2>
-            </div>
-            <div className="md:justify-self-end">
-              <p className="max-w-lg text-base leading-7 text-muted-foreground">
-                Fresh produce and everyday essentials for your kitchen.
-              </p>
-              <Link href="/products" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">
-                Shop the market <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
+          <AnimatedSection className="mb-6 flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-semibold text-foreground">Fresh from the market</h2>
+            <Link href="/products" className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" /></Link>
           </AnimatedSection>
 
           <ProductErrorBoundary>
             {products.length > 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                {products.map((product, index) => (
+                {products.slice(0, 12).map((product, index) => (
                   <AnimatedProductItem key={product.sku} index={index}>
                     <ProductCard
                       id={product._id?.toString() || ""}
@@ -121,8 +108,8 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-border bg-card px-6 py-12 text-center">
-                <p className="font-serif text-2xl text-zinc-900">The market is being refreshed.</p>
+              <div className="rounded-xl border border-border bg-card px-6 py-6 text-center">
+                <p className="font-sans text-2xl text-zinc-900">The market is being refreshed.</p>
                 <Link href="/products" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
               </div>
             )}
@@ -132,7 +119,6 @@ export default async function Home() {
 
       <FoodDiscovery />
       <CreatorNetwork />
-      <LuxuryManifesto />
     </main>
   );
 }

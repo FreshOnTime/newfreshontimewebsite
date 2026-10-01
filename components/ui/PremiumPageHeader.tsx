@@ -10,32 +10,25 @@ interface PremiumPageHeaderProps {
   eyebrow?: string;
 }
 
-export default function PremiumPageHeader({
-  title, subtitle, backgroundImage, backgroundColor = "bg-background",
-  count, isLoading = false, eyebrow = "FreshPick · Colombo",
-}: PremiumPageHeaderProps) {
+/** Compact page introduction shared by storefront and information pages. */
+export default function PremiumPageHeader({ title, subtitle, backgroundImage, count, isLoading = false, eyebrow }: PremiumPageHeaderProps) {
   return (
-    <section className={`border-b border-border py-10 md:py-12 ${backgroundColor}`}>
-      <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 md:px-8">
+    <section className="border-b border-border bg-background py-8 md:py-10">
+      <div className="mx-auto max-w-7xl px-5 md:px-8">
         {isLoading ? (
-          <div className="max-w-3xl animate-pulse" role="status" aria-label="Loading page">
-            <div className="h-4 w-40 rounded bg-muted" />
-            <div className="mt-5 h-12 w-3/4 rounded bg-muted" />
-            <div className="mt-5 h-5 w-1/2 rounded bg-muted" />
+          <div className="max-w-xl animate-pulse" role="status" aria-label="Loading page">
+            <div className="h-9 w-3/4 rounded bg-muted" />
+            <div className="mt-4 h-4 w-1/2 rounded bg-muted" />
           </div>
         ) : (
-          <div className={`grid items-center gap-8 ${backgroundImage ? "md:grid-cols-[1fr_0.6fr]" : ""}`}>
+          <div className={`grid items-center gap-6 ${backgroundImage ? "md:grid-cols-[1fr_240px]" : ""} `}>
             <div>
-              <p className="text-sm font-medium text-brand-green">{eyebrow}</p>
-              <h1 className="mt-3 font-heading text-4xl font-semibold leading-tight text-brand-green md:text-5xl">{title}</h1>
-              {subtitle && <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{subtitle}</p>}
-              {count !== undefined && <p className="mt-4 text-sm text-brand-green">{count} {count === 1 ? "item" : "items"}</p>}
+              {eyebrow && <p className="mb-2 text-sm font-medium text-brand-green">{eyebrow}</p>}
+              <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-4xl">{title}</h1>
+              {subtitle && <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">{subtitle}</p>}
+              {count !== undefined && <p className="mt-3 text-sm text-muted-foreground">{count} {count === 1 ? "item" : "items"}</p>}
             </div>
-            {backgroundImage && (
-              <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-secondary">
-                <Image src={backgroundImage} alt="" fill priority sizes="(max-width: 768px) 100vw, 40vw" className="object-cover" />
-              </div>
-            )}
+            {backgroundImage && <div className="relative hidden aspect-[3/2] overflow-hidden rounded-xl bg-secondary md:block"><Image src={backgroundImage} alt="" fill sizes="240px" className="object-cover" /></div>}
           </div>
         )}
       </div>

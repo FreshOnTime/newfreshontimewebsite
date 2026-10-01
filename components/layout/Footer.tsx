@@ -27,28 +27,28 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-brand-green bg-brand-green pb-24 text-white md:pb-0">
+    <footer className="border-t border-brand-green bg-brand-green pb-10 text-white md:pb-0">
 
       <div className="relative border-b border-white/5">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-8 px-6 py-10 md:flex-row md:px-12">
-          <div className="max-w-lg text-center md:text-left">
-            <h3 className="mb-3 font-heading text-2xl font-semibold text-white md:text-3xl">Stay close to what’s fresh.</h3>
-            <p className="font-light text-white/85">New recipes, local makers, seasonal food and useful FreshPick updates.</p>
+        <div className="mx-auto max-w-7xl flex flex-col items-center justify-between gap-8 px-6 py-8 md:flex-row md:px-8">
+          <div className="max-w-lg text-left">
+            <h3 className="mb-3 font-sans text-xl font-semibold text-white">FreshPick updates</h3>
+            <p className="font-normal text-white/85">New recipes, local makers, seasonal food and useful FreshPick updates.</p>
           </div>
           <FooterNewsletterForm />
         </div>
       </div>
 
-      <div className="container relative z-10 mx-auto px-6 py-12 md:px-12">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-12">
+      <div className="relative mx-auto max-w-7xl px-6 py-6 md:px-12">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12 lg:gap-6">
           <div className="space-y-7 md:col-span-4">
             <Link href="/" className="inline-block">
               <div className="flex flex-col">
-                <span className="font-serif text-3xl font-bold tracking-tight text-white">Fresh<span className="italic text-brand-cream">Pick</span></span>
-                <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-white/85">Colombo</span>
+                <span className="font-sans text-3xl font-bold tracking-tight text-white">Fresh<span className="not-italic text-brand-cream">Pick</span></span>
+                <span className="text-xs font-medium normal-case text-white/85">Colombo</span>
               </div>
             </Link>
-            <p className="max-w-sm font-light leading-relaxed text-white/85">
+            <p className="max-w-sm font-normal leading-relaxed text-white/85">
               Fresh groceries, everyday essentials and food from local makers. Made for your kitchen in Colombo.
             </p>
 
@@ -65,10 +65,10 @@ export function Footer() {
 
           <div className="grid grid-cols-2 gap-10 md:col-span-8 md:grid-cols-3">
             <div>
-              <h4 className="mb-7 text-base font-semibold text-white">Discover</h4>
-              <ul className="space-y-4">
+              <h4 className="mb-4 text-base font-semibold text-white">Discover</h4>
+              <ul className="space-y-3">
                 {discoverLinks.map((item) => (
-                  <li key={item.name}><Link href={item.href} className="text-sm font-light tracking-wide text-white/85 transition-colors hover:text-brand-cream">{item.name}</Link></li>
+                  <li key={item.name}><Link href={item.href} className="text-sm font-normal tracking-wide text-white/85 transition-colors hover:text-brand-cream">{item.name}</Link></li>
                 ))}
               </ul>
             </div>
@@ -77,7 +77,7 @@ export function Footer() {
               <h4 className="mb-7 text-base font-semibold text-white">FreshPick</h4>
               <ul className="space-y-4">
                 {companyLinks.map((item) => (
-                  <li key={item.name}><Link href={item.href} className="text-sm font-light tracking-wide text-white/85 transition-colors hover:text-brand-cream">{item.name}</Link></li>
+                  <li key={item.name}><Link href={item.href} className="text-sm font-normal tracking-wide text-white/85 transition-colors hover:text-brand-cream">{item.name}</Link></li>
                 ))}
               </ul>
             </div>
@@ -85,11 +85,11 @@ export function Footer() {
             <div className="col-span-2 md:col-span-1">
               <h4 className="mb-7 text-base font-semibold text-white">Need a hand?</h4>
               <ul className="space-y-4">
-                <li className="flex items-start gap-3 text-sm font-light text-white/85">
+                <li className="flex items-start gap-3 text-sm font-normal text-white/85">
                   <MapPin className="mt-1 h-4 w-4 shrink-0 text-white/85" />
                   <span>Current coverage includes {SERVICE_AREAS.slice(0, 4).join(", ")} and nearby Colombo areas.</span>
                 </li>
-                <li className="flex items-center gap-3 text-sm font-light text-white/85">
+                <li className="flex items-center gap-3 text-sm font-normal text-white/85">
                   <Mail className="h-4 w-4 shrink-0 text-white/85" />
                   <a href={`mailto:${SUPPORT_EMAIL}`} className="break-all transition-colors hover:text-white">{SUPPORT_EMAIL}</a>
                 </li>
@@ -98,8 +98,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/5 pt-8">
-          <div className="flex flex-col items-center justify-between gap-4 text-xs font-light text-white/85 md:flex-row">
+        <div className="mt-8 border-t border-white/5 pt-5">
+          <div className="flex flex-col items-center justify-between gap-4 text-xs font-normal text-white/85 md:flex-row">
             <p>&copy; {new Date().getFullYear()} FreshPick. All rights reserved.</p>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               <Link href="/privacy" className="transition-colors hover:text-brand-cream">Privacy Policy</Link>

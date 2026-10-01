@@ -54,7 +54,7 @@ export function FooterNewsletterForm() {
           {status === "submitting" ? "Joining…" : "Subscribe"}
         </button>
       </div>
-      <p aria-live="polite" className={`mt-3 text-sm ${status === "error" ? "text-red-300" : "text-emerald-200"}`}>
+      <p aria-live="polite" className={`mt-3 text-sm ${status === "error" ? "text-red-300" : "text-emerald-200"} `}>
         {message}
       </p>
     </form>

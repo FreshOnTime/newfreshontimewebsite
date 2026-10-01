@@ -7,10 +7,10 @@ interface Category { name: string; slug: string; imageUrl?: string; description?
 export default function CategoryBento({ categories }: { categories: Category[] }) {
   if (!categories.length) return null;
   return (
-    <section className="bg-background py-10 md:py-12">
+    <section className="bg-background py-6 md:py-8">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="font-heading text-3xl font-semibold text-brand-green">Shop by category</h2>
+          <h2 className="font-sans text-2xl font-semibold text-brand-green">Shop by category</h2>
           <Link href="/categories" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">All categories <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

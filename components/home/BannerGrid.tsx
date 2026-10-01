@@ -20,7 +20,7 @@ export default function BannerGrid() {
         </div>
         <div className="grid gap-5 lg:grid-cols-12">
           {banners.map((b) => (
-            <Link key={b.title} href={b.href} className={`group relative h-[500px] overflow-hidden bg-zinc-900 transition-all duration-700 ${b.className}`}>
+            <Link key={b.title} href={b.href} className={`group relative h-[500px] overflow-hidden bg-zinc-900 transition-all duration-700  ${b.className} `}>
               <Image
                 src={b.image}
                 alt={b.title}

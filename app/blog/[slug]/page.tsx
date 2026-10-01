@@ -49,16 +49,16 @@ async function getBlogData(slug: string) {
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug } = await params;
-  
+
   try {
     const blogData = await getBlogData(slug);
-    
+
     if (!blogData) {
       return {
         title: 'Blog Post Not Found',
       };
     }
-    
+
     return {
       title: blogData.metaTitle || blogData.title,
       description: blogData.metaDescription || blogData.excerpt,
@@ -82,14 +82,14 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
 // Loading fallback component
 function BlogSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 animate-pulse">
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-background animate-pulse">
+      <div className="bg-background border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="h-10 w-32 bg-gray-200 rounded" />
         </div>
       </div>
-      <div className="bg-white">
-        <div className="container mx-auto px-4 py-12">
+      <div className="bg-background">
+        <div className="container mx-auto px-4 py-6">
           <div className="max-w-4xl mx-auto space-y-4">
             <div className="h-8 bg-gray-200 rounded w-3/4" />
             <div className="h-12 bg-gray-200 rounded" />
@@ -103,10 +103,10 @@ function BlogSkeleton() {
 
 export default async function BlogPostPage({ params }: BlogPageProps) {
   const { slug } = await params;
-  
+
   try {
     const blogData = await getBlogData(slug);
-    
+
     if (!blogData) {
       notFound();
     }
@@ -125,7 +125,7 @@ export default async function BlogPostPage({ params }: BlogPageProps) {
       updatedAt: blogData.updatedAt?.toISOString?.() || blogData.updatedAt,
       publishedAt: blogData.publishedAt?.toISOString?.() || blogData.publishedAt,
     };
-    
+
     return (
       <Suspense fallback={<BlogSkeleton />}>
         <BlogPost blog={serializedBlog} />

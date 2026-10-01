@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Check, Edit3, Loader2, Mail, MapPin, Phone, Save, UserRound, X } from 'lucide-react';
@@ -33,7 +33,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-[70vh] bg-[#f4f5f1] px-5 py-32">
+      <main className="min-h-0 bg-background px-5 py-12">
         <div className="mx-auto flex max-w-6xl items-center gap-3 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading your account…</div>
       </main>
     );
@@ -90,18 +90,18 @@ export default function ProfilePage() {
   const initials = [user.firstName, user.lastName].filter(Boolean).slice(0, 2).map((part) => part?.[0]).join('').toUpperCase();
 
   return (
-    <main className="min-h-screen bg-[#f4f5f1] pb-24 text-zinc-950">
-      <section className="border-b border-zinc-200 bg-[#0b1710] px-5 pb-14 pt-28 text-white md:px-8 md:pb-16 md:pt-32">
+    <main className="min-h-screen bg-background pb-10 text-zinc-950">
+      <section className="border-b border-zinc-200 bg-background px-5 pb-14 pt-10 text-foreground md:px-8 md:pb-8 md:pt-12">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="flex items-start gap-5">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white/10 font-serif text-xl text-emerald-100 ring-1 ring-white/10 md:h-20 md:w-20 md:text-2xl">{initials || 'FP'}</div>
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-secondary font-sans text-xl text-brand-green ring-1 ring-white/10 md:h-20 md:w-20 md:text-2xl">{initials || 'FP'}</div>
             <div>
-              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-200">Your FreshPick</span>
-              <h1 className="mt-3 font-serif text-5xl font-normal leading-none tracking-[-0.03em] md:text-6xl">{user.firstName}{user.lastName ? ` ${user.lastName}` : ''}</h1>
-              <p className="mt-4 max-w-xl text-sm font-light leading-6 text-white/55">Keep the details FreshPick uses for account communication and checkout up to date.</p>
+              <span className="text-xs font-bold normal-case text-brand-green">Your FreshPick</span>
+              <h1 className="mt-3 font-sans text-4xl font-semibold leading-tight md:text-4xl">{user.firstName}{user.lastName ? ` ${user.lastName}` : ''}</h1>
+              <p className="mt-4 max-w-xl text-sm font-normal leading-6 text-muted-foreground">Keep the details FreshPick uses for account communication and checkout up to date.</p>
             </div>
           </div>
-          <Link href={dashboardHref} className="inline-flex h-11 w-fit items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white">
+          <Link href={dashboardHref} className="inline-flex h-11 w-fit items-center gap-2 rounded-full border border-border bg-secondary px-5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
             Account home <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -109,18 +109,18 @@ export default function ProfilePage() {
 
       <div className="mx-auto max-w-6xl px-5 pt-10 md:px-8 md:pt-14">
         <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <section className="rounded-[1.75rem] border border-zinc-200 bg-white p-6 shadow-[0_18px_60px_rgba(15,23,42,0.04)] md:p-8">
+          <section className="rounded-xl border border-zinc-200 bg-background p-6 md:p-8">
             <div className="flex flex-wrap items-start justify-between gap-5 border-b border-zinc-100 pb-6">
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">Personal details</p>
-                <h2 className="mt-2 font-serif text-3xl font-normal text-zinc-950">The essentials.</h2>
+                <p className="text-xs font-bold normal-case text-emerald-700">Personal details</p>
+                <h2 className="mt-2 font-sans text-3xl font-semibold text-zinc-950">The essentials.</h2>
               </div>
               {!isEditing ? (
                 <button onClick={() => { setIsEditing(true); setMessage(null); setError(null); }} className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:border-emerald-300 hover:text-emerald-800"><Edit3 className="h-3.5 w-3.5" /> Edit details</button>
               ) : (
                 <div className="flex gap-2">
                   <button onClick={handleCancel} disabled={isSaving} className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600"><X className="h-3.5 w-3.5" /> Cancel</button>
-                  <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-950 disabled:opacity-50">{isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save</button>
+                  <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-full bg-brand-amber px-4 py-2 text-xs font-semibold text-accent-foreground hover:bg-brand-amber/85 disabled:opacity-50">{isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save</button>
                 </div>
               )}
             </div>
@@ -137,21 +137,21 @@ export default function ProfilePage() {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-[1.75rem] border border-zinc-200 bg-white p-6">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">Delivery home</p>
-              <h2 className="mt-2 font-serif text-2xl font-normal">Registration address</h2>
+            <section className="rounded-xl border border-zinc-200 bg-background p-6">
+              <p className="text-xs font-bold normal-case text-emerald-700">Delivery home</p>
+              <h2 className="mt-2 font-sans text-2xl font-semibold">Registration address</h2>
               {address ? (
-                <div className="mt-5 flex gap-3 text-sm font-light leading-6 text-zinc-500">
+                <div className="mt-5 flex gap-3 text-sm font-normal leading-6 text-zinc-500">
                   <MapPin className="mt-1 h-4 w-4 shrink-0 text-emerald-700" />
                   <p>{[address.streetAddress, address.streetAddress2, address.town, address.city, address.state, address.postalCode].filter(Boolean).join(', ')}</p>
                 </div>
               ) : (
-                <p className="mt-5 text-sm font-light leading-6 text-zinc-500">No registration address is attached to this account yet. Checkout will ask for a delivery address when needed.</p>
+                <p className="mt-5 text-sm font-normal leading-6 text-zinc-500">No registration address is attached to this account yet. Checkout will ask for a delivery address when needed.</p>
               )}
             </section>
 
-            <section className="rounded-[1.75rem] bg-[#0b1710] p-6 text-white">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-200">Account status</p>
+            <section className="rounded-xl bg-background p-6 text-foreground">
+              <p className="text-xs font-bold normal-case text-brand-green">Account status</p>
               <div className="mt-5 space-y-4">
                 <StatusRow label="Email" value={user.email ? (status.isEmailVerified ? 'Verified' : 'Verification pending') : 'Not added'} verified={Boolean(status.isEmailVerified)} />
                 <StatusRow label="Phone" value={user.phoneNumber ? (status.isPhoneVerified ? 'Verified' : 'Verification pending') : 'Not added'} verified={Boolean(status.isPhoneVerified)} />
@@ -174,16 +174,16 @@ export default function ProfilePage() {
 function ProfileField({ label, icon: Icon, editing, value, display, type = 'text', onChange }: { label: string; icon: typeof UserRound; editing: boolean; value: string; display: string; type?: string; onChange: (value: string) => void }) {
   return (
     <div>
-      <Label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400"><Icon className="h-3.5 w-3.5" /> {label}</Label>
-      {editing ? <Input type={type} value={value} onChange={(event) => onChange(event.target.value)} className={`mt-2 ${inputClass}`} /> : <p className="mt-3 text-base text-zinc-900">{display}</p>}
+      <Label className="flex items-center gap-2 text-xs font-semibold normal-case text-muted-foreground"><Icon className="h-3.5 w-3.5" /> {label}</Label>
+      {editing ? <Input type={type} value={value} onChange={(event) => onChange(event.target.value)} className={`mt-2 ${inputClass} `} /> : <p className="mt-3 text-base text-zinc-900">{display}</p>}
     </div>
   );
 }
 
 function StatusRow({ label, value, verified }: { label: string; value: string; verified: boolean }) {
-  return <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4 last:border-0 last:pb-0"><span className="text-sm text-white/45">{label}</span><span className={`text-xs font-medium capitalize ${verified ? 'text-emerald-200' : 'text-white/60'}`}>{value}</span></div>;
+  return <div className="flex items-center justify-between gap-4 border-b border-border pb-4 last:border-0 last:pb-0"><span className="text-sm text-muted-foreground">{label}</span><span className={`text-xs font-medium capitalize ${verified ? 'text-brand-green' : 'text-muted-foreground'} `}>{value}</span></div>;
 }
 
 function AccountLink({ href, title, copy }: { href: string; title: string; copy: string }) {
-  return <Link href={href} className="group rounded-[1.25rem] border border-zinc-200 bg-white p-4 transition-colors hover:border-emerald-300"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold text-zinc-900">{title}</span><ArrowRight className="h-4 w-4 text-zinc-300 group-hover:text-emerald-700" /></div><p className="mt-1 text-xs font-light leading-5 text-zinc-400">{copy}</p></Link>;
+  return <Link href={href} className="group rounded-[1.25rem] border border-zinc-200 bg-background p-4 transition-colors hover:border-emerald-300"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold text-zinc-900">{title}</span><ArrowRight className="h-4 w-4 text-zinc-300 group-hover:text-emerald-700" /></div><p className="mt-1 text-xs font-normal leading-5 text-muted-foreground">{copy}</p></Link>;
 }

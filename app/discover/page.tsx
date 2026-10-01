@@ -21,12 +21,12 @@ export default async function DiscoverPage() {
   ]);
 
   return (
-    <main className="bg-background pb-24">
+    <main className="bg-background pb-10">
       <PremiumPageHeader title="A little food inspiration" subtitle="Find something to cook, something ready or something new from a local maker." />
       <FoodDiscovery />
-      <section className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-12">
+      <section className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="font-heading text-3xl font-semibold text-brand-green">Recipes to try</h2>
+          <h2 className="font-sans text-3xl font-semibold text-brand-green">Recipes to try</h2>
           <Link href="/recipes" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">All recipes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
         {recipes.length === 0 ? (
@@ -50,7 +50,7 @@ export default async function DiscoverPage() {
       </section>
       {trending.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 py-10 md:px-8">
-          <h2 className="font-heading text-3xl font-semibold text-brand-green">Popular at the market</h2>
+          <h2 className="font-sans text-3xl font-semibold text-brand-green">Popular at the market</h2>
           <p className="mt-3 text-muted-foreground">Favourites from recent FreshPick orders.</p>
           <div className="mt-6 divide-y divide-border rounded-xl border border-border">
             {trending.map((item) => <Link key={item.product._id} href={`/products/${item.product.sku}`} className="flex items-center justify-between gap-4 px-5 py-4 text-brand-green hover:bg-secondary"><span>{item.product.name}</span><ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" /></Link>)}

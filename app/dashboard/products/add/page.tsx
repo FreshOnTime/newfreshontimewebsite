@@ -4,24 +4,10 @@ import { PageContainer } from "@/components/templates/PageContainer";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -412,7 +398,7 @@ export default function AddProduct() {
                   </FormItem>
                 )}
               />
-              <div className="border rounded-md p-4 bg-gray-50 col-span-12">
+              <div className="border rounded-md p-4 bg-background col-span-12">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
                   Description Preview
                 </h3>
@@ -437,7 +423,7 @@ export default function AddProduct() {
                   </FormItem>
                 )}
               />
-              <div className="border rounded-md p-4 bg-gray-50 col-span-12">
+              <div className="border rounded-md p-4 bg-background col-span-12">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
                   Ingredients Preview
                 </h3>
@@ -462,7 +448,7 @@ export default function AddProduct() {
                   </FormItem>
                 )}
               />
-              <div className="border rounded-md p-4 bg-gray-50 col-span-12">
+              <div className="border rounded-md p-4 bg-background col-span-12">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
                   Nutrition Facts Preview
                 </h3>
@@ -479,14 +465,14 @@ export default function AddProduct() {
                   type="button"
                   variant="outline"
                   onClick={enhanceWithAI}
-                  className="w-full bg-purple-500 text-white hover:bg-purple-700"
+                  className="w-full bg-brand-amber text-accent-foreground hover:bg-brand-amber/85"
                   disabled={
                     isLoading ||
                     form.watch("name") === "" ||
                     form.watch("description") === ""
                   }
                 >
-                  <WandSparkles className=" h-5 w-5" />
+                  <WandSparkles className="h-5 w-5" />
                   Enhance with AI
                 </Button>
                 <p className="text-sm text-gray-500 mt-2">
@@ -630,7 +616,7 @@ export default function AddProduct() {
                   </FormItem>
                 )}
               />
-              <div className="border rounded-md p-4 bg-gray-50 col-span-12">
+              <div className="border rounded-md p-4 bg-background col-span-12">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
                   Price Label Preview
                 </h3>

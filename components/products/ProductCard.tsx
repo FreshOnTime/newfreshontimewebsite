@@ -43,7 +43,7 @@ export function ProductCard({
     <article className="group relative h-full overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green">
       <div className="relative aspect-square overflow-hidden bg-background">
         <Link href={`/products/${sku}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
-          <div className="relative h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.025]">
+          <div className="relative h-full w-full transition-transform duration-700 ease-out">
             <ProductImage src={imageUrl} alt={name} priority={priority} />
           </div>
         </Link>
@@ -57,14 +57,14 @@ export function ProductCard({
         </div>
       </div>
 
-      <div className="p-4 md:p-5">
-        <div className="mb-2.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>FreshPick</span>
+      <div className="p-3 sm:p-4">
+        <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span className="sr-only">Unit</span>
           <span>{unitLabel}</span>
         </div>
 
         <Link href={`/products/${sku}`} prefetch={false} className="block">
-          <h3 className="line-clamp-2 min-h-[2.8rem] font-sans text-[15px] font-semibold leading-snug tracking-[-0.01em] text-zinc-900 transition-colors group-hover:text-emerald-900 md:text-base">
+          <h3 className="line-clamp-2 min-h-[2.5rem] font-sans text-sm font-semibold leading-snug text-zinc-900 transition-colors group-hover:text-emerald-900 md:text-base">
             {name}
           </h3>
         </Link>
@@ -99,7 +99,7 @@ function PriceDisplay({
 }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="font-sans text-base font-semibold tracking-[-0.01em] text-foreground md:text-lg">
+      <span className="font-sans text-sm font-semibold text-foreground sm:text-base">
         Rs. {formatPrice(price)}
       </span>
       {originalPrice && (

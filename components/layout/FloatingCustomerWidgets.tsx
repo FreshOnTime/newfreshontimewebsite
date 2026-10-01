@@ -1,6 +1,5 @@
 "use client";
 
-import FirstOrderPopup from "@/components/FirstOrderPopup";
 import WhatsAppButton from "@/components/WhatsAppButton";
 
 // These widgets are useful after a visitor has started browsing, but they do
@@ -9,7 +8,6 @@ export default function FloatingCustomerWidgets() {
   return (
     <>
       <WhatsAppButton />
-      <FirstOrderPopup />
     </>
   );
 }

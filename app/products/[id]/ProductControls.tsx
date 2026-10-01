@@ -30,7 +30,7 @@ export const ProductControls = ({ product }: { product: Product }) => {
     <div className="space-y-6">
       {product.unitOptions && product.unitOptions.length > 0 && (
         <div>
-          <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400">Choose size</p>
+          <p className="mb-3 text-xs font-bold normal-case text-muted-foreground">Choose size</p>
           <div className="flex flex-wrap gap-2">
             {product.unitOptions.map((opt, idx) => (
               <button
@@ -38,9 +38,9 @@ export const ProductControls = ({ product }: { product: Product }) => {
                 type="button"
                 onClick={() => setSelectedOptionIndex(idx)}
                 className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all ${idx === selectedOptionIndex
-                  ? "bg-zinc-950 text-white shadow-sm"
-                  : "border border-zinc-200 bg-white text-zinc-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
-                  }`}
+                  ? "bg-brand-amber text-accent-foreground shadow-sm"
+                  : "border border-zinc-200 bg-background text-zinc-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
+                  } `}
                 aria-pressed={idx === selectedOptionIndex}
               >
                 {opt.label}
@@ -50,22 +50,22 @@ export const ProductControls = ({ product }: { product: Product }) => {
         </div>
       )}
 
-      <div className="rounded-2xl bg-[#f6f7f4] p-5">
+      <div className="rounded-xl bg-background p-5">
         {!derivedProduct.isSoldAsUnit && (
           <div className="flex items-center justify-between gap-4 border-b border-zinc-200 pb-4">
-            <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+            <span className="text-xs font-bold normal-case text-zinc-500">
               Est. {getMeasurementType(derivedProduct.measurementUnit)}
             </span>
-            <span className="font-serif text-lg text-zinc-950">
+            <span className="font-sans text-lg text-zinc-950">
               {formatMeasurement(validQuantity, derivedProduct.measurementUnit)}
             </span>
           </div>
         )}
 
-        <div className={`${!derivedProduct.isSoldAsUnit ? "pt-4" : ""} flex items-end justify-between gap-4`}>
-          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">Basket total</span>
+        <div className={` ${!derivedProduct.isSoldAsUnit ? "pt-4" : ""} flex items-end justify-between gap-4`}>
+          <span className="text-xs font-bold normal-case text-zinc-500">Basket total</span>
           <div className="text-right">
-            <span className="font-serif text-2xl text-zinc-950">Rs. {total.toFixed(2)}</span>
+            <span className="font-sans text-2xl text-zinc-950">Rs. {total.toFixed(2)}</span>
             {savings > 0 && (
               <div className="mt-1 text-xs font-medium text-emerald-700">
                 Save Rs. {savings.toFixed(2)}

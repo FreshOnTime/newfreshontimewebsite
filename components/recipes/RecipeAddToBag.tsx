@@ -67,11 +67,11 @@ export default function RecipeAddToBag({ slug, availableIngredientCount }: Recip
       type="button"
       onClick={addRecipe}
       disabled={isAdding || availableIngredientCount === 0}
-      className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-emerald-950 px-7 text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-all hover:-translate-y-0.5 hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+      className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-emerald-950 px-7 text-xs font-bold normal-case text-white transition-all hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
     >
       {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
       {isAdding ? "Building your basket" : "Add the whole meal"}
-      {!isAdding && <Sparkles className="h-3.5 w-3.5 text-emerald-200 transition-transform group-hover:rotate-12" />}
+      {!isAdding && <Sparkles className="h-3.5 w-3.5 text-brand-green transition-transform group-hover:rotate-12" />}
     </button>
   );
 }

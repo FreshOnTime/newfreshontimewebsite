@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MessageCircle, X, Send, Phone } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { WHATSAPP_NUMBER } from '@/lib/config/site';
 
 export default function WhatsAppButton() {
     const pathname = usePathname();
@@ -12,11 +13,11 @@ export default function WhatsAppButton() {
     // Keep the premium homepage free of floating chat UI and hide it in admin.
     // Support remains available on deeper customer-facing pages where it is
     // more contextual and less distracting from the main shopping experience.
-    if (pathname === '/' || pathname?.startsWith('/admin')) {
+    if (!WHATSAPP_NUMBER || pathname === '/' || pathname?.startsWith('/admin') || pathname?.startsWith('/auth')) {
         return null;
     }
 
-    const phoneNumber = '94771234567'; // Replace with actual WhatsApp number
+    const phoneNumber = WHATSAPP_NUMBER;
     const defaultMessages = [
         'Hi! I want to place an order 🛒',
         'I have a question about delivery 🚚',
@@ -35,32 +36,32 @@ export default function WhatsAppButton() {
             {/* Floating Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+                className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 bg-brand-amber hover:bg-brand-amber rounded-full shadow-none flex items-center justify-center transition-all duration-300  group"
                 aria-label="Contact via WhatsApp"
             >
                 {isOpen ? (
                     <X className="w-6 h-6 text-white" />
                 ) : (
                     <>
-                        <MessageCircle className="w-7 h-7 text-white fill-white" />
+                        <MessageCircle className="w-7 h-7 text-accent-foreground" />
                         {/* Pulse Animation */}
-                        <span className="absolute w-full h-full rounded-full bg-green-500 animate-ping opacity-30" />
+
                     </>
                 )}
             </button>
 
             {/* Chat Popup */}
             {isOpen && (
-                <div className="fixed bottom-36 md:bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="fixed bottom-36 md:bottom-24 right-6 z-50 w-[calc(100vw-3rem)] max-w-80 border border-border bg-background rounded-xl shadow-sm overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
-                    <div className="bg-green-500 p-4 text-white">
+                    <div className="bg-brand-green p-4 text-white">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                                 <MessageCircle className="w-5 h-5" />
                             </div>
                             <div>
                                 <h3 className="font-semibold">Fresh Pick Support</h3>
-                                <p className="text-xs text-green-100">Usually replies within minutes</p>
+                                <p className="text-xs text-white/85">Contact our team</p>
                             </div>
                         </div>
                     </div>
@@ -68,7 +69,7 @@ export default function WhatsAppButton() {
                     {/* Content */}
                     <div className="p-4">
                         <p className="text-sm text-gray-600 mb-4">
-                            👋 Hi there! How can we help you today?
+                            How can we help?
                         </p>
 
                         {/* Quick Messages */}
@@ -77,7 +78,7 @@ export default function WhatsAppButton() {
                                 <button
                                     key={i}
                                     onClick={() => sendMessage(msg)}
-                                    className="w-full text-left text-sm px-3 py-2 bg-gray-50 hover:bg-green-50 rounded-lg border border-gray-100 hover:border-green-200 transition-colors"
+                                    className="w-full text-left text-sm px-3 py-2 bg-background hover:bg-green-50 rounded-lg border border-gray-100 hover:border-green-200 transition-colors"
                                 >
                                     {msg}
                                 </button>
@@ -97,7 +98,7 @@ export default function WhatsAppButton() {
                             <button
                                 onClick={() => sendMessage(message)}
                                 disabled={!message.trim()}
-                                className="px-3 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white rounded-lg transition-colors"
+                                className="px-3 py-2 bg-brand-amber hover:bg-brand-amber disabled:bg-gray-300 text-accent-foreground rounded-lg transition-colors"
                             >
                                 <Send className="w-4 h-4" />
                             </button>
@@ -105,13 +106,13 @@ export default function WhatsAppButton() {
                     </div>
 
                     {/* Footer */}
-                    <div className="px-4 py-3 bg-gray-50 border-t text-center">
+                    <div className="px-4 py-3 bg-background border-t text-center">
                         <a
                             href={`tel:+${phoneNumber}`}
                             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-green-600"
                         >
                             <Phone className="w-4 h-4" />
-                            Prefer to call? +94 77 123 4567
+                            Call FreshPick
                         </a>
                     </div>
                 </div>

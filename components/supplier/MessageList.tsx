@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mail, MailOpen } from 'lucide-react';
-
 
 interface Message {
     _id: string;
@@ -79,19 +78,19 @@ export default function MessageList() {
                 {messages.length === 0 ? (
                     <div className="text-center text-gray-500 py-8">No messages</div>
                 ) : (
-                    <ScrollArea className="h-[500px] pr-4">
+                    <ScrollArea className="h-64 pr-4">
                         <div className="space-y-4">
                             {messages.map((msg) => (
                                 <div
                                     key={msg._id}
-                                    className={`border rounded-lg p-4 transition-colors cursor-pointer ${msg.isRead ? 'bg-white' : 'bg-blue-50 border-blue-100'
-                                        }`}
+                                    className={`border rounded-lg p-4 transition-colors cursor-pointer ${msg.isRead ? 'bg-background' : 'bg-blue-50 border-blue-100'
+                                        } `}
                                     onClick={() => handleRead(msg._id, msg.isRead)}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="font-semibold flex items-center gap-2">
                                             {msg.isRead ? (
-                                                <MailOpen className="h-4 w-4 text-gray-400" />
+                                                <MailOpen className="h-4 w-4 text-muted-foreground" />
                                             ) : (
                                                 <div className="h-2 w-2 rounded-full bg-blue-500" />
                                             )}
@@ -109,7 +108,7 @@ export default function MessageList() {
                                     {expandedId === msg._id && (
                                         <div className="mt-3 text-sm text-gray-700 border-t pt-3">
                                             <p className="whitespace-pre-wrap">{msg.content}</p>
-                                            <div className="mt-4 text-xs text-gray-400">
+                                            <div className="mt-4 text-xs text-muted-foreground">
                                                 From: {msg.sender.firstName} {msg.sender.lastName}
                                             </div>
                                         </div>

@@ -25,7 +25,7 @@ export default function QuantityInputSmall(props: QuantityInputSmallProps) {
       <PopoverTrigger>
         <div
           className={cn(
-            "text-gray-600 text-sm rounded-full border bg-background hover:bg-gray-100 transition-colors cursor-pointer px-3 py-1 flex items-center gap-1.5",
+            "text-gray-600 text-sm rounded-full border bg-background hover:bg-background transition-colors cursor-pointer px-3 py-1 flex items-center gap-1.5",
             className
           )}
         >
@@ -35,7 +35,7 @@ export default function QuantityInputSmall(props: QuantityInputSmallProps) {
         </div>
       </PopoverTrigger>
 
-      <PopoverContent className="max-w-[100vw] w-44 border border-primary rounded-full overflow-hidden bg-white shadow-lg p-0">
+      <PopoverContent className="max-w-[100vw] w-44 border border-primary rounded-full overflow-hidden bg-background shadow-none p-0">
         <QuantityInputBase {...props} />
       </PopoverContent>
     </Popover>
