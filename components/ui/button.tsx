@@ -5,11 +5,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-95 duration-200 ease-out",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 duration-200 ease-out",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+        default: "bg-accent text-accent-foreground hover:bg-accent/85",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
         outline:
@@ -18,14 +18,14 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-emerald-50 hover:text-emerald-700",
         link: "text-primary underline-offset-4 hover:underline",
-        "elite": "bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-500 text-emerald-950 hover:to-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.28)] hover:shadow-[0_0_30px_rgba(16,185,129,0.42)] hover:-translate-y-0.5 border border-emerald-400/20",
-        "luxury": "bg-primary text-white border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 backdrop-blur-md",
+        "elite": "bg-accent text-accent-foreground hover:bg-accent/85",
+        "luxury": "bg-primary text-primary-foreground hover:bg-primary/90",
       },
       size: {
         default: "h-12 px-6 py-2 text-base",
-        sm: "h-10 rounded-full px-4 text-xs tracking-wide uppercase",
-        lg: "h-14 rounded-full px-10 text-lg font-bold tracking-tight",
-        icon: "h-12 w-12 rounded-full",
+        sm: "h-10 rounded-lg px-4 text-xs tracking-wide uppercase",
+        lg: "h-14 rounded-lg px-10 text-lg font-bold tracking-tight",
+        icon: "h-12 w-12 rounded-lg",
       },
     },
     defaultVariants: {

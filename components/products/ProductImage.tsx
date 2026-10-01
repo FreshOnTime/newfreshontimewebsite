@@ -3,7 +3,7 @@ import Image from "next/image";
 function ProductImage({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
   if (!src) {
     return (
-      <div className="relative aspect-square overflow-hidden bg-zinc-50">
+      <div className="relative aspect-square overflow-hidden bg-background">
         <Image
           src="/placeholder.svg"
           alt="Product image unavailable"
@@ -18,13 +18,13 @@ function ProductImage({ src, alt, priority = false }: { src: string; alt: string
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#f4f4f5]">
+    <div className="relative h-full w-full overflow-hidden bg-background">
       <Image
         src={src}
         alt={alt}
         fill
         priority={priority}
-        className="object-cover transition-transform duration-1000 ease-out hover:scale-105"
+        className="object-contain p-3"
         loading={priority ? "eager" : "lazy"}
         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
       />

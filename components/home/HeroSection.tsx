@@ -1,96 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Compass, Heart, MapPin, ShoppingBasket, Sparkles } from "lucide-react";
-
-const quickLinks = [
-  { label: "Dinner tonight", href: "/recipes" },
-  { label: "Picked for you", href: "/for-you" },
-  { label: "Local makers", href: "/homemade" },
-];
+import { ArrowRight, MapPin, ShoppingBasket } from "lucide-react";
 
 export default function HeroSection() {
   return (
-    <section className="relative flex min-h-[88svh] items-end overflow-hidden bg-[#07110c] text-white md:min-h-[92vh]">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/bgs/home-hero.jpg"
-          alt="Fresh food and produce selected for everyday cooking"
-          fill
-          sizes="100vw"
-          className="object-cover opacity-80"
-          priority
-          fetchPriority="high"
-          unoptimized
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#07110c]/95 via-[#07110c]/60 to-[#07110c]/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07110c] via-[#07110c]/5 to-black/30" />
-      </div>
-
-      <div className="container relative z-10 mx-auto max-w-[1600px] px-5 pb-10 pt-32 md:px-10 md:pb-14 lg:px-16 lg:pb-20">
-        <div className="grid items-end gap-12 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="animate-fade-up">
-            <div className="mb-7 flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/15 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-100 backdrop-blur-md">
-                <Sparkles className="h-3.5 w-3.5" /> Food worth looking forward to
-              </span>
-              <span className="hidden items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-white/55 sm:inline-flex">
-                <MapPin className="h-3.5 w-3.5" /> Colombo · Sri Lanka
-              </span>
-            </div>
-
-            <h1 className="max-w-6xl text-balance font-serif text-[3.6rem] font-normal leading-[0.89] tracking-[-0.045em] text-white sm:text-7xl md:text-8xl lg:text-[7.2rem]">
-              Discover what to eat.<br className="hidden sm:block" /> Get everything <span className="italic text-emerald-200">to make it.</span>
-            </h1>
-
-            <div className="mt-8 grid max-w-6xl gap-7 lg:grid-cols-[minmax(0,650px)_auto] lg:items-end">
-              <p className="max-w-2xl text-base font-light leading-7 text-white/72 md:text-lg md:leading-8">
-                Recipes, fresh groceries, ready meals and independent local makers in one place. As you shop, FreshPick quietly gets better at surfacing what fits your taste and weekly rhythm.
-              </p>
-
-              <div className="flex flex-wrap gap-3 lg:justify-end">
-                <Link
-                  prefetch={false}
-                  href="/discover"
-                  className="group inline-flex h-14 items-center gap-3 rounded-full bg-white px-7 text-[11px] font-bold uppercase tracking-[0.16em] text-[#07110c] shadow-[0_12px_40px_rgba(0,0,0,0.18)] transition-all hover:-translate-y-0.5 hover:bg-emerald-50"
-                >
-                  <Compass className="h-4 w-4" /> Discover food
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-                <Link
-                  prefetch={false}
-                  href="/products"
-                  className="inline-flex h-14 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-6 text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md transition-all hover:border-emerald-200/60 hover:bg-white/[0.14]"
-                >
-                  <ShoppingBasket className="h-4 w-4" /> Shop the market
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-10 flex flex-wrap gap-2 border-t border-white/12 pt-6">
-              <span className="mr-2 py-2 text-[9px] font-bold uppercase tracking-[0.24em] text-white/40">Start with</span>
-              {quickLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  prefetch={false}
-                  className="rounded-full border border-white/12 bg-black/10 px-4 py-2 text-xs text-white/75 backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <aside className="hidden rounded-[2rem] border border-white/12 bg-black/20 p-7 backdrop-blur-xl xl:block">
-            <Heart className="h-5 w-5 text-emerald-200" />
-            <p className="mt-5 font-serif text-3xl font-normal leading-tight text-white">A food shop that remembers the things you love.</p>
-            <p className="mt-5 text-sm font-light leading-7 text-white/60">
-              Your order history can shape future picks and help FreshPick notice the essentials you tend to need again.
-            </p>
-            <Link href="/for-you" className="mt-7 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100">
-              See your picks <ArrowRight className="h-4 w-4" />
+    <section className="border-b border-border bg-background">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 md:grid-cols-2 md:px-8 md:py-16">
+        <div className="max-w-xl">
+          <p className="mb-5 flex items-center gap-2 text-sm font-medium text-brand-green">
+            <MapPin className="h-4 w-4" aria-hidden="true" /> Your local market in Colombo
+          </p>
+          <h1 className="font-heading text-4xl font-semibold leading-tight text-brand-green sm:text-5xl lg:text-6xl">
+            Fresh food.<br />Everyday favourites.
+          </h1>
+          <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground md:text-lg">
+            Fresh produce, pantry staples, ready meals and food from local makers. Find what you need for your next meal, all in one place.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link href="/products" prefetch={false} className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-brand-amber px-6 py-3 font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">
+              <ShoppingBasket className="h-5 w-5" aria-hidden="true" /> Shop groceries
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-          </aside>
+            <Link href="/recipes" prefetch={false} className="inline-flex min-h-12 items-center rounded-lg border border-brand-green px-6 py-3 font-semibold text-brand-green transition-colors hover:bg-secondary">
+              Find a recipe
+            </Link>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-5 text-sm text-brand-green">
+            <Link href="/homemade" className="underline-offset-4 hover:underline">Meet local makers</Link>
+            <Link href="/meals" className="underline-offset-4 hover:underline">Browse ready meals</Link>
+            <Link href="/subscriptions" className="underline-offset-4 hover:underline">Your weekly basket</Link>
+          </div>
+        </div>
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
+          <Image src="/bgs/home-hero.jpg" alt="Fresh produce and ingredients for everyday cooking" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" priority fetchPriority="high" unoptimized />
         </div>
       </div>
     </section>

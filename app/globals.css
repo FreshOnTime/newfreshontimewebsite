@@ -9,46 +9,46 @@
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
 
-    /* FreshPick brand system — derived from the supplied logo. */
-    --freshpick-green: 148 54% 23%;
-    --freshpick-green-deep: 148 58% 15%;
-    --freshpick-orange: 23 78% 60%;
-    --freshpick-lime: 79 51% 50%;
-    --freshpick-cream: 48 50% 97%;
+    /* Fresh-market palette: cream surfaces (60%), green identity (30%), amber actions (10%). */
+    --freshpick-green: 142.00000 38.96104% 30.19608%;
+    --freshpick-green-deep: 143.18182 38.59649% 22.35294%;
+    --freshpick-orange: 36.00000 77.27273% 56.86275%;
+    --freshpick-lime: 142.00000 38.96104% 30.19608%;
+    --freshpick-cream: 50.00000 30.00000% 96.07843%;
 
     --background: var(--freshpick-cream);
     --foreground: 148 34% 13%;
 
-    --card: 0 0% 100%;
+    --card: 50.00000 30.00000% 96.07843%;
     --card-foreground: 148 34% 13%;
 
-    --popover: 0 0% 100%;
+    --popover: 50.00000 30.00000% 96.07843%;
     --popover-foreground: 148 34% 13%;
 
     --primary: var(--freshpick-green);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 79 47% 95%;
-    --secondary-foreground: 148 48% 18%;
+    --secondary: 86.66667 24.32432% 92.74510%;
+    --secondary-foreground: 142.00000 38.96104% 30.19608%;
 
     --muted: 47 25% 94%;
-    --muted-foreground: 145 10% 43%;
+    --muted-foreground: 120.00000 5.31915% 36.86275%;
 
     --accent: var(--freshpick-orange);
-    --accent-foreground: 148 45% 14%;
+    --accent-foreground: 41.53846 18.84058% 13.52941%;
 
     /* Legacy names retained so older components inherit the new brand. */
     --gold: var(--freshpick-orange);
-    --gold-dark: 23 70% 48%;
+    --gold-dark: 35.21739 71.87500% 37.64706%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 78 22% 88%;
-    --input: 78 22% 88%;
+    --border: 70.00000 15.78947% 85.09804%;
+    --input: 70.00000 15.78947% 85.09804%;
     --ring: var(--freshpick-green);
 
-    --radius: 1rem;
+    --radius: 0.625rem;
 
     --fruits: 23 78% 60%;
     --vegetables: 148 54% 36%;
@@ -97,10 +97,7 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     background-color: hsl(var(--background));
-    background-image:
-      radial-gradient(at 0% 0%, hsla(79, 51%, 50%, 0.08) 0px, transparent 42%),
-      radial-gradient(at 100% 0%, hsla(23, 78%, 60%, 0.08) 0px, transparent 42%);
-    background-attachment: fixed;
+
   }
 
   h1,
@@ -129,44 +126,35 @@
   }
 
   .glass {
-    @apply bg-white/80 backdrop-blur-xl border border-white/20;
+    @apply bg-card border border-border;
   }
 
   .glass-dark {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10;
+    @apply bg-brand-green border border-white/20;
   }
 
   .shadow-premium {
-    box-shadow:
-      0 1px 2px rgba(27, 91, 53, 0.04),
-      0 4px 8px rgba(27, 91, 53, 0.05),
-      0 16px 32px rgba(27, 91, 53, 0.06);
+    box-shadow: 0 2px 8px rgba(47, 107, 69, 0.06);
   }
 
   .shadow-premium-lg {
-    box-shadow:
-      0 2px 4px rgba(27, 91, 53, 0.03),
-      0 8px 16px rgba(27, 91, 53, 0.05),
-      0 24px 48px rgba(27, 91, 53, 0.08);
+    box-shadow: 0 2px 8px rgba(47, 107, 69, 0.06);
   }
 
   .shadow-premium-hover {
-    box-shadow:
-      0 4px 8px rgba(27, 91, 53, 0.05),
-      0 12px 24px rgba(27, 91, 53, 0.08),
-      0 32px 64px rgba(27, 91, 53, 0.1);
+    box-shadow: 0 2px 8px rgba(47, 107, 69, 0.06);
   }
 
   .text-gradient-premium {
-    @apply bg-gradient-to-r from-emerald-800 via-emerald-600 to-orange-500 bg-clip-text text-transparent;
+    @apply text-brand-green;
   }
 
   .brand-gradient {
-    background-image: linear-gradient(135deg, #1b5b35 0%, #557f37 58%, #97bf3e 100%);
+    background-color: #2F6B45;
   }
 
   .brand-accent-gradient {
-    background-image: linear-gradient(135deg, #ea8646 0%, #f1a568 100%);
+    background-color: #E6A23C;
   }
 
   .card-hover-premium {
@@ -174,16 +162,12 @@
   }
 
   .card-hover-premium:hover {
-    @apply -translate-y-1;
-    box-shadow:
-      0 4px 8px rgba(27, 91, 53, 0.05),
-      0 16px 32px rgba(27, 91, 53, 0.1);
+    border-color: hsl(var(--primary));
   }
 
   .border-gradient {
-    background: linear-gradient(white, white) padding-box,
-      linear-gradient(135deg, #1b5b35, #97bf3e, #ea8646) border-box;
-    border: 1px solid transparent;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
   }
 }
 
@@ -225,16 +209,15 @@
 }
 
 .hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px rgba(27, 91, 53, 0.18);
+  border-color: hsl(var(--primary));
 }
 
 .bg-section-alt {
-  background: linear-gradient(180deg, #fffdf7 0%, #f4f7ed 100%);
+  background: #F8F7F2;
 }
 
 .bg-section-premium {
-  background: linear-gradient(180deg, #ffffff 0%, #f6faef 100%);
+  background: #F8F7F2;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -248,4 +231,18 @@ input:focus,
 textarea:focus,
 select:focus {
   @apply outline-none ring-2 ring-emerald-500/20 border-emerald-600;
+}
+
+/* Decorative motion yields to a quieter, accessible storefront. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob, .animate-float, .animate-shimmer, .animate-fade-up {
+    animation: none;
+  }
+}
+
+@layer base {
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
 }

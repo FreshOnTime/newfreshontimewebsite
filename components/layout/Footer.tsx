@@ -27,37 +27,35 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-emerald-300/10 bg-[#020303] text-white">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/30 to-transparent" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[48rem] -translate-x-1/2 rounded-full bg-emerald-400/[0.035] blur-3xl" />
+    <footer className="border-t border-brand-green bg-brand-green pb-24 text-white md:pb-0">
 
       <div className="relative border-b border-white/5">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-8 px-6 py-16 md:flex-row md:px-12">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-8 px-6 py-10 md:flex-row md:px-12">
           <div className="max-w-lg text-center md:text-left">
-            <h3 className="mb-3 font-serif text-3xl italic text-white md:text-4xl">Stay close to what’s fresh.</h3>
-            <p className="font-light text-zinc-400">New recipes, local makers, seasonal food and useful FreshPick updates.</p>
+            <h3 className="mb-3 font-heading text-2xl font-semibold text-white md:text-3xl">Stay close to what’s fresh.</h3>
+            <p className="font-light text-white/85">New recipes, local makers, seasonal food and useful FreshPick updates.</p>
           </div>
           <FooterNewsletterForm />
         </div>
       </div>
 
-      <div className="container relative z-10 mx-auto px-6 py-20 md:px-12">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-20">
+      <div className="container relative z-10 mx-auto px-6 py-12 md:px-12">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-12">
           <div className="space-y-7 md:col-span-4">
             <Link href="/" className="inline-block">
               <div className="flex flex-col">
-                <span className="font-serif text-3xl font-bold tracking-tight text-white">Fresh<span className="italic text-emerald-300">Pick</span></span>
-                <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-500">Colombo</span>
+                <span className="font-serif text-3xl font-bold tracking-tight text-white">Fresh<span className="italic text-brand-cream">Pick</span></span>
+                <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-white/85">Colombo</span>
               </div>
             </Link>
-            <p className="max-w-sm font-light leading-relaxed text-zinc-400">
-              Food discovery, fresh groceries, ready meals and local makers — with a little more help from the things you already love.
+            <p className="max-w-sm font-light leading-relaxed text-white/85">
+              Fresh groceries, everyday essentials and food from local makers. Made for your kitchen in Colombo.
             </p>
 
             {socialLinks.length > 0 && (
               <div className="flex gap-3 pt-2">
                 {socialLinks.map((item) => (
-                  <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/5 bg-white/[0.035] text-zinc-400 transition-all duration-300 hover:border-emerald-300/30 hover:bg-emerald-300/10 hover:text-emerald-300">
+                  <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/5 bg-white/[0.035] text-white/85 transition-all duration-300 hover:border-emerald-300/30 hover:bg-emerald-300/10 hover:text-brand-cream">
                     <item.icon className="h-4 w-4" />
                   </a>
                 ))}
@@ -67,32 +65,32 @@ export function Footer() {
 
           <div className="grid grid-cols-2 gap-10 md:col-span-8 md:grid-cols-3">
             <div>
-              <h4 className="mb-7 font-serif text-lg italic text-white">Discover</h4>
+              <h4 className="mb-7 text-base font-semibold text-white">Discover</h4>
               <ul className="space-y-4">
                 {discoverLinks.map((item) => (
-                  <li key={item.name}><Link href={item.href} className="text-sm font-light tracking-wide text-zinc-500 transition-colors hover:text-emerald-300">{item.name}</Link></li>
+                  <li key={item.name}><Link href={item.href} className="text-sm font-light tracking-wide text-white/85 transition-colors hover:text-brand-cream">{item.name}</Link></li>
                 ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="mb-7 font-serif text-lg italic text-white">FreshPick</h4>
+              <h4 className="mb-7 text-base font-semibold text-white">FreshPick</h4>
               <ul className="space-y-4">
                 {companyLinks.map((item) => (
-                  <li key={item.name}><Link href={item.href} className="text-sm font-light tracking-wide text-zinc-500 transition-colors hover:text-emerald-300">{item.name}</Link></li>
+                  <li key={item.name}><Link href={item.href} className="text-sm font-light tracking-wide text-white/85 transition-colors hover:text-brand-cream">{item.name}</Link></li>
                 ))}
               </ul>
             </div>
 
             <div className="col-span-2 md:col-span-1">
-              <h4 className="mb-7 font-serif text-lg italic text-white">Client care</h4>
+              <h4 className="mb-7 text-base font-semibold text-white">Need a hand?</h4>
               <ul className="space-y-4">
-                <li className="flex items-start gap-3 text-sm font-light text-zinc-500">
-                  <MapPin className="mt-1 h-4 w-4 shrink-0 text-emerald-400/70" />
+                <li className="flex items-start gap-3 text-sm font-light text-white/85">
+                  <MapPin className="mt-1 h-4 w-4 shrink-0 text-white/85" />
                   <span>Current coverage includes {SERVICE_AREAS.slice(0, 4).join(", ")} and nearby Colombo areas.</span>
                 </li>
-                <li className="flex items-center gap-3 text-sm font-light text-zinc-500">
-                  <Mail className="h-4 w-4 shrink-0 text-emerald-400/70" />
+                <li className="flex items-center gap-3 text-sm font-light text-white/85">
+                  <Mail className="h-4 w-4 shrink-0 text-white/85" />
                   <a href={`mailto:${SUPPORT_EMAIL}`} className="break-all transition-colors hover:text-white">{SUPPORT_EMAIL}</a>
                 </li>
               </ul>
@@ -100,14 +98,14 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-20 border-t border-white/5 pt-8">
-          <div className="flex flex-col items-center justify-between gap-4 text-xs font-light text-zinc-500 md:flex-row">
+        <div className="mt-10 border-t border-white/5 pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 text-xs font-light text-white/85 md:flex-row">
             <p>&copy; {new Date().getFullYear()} FreshPick. All rights reserved.</p>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <Link href="/privacy" className="transition-colors hover:text-emerald-300">Privacy Policy</Link>
-              <Link href="/terms" className="transition-colors hover:text-emerald-300">Terms of Service</Link>
-              <Link href="/cookies" className="transition-colors hover:text-emerald-300">Cookie Policy</Link>
-              <Link href="/help-us" className="transition-colors hover:text-emerald-300">Help</Link>
+              <Link href="/privacy" className="transition-colors hover:text-brand-cream">Privacy Policy</Link>
+              <Link href="/terms" className="transition-colors hover:text-brand-cream">Terms of Service</Link>
+              <Link href="/cookies" className="transition-colors hover:text-brand-cream">Cookie Policy</Link>
+              <Link href="/help-us" className="transition-colors hover:text-brand-cream">Help</Link>
             </div>
           </div>
         </div>

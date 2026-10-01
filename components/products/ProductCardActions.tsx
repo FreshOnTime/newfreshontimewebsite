@@ -73,17 +73,18 @@ export default function ProductCardActions({ id, sku, name, image, price }: Prod
       <button
         type="button"
         onClick={quickAdd}
+        aria-label={`Add ${name} to ${currentBag?.name || "bag"}`}
         disabled={loading && Boolean(user && currentBag)}
-        className="flex h-12 flex-1 items-center justify-center gap-2 bg-[#09090b] px-3 text-[9px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-emerald-900 disabled:cursor-wait disabled:opacity-60"
+        className="flex h-12 flex-1 items-center justify-center gap-2 rounded-l-lg bg-brand-amber px-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-wait disabled:opacity-60"
       >
-        <ShoppingBag className="h-3.5 w-3.5 stroke-1" />
-        {currentBag ? `Add to ${currentBag.name}` : "Add to bag"}
+        <ShoppingBag className="h-4 w-4 shrink-0" />
+        <span className="min-w-0 truncate">Add to bag</span>
       </button>
       <button
         type="button"
         onClick={toggleWishlist}
         className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center border border-l-0 border-[#09090b] bg-transparent text-[#09090b] transition-colors hover:bg-[#ecfdf5]",
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-r-lg border border-l-0 border-border bg-card text-brand-green transition-colors hover:bg-secondary",
           isWishlisted && "text-[#8b2635]"
         )}
         aria-label={isWishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}

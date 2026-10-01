@@ -11,57 +11,31 @@ interface PremiumPageHeaderProps {
 }
 
 export default function PremiumPageHeader({
-  title,
-  subtitle,
-  backgroundImage,
-  backgroundColor = "bg-[#08140f]",
-  count,
-  isLoading = false,
-  eyebrow = "FreshPick · Colombo",
+  title, subtitle, backgroundImage, backgroundColor = "bg-background",
+  count, isLoading = false, eyebrow = "FreshPick · Colombo",
 }: PremiumPageHeaderProps) {
   return (
-    <section className={`relative flex min-h-[460px] items-end overflow-hidden text-white md:min-h-[560px] ${backgroundImage ? "" : backgroundColor}`}>
-      {backgroundImage && (
-        <div className="absolute inset-0">
-          <Image
-            src={backgroundImage}
-            alt=""
-            fill
-            priority
-            fetchPriority="high"
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-[#09090b]/60" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/90 via-[#09090b]/45 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-black/30" />
-        </div>
-      )}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(216,189,122,0.08),transparent_32%),radial-gradient(circle_at_85%_70%,rgba(255,255,255,0.05),transparent_28%)]" />
-
-      <div className="container relative z-10 mx-auto max-w-7xl px-5 pb-16 md:px-8 md:pb-20">
+    <section className={`border-b border-border py-10 md:py-12 ${backgroundColor}`}>
+      <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 md:px-8">
         {isLoading ? (
-          <div className="max-w-3xl animate-pulse">
-            <div className="h-3 w-48 bg-white/15" />
-            <div className="mt-8 h-20 w-3/4 bg-white/10" />
-            <div className="mt-8 h-5 w-1/2 bg-white/10" />
+          <div className="max-w-3xl animate-pulse" role="status" aria-label="Loading page">
+            <div className="h-4 w-40 rounded bg-muted" />
+            <div className="mt-5 h-12 w-3/4 rounded bg-muted" />
+            <div className="mt-5 h-5 w-1/2 rounded bg-muted" />
           </div>
         ) : (
-          <div className="max-w-5xl">
-            <span className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-[#6ee7b7]">
-              <span className="h-px w-10 bg-[#6ee7b7]/70" /> {eyebrow}
-            </span>
-            <h1 className="mt-7 max-w-5xl font-serif text-5xl font-normal leading-[0.9] tracking-[-0.035em] text-white md:text-7xl lg:text-8xl">
-              {title}
-            </h1>
-            <div className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-              {subtitle && <p className="max-w-2xl text-base font-light leading-8 text-white/65 md:text-lg">{subtitle}</p>}
-              {count !== undefined && (
-                <span className="w-fit border-b border-[#6ee7b7]/60 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d1fae5]">
-                  {count} {count === 1 ? "item" : "items"}
-                </span>
-              )}
+          <div className={`grid items-center gap-8 ${backgroundImage ? "md:grid-cols-[1fr_0.6fr]" : ""}`}>
+            <div>
+              <p className="text-sm font-medium text-brand-green">{eyebrow}</p>
+              <h1 className="mt-3 font-heading text-4xl font-semibold leading-tight text-brand-green md:text-5xl">{title}</h1>
+              {subtitle && <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{subtitle}</p>}
+              {count !== undefined && <p className="mt-4 text-sm text-brand-green">{count} {count === 1 ? "item" : "items"}</p>}
             </div>
+            {backgroundImage && (
+              <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-secondary">
+                <Image src={backgroundImage} alt="" fill priority sizes="(max-width: 768px) 100vw, 40vw" className="object-cover" />
+              </div>
+            )}
           </div>
         )}
       </div>

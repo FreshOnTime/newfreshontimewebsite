@@ -9,7 +9,6 @@ import HeroSection from "@/components/home/HeroSection";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
 import CategoryBento from "@/components/home/CategoryBento";
 import FoodDiscovery from "@/components/home/FoodDiscovery";
-import PlatformIntelligence from "@/components/home/PlatformIntelligence";
 import CreatorNetwork from "@/components/home/CreatorNetwork";
 import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import { serverApiFetch } from "@/lib/api/server";
@@ -18,8 +17,8 @@ export const dynamic = "force-static";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "FreshPick | Food Discovery, Smart Grocery & Local Food in Sri Lanka",
-  description: "Discover recipes, fresh groceries, ready meals and independent Sri Lankan makers with a FreshPick experience that gets more useful as you shop.",
+  title: "FreshPick | Fresh Groceries & Local Food in Sri Lanka",
+  description: "Discover recipes, fresh groceries, ready meals and independent Sri Lankan makers for everyday cooking in Colombo.",
   keywords: [
     "food discovery Colombo",
     "smart grocery Sri Lanka",
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "FreshPick | Discover what to eat. Get everything to make it.",
-    description: "A premium food discovery and grocery experience for Sri Lanka.",
+    description: "Fresh groceries, recipes, ready meals and local makers in Sri Lanka.",
     type: "website",
     locale: "en_LK",
     url: "https://freshpick.lk",
@@ -78,25 +77,24 @@ export default async function Home() {
   const { products, categories } = await getHomeData();
 
   return (
-    <main className="overflow-hidden bg-white">
+    <main className="overflow-hidden bg-background">
       <HeroSection />
-      <FoodDiscovery />
-      <PlatformIntelligence />
+      <CategoryBento categories={categories} />
 
-      <section className="bg-[#f3f5f1] py-24 md:py-32">
+      <section className="bg-background py-10 md:py-14">
         <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <AnimatedSection className="mb-12 grid gap-7 md:mb-16 md:grid-cols-[1fr_0.72fr] md:items-end">
+          <AnimatedSection className="mb-7 flex flex-wrap items-end justify-between gap-5">
             <div>
-              <span className="mb-5 block text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-700">The market</span>
-              <h2 className="text-balance font-serif text-5xl font-normal leading-[0.94] tracking-tight text-zinc-950 md:text-7xl">
-                Fresh things, when you already <span className="italic text-emerald-900">know what you need.</span>
+              <span className="mb-2 block text-sm font-medium text-brand-green">The market</span>
+              <h2 className="font-heading text-3xl font-semibold leading-tight text-brand-green md:text-4xl">
+                Fresh from the market
               </h2>
             </div>
             <div className="md:justify-self-end">
-              <p className="max-w-lg text-base font-light leading-7 text-zinc-600">
-                Browse the catalogue directly, or start with a recipe, craving or personal pick when you want a little help deciding.
+              <p className="max-w-lg text-base leading-7 text-muted-foreground">
+                Fresh produce and everyday essentials for your kitchen.
               </p>
-              <Link href="/products" className="mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-950 transition-colors hover:text-emerald-700">
+              <Link href="/products" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">
                 Shop the market <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
@@ -104,7 +102,7 @@ export default async function Home() {
 
           <ProductErrorBoundary>
             {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-6">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 {products.map((product, index) => (
                   <AnimatedProductItem key={product.sku} index={index}>
                     <ProductCard
@@ -123,7 +121,7 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-[2rem] border border-zinc-200 bg-white px-6 py-16 text-center shadow-[0_20px_70px_rgba(10,30,18,0.05)]">
+              <div className="rounded-xl border border-border bg-card px-6 py-12 text-center">
                 <p className="font-serif text-2xl text-zinc-900">The market is being refreshed.</p>
                 <Link href="/products" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
               </div>
@@ -132,8 +130,8 @@ export default async function Home() {
         </div>
       </section>
 
+      <FoodDiscovery />
       <CreatorNetwork />
-      <CategoryBento categories={categories} />
       <LuxuryManifesto />
     </main>
   );

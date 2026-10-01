@@ -83,7 +83,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
     <>
       <div className="w-full flex">
         <Button
-          className="h-12 w-full rounded-none bg-[#09090b] px-4 text-[9px] font-bold uppercase leading-tight tracking-[0.14em] text-white hover:bg-emerald-900"
+          className="h-12 w-full rounded-l-lg rounded-r-none bg-brand-amber px-4 text-sm font-semibold leading-tight text-accent-foreground hover:bg-brand-amber/85"
           disabled={product.isOutOfStock || loading || !selectedBagId}
           onClick={handleAddToBag}
         >
@@ -93,7 +93,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="border-l border-white/25 bg-[#09090b] px-4 text-white transition-colors hover:bg-emerald-900"
+            className="rounded-r-lg border-l border-accent-foreground/20 bg-brand-amber px-4 text-accent-foreground transition-colors hover:bg-brand-amber/85"
             disabled={loading}
             aria-label="Choose shopping bag"
           >

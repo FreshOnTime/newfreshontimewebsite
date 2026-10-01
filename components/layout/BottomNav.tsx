@@ -38,7 +38,7 @@ export default function BottomNav() {
     return (
         <nav
             aria-label="Mobile navigation"
-            className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(24,24,27,0.08)] backdrop-blur-xl md:hidden"
+            className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/80 bg-background pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(24,24,27,0.08)] md:hidden"
         >
             <div className={`mx-auto grid h-[4.5rem] max-w-lg items-center px-2 ${hasDashboard ? "grid-cols-6" : "grid-cols-5"}`}>
                 {navItems.map(({ href, icon: Icon, label, showBadge }) => {
@@ -52,7 +52,7 @@ export default function BottomNav() {
                             aria-current={isActive ? "page" : undefined}
                             className={`group relative flex h-full min-w-0 flex-col items-center justify-center gap-1 px-1 transition-colors ${isActive
                                 ? "text-emerald-800"
-                                : "text-zinc-400 hover:text-zinc-700"
+                                : "text-muted-foreground hover:text-brand-green"
                                 }`}
                         >
                             <div
@@ -66,7 +66,7 @@ export default function BottomNav() {
                                     strokeWidth={isActive ? 2.2 : 1.8}
                                 />
                                 {showBadge && itemCount > 0 && (
-                                    <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-emerald-600 px-1 text-[10px] font-bold text-white shadow-sm">
+                                    <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-brand-amber px-1 text-[10px] font-bold text-accent-foreground shadow-sm">
                                         {itemCount > 99 ? "99+" : itemCount}
                                     </span>
                                 )}
