@@ -33,7 +33,7 @@ export function FooterNewsletterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full md:w-auto">
-      <div className="flex w-full gap-3 md:w-auto">
+      <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
         <label className="sr-only" htmlFor="footer-newsletter-email">Email address</label>
         <input
           id="footer-newsletter-email"
@@ -44,12 +44,12 @@ export function FooterNewsletterForm() {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email Address"
           disabled={status === "submitting"}
-          className="w-full rounded-full border border-white/10 bg-black/30 px-6 py-4 font-light text-white placeholder:text-zinc-600 transition-all focus:border-emerald-300/40 focus:outline-none md:w-80 disabled:opacity-60"
+          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-brand-amber focus:outline-none md:w-64 disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-8 py-4 font-medium tracking-wide text-emerald-50 transition-all hover:bg-emerald-300 hover:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-brand-amber px-5 py-3 font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === "submitting" ? "Joining…" : "Subscribe"}
         </button>

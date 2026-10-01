@@ -12,28 +12,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Brand palette from the FreshPick identity. Existing emerald classes now
-           inherit the same green family so older pages stay visually consistent. */
+        /* The 60/30/10 fresh-market palette. Legacy emerald/orange aliases
+           keep existing pages in the same brand family. */
         emerald: {
           50: "#f3f8ef",
           100: "#e4f0dc",
           200: "#c9dfb9",
           300: "#abc98c",
-          400: "#97bf3e",
+          400: "#6E9875",
           500: "#6f9f3f",
-          600: "#4f7f39",
-          700: "#366a38",
-          800: "#245f36",
-          900: "#1b5b35",
-          950: "#123d24",
+          600: "#2F6B45",
+          700: "#2F6B45",
+          800: "#2F6B45",
+          900: "#2F6B45",
+          950: "#234F34",
         },
         orange: {
           50: "#fff7f1",
           100: "#feebdc",
           200: "#fbd3b7",
           300: "#f5b384",
-          400: "#ef965e",
-          500: "#ea8646",
+          400: "#E6A23C",
+          500: "#E6A23C",
           600: "#d96d31",
           700: "#b65225",
           800: "#923f24",
@@ -41,11 +41,12 @@ export default {
           950: "#40190e",
         },
         brand: {
-          green: "#1b5b35",
-          "green-deep": "#123d24",
-          orange: "#ea8646",
-          lime: "#97bf3e",
-          cream: "#fbfaf4",
+          green: "#2F6B45",
+          amber: "#E6A23C",
+          "green-deep": "#234F34",
+          orange: "#E6A23C",
+          lime: "#6E9875",
+          cream: "#F8F7F2",
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

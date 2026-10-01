@@ -148,7 +148,7 @@ export default function ProductsFilterBar() {
   );
 
   return (
-    <div className="sticky top-[72px] z-30 rounded-[1.5rem] border border-zinc-200 bg-white/95 p-3 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl md:p-4">
+    <div className="sticky top-[76px] z-30 rounded-xl border border-border bg-background p-3 md:p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row">
           <form
@@ -158,10 +158,11 @@ export default function ProductsFilterBar() {
               apply({ search });
             }}
           >
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="h-12 rounded-full border-zinc-200 bg-[#f7f8f6] pl-11 pr-11 text-sm shadow-none placeholder:text-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-1 focus-visible:ring-emerald-500"
-              placeholder="Search groceries, meals, makers..."
+              className="h-12 rounded-lg border-zinc-200 bg-background pl-11 pr-11 text-sm shadow-none placeholder:text-muted-foreground focus-visible:border-emerald-500 focus-visible:ring-1 focus-visible:ring-emerald-500"
+              aria-label="Search products"
+              placeholder="Search products..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
@@ -173,7 +174,7 @@ export default function ProductsFilterBar() {
                   setSearch("");
                   apply({ search: null });
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-zinc-900"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-zinc-900"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -188,7 +189,7 @@ export default function ProductsFilterBar() {
               apply({ categoryId: nextCategory || null });
             }}
           >
-            <SelectTrigger className="h-12 w-full rounded-full border-zinc-200 bg-white px-5 shadow-none md:w-[190px]">
+            <SelectTrigger className="h-12 w-full rounded-lg border-zinc-200 bg-background px-5 shadow-none md:w-[190px]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -205,7 +206,7 @@ export default function ProductsFilterBar() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`h-11 shrink-0 rounded-full border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${minPrice > 0 || maxPrice < 5000 ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
+                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${minPrice > 0 || maxPrice < 5000 ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
               >
                 Price <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
               </Button>
@@ -235,11 +236,11 @@ export default function ProductsFilterBar() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`h-11 shrink-0 rounded-full border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${selectedTags.length > 0 || inStock ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
+                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${selectedTags.length > 0 || inStock ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
               >
                 <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
                 {(selectedTags.length > 0 || inStock) && (
-                  <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-800 px-1 text-[10px] text-white">
+                  <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-lg bg-emerald-800 px-1 text-[10px] text-white">
                     {selectedTags.length + (inStock ? 1 : 0)}
                   </span>
                 )}
@@ -247,7 +248,7 @@ export default function ProductsFilterBar() {
             </PopoverTrigger>
             <PopoverContent className="w-72 rounded-2xl p-4" align="end">
               <div className="space-y-2">
-                <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">Refine collection</p>
+                <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Refine collection</p>
                 <label className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-zinc-50">
                   <Checkbox
                     checked={inStock}
@@ -278,7 +279,7 @@ export default function ProductsFilterBar() {
               apply({ sort: nextSort || null });
             }}
           >
-            <SelectTrigger className="h-11 w-[150px] shrink-0 rounded-full border-zinc-200 bg-white px-4 shadow-none">
+            <SelectTrigger className="h-11 w-[150px] shrink-0 rounded-lg border-zinc-200 bg-background px-4 shadow-none">
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent align="end">
@@ -292,7 +293,7 @@ export default function ProductsFilterBar() {
           {hasActiveFilters && (
             <Button
               variant="ghost"
-              className="h-11 shrink-0 rounded-full px-4 text-xs text-zinc-500 hover:bg-red-50 hover:text-red-600"
+              className="h-11 shrink-0 rounded-lg px-4 text-xs text-zinc-500 hover:bg-red-50 hover:text-red-600"
               onClick={clearAll}
             >
               Reset

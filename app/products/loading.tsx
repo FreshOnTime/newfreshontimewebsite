@@ -6,7 +6,7 @@ export default function Loading() {
         <>
             <PremiumPageHeader
                 title="All Products"
-                subtitle="Explore our curated selection of premium groceries, fresh from the source to your table."
+                subtitle="Fresh groceries and everyday essentials for your kitchen."
                 count={0}
                 isLoading={true}
             />

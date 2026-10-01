@@ -1,70 +1,36 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, UsersRound } from "lucide-react";
+import { ArrowRight, ChefHat } from "lucide-react";
 import { listCreators } from "@/lib/creatorService";
 
 export default async function CreatorNetwork() {
   const creators = await listCreators(4).catch(() => []);
+  if (!creators.length) return null;
 
   return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="container mx-auto max-w-7xl px-4 md:px-8">
-        <div className="mb-12 grid gap-7 md:grid-cols-[1fr_0.65fr] md:items-end">
+    <section className="bg-background py-12 md:py-16">
+      <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700">
-              <UsersRound className="h-4 w-4" /> From the FreshPick kitchen
-            </div>
-            <h2 className="mt-5 max-w-4xl font-serif text-5xl font-normal leading-[0.94] tracking-[-0.03em] text-zinc-950 md:text-7xl">
-              Follow the food, then meet the person behind it.
-            </h2>
+            <h2 className="font-heading text-3xl font-semibold text-brand-green">From local kitchens</h2>
+            <p className="mt-3 text-muted-foreground">Meet the people sharing their favourite recipes.</p>
           </div>
-          <div className="md:justify-self-end">
-            <p className="max-w-lg text-base font-light leading-7 text-zinc-600">
-              Creator profiles are built from real published recipes on FreshPick, so discovery starts with something worth cooking rather than a follower count.
-            </p>
-            <Link href="/creators" className="mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900 hover:text-emerald-700">
-              Meet the creators <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <Link href="/creators" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">Meet the cooks <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
-
-        {creators.length === 0 ? (
-          <div className="rounded-[2rem] border border-zinc-200 bg-[#f5f6f3] px-6 py-14 text-sm font-light text-zinc-500">
-            Creator stories will appear here as recipes are published.
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {creators.map((creator, index) => {
-              const image = creator.latestRecipe?.image?.url;
-              return (
-                <Link
-                  key={creator.id}
-                  href={`/creators/${creator.id}`}
-                  className={`group relative overflow-hidden rounded-[2rem] bg-[#102017] ${index === 0 ? "md:col-span-2 xl:col-span-2" : ""}`}
-                >
-                  <div
-                    className={`relative bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.02] ${index === 0 ? "h-[460px]" : "h-[360px]"}`}
-                    style={image ? { backgroundImage: `linear-gradient(to top, rgba(7,17,12,.90), rgba(7,17,12,.08)), url(\"${image.replace(/\"/g, "%22")}\")` } : { backgroundImage: "linear-gradient(145deg,#153223,#07110c)" }}
-                  >
-                    <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
-                      <div className="flex items-end justify-between gap-6">
-                        <div>
-                          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-200">FreshPick creator</p>
-                          <h3 className={`mt-3 font-serif font-normal leading-tight ${index === 0 ? "text-4xl md:text-5xl" : "text-3xl"}`}>{creator.name}</h3>
-                          {creator.latestRecipe && <p className="mt-3 max-w-xl text-sm font-light leading-6 text-white/60">Latest: {creator.latestRecipe.title}</p>}
-                        </div>
-                        <ArrowUpRight className="h-5 w-5 shrink-0 text-white/45 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" />
-                      </div>
-                      <div className="mt-5 flex flex-wrap gap-2 text-[9px] font-medium uppercase tracking-[0.14em] text-white/45">
-                        <span>{creator.recipeCount} recipe{creator.recipeCount === 1 ? "" : "s"}</span>
-                        {creator.cuisines.slice(0, 2).map((cuisine) => <span key={cuisine}>· {cuisine}</span>)}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {creators.map((creator) => (
+            <Link key={creator.id} href={`/creators/${creator.id}`} className="overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green">
+              <div className="relative aspect-[4/3] bg-secondary">
+                {creator.latestRecipe?.image?.url ? <Image src={creator.latestRecipe.image.url} alt={creator.latestRecipe.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover" /> : <div className="flex h-full items-center justify-center"><ChefHat className="h-10 w-10 text-brand-green" aria-hidden="true" /></div>}
+              </div>
+              <div className="p-5">
+                <h3 className="text-lg font-semibold text-brand-green">{creator.name}</h3>
+                {creator.latestRecipe && <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{creator.latestRecipe.title}</p>}
+                <p className="mt-3 text-sm text-muted-foreground">{creator.recipeCount} recipe{creator.recipeCount === 1 ? "" : "s"}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

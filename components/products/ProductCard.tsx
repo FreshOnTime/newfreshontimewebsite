@@ -40,20 +40,17 @@ export function ProductCard({
     : `${baseMeasurementQuantity !== 1 ? baseMeasurementQuantity : ""}${(measurementType || "g").toLowerCase()}`;
 
   return (
-    <article className="group relative h-full overflow-hidden rounded-[1.3rem] border border-zinc-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_22px_65px_rgba(10,50,30,0.08)]">
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#f2f4f1]">
+    <article className="group relative h-full overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green">
+      <div className="relative aspect-square overflow-hidden bg-background">
         <Link href={`/products/${sku}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
           <div className="relative h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.025]">
             <ProductImage src={imageUrl} alt={name} priority={priority} />
           </div>
         </Link>
 
-        <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-3 pointer-events-none">
-          <span className="inline-flex items-center gap-2 rounded-lg border border-white/70 bg-white/85 px-2.5 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-600 shadow-sm backdrop-blur-md">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live catalogue
-          </span>
+        <div className="absolute right-3 top-3 pointer-events-none">
           {showDiscountBadge && (
-            <span className="rounded-lg bg-[#07100b] px-2.5 py-1.5 text-[8px] font-bold uppercase tracking-[0.15em] text-white shadow-sm">
+            <span className="rounded-md bg-brand-amber px-2.5 py-1.5 text-xs font-semibold text-accent-foreground">
               {discountPercentage}% off
             </span>
           )}
@@ -61,7 +58,7 @@ export function ProductCard({
       </div>
 
       <div className="p-4 md:p-5">
-        <div className="mb-2.5 flex items-center justify-between gap-3 text-[8px] font-bold uppercase tracking-[0.17em] text-zinc-400">
+        <div className="mb-2.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>FreshPick</span>
           <span>{unitLabel}</span>
         </div>
@@ -102,11 +99,11 @@ function PriceDisplay({
 }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="font-sans text-base font-semibold tracking-[-0.01em] text-zinc-950 md:text-lg">
+      <span className="font-sans text-base font-semibold tracking-[-0.01em] text-foreground md:text-lg">
         Rs. {formatPrice(price)}
       </span>
       {originalPrice && (
-        <span className="text-[10px] text-zinc-400 line-through decoration-zinc-300">
+        <span className="text-xs text-muted-foreground line-through decoration-zinc-300">
           Rs. {formatPrice(originalPrice)}
         </span>
       )}
