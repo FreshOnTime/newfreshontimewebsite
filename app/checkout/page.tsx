@@ -53,7 +53,7 @@ const WEEKDAYS = [
 
 function LoadingState({ message }: { message: string }) {
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-zinc-50">
+    <div className="flex min-h-0 flex-col items-center justify-center gap-4 bg-background">
       <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-200 border-t-emerald-700" />
       <p className="text-sm text-zinc-500">{message}</p>
     </div>
@@ -404,14 +404,14 @@ export default function CheckoutPage() {
 
   if (effectiveItems.length === 0) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center bg-zinc-50 p-6 text-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm">
+      <div className="flex min-h-0 flex-col items-center justify-center bg-background p-6 text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm">
           <ShoppingBag className="h-7 w-7" />
         </span>
-        <h2 className="mt-5 font-serif text-3xl text-zinc-950">Nothing to check out yet.</h2>
+        <h2 className="mt-5 font-sans text-3xl text-zinc-950">Nothing to check out yet.</h2>
         <p className="mt-2 max-w-md text-zinc-500">Choose products or an active recurring plan, then come back here to complete the order.</p>
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-        <Link href="/products" className="mt-7 rounded-full bg-zinc-950 px-7 py-3.5 text-sm font-semibold text-white hover:bg-emerald-900">
+        <Link href="/products" className="mt-7 rounded-full bg-brand-amber px-7 py-3.5 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">
           Browse products
         </Link>
       </div>
@@ -419,12 +419,12 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-8">
         <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Secure order</span>
-            <h1 className="mt-3 font-serif text-4xl tracking-tight text-zinc-950 md:text-6xl">Checkout</h1>
+            <span className="text-xs font-bold normal-case text-emerald-700">Secure order</span>
+            <h1 className="mt-3 font-sans text-4xl tracking-tight text-zinc-950 md:text-4xl">Checkout</h1>
             {effectiveBagName && (
               <p className="mt-2 text-zinc-600">
                 {effectiveBagName} · {itemCount} item{itemCount === 1 ? "" : "s"}
@@ -436,17 +436,17 @@ export default function CheckoutPage() {
           </Link>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-6">
           <div className="space-y-7 lg:col-span-7">
-            <Card className="overflow-hidden rounded-[1.75rem] border-zinc-200 bg-white shadow-sm">
+            <Card className="overflow-hidden rounded-xl border-zinc-200 bg-background shadow-sm">
               <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-5">
-                <h2 className="font-serif text-2xl text-zinc-950">Order items</h2>
+                <h2 className="font-sans text-2xl text-zinc-950">Order items</h2>
                 {bagUpdating && <span className="text-xs font-medium text-emerald-700">Updating…</span>}
               </div>
               <CardContent className="space-y-5 p-6">
                 {effectiveItems.map((item, index) => (
                   <div key={`${item.product.id}-${index}`} className="flex gap-4 border-b border-zinc-100 pb-5 last:border-0 last:pb-0">
-                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-zinc-100">
+                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background">
                       {item.product.images?.[0]?.url ? (
                         // Small checkout thumbnail. Product images can originate from supplier storage domains not controlled by Next image config.
                         // eslint-disable-next-line @next/next/no-img-element
@@ -467,7 +467,7 @@ export default function CheckoutPage() {
                             type="button"
                             aria-label={`Remove ${item.product.name}`}
                             onClick={() => previewBag ? setPreviewBag(null) : bag && removeFromBag(bag.id, item.product.id)}
-                            className="rounded-full p-2 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -475,7 +475,7 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="mt-4 flex items-center justify-between gap-4">
-                        <div className="flex h-9 items-center overflow-hidden rounded-full border border-zinc-200 bg-white">
+                        <div className="flex h-9 items-center overflow-hidden rounded-full border border-zinc-200 bg-background">
                           <button
                             type="button"
                             disabled={item.quantity <= 1 || Boolean(planSlug)}
@@ -490,7 +490,7 @@ export default function CheckoutPage() {
                                 updateBagItem(bag.id, item.product.id, quantity);
                               }
                             }}
-                            className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-zinc-50 disabled:opacity-30"
+                            className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -509,7 +509,7 @@ export default function CheckoutPage() {
                                 updateBagItem(bag.id, item.product.id, quantity);
                               }
                             }}
-                            className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-zinc-50 disabled:opacity-30"
+                            className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -523,15 +523,15 @@ export default function CheckoutPage() {
             </Card>
 
             {!planSlug && (
-              <Card className="rounded-[1.75rem] border-zinc-200 bg-white shadow-sm">
+              <Card className="rounded-xl border-zinc-200 bg-background shadow-sm">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex items-start justify-between gap-6">
                     <div>
                       <div className="flex items-center gap-2 text-emerald-800">
                         <CalendarClock className="h-5 w-5" />
-                        <span className="text-xs font-bold uppercase tracking-[0.16em]">Recurring order</span>
+                        <span className="text-xs font-bold normal-case">Recurring order</span>
                       </div>
-                      <h2 className="mt-3 font-serif text-2xl text-zinc-950">Repeat this order automatically</h2>
+                      <h2 className="mt-3 font-sans text-2xl text-zinc-950">Repeat this order automatically</h2>
                       <p className="mt-2 text-sm leading-6 text-zinc-500">Optional. Choose a cadence and delivery days for this bag.</p>
                     </div>
                     <input
@@ -555,7 +555,7 @@ export default function CheckoutPage() {
                             key={option.label}
                             type="button"
                             onClick={() => setRecurrenceFreq(option.value)}
-                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${recurrenceFreq === option.value ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-zinc-200 text-zinc-600 hover:border-emerald-300"}`}
+                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${recurrenceFreq === option.value ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-zinc-200 text-zinc-600 hover:border-emerald-300"} `}
                           >
                             {option.label}
                           </button>
@@ -572,7 +572,7 @@ export default function CheckoutPage() {
                           <Input type="date" value={startDate} onChange={(event: ChangeEvent<HTMLInputElement>) => setStartDate(event.target.value)} className="mt-2" />
                         </label>
                         <label className="text-sm text-zinc-600">
-                          End date <span className="text-zinc-400">(optional)</span>
+                          End date <span className="text-muted-foreground">(optional)</span>
                           <Input type="date" value={endDate} onChange={(event: ChangeEvent<HTMLInputElement>) => setEndDate(event.target.value)} className="mt-2" />
                         </label>
                       </div>
@@ -588,7 +588,7 @@ export default function CheckoutPage() {
                                   key={day.label}
                                   type="button"
                                   onClick={() => setRecurrenceByWeekday((previous) => selected ? previous.filter((value) => value !== day.value) : [...previous, day.value])}
-                                  className={`h-10 w-10 rounded-full text-xs font-semibold transition-colors ${selected ? "bg-emerald-800 text-white" : "border border-zinc-200 bg-white text-zinc-600 hover:border-emerald-300"}`}
+                                  className={`h-10 w-10 rounded-full text-xs font-semibold transition-colors ${selected ? "bg-emerald-800 text-white" : "border border-zinc-200 bg-background text-zinc-600 hover:border-emerald-300"} `}
                                 >
                                   {day.label}
                                 </button>
@@ -604,12 +604,12 @@ export default function CheckoutPage() {
                       </div>
 
                       <label className="block text-sm text-zinc-600">
-                        Schedule notes <span className="text-zinc-400">(optional)</span>
+                        Schedule notes <span className="text-muted-foreground">(optional)</span>
                         <textarea
                           rows={3}
                           value={recurrenceNotes}
                           onChange={(event) => setRecurrenceNotes(event.target.value)}
-                          className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-white px-4 py-3 outline-none focus:border-emerald-500"
+                          className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-background px-4 py-3 outline-none focus:border-emerald-500"
                           placeholder="Anything we should know about the recurring schedule?"
                         />
                       </label>
@@ -619,15 +619,15 @@ export default function CheckoutPage() {
               </Card>
             )}
 
-            <Card className="rounded-[1.75rem] border-zinc-200 bg-white shadow-sm">
+            <Card className="rounded-xl border-zinc-200 bg-background shadow-sm">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                   <div>
                     <div className="flex items-center gap-2 text-emerald-800">
                       <MapPin className="h-5 w-5" />
-                      <span className="text-xs font-bold uppercase tracking-[0.16em]">Delivery</span>
+                      <span className="text-xs font-bold normal-case">Delivery</span>
                     </div>
-                    <h2 className="mt-3 font-serif text-2xl text-zinc-950">Where should we deliver?</h2>
+                    <h2 className="mt-3 font-sans text-2xl text-zinc-950">Where should we deliver?</h2>
                   </div>
                   {user?.registrationAddress && (
                     <label className="inline-flex items-center gap-2 text-sm text-zinc-600">
@@ -638,7 +638,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {useAccountAddress && user?.registrationAddress ? (
-                  <div className="mt-6 rounded-2xl bg-zinc-50 p-5 text-sm leading-6 text-zinc-600">
+                  <div className="mt-6 rounded-xl bg-background p-5 text-sm leading-6 text-zinc-600">
                     <strong className="block text-zinc-950">{user.registrationAddress.recipientName || user.firstName}</strong>
                     <span>{user.registrationAddress.streetAddress}</span><br />
                     <span>{user.registrationAddress.city}</span><br />
@@ -659,15 +659,15 @@ export default function CheckoutPage() {
             </Card>
 
             {error && (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>
+              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>
             )}
           </div>
 
           <aside className="lg:col-span-5">
             <div className="space-y-5 lg:sticky lg:top-28">
-              <Card className="overflow-hidden rounded-[1.75rem] border-zinc-200 bg-white shadow-xl">
+              <Card className="overflow-hidden rounded-xl border-zinc-200 bg-background shadow-none">
                 <CardContent className="p-6 md:p-8">
-                  <span className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Order summary</span>
+                  <span className="text-xs font-bold normal-case text-emerald-700">Order summary</span>
                   <div className="mt-6 space-y-3">
                     {effectiveItems.map((item) => (
                       <div key={`summary-${item.product.id}`} className="flex justify-between gap-4 text-sm">
@@ -681,9 +681,9 @@ export default function CheckoutPage() {
                     <div className="flex items-end justify-between gap-4">
                       <div>
                         <p className="text-sm text-zinc-500">Items total</p>
-                        <p className="mt-1 font-serif text-3xl text-zinc-950">Rs. {total.toFixed(2)}</p>
+                        <p className="mt-1 font-sans text-3xl text-zinc-950">Rs. {total.toFixed(2)}</p>
                       </div>
-                      <p className="max-w-[150px] text-right text-xs leading-5 text-zinc-400">Delivery details are confirmed as part of order fulfilment.</p>
+                      <p className="max-w-[150px] text-right text-xs leading-5 text-muted-foreground">Delivery details are confirmed as part of order fulfilment.</p>
                     </div>
                   </div>
 
@@ -691,7 +691,7 @@ export default function CheckoutPage() {
                     size="lg"
                     onClick={() => placeOrder(false)}
                     disabled={submitting || !canPlaceOrder}
-                    className="mt-7 h-14 w-full rounded-full bg-zinc-950 text-base font-semibold text-white hover:bg-emerald-900"
+                    className="mt-7 h-14 w-full rounded-full bg-brand-amber text-base font-semibold text-accent-foreground hover:bg-brand-amber/85"
                   >
                     {submitting && !orderingViaWhatsapp ? "Placing order…" : "Place order · Cash on delivery"}
                   </Button>
@@ -707,7 +707,7 @@ export default function CheckoutPage() {
                     </Button>
                   )}
 
-                  <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-400">
+                  <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                     <LockKeyhole className="h-4 w-4" />
                     Account-protected checkout
                   </div>

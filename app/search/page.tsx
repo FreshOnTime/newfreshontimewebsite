@@ -58,12 +58,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const total = products.length + recipes.length;
 
   return (
-    <main className="min-h-screen bg-background pb-24 text-zinc-950">
-      <section className="border-b border-zinc-200 bg-card px-5 py-10 md:px-8 md:py-12">
+    <main className="min-h-screen bg-background pb-10 text-zinc-950">
+      <section className="border-b border-zinc-200 bg-card px-5 py-10 md:px-8 md:py-6">
         <div className="mx-auto max-w-6xl">
-          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">Search FreshPick</span>
-          <h1 className="mt-4 max-w-4xl font-serif text-3xl font-semibold leading-tight text-brand-green md:text-5xl">
-            {query ? <>Results for <span className="italic text-emerald-900">“{query}”</span></> : <>What are you <span className="italic text-emerald-900">looking for?</span></>}
+          <span className="text-xs font-bold normal-case text-emerald-700">Search FreshPick</span>
+          <h1 className="mt-4 max-w-4xl font-sans text-3xl font-semibold leading-tight text-brand-green md:text-4xl">
+            {query ? <>Results for <span className="not-italic text-emerald-900">“{query}”</span></> : <>What are you <span className="not-italic text-emerald-900">looking for?</span></>}
           </h1>
           <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">
             Search across the live market and published shoppable recipes from the same place.
@@ -81,7 +81,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-5 pt-12 md:px-8 md:pt-16">
+      <div className="mx-auto max-w-6xl px-5 pt-6 md:px-8 md:pt-8">
         {!query ? (
           <section className="grid gap-4 md:grid-cols-3">
             {[
@@ -89,8 +89,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               ["Just browsing?", "Open Discover for moods, makers and ready food.", "/discover"],
               ["Know the list?", "Go straight to the live market and its filters.", "/products"],
             ].map(([title, copy, href]) => (
-              <Link key={href} href={href} className="group rounded-xl border border-zinc-200 bg-card p-6 transition-all  hover:border-emerald-300">
-                <h2 className="font-serif text-3xl font-normal text-zinc-950">{title}</h2>
+              <Link key={href} href={href} className="group rounded-xl border border-zinc-200 bg-card p-6 transition-all hover:border-emerald-300">
+                <h2 className="font-sans text-3xl font-semibold text-zinc-950">{title}</h2>
                 <p className="mt-3 text-sm font-normal leading-6 text-muted-foreground">{copy}</p>
                 <span className="mt-7 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800">Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span>
               </Link>
@@ -98,7 +98,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </section>
         ) : total === 0 ? (
           <section className="rounded-xl border border-zinc-200 bg-card p-10 text-center md:p-16">
-            <h2 className="font-serif text-4xl font-normal text-zinc-950">Nothing exact yet.</h2>
+            <h2 className="font-sans text-2xl font-semibold text-zinc-950">Nothing exact yet.</h2>
             <p className="mx-auto mt-4 max-w-lg text-sm font-normal leading-7 text-muted-foreground">Try a broader food name or move into Discover, where you can start from a craving or meal instead of a product keyword.</p>
             <Link href="/discover" className="mt-7 inline-flex rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">Open Discover</Link>
           </section>
@@ -108,20 +108,20 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <section>
                 <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-300 pb-5">
                   <div>
-                    <p className="inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700"><ChefHat className="h-3.5 w-3.5" /> Cook from this</p>
-                    <h2 className="mt-2 font-serif text-4xl font-normal text-zinc-950">Shoppable recipes</h2>
+                    <p className="inline-flex items-center gap-2 text-xs font-bold normal-case text-emerald-700"><ChefHat className="h-3.5 w-3.5" /> Cook from this</p>
+                    <h2 className="mt-2 font-sans text-2xl font-semibold text-zinc-950">Shoppable recipes</h2>
                   </div>
                   <Link href="/recipes" className="text-xs font-semibold text-emerald-800">All recipes</Link>
                 </div>
                 <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {recipes.map((recipe) => (
-                    <Link key={recipe.id} href={`/recipes/${recipe.slug}`} className="group overflow-hidden rounded-xl border border-zinc-200 bg-card transition-all  hover:border-emerald-300">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-[#102017]">
-                        {recipe.image?.url ? <Image src={recipe.image.url} alt={recipe.image.alt || recipe.title} fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover transition-transform duration-700 group-hover:scale-105" /> : null}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                    <Link key={recipe.id} href={`/recipes/${recipe.slug}`} className="group overflow-hidden rounded-xl border border-zinc-200 bg-card transition-all hover:border-emerald-300">
+                      <div className="relative aspect-[4/3] overflow-hidden bg-background">
+                        {recipe.image?.url ? <Image src={recipe.image.url} alt={recipe.image.alt || recipe.title} fill sizes="(max-width: 640px) 100vw, 25vw" className="object-cover transition-transform duration-700" /> : null}
+
                       </div>
                       <div className="p-5">
-                        <h3 className="font-serif text-2xl font-normal leading-tight text-zinc-950">{recipe.title}</h3>
+                        <h3 className="font-sans text-2xl font-semibold leading-tight text-zinc-950">{recipe.title}</h3>
                         <p className="mt-3 line-clamp-2 text-sm font-normal leading-6 text-muted-foreground">{recipe.excerpt}</p>
                         <span className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800">Shop the recipe <ArrowRight className="h-3.5 w-3.5" /></span>
                       </div>
@@ -135,8 +135,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <section>
                 <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-300 pb-5">
                   <div>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">From the market</p>
-                    <h2 className="mt-2 font-serif text-4xl font-normal text-zinc-950">Products</h2>
+                    <p className="text-xs font-bold normal-case text-emerald-700">From the market</p>
+                    <h2 className="mt-2 font-sans text-2xl font-semibold text-zinc-950">Products</h2>
                   </div>
                   <span className="text-xs text-muted-foreground">{products.length} matched</span>
                 </div>

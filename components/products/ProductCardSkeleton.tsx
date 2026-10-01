@@ -1,7 +1,7 @@
 export function ProductCardSkeleton() {
     return (
         <div className="w-full overflow-hidden bg-card rounded-xl border border-border animate-pulse">
-            <div className="relative overflow-hidden bg-zinc-100">
+            <div className="relative overflow-hidden bg-background">
                 <div className="aspect-square p-6">
                     <div className="h-full w-full bg-zinc-200 rounded-xl" />
                 </div>

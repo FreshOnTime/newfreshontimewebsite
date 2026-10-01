@@ -54,7 +54,7 @@ export default function AdminChromeGuard({
     <AuthProvider>
       <BagProvider>
         <WishlistProvider>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col pb-20 md:pb-0">
             <Navbar />
             <main className="flex-1">{children}</main>
             {footer}

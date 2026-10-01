@@ -5,11 +5,7 @@ import { useEffect, useState } from "react";
 import { PhoneNumberInput } from "./phone-number-input";
 import { OtpVerification } from "./otpverification";
 import { PageContainer } from "@/components/templates/PageContainer";
-import {
-  ConfirmationResult,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-} from "firebase/auth";
+import { ConfirmationResult, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import { FirebaseError } from "firebase/app";
 import { toast } from "sonner";
@@ -159,19 +155,8 @@ export default function PhoneAuthPage() {
   };
 
   return (
-    <PageContainer className="min-h-screen flex items-center justify-center py-12">
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src="/bgs/home-hero.jpg"
-          alt="Fresh vegetables background"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-green-900/50 to-green-600/30 backdrop-blur-md"></div>
-      </div>
-
-      <div className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
+    <PageContainer className="flex items-start justify-center py-10">
+  <div className="w-full max-w-md mx-auto bg-background border border-border rounded-xl shadow-none p-8">
         <div className="flex justify-center mb-8">
           <Image
             src="/fresh-pick.svg"

@@ -14,7 +14,7 @@ export default function ProductGrid({
 }) {
   if (!products?.length) {
     return (
-      <div className="text-center text-gray-600 py-16">No products found.</div>
+      <div className="text-center text-gray-600 py-8">No products found.</div>
     );
   }
   return (
@@ -26,7 +26,7 @@ export default function ProductGrid({
     >
       {products.map((p, index) => (
         <div key={p.sku || p._id} className="group">
-          <div className="transform group-hover:scale-105 transition-transform duration-300 h-full">
+          <div className="transform transition-transform duration-300 h-full">
             {p.isBundle ? (
               <BundleCard product={p} />
             ) : (

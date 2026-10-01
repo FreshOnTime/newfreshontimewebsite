@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-background">
             <PremiumPageHeader
                 title="Terms of Service"
                 subtitle="Terms that apply when using Fresh Pick accounts, ordering, delivery, and related services."
                 eyebrow="Legal · Terms"
             />
 
-            <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="prose prose-emerald max-w-none">
                     <p className="mb-8 font-medium text-gray-500">Effective Date: December 2025</p>
 

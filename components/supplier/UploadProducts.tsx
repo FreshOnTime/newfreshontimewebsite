@@ -57,7 +57,7 @@ export default function UploadProducts() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-3xl mx-auto p-6 bg-background rounded-lg shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold">Upload Product List</h3>
@@ -69,7 +69,7 @@ export default function UploadProducts() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-        <label className="col-span-2 flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer hover:bg-gray-50">
+        <label className="col-span-2 flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer hover:bg-background">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-green-500">
             <path d="M12 3v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M5 12l7-7 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -82,15 +82,15 @@ export default function UploadProducts() {
         </label>
 
         <div className="md:col-span-1">
-          <div className="p-3 border rounded-md bg-gray-50 h-full flex flex-col justify-between">
+          <div className="p-3 border rounded-md bg-background h-full flex flex-col justify-between">
             <div>
               <div className="text-xs text-gray-500">Selected file</div>
-              <div className="text-sm font-medium mt-1">{file ? file.name : <span className="text-gray-400">No file chosen</span>}</div>
+              <div className="text-sm font-medium mt-1">{file ? file.name : <span className="text-muted-foreground">No file chosen</span>}</div>
               {file && <div className="text-xs text-gray-500 mt-1">{(file.size / 1024).toFixed(1)} KB</div>}
             </div>
 
             <div className="mt-3 flex gap-2">
-              <button onClick={handleUpload} disabled={loading || !file} className="w-full inline-flex justify-center items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60">
+              <button onClick={handleUpload} disabled={loading || !file} className="w-full inline-flex justify-center items-center gap-2 px-3 py-2 bg-brand-amber text-accent-foreground rounded-md hover:bg-green-700 disabled:opacity-60">
                 {loading ? (
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

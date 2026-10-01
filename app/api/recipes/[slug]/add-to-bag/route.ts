@@ -67,7 +67,7 @@ export const POST = requireAuth(async (request: AuthedRequest, context: Context)
       new Set(
         recipe.content.ingredients.flatMap((ingredient) => [
           ingredient.productId,
-          ...ingredient.substitutionProductIds,
+          ...(ingredient.substitutionProductIds ?? []),
         ])
       )
     );
@@ -90,7 +90,7 @@ export const POST = requireAuth(async (request: AuthedRequest, context: Context)
     const skipped: SkippedItem[] = [];
 
     for (const ingredient of recipe.content.ingredients) {
-      const candidates = [ingredient.productId, ...ingredient.substitutionProductIds];
+      const candidates = [ingredient.productId, ...(ingredient.substitutionProductIds ?? [])];
       let chosen: (typeof products)[number] | undefined;
       let sawCandidate = false;
 
@@ -110,7 +110,7 @@ export const POST = requireAuth(async (request: AuthedRequest, context: Context)
         skipped.push({
           productId: ingredient.productId,
           quantity: ingredient.quantity,
-          optional: ingredient.optional,
+          optional: ingredient.optional ?? false,
           reason: sawCandidate ? "insufficient_stock" : "unavailable",
         });
         continue;

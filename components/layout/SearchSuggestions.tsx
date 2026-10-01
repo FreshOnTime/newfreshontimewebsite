@@ -159,12 +159,12 @@ export default function SearchSuggestions({
     return (
         <div
             ref={containerRef}
-            className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-zinc-200 overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
+            className="absolute top-full left-0 right-0 mt-2 bg-background rounded-xl shadow-none border border-zinc-200 overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
         >
             {/* Search Input */}
             <div className="p-4 border-b border-zinc-100">
                 <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                         type="text"
                         value={query}
@@ -175,13 +175,13 @@ export default function SearchSuggestions({
                             }
                         }}
                         placeholder="Search products..."
-                        className="w-full pl-12 pr-10 py-3 bg-zinc-50 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                        className="w-full pl-12 pr-10 py-3 bg-background rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                         autoFocus
                     />
                     {query && (
                         <button
                             onClick={() => setQuery("")}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-zinc-600"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -199,7 +199,7 @@ export default function SearchSuggestions({
             {/* Search Results */}
             {!isLoading && query && results.length > 0 && (
                 <div className="p-2">
-                    <p className="px-3 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wide">
+                    <p className="px-3 py-2 text-xs font-medium text-zinc-500 normal-case tracking-wide">
                         Products
                     </p>
                     {results.map((product, index) => (
@@ -208,10 +208,10 @@ export default function SearchSuggestions({
                             onClick={() => navigateToProduct(product)}
                             className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${selectedIndex === index
                                     ? "bg-emerald-50"
-                                    : "hover:bg-zinc-50"
-                                }`}
+                                    : "hover:bg-background"
+                                } `}
                         >
-                            <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="w-12 h-12 bg-background rounded-lg overflow-hidden flex-shrink-0">
                                 {product.image?.url ? (
                                     <Image
                                         src={product.image.url}
@@ -221,7 +221,7 @@ export default function SearchSuggestions({
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                         <Search className="w-5 h-5" />
                                     </div>
                                 )}
@@ -259,12 +259,12 @@ export default function SearchSuggestions({
             {!query && recentSearches.length > 0 && (
                 <div className="p-2">
                     <div className="flex items-center justify-between px-3 py-2">
-                        <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide flex items-center gap-1">
+                        <p className="text-xs font-medium text-zinc-500 normal-case tracking-wide flex items-center gap-1">
                             <Clock className="w-3 h-3" /> Recent
                         </p>
                         <button
                             onClick={clearRecentSearches}
-                            className="text-xs text-zinc-400 hover:text-zinc-600"
+                            className="text-xs text-muted-foreground hover:text-zinc-600"
                         >
                             Clear
                         </button>
@@ -275,10 +275,10 @@ export default function SearchSuggestions({
                             onClick={() => handleRecentClick(term)}
                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${selectedIndex === index
                                     ? "bg-emerald-50"
-                                    : "hover:bg-zinc-50"
-                                }`}
+                                    : "hover:bg-background"
+                                } `}
                         >
-                            <Clock className="w-4 h-4 text-zinc-400" />
+                            <Clock className="w-4 h-4 text-muted-foreground" />
                             <span className="text-zinc-700">{term}</span>
                         </button>
                     ))}

@@ -40,12 +40,12 @@ async function getCategories(): Promise<Category[]> {
 export default async function CategoriesIndex() {
   const categories = await getCategories();
   return (
-    <main className="min-h-screen bg-background pb-24">
+    <main className="min-h-screen bg-background pb-10">
       <PremiumPageHeader title="Shop by category" subtitle="Fresh produce, pantry staples, ready meals and more. Find your everyday favourites." />
-      <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-12">
+      <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-6">
         {categories.length === 0 ? (
           <section className="rounded-xl border border-border bg-card p-10 text-center">
-            <h2 className="font-heading text-2xl text-brand-green">Categories are being refreshed.</h2>
+            <h2 className="font-sans text-2xl text-brand-green">Categories are being refreshed.</h2>
             <p className="mt-3 text-muted-foreground">You can still browse the full market.</p>
             <Link href="/products" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-brand-amber px-6 py-3 font-semibold text-accent-foreground">Shop all products <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
           </section>

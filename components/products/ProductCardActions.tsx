@@ -78,7 +78,7 @@ export default function ProductCardActions({ id, sku, name, image, price }: Prod
         className="flex h-12 flex-1 items-center justify-center gap-2 rounded-l-lg bg-brand-amber px-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-wait disabled:opacity-60"
       >
         <ShoppingBag className="h-4 w-4 shrink-0" />
-        <span className="min-w-0 truncate">Add to bag</span>
+        <span className="sm:hidden">Add</span><span className="hidden min-w-0 truncate sm:inline">Add to bag</span>
       </button>
       <button
         type="button"

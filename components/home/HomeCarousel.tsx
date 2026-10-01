@@ -114,10 +114,10 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
                                 key={i}
                                 onClick={() => setCurrentIndex(i)}
                                 aria-label={`Show promo ${i + 1}`}
-                                className={`h-2 rounded-full transition-all duration-300 ${i === currentIndex
+                                className={`h-2 rounded-full transition-all duration-300  ${i === currentIndex
                                         ? "bg-white w-6"
                                         : "bg-white/50 w-2 hover:bg-white/70"
-                                    }`}
+                                    } `}
                             />
                         ))}
                     </div>

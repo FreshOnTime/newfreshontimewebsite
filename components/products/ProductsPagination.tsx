@@ -58,7 +58,7 @@ export default function ProductsPagination({
             Previous
           </Button>
 
-          <span className="px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">Page {currentPage}</span>
+          <span className="px-3 text-xs font-bold normal-case text-zinc-500">Page {currentPage}</span>
 
           <Button
             variant="outline"

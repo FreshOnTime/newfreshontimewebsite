@@ -111,7 +111,7 @@ export default async function ProductPage({
   ];
 
   return (
-    <main className="min-h-screen bg-[#f6f7f4]">
+    <main className="min-h-screen bg-background">
       <ProductJsonLd
         product={{
           name: product.name,
@@ -127,29 +127,29 @@ export default async function ProductPage({
       />
       <BreadcrumbJsonLd items={breadcrumbItems} />
 
-      <div className="container mx-auto max-w-7xl px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-12">
+      <div className="container mx-auto max-w-7xl px-4 pb-8 pt-8 md:px-8 md:pb-10 md:pt-6">
         <Link
           href="/products"
-          className="mb-8 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-colors hover:text-emerald-800"
+          className="mb-8 inline-flex items-center gap-2 text-xs font-bold normal-case text-zinc-500 transition-colors hover:text-emerald-800"
         >
           <ArrowLeft className="h-4 w-4" /> Back to collection
         </Link>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:gap-14">
           <div className="relative">
-            <div className="sticky top-28 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+            <div className="sticky top-28 overflow-hidden rounded-xl bg-background">
               <div className="relative aspect-[4/5] w-full">
                 <ProductImage src={product.image?.url || ""} alt={product.name} priority />
               </div>
 
               <div className="pointer-events-none absolute left-5 top-5 flex flex-wrap gap-2">
                 {!product.isOutOfStock && (
-                  <span className="rounded-full bg-white/90 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-800 shadow-sm backdrop-blur-md">
+                  <span className="rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold normal-case text-emerald-800 shadow-sm">
                     FreshPick selection
                   </span>
                 )}
                 {showDiscount && (
-                  <span className="rounded-full bg-zinc-950 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">
+                  <span className="rounded-lg bg-brand-amber px-3 py-1.5 text-xs font-bold normal-case text-accent-foreground shadow-sm">
                     {product.discountPercentage}% off
                   </span>
                 )}
@@ -158,31 +158,31 @@ export default async function ProductPage({
           </div>
 
           <div className="lg:pt-4">
-            <div className="lg:sticky lg:top-28">
-              <div className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.06)] md:p-8 lg:p-9">
-                <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+            <div className="lg:sticky lg:top-36">
+              <div className="rounded-xl border border-zinc-200 bg-background p-6 md:p-8 lg:p-9">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold normal-case text-emerald-700">
                   {product.category?.name && (
                     <Link href={`/categories/${product.category.slug || ""}`} className="transition-colors hover:text-zinc-950">
                       {product.category.name}
                     </Link>
                   )}
                   <span className="text-zinc-300">/</span>
-                  <span className={product.isOutOfStock ? "text-red-500" : "text-zinc-400"}>
+                  <span className={product.isOutOfStock ? "text-red-500" : "text-muted-foreground"}>
                     {product.isOutOfStock ? "Currently unavailable" : "In stock"}
                   </span>
                 </div>
 
-                <h1 className="mt-5 text-balance font-serif text-5xl font-normal leading-[0.96] tracking-tight text-zinc-950 md:text-6xl">
+                <h1 className="mt-5 text-balance font-sans text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl">
                   {product.name}
                 </h1>
 
                 <div className="mt-7 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-zinc-100 pb-7">
-                  <span className="font-serif text-3xl text-zinc-950">Rs. {discountedPrice.toFixed(2)}</span>
+                  <span className="font-sans text-3xl text-zinc-950">Rs. {discountedPrice.toFixed(2)}</span>
                   {showDiscount && (
-                    <span className="text-sm text-zinc-400 line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>
+                    <span className="text-sm text-muted-foreground line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>
                   )}
                   {!product.isSoldAsUnit && (
-                    <span className="w-full text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                    <span className="w-full text-xs font-bold normal-case text-muted-foreground">
                       Per {product.baseMeasurementQuantity}{product.measurementUnit}
                     </span>
                   )}
@@ -203,13 +203,13 @@ export default async function ProductPage({
           </div>
         </div>
 
-        <section className="mt-16 rounded-[2rem] bg-white px-6 py-10 md:mt-24 md:px-10 md:py-14 lg:px-14">
-          <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-16">
+        <section className="mt-8 rounded-xl bg-background px-6 py-10 md:mt-10 md:px-10 md:py-14 lg:px-14">
+          <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
             <div>
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-700">About this selection</span>
-              <h2 className="mt-4 font-serif text-3xl font-normal leading-tight text-zinc-950">Good food deserves a little context.</h2>
+              <span className="text-xs font-bold normal-case text-emerald-700">About this selection</span>
+              <h2 className="mt-4 font-sans text-3xl font-semibold leading-tight text-zinc-950">Good food deserves a little context.</h2>
             </div>
-            <div className="prose prose-zinc max-w-none font-light leading-8 text-zinc-600 prose-headings:font-serif prose-headings:font-normal prose-a:text-emerald-800">
+            <div className="prose prose-zinc max-w-none font-normal leading-8 text-zinc-600 prose-headings:font-sans prose-headings:font-normal prose-a:text-emerald-800">
               {product.description ? (
                 <Markdown rehypePlugins={[rehypeSanitize]}>{product.description}</Markdown>
               ) : (
@@ -233,13 +233,13 @@ function TrustItem({
   text: string;
 }) {
   return (
-    <div className="flex gap-3 rounded-2xl bg-[#f7f8f6] p-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-800 shadow-sm">
+    <div className="flex gap-3 rounded-xl bg-background p-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-emerald-800 shadow-sm">
         <Icon className="h-4 w-4 stroke-[1.5]" />
       </div>
       <div>
         <p className="text-sm font-medium text-zinc-900">{title}</p>
-        <p className="mt-1 text-xs font-light leading-5 text-zinc-500">{text}</p>
+        <p className="mt-1 text-xs font-normal leading-5 text-zinc-500">{text}</p>
       </div>
     </div>
   );

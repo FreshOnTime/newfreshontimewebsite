@@ -111,39 +111,39 @@ export default function OrdersPage() {
   }, [user?._id, authLoading, router, hasFetched]);
 
   return (
-    <main className="min-h-screen bg-[#f4f5f1] pb-24 text-zinc-950">
-      <section className="border-b border-zinc-200 bg-white px-5 pb-12 pt-28 md:px-8 md:pb-14 md:pt-32">
+    <main className="min-h-screen bg-background pb-10 text-zinc-950">
+      <section className="border-b border-zinc-200 bg-background px-5 pb-6 pt-10 md:px-8 md:pb-14 md:pt-12">
         <div className="mx-auto flex max-w-6xl flex-col gap-7 md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">Your FreshPick</span>
-            <h1 className="mt-4 font-serif text-5xl font-normal leading-none tracking-[-0.03em] md:text-7xl">Orders.</h1>
-            <p className="mt-5 max-w-xl text-sm font-light leading-7 text-zinc-500">Track what is on the way, revisit past purchases and manage recurring orders without losing the thread.</p>
+            <span className="text-xs font-bold normal-case text-emerald-700">Your FreshPick</span>
+            <h1 className="mt-4 font-sans text-4xl font-semibold leading-tight md:text-4xl">Orders.</h1>
+            <p className="mt-5 max-w-xl text-sm font-normal leading-7 text-zinc-500">Track what is on the way, revisit past purchases and manage recurring orders without losing the thread.</p>
           </div>
-          <Link href="/discover" className="inline-flex h-11 w-fit items-center gap-2 rounded-full bg-zinc-950 px-5 text-xs font-semibold text-white transition-colors hover:bg-emerald-950">Find something next <ArrowRight className="h-4 w-4" /></Link>
+          <Link href="/discover" className="inline-flex h-11 w-fit items-center gap-2 rounded-full bg-brand-amber px-5 text-xs font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">Find something next <ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-5 pt-10 md:px-8 md:pt-14">
         {loading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((item) => <div key={item} className="h-32 animate-pulse rounded-[1.5rem] border border-zinc-200 bg-white" />)}
+            {[1, 2, 3].map((item) => <div key={item} className="h-32 animate-pulse rounded-xl border border-zinc-200 bg-background" />)}
           </div>
         ) : !hasOrders ? (
-          <section className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-white p-8 text-center shadow-[0_20px_60px_rgba(15,23,42,0.04)] md:p-14">
+          <section className="overflow-hidden rounded-xl border border-zinc-200 bg-background p-8 text-center md:p-14">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><ShoppingBag className="h-5 w-5" /></div>
-            <h2 className="mt-6 font-serif text-4xl font-normal text-zinc-950">Your first order can start with a meal.</h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm font-light leading-7 text-zinc-500">Browse the market directly, or begin in Discover if you would rather choose what to eat before choosing products.</p>
+            <h2 className="mt-6 font-sans text-2xl font-semibold text-zinc-950">Your first order can start with a meal.</h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm font-normal leading-7 text-zinc-500">Browse the market directly, or begin in Discover if you would rather choose what to eat before choosing products.</p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link href="/discover" className="rounded-full bg-zinc-950 px-6 py-3 text-xs font-semibold text-white hover:bg-emerald-950">Open Discover</Link>
-              <Link href="/products" className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-xs font-semibold text-zinc-700">Browse Market</Link>
+              <Link href="/discover" className="rounded-full bg-brand-amber px-6 py-3 text-xs font-semibold text-accent-foreground hover:bg-brand-amber/85">Open Discover</Link>
+              <Link href="/products" className="rounded-full border border-zinc-300 bg-background px-6 py-3 text-xs font-semibold text-zinc-700">Browse Market</Link>
             </div>
           </section>
         ) : (
-          <section className="overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.035)]">
+          <section className="overflow-hidden rounded-xl border border-zinc-200 bg-background">
             <div className="flex items-end justify-between gap-5 border-b border-zinc-100 px-6 py-5 md:px-8">
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700">Order history</p>
-                <p className="mt-1 text-sm font-light text-zinc-400">{orders.length} recent order{orders.length === 1 ? '' : 's'}</p>
+                <p className="text-xs font-bold normal-case text-emerald-700">Order history</p>
+                <p className="mt-1 text-sm font-normal text-muted-foreground">{orders.length} recent order{orders.length === 1 ? '' : 's'}</p>
               </div>
               <Link href="/bags" className="text-xs font-semibold text-emerald-800">Saved bags</Link>
             </div>
@@ -152,16 +152,16 @@ export default function OrdersPage() {
               {orders.map((order) => {
                 const cancellable = ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase());
                 return (
-                  <article key={order._id} className="group px-6 py-6 transition-colors hover:bg-[#fbfcfa] md:px-8">
+                  <article key={order._id} className="group px-6 py-6 transition-colors hover:bg-background md:px-8">
                     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                       <Link href={`/orders/${order._id}`} className="min-w-0">
                         <div className="flex flex-wrap items-center gap-3">
-                          <span className="font-serif text-2xl font-normal text-zinc-950">#{order.orderNumber}</span>
-                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold capitalize ${statusStyle(order.status)}`}><StatusIcon status={order.status} /> {order.status}</span>
-                          {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus) && <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-800"><RefreshCw className="h-3 w-3" /> Recurring</span>}
+                          <span className="font-sans text-2xl font-normal text-zinc-950">#{order.orderNumber}</span>
+                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle(order.status)} `}><StatusIcon status={order.status} /> {order.status}</span>
+                          {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus) && <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800"><RefreshCw className="h-3 w-3" /> Recurring</span>}
                         </div>
 
-                        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-light text-zinc-400">
+                        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-normal text-muted-foreground">
                           <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" /> {new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                           {order.bagName && <span>{order.bagName}</span>}
                           {order.nextDeliveryAt && <span>Next delivery {new Date(order.nextDeliveryAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>}
@@ -170,7 +170,7 @@ export default function OrdersPage() {
 
                       <div className="flex items-center justify-between gap-6 lg:justify-end">
                         <div className="text-right">
-                          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Total</p>
+                          <p className="text-xs font-semibold normal-case text-muted-foreground">Total</p>
                           <p className="mt-1 text-lg font-semibold tabular-nums text-zinc-950">Rs. {Number(order.total ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         </div>
                         {cancellable && (
@@ -183,7 +183,7 @@ export default function OrdersPage() {
                             {cancellingId === order._id ? 'Cancelling…' : 'Cancel'}
                           </button>
                         )}
-                        <Link href={`/orders/${order._id}`} aria-label={`Open order ${order.orderNumber}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f4f5f1] text-zinc-500 transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-800"><ArrowRight className="h-4 w-4" /></Link>
+                        <Link href={`/orders/${order._id}`} aria-label={`Open order ${order.orderNumber}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-background text-zinc-500 transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-800"><ArrowRight className="h-4 w-4" /></Link>
                       </div>
                     </div>
                   </article>

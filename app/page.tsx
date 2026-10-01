@@ -8,9 +8,8 @@ import { Product } from "@/models/product";
 import HeroSection from "@/components/home/HeroSection";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
 import CategoryBento from "@/components/home/CategoryBento";
-import FoodDiscovery from "@/components/home/FoodDiscovery";
+import MarketDiscovery from "@/components/home/MarketDiscovery";
 import CreatorNetwork from "@/components/home/CreatorNetwork";
-import LuxuryManifesto from "@/components/home/LuxuryManifesto";
 import { serverApiFetch } from "@/lib/api/server";
 
 export const dynamic = "force-static";
@@ -75,35 +74,29 @@ async function getHomeData(): Promise<HomeData> {
 
 export default async function Home() {
   const { products, categories } = await getHomeData();
+  const spotlightProduct = products.find((product) =>
+    product.image?.url && !product.image.url.includes("placeholder.svg") && !product.isOutOfStock
+  );
 
   return (
     <main className="overflow-hidden bg-background">
-      <HeroSection />
+      <HeroSection product={spotlightProduct} />
       <CategoryBento categories={categories} />
 
-      <section className="bg-background py-10 md:py-14">
-        <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <AnimatedSection className="mb-7 flex flex-wrap items-end justify-between gap-5">
+      <section aria-labelledby="market-title" className="bg-background pt-10 md:pt-14">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <AnimatedSection className="mb-7 flex items-end justify-between gap-4 md:mb-8">
             <div>
-              <span className="mb-2 block text-sm font-medium text-brand-green">The market</span>
-              <h2 className="font-heading text-3xl font-semibold leading-tight text-brand-green md:text-4xl">
-                Fresh from the market
-              </h2>
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">The everyday essentials</p>
+              <h2 id="market-title" className="mt-3 text-2xl font-medium tracking-tight text-brand-green md:text-3xl">Fresh from the market</h2>
             </div>
-            <div className="md:justify-self-end">
-              <p className="max-w-lg text-base leading-7 text-muted-foreground">
-                Fresh produce and everyday essentials for your kitchen.
-              </p>
-              <Link href="/products" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">
-                Shop the market <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
+            <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </AnimatedSection>
 
           <ProductErrorBoundary>
             {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                {products.map((product, index) => (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-6 md:gap-y-10 lg:grid-cols-4">
+                {products.slice(0, 8).map((product, index) => (
                   <AnimatedProductItem key={product.sku} index={index}>
                     <ProductCard
                       id={product._id?.toString() || ""}
@@ -115,14 +108,14 @@ export default async function Home() {
                       pricePerBaseQuantity={product.pricePerBaseQuantity}
                       measurementType={product.measurementUnit as "g" | "kg" | "ml" | "l" | "ea" | "lb"}
                       isDiscreteItem={product.isSoldAsUnit}
-                      priority={index < 2}
+                      variant="market"
                     />
                   </AnimatedProductItem>
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-border bg-card px-6 py-12 text-center">
-                <p className="font-serif text-2xl text-zinc-900">The market is being refreshed.</p>
+              <div className="rounded-xl border border-border bg-card px-6 py-6 text-center">
+                <p className="font-sans text-2xl text-zinc-900">The market is being refreshed.</p>
                 <Link href="/products" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
               </div>
             )}
@@ -130,9 +123,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <FoodDiscovery />
+      <MarketDiscovery />
       <CreatorNetwork />
-      <LuxuryManifesto />
     </main>
   );
 }

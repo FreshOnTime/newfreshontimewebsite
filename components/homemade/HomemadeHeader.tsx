@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Sparkles } from 'lucide-react';
 
 export default function HomemadeHeader() {
@@ -11,20 +11,20 @@ export default function HomemadeHeader() {
                 </svg>
             </div>
 
-            <div className="relative container mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-200 text-xs font-bold tracking-widest uppercase mb-6">
+            <div className="relative container mx-auto px-6 py-10 md:py-12 flex flex-col items-center text-center z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border text-brand-green text-xs font-bold normal-case mb-6">
                     <Sparkles className="w-3 h-3" />
                     <span>Curated Excellence</span>
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-serif font-medium mb-6 tracking-tight">
+                <h1 className="text-4xl md:text-4xl font-sans font-medium mb-6 tracking-tight">
                     <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-100 via-white to-emerald-100 pb-2">
                         Homemade &
                     </span>
-                    <span className="block italic text-emerald-400">Handcrafted</span>
+                    <span className="block not-italic text-emerald-400">Handcrafted</span>
                 </h1>
 
-                <p className="max-w-2xl text-lg md:text-xl text-zinc-300 font-light leading-relaxed">
+                <p className="max-w-2xl text-lg md:text-xl text-zinc-300 font-normal leading-relaxed">
                     Discover a curated collection of premium domestic produce from small entrepreneurs.
                     Each item is a testament to passion, quality, and the art of creation.
                 </p>

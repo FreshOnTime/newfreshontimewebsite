@@ -18,16 +18,16 @@ export default function OptimizedImage({
     const [isLoading, setIsLoading] = useState(true);
 
     return (
-        <div className={`relative overflow-hidden ${className}`}>
+        <div className={`relative overflow-hidden ${className} `}>
             {isLoading && (
-                <div className="absolute inset-0 bg-zinc-100 animate-pulse" />
+                <div className="absolute inset-0 bg-background animate-pulse" />
             )}
             <Image
                 {...props}
                 src={imgSrc}
                 alt={alt}
                 className={`transition-opacity duration-300 ${isLoading ? "opacity-0" : "opacity-100"
-                    } ${className}`}
+                    }  ${className} `}
                 onLoad={() => setIsLoading(false)}
                 onError={() => {
                     setImgSrc(fallbackSrc);

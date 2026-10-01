@@ -2,8 +2,8 @@ import Spinner from "@/components/spinner";
 
 export default function LoadingPage() {
   return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-      <div className="flex flex-col items-center space-y-6 p-8 rounded-2xl">
+    <div className="fixed inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center space-y-6 p-8 rounded-xl">
         <div className="relative">
           <Spinner color="#22C55E" />
         </div>

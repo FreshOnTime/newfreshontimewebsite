@@ -62,9 +62,7 @@ export const QuickOrderButton: FC<IQuickOrderButtonProps> = (props) => {
   };
   return (
     <Button
-      className="w-full rounded-full px-4 min-h-[3rem] h-auto whitespace-normal leading-tight
-      border-primary text-primary hover:bg-primary hover:text-white
-      "
+      className="w-full rounded-full px-4 min-h-[3rem] h-auto whitespace-normal leading-tight border-primary text-primary hover:bg-primary hover:text-white"
       size="lg"
       variant={"outline"}
       disabled={product.isOutOfStock || submitting}

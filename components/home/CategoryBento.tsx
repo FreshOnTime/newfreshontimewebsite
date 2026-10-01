@@ -1,28 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ShoppingBasket } from "lucide-react";
+import { ArrowUpRight, ShoppingBasket } from "lucide-react";
 
 interface Category { name: string; slug: string; imageUrl?: string; description?: string; }
 
 export default function CategoryBento({ categories }: { categories: Category[] }) {
   if (!categories.length) return null;
   return (
-    <section className="bg-background py-10 md:py-12">
-      <div className="mx-auto max-w-7xl px-5 md:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="font-heading text-3xl font-semibold text-brand-green">Shop by category</h2>
-          <Link href="/categories" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-green hover:underline">All categories <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+    <section aria-labelledby="categories-title" className="mx-auto max-w-7xl px-5 md:px-8">
+      <div className="border-y border-border py-4 md:py-5">
+        <div className="flex items-center justify-between gap-4">
+          <h2 id="categories-title" className="text-sm font-semibold text-brand-green">Shop by category</h2>
+          <Link href="/categories" className="inline-flex min-h-11 items-center gap-2 text-sm text-brand-green hover:underline">View all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <ul className="mt-3 flex gap-5 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-4 lg:grid-cols-6">
           {categories.slice(0, 6).map((category) => (
-            <Link key={category.slug} href={`/categories/${category.slug}`} className="overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green">
-              <div className="relative aspect-[4/3] bg-secondary">
-                {category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 17vw" className="object-cover" /> : <div className="flex h-full items-center justify-center"><ShoppingBasket className="h-10 w-10 text-brand-green" aria-hidden="true" /></div>}
-              </div>
-              <h3 className="p-4 text-sm font-semibold text-brand-green">{category.name}</h3>
-            </Link>
+            <li key={category.slug} className="w-28 shrink-0 md:w-auto">
+              <Link href={`/categories/${category.slug}`} className="group flex h-full flex-col items-center gap-3 rounded-lg py-1 text-center md:flex-row md:gap-3 md:text-left">
+                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors group-hover:bg-brand-green/15">
+                  {category.imageUrl ? <Image src={category.imageUrl} alt="" fill sizes="56px" className={category.imageUrl.split("?")[0].endsWith(".svg") ? "object-contain p-3" : "object-cover"} /> : <ShoppingBasket className="h-6 w-6 text-brand-green" aria-hidden="true" />}
+                </div>
+                <span className="text-sm font-medium leading-5 text-brand-green group-hover:underline">{category.name}</span>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

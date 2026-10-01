@@ -39,8 +39,8 @@ export default function BagView() {
           const firstImg = (item.product.images?.[0] as { url?: string } | string) ?? undefined;
           const imgUrl = typeof firstImg === 'string' ? firstImg : firstImg?.url;
           return (
-            <div key={`${bag.id}-${item.product.id}-${idx}`} className="flex items-center gap-3 p-3 bg-white rounded-md border">
-              <div className="w-14 h-14 bg-gray-100 rounded relative overflow-hidden">
+            <div key={`${bag.id}-${item.product.id}-${idx}`} className="flex items-center gap-3 p-3 bg-background rounded-md border">
+              <div className="w-14 h-14 bg-background rounded relative overflow-hidden">
                 {imgUrl ? (
                   <Image src={imgUrl} alt={item.product.name} fill className="object-cover" />
                 ) : null}
@@ -58,7 +58,7 @@ export default function BagView() {
       </div>
 
       <div className="pt-4 border-t flex justify-end">
-        <Link href={{ pathname: "/checkout", query: { bagId: bag.id } }} className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700">
+        <Link href={{ pathname: "/checkout", query: { bagId: bag.id } }} className="px-4 py-2 rounded-md bg-brand-amber text-accent-foreground hover:bg-green-700">
           Proceed to Checkout
         </Link>
       </div>

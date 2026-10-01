@@ -148,7 +148,7 @@ export default function ProductsFilterBar() {
   );
 
   return (
-    <div className="sticky top-[76px] z-30 rounded-xl border border-border bg-background p-3 md:p-4">
+    <div className="sticky top-[64px] md:top-[120px] z-30 rounded-xl border border-border bg-background p-3 md:p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row">
           <form
@@ -206,12 +206,12 @@ export default function ProductsFilterBar() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${minPrice > 0 || maxPrice < 5000 ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
+                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${minPrice > 0 || maxPrice < 5000 ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""} `}
               >
                 Price <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 rounded-2xl p-6" align="end">
+            <PopoverContent className="w-80 rounded-xl p-6" align="end">
               <div className="space-y-5">
                 <div className="flex items-center justify-between gap-4">
                   <h4 className="text-sm font-medium text-zinc-900">Price range</h4>
@@ -236,20 +236,20 @@ export default function ProductsFilterBar() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${selectedTags.length > 0 || inStock ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
+                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${selectedTags.length > 0 || inStock ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""} `}
               >
                 <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
                 {(selectedTags.length > 0 || inStock) && (
-                  <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-lg bg-emerald-800 px-1 text-[10px] text-white">
+                  <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-lg bg-emerald-800 px-1 text-xs text-white">
                     {selectedTags.length + (inStock ? 1 : 0)}
                   </span>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 rounded-2xl p-4" align="end">
+            <PopoverContent className="w-72 rounded-xl p-4" align="end">
               <div className="space-y-2">
-                <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Refine collection</p>
-                <label className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-zinc-50">
+                <p className="px-2 pb-2 text-xs font-bold normal-case text-muted-foreground">Refine collection</p>
+                <label className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-background">
                   <Checkbox
                     checked={inStock}
                     onCheckedChange={(checked) => {
@@ -262,7 +262,7 @@ export default function ProductsFilterBar() {
                 </label>
                 <div className="my-2 border-t border-zinc-100" />
                 {filterTags.map((tag) => (
-                  <label key={tag} className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-zinc-50">
+                  <label key={tag} className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-background">
                     <Checkbox checked={selectedTags.includes(tag)} onCheckedChange={() => toggleTag(tag)} />
                     <span className="text-sm text-zinc-600">{tag}</span>
                   </label>

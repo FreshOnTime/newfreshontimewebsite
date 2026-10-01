@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <PremiumPageHeader
         title="Privacy Policy"
         subtitle="How Fresh Pick handles information used to run accounts, orders, delivery, and support."
         eyebrow="Legal · Privacy"
       />
 
-      <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="prose prose-emerald max-w-none">
           <p className="mb-8 font-medium text-gray-500">Effective Date: December 2025</p>
 

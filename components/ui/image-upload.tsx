@@ -64,18 +64,18 @@ export function ImageUpload({
       <div
         {...getRootProps()}
         className={cn(
-          "border-2 border-dashed rounded-lg p-4 hover:bg-gray-50 transition cursor-pointer",
-          isDragActive && "border-primary bg-gray-50"
+          "border-2 border-dashed rounded-lg p-4 hover:bg-background transition cursor-pointer",
+          isDragActive && "border-primary bg-background"
         )}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center gap-2">
-          <ImagePlus className="h-8 w-8 text-gray-400" />
+          <ImagePlus className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-gray-500">
             Drag & drop or click to upload images
           </p>
           {aspectRatio && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground">
               Recommended aspect ratio: {aspectRatio}
             </p>
           )}

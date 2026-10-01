@@ -3,19 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, ShoppingBag, Layers, Info } from "lucide-react";
+import { Plus, ShoppingBag, Layers } from "lucide-react";
 import { Product } from "@/models/product";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useBag } from "@/contexts/BagContext";
 import { toast } from "sonner";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BundleCardProps {
     product: Product;
@@ -53,35 +48,35 @@ export function BundleCard({ product }: BundleCardProps) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <Card className="h-full border-0 bg-white shadow-premium rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-premium-hover">
+                <Card className="h-full border-0 bg-background shadow-none rounded-xl overflow-hidden transition-all duration-500 hover:shadow-none">
                     {/* Badge */}
                     <div className="absolute top-3 left-3 z-10 flex gap-2">
-                        <Badge className="bg-purple-600 hover:bg-purple-700 text-white border-0 shadow-lg backdrop-blur-md">
+                        <Badge className="bg-purple-600 hover:bg-purple-700 text-white border-0 shadow-none">
                             <Layers className="w-3 h-3 mr-1" />
                             Bundle Deal
                         </Badge>
                         {savings > 0 && (
-                            <Badge className="bg-red-500 hover:bg-red-600 text-white border-0 shadow-lg">
+                            <Badge className="bg-red-500 hover:bg-red-600 text-white border-0 shadow-none">
                                 -{savings}% OFF
                             </Badge>
                         )}
                     </div>
 
                     {/* Image Container */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-background">
                         <Image
                             src={product.image?.url || "/placeholder.svg"}
                             alt={product.name}
                             fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            className="object-cover transition-transform duration-700"
                         />
                         {/* Overlay */}
-                        <div className={`absolute inset-0 bg-black/10 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+                        <div className={`absolute inset-0 bg-secondary transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'} `} />
 
                         {/* Quick Add Button showing on hover */}
-                        <div className={`absolute bottom-4 left-0 right-0 px-4 transition-all duration-300 transform ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+                        <div className={`absolute bottom-4 left-0 right-0 px-4 transition-all duration-300 transform ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} `}>
                             <Button
-                                className="w-full bg-white/90 hover:bg-white text-gray-900 shadow-lg backdrop-blur-sm border border-gray-100"
+                                className="w-full bg-white/90 hover:bg-background text-gray-900 shadow-none border border-gray-100"
                                 onClick={handleAddToBag}
                             >
                                 <Plus className="w-4 h-4 mr-2" />
@@ -104,12 +99,12 @@ export function BundleCard({ product }: BundleCardProps) {
                         {/* Bundle Items Preview */}
                         {product.bundleItems && product.bundleItems.length > 0 && (
                             <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-2">
-                                <span className="text-xs font-medium text-gray-400 mr-1">Contains:</span>
+                                <span className="text-xs font-medium text-muted-foreground mr-1">Contains:</span>
                                 {product.bundleItems.slice(0, 3).map((item, idx) => (
                                     <TooltipProvider key={idx}>
                                         <Tooltip>
                                             <TooltipTrigger>
-                                                <div className="w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-[10px] text-gray-600 overflow-hidden">
+                                                <div className="w-6 h-6 rounded-full bg-background border border-gray-200 flex items-center justify-center text-xs text-gray-600 overflow-hidden">
                                                     {/* Ideally show small image, but name initals for now */}
                                                     {/* If we had item.product.image we would use it */}
                                                     {/* We only have product ID in the type unless populated properly on frontend type too */}
@@ -123,14 +118,14 @@ export function BundleCard({ product }: BundleCardProps) {
                                     </TooltipProvider>
                                 ))}
                                 {product.bundleItems.length > 3 && (
-                                    <span className="text-xs text-gray-400">+{product.bundleItems.length - 3} more</span>
+                                    <span className="text-xs text-muted-foreground">+{product.bundleItems.length - 3} more</span>
                                 )}
                             </div>
                         )}
 
                         <div className="flex items-center justify-between pt-2 border-t border-gray-50">
                             <div className="flex flex-col">
-                                <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">Bundle Price</span>
+                                <span className="text-xs text-muted-foreground font-medium normal-case">Bundle Price</span>
                                 <span className="text-lg font-bold text-gray-900">
                                     Rs. {product.pricePerBaseQuantity.toLocaleString()}
                                 </span>

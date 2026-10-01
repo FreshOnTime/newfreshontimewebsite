@@ -90,6 +90,7 @@ export async function getPublishedCollectionBySlug(slug: string): Promise<FoodCo
             tags: true,
             publishedAt: true,
             authorName: true,
+            authorId: true,
           },
         })
       : Promise.resolve([]),
@@ -107,6 +108,7 @@ export async function getPublishedCollectionBySlug(slug: string): Promise<FoodCo
     if (!recipeContent) continue;
     recipeMap.set(recipeRow.slug, {
       id: recipeRow.id,
+      authorId: recipeRow.authorId,
       title: recipeRow.title,
       slug: recipeRow.slug,
       excerpt: recipeRow.excerpt,

@@ -1,22 +1,21 @@
 "use client";
 
-import React from "react";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
-import { AlertCircle, Clock, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
 
 export default function RefundPage() {
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-background min-h-screen">
             <PremiumPageHeader
                 title="Refund & Replacement Policy"
                 subtitle="We stand behind the freshness of our products."
                 backgroundImage="https://images.unsplash.com/photo-1627993079361-bd80b8577030?q=80&w=2670&auto=format&fit=crop"
             />
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 {/* Intro Alert */}
-                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-12 flex gap-4">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-6 flex gap-4">
                     <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
                     <div>
                         <h3 className="font-bold text-emerald-900 mb-1">Our Freshness Guarantee</h3>
@@ -27,10 +26,10 @@ export default function RefundPage() {
                 </div>
 
                 <div className="prose prose-emerald max-w-none">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-gray-400" />
+                                <Clock className="w-5 h-5 text-muted-foreground" />
                                 Perishable Items
                             </h2>
                             <p className="text-gray-600 text-sm mb-4">
@@ -45,7 +44,7 @@ export default function RefundPage() {
 
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-gray-400" />
+                                <Clock className="w-5 h-5 text-muted-foreground" />
                                 Non-Perishable Items
                             </h2>
                             <p className="text-gray-600 text-sm mb-4">
@@ -59,7 +58,7 @@ export default function RefundPage() {
                         </div>
                     </div>
 
-                    <div className="space-y-12 border-t border-gray-100 pt-12">
+                    <div className="space-y-12 border-t border-gray-100 pt-6">
                         <section>
                             <h2 className="text-2xl font-bold text-gray-900 mb-4">How to Request a Refund</h2>
                             <ol className="list-decimal pl-6 space-y-3 text-gray-600">

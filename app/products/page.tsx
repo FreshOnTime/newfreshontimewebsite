@@ -62,27 +62,17 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
         eyebrow="FreshPick · Colombo"
       />
 
-      <div className="container mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-16">
+      <div className="container mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-8">
         <ProductsFilterBar />
 
-        <div className="mt-8 grid gap-4 border-b border-zinc-200 pb-6 sm:grid-cols-[1fr_auto] sm:items-end">
-          <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-emerald-700">From the market</p>
-            <h2 className="mt-2 font-serif text-3xl font-normal tracking-[-0.02em] text-zinc-950 md:text-4xl">Products available to shop now.</h2>
-            <p className="mt-3 max-w-2xl text-sm font-light leading-7 text-zinc-500">
-              Search by name, choose a category or filter by price to find what you need.
-            </p>
-          </div>
-          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400">
-            {products.length === 0 ? "No items found" : `Showing ${start}–${end}`}
-          </span>
-        </div>
-
-        <div className="mt-8">
+        <div className="mt-6 flex items-center justify-between border-b border-border pb-4 text-sm text-muted-foreground">
+          <span>{pagination.count} products</span>
+          <span>{products.length === 0 ? "No items found" : `Showing ${start}–${end}`}</span>
+        </div>      <div className="mt-8">
           {products.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
-              <p className="font-serif text-3xl font-normal text-zinc-950">Nothing matches those filters yet.</p>
-              <p className="mx-auto mt-3 max-w-md text-sm font-light leading-7 text-zinc-500">Try another search or reset the filters to browse all products.</p>
+            <div className="rounded-xl border border-dashed border-border bg-card px-6 py-6 text-center">
+              <p className="font-sans text-3xl font-normal text-zinc-950">Nothing matches those filters yet.</p>
+              <p className="mx-auto mt-3 max-w-md text-sm font-normal leading-7 text-zinc-500">Try another search or reset the filters to browse all products.</p>
               <Link href="/products" className="mt-6 inline-flex rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">
                 Clear all filters
               </Link>
@@ -92,7 +82,7 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
           )}
 
           {(products.length > 0 || pagination.hasPrev) && (
-            <div className="mt-12 flex justify-center border-t border-zinc-200 pt-10 md:mt-16 md:pt-12">
+            <div className="mt-6 flex justify-center border-t border-zinc-200 pt-10 md:mt-8 md:pt-6">
               <ProductsPagination
                 page={pagination.page}
                 limit={pagination.limit}

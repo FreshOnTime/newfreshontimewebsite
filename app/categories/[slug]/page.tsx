@@ -115,12 +115,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         subtitle={`Explore our fresh selection of ${name.toLowerCase()}.`}
         count={products.length}
       />
-      <div className="container mx-auto px-4 md:px-8 pb-24">
+      <div className="container mx-auto px-4 md:px-8 pb-10">
         <ProductGrid products={products} />
 
         {products.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-xl text-zinc-400 font-serif">No products found in this category.</p>
+          <div className="text-center py-8">
+            <p className="text-xl text-muted-foreground font-sans">No products found in this category.</p>
             <div className="mt-6">
               <Link href="/products" className="text-emerald-600 hover:underline">View all products</Link>
             </div>

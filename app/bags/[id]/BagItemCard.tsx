@@ -16,8 +16,8 @@ export default function BagItemCard({ item, onRemove }: BagItemCardProps) {
   return (
     <div className="p-4 flex flex-col gap-2 border overflow-auto rounded-lg">
       <div className="flex-1">
-        <div className=" grid gap-2 grid-cols-2 mb-2">
-          <h3 className="font-medium text-sm max-w-[200px] ">
+        <div className="grid gap-2 grid-cols-2 mb-2">
+          <h3 className="font-medium text-sm max-w-[200px]">
             {item.product.name}
           </h3>
           <div className="text-right ml-auto">
