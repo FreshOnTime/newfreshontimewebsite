@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Package, RefreshCw, ShoppingBag, Truck, XCircle } from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Package, RefreshCw, Truck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import { AccountPage, AccountState, AccountLoading, accountButton, accountSecondaryButton } from '@/components/account/AccountPage';
 
 type OrderSummary = {
   _id: string;
@@ -41,29 +43,18 @@ export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
-  const hasOrders = useMemo(() => orders.length > 0, [orders]);
+
 
   const cancelOrder = async (id: string) => {
     try {
       setCancellingId(id);
-      let res = await fetch(`/api/orders/${id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cancel' }),
+      const res = await authenticatedApiFetch(`/api/orders/${id}`, {
+        method: 'PATCH', body: JSON.stringify({ action: 'cancel' }),
       });
-      if (res.status === 401) {
-        await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-        res = await fetch(`/api/orders/${id}`, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'cancel' }),
-        });
-      }
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrders((current) => current.map((order) => order._id === id ? { ...order, status: 'cancelled' } : order));
@@ -80,83 +71,60 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (authLoading) return;
+    setOrders([]);
+    setError(null);
     if (!user?._id) {
       setLoading(false);
-      router.push('/auth/login?redirect=/orders');
+      router.replace('/auth/login?redirect=/orders');
       return;
     }
-    if (hasFetched) return;
-
+    const controller = new AbortController();
+    setLoading(true);
     const load = async () => {
-      setLoading(true);
       try {
-        let res = await fetch('/api/orders?limit=20&summary=1', { credentials: 'include' });
+        const res = await authenticatedApiFetch('/api/orders?limit=20&summary=1', { signal: controller.signal });
         if (res.status === 401) {
-          await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-          res = await fetch('/api/orders?limit=20&summary=1', { credentials: 'include' });
-        }
-        if (res.status === 401) {
-          router.push('/auth/login?redirect=/orders');
+          router.replace('/auth/login?redirect=/orders');
           return;
         }
         const data = await res.json();
-        if (res.ok && data.success) setOrders(data.data.orders || []);
-        setHasFetched(true);
+        if (!res.ok || !data.success) throw new Error(data.error || 'Please try again in a moment.');
+        if (!controller.signal.aborted) setOrders(data.data.orders || []);
+      } catch (loadError) {
+        if (!controller.signal.aborted) setError(loadError instanceof Error ? loadError.message : 'Please try again in a moment.');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
-
     void load();
-  }, [user?._id, authLoading, router, hasFetched]);
+    return () => controller.abort();
+  }, [user?._id, authLoading, router, retryCount]);
 
   return (
-    <main className="min-h-screen bg-background pb-10 text-zinc-950">
-      <section className="border-b border-zinc-200 bg-background px-5 pb-6 pt-10 md:px-8 md:pb-14 md:pt-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-7 md:flex-row md:items-end md:justify-between">
-          <div>
-            <span className="text-xs font-bold normal-case text-emerald-700">Your FreshPick</span>
-            <h1 className="mt-4 font-sans text-4xl font-semibold leading-tight md:text-4xl">Orders.</h1>
-            <p className="mt-5 max-w-xl text-sm font-normal leading-7 text-zinc-500">Track what is on the way, revisit past purchases and manage recurring orders without losing the thread.</p>
-          </div>
-          <Link href="/discover" className="inline-flex h-11 w-fit items-center gap-2 rounded-full bg-brand-amber px-5 text-xs font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">Find something next <ArrowRight className="h-4 w-4" /></Link>
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-6xl px-5 pt-10 md:px-8 md:pt-14">
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((item) => <div key={item} className="h-32 animate-pulse rounded-xl border border-zinc-200 bg-background" />)}
-          </div>
-        ) : !hasOrders ? (
-          <section className="overflow-hidden rounded-xl border border-zinc-200 bg-background p-8 text-center md:p-14">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><ShoppingBag className="h-5 w-5" /></div>
-            <h2 className="mt-6 font-sans text-2xl font-semibold text-zinc-950">Your first order can start with a meal.</h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm font-normal leading-7 text-zinc-500">Browse the market directly, or begin in Discover if you would rather choose what to eat before choosing products.</p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link href="/discover" className="rounded-full bg-brand-amber px-6 py-3 text-xs font-semibold text-accent-foreground hover:bg-brand-amber/85">Open Discover</Link>
-              <Link href="/products" className="rounded-full border border-zinc-300 bg-background px-6 py-3 text-xs font-semibold text-zinc-700">Browse Market</Link>
-            </div>
-          </section>
+    <AccountPage title="Orders" description="Track deliveries and revisit recent purchases." action={<Link href="/products" className={accountSecondaryButton}>Shop the market</Link>}>
+        {authLoading || loading ? <AccountLoading label="Loading your orders…" /> : error ? (
+          <AccountState error title="Couldn’t load your orders" description={error} action={<button type="button" className={accountSecondaryButton} onClick={() => setRetryCount((count) => count + 1)}>Try again</button>} />
+        ) : orders.length === 0 ? (
+          <AccountState title="No orders yet" description="Your purchases and delivery updates will appear here." action={<Link href="/products" className={accountButton}>Shop the market</Link>} />
         ) : (
-          <section className="overflow-hidden rounded-xl border border-zinc-200 bg-background">
-            <div className="flex items-end justify-between gap-5 border-b border-zinc-100 px-6 py-5 md:px-8">
+          <section className="overflow-hidden rounded-lg border border-zinc-200 bg-background">
+            <div className="flex items-end justify-between gap-5 border-b border-border px-6 py-5 md:px-6">
               <div>
-                <p className="text-xs font-bold normal-case text-emerald-700">Order history</p>
+                <h2 className="text-base font-medium text-brand-green">Recent orders</h2>
                 <p className="mt-1 text-sm font-normal text-muted-foreground">{orders.length} recent order{orders.length === 1 ? '' : 's'}</p>
               </div>
               <Link href="/bags" className="text-xs font-semibold text-emerald-800">Saved bags</Link>
             </div>
 
-            <div className="divide-y divide-zinc-100">
+            <div className="divide-y divide-border">
               {orders.map((order) => {
                 const cancellable = ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase());
                 return (
-                  <article key={order._id} className="group px-6 py-6 transition-colors hover:bg-background md:px-8">
+                  <article key={order._id} className="group px-5 py-5 transition-colors hover:bg-background md:px-6">
                     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                       <Link href={`/orders/${order._id}`} className="min-w-0">
                         <div className="flex flex-wrap items-center gap-3">
-                          <span className="font-sans text-2xl font-normal text-zinc-950">#{order.orderNumber}</span>
+                          <span className="text-lg font-medium text-brand-green">#{order.orderNumber}</span>
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle(order.status)} `}><StatusIcon status={order.status} /> {order.status}</span>
                           {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus) && <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800"><RefreshCw className="h-3 w-3" /> Recurring</span>}
                         </div>
@@ -176,7 +144,7 @@ export default function OrdersPage() {
                         {cancellable && (
                           <button
                             type="button"
-                            disabled={cancellingId === order._id}
+                            disabled={cancellingId !== null}
                             onClick={() => void cancelOrder(order._id)}
                             className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
                           >
@@ -192,7 +160,6 @@ export default function OrdersPage() {
             </div>
           </section>
         )}
-      </div>
-    </main>
+    </AccountPage>
   );
 }

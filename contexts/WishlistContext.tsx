@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { Product } from '@/models/product';
-import { apiFetch } from '@/lib/api/client';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 interface WishlistContextType {
     wishlistItems: Product[];
     loading: boolean;
+    error: string | null;
+    retry: () => Promise<void>;
     addToWishlist: (product: Product) => Promise<void>;
     removeFromWishlist: (productId: string) => Promise<void>;
     isInWishlist: (productId: string) => boolean;
@@ -24,124 +26,116 @@ function getProductId(product: Product) {
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-    const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(false);
     const { user } = useAuth();
+    const userId = user?._id;
+    const [state, setState] = useState<{ owner?: string; items: Product[]; loading: boolean; error: string | null }>({ items: [], loading: false, error: null });
+    const account = useRef(userId);
+    account.current = userId;
+    const latestRequest = useRef(0);
+    const revision = useRef(0);
+    const pending = useRef(new Set<string>());
     const pathname = usePathname();
+    const wishlistItems = useMemo(() => state.owner === userId ? state.items : [], [state.owner, state.items, userId]);
 
     const fetchWishlist = useCallback(async () => {
-        if (!user?._id) return;
-        setLoading(true);
+        if (!userId) return;
+        const request = ++latestRequest.current;
+        const initialRevision = revision.current;
+        setState((current) => ({ owner: userId, items: current.owner === userId ? current.items : [], loading: true, error: null }));
         try {
-            const res = await apiFetch(`/api/wishlist?userId=${encodeURIComponent(user._id)}`);
+            const res = await authenticatedApiFetch(`/api/wishlist?userId=${encodeURIComponent(userId)}`);
             const data = await res.json();
-            if (res.ok && data.success) {
-                setWishlistItems(data.data || []);
+            if (!res.ok || !data.success) throw new Error(data.error || 'Please try again in a moment.');
+            if (account.current === userId && request === latestRequest.current && initialRevision === revision.current && pending.current.size === 0) {
+                setState({ owner: userId, items: data.data || [], loading: false, error: null });
             }
-        } catch (error) {
-            console.error('Failed to fetch wishlist', error);
+        } catch (loadError) {
+            if (account.current === userId && request === latestRequest.current) {
+                setState((current) => ({ ...current, error: loadError instanceof Error ? loadError.message : 'Please try again in a moment.' }));
+            }
         } finally {
-            setLoading(false);
+            if (account.current === userId && request === latestRequest.current) setState((current) => ({ ...current, loading: false }));
         }
-    }, [user?._id]);
+    }, [userId]);
 
     useEffect(() => {
-        if (!user?._id) {
-            setWishlistItems([]);
+        if (!userId) {
+            latestRequest.current++;
+            setState({ items: [], loading: false, error: null });
             return;
         }
-
+        setState((current) => current.owner === userId ? current : { owner: userId, items: [], loading: true, error: null });
         if (pathname.startsWith('/wishlist')) {
-            fetchWishlist();
+            void fetchWishlist();
             return;
         }
-
-        const task = scheduleIdleTask(fetchWishlist, {
-            timeout: 4000,
-            fallbackDelayMs: 2500,
-        });
+        const task = scheduleIdleTask(fetchWishlist, { timeout: 4000, fallbackDelayMs: 2500 });
         return () => task.cancel();
-    }, [user?._id, pathname, fetchWishlist]);
+    }, [userId, pathname, fetchWishlist]);
 
-    const isInWishlist = useCallback((productId: string) => {
-        return wishlistItems.some((item) => getProductId(item) === productId);
-    }, [wishlistItems]);
+    const isInWishlist = useCallback((productId: string) => wishlistItems.some((item) => getProductId(item) === productId), [wishlistItems]);
 
     const addToWishlist = useCallback(async (product: Product) => {
-        if (!user?._id) {
-            toast.error('Please login to add to wishlist');
-            return;
-        }
-
+        if (!userId) { toast.error('Sign in to save products'); return; }
         const productId = getProductId(product);
-        if (!productId) {
-            console.error('Product has no ID:', product);
-            toast.error('Cannot add to wishlist: Invalid product');
-            return;
-        }
-
-        if (isInWishlist(productId)) return;
-
-        setWishlistItems((previous) => [...previous, product]);
-
+        if (!productId) { toast.error('This product cannot be saved'); return; }
+        const key = `${userId}:${productId}`;
+        if (isInWishlist(productId) || pending.current.has(key)) return;
+        pending.current.add(key);
+        revision.current++;
+        setState((current) => ({ owner: userId, items: [...(current.owner === userId ? current.items : []), product], loading: current.loading, error: current.error }));
         try {
-            const res = await apiFetch('/api/wishlist', {
-                method: 'POST',
-                body: JSON.stringify({ userId: user._id, productId }),
-            });
+            const res = await authenticatedApiFetch('/api/wishlist', { method: 'POST', body: JSON.stringify({ userId, productId }) });
             const data = await res.json();
-            if (!res.ok || !data.success) {
-                await fetchWishlist();
-                toast.error(data.error || 'Failed to add to wishlist');
-                return;
+            if (!res.ok || !data.success) throw new Error(data.error || 'Couldn’t save this product. Try again.');
+            if (account.current === userId) toast.success('Added to wishlist');
+        } catch (saveError) {
+            if (account.current === userId) {
+                setState((current) => ({ ...current, items: current.items.filter((item) => getProductId(item) !== productId) }));
+                toast.error(saveError instanceof Error ? saveError.message : 'Couldn’t save this product. Try again.');
             }
-            toast.success('Added to wishlist');
-        } catch (error) {
-            console.error(error);
-            await fetchWishlist();
-            toast.error('Error adding to wishlist');
-        }
-    }, [user?._id, isInWishlist, fetchWishlist]);
+        } finally { pending.current.delete(key); revision.current++; }
+    }, [userId, isInWishlist]);
 
     const removeFromWishlist = useCallback(async (productId: string) => {
-        if (!user?._id) return;
-
-        setWishlistItems((previous) => previous.filter((product) => getProductId(product) !== productId));
-
+        if (!userId) return;
+        const key = `${userId}:${productId}`;
+        const index = wishlistItems.findIndex((item) => getProductId(item) === productId);
+        const removed = wishlistItems[index];
+        if (!removed || pending.current.has(key)) return;
+        pending.current.add(key);
+        revision.current++;
+        setState((current) => ({ ...current, items: current.items.filter((item) => getProductId(item) !== productId) }));
         try {
-            const res = await apiFetch(
-                `/api/wishlist/${encodeURIComponent(productId)}?userId=${encodeURIComponent(user._id)}`,
-                { method: 'DELETE' },
-            );
+            const res = await authenticatedApiFetch(`/api/wishlist/${encodeURIComponent(productId)}?userId=${encodeURIComponent(userId)}`, { method: 'DELETE' });
             const data = await res.json();
-            if (!res.ok || !data.success) {
-                await fetchWishlist();
-                toast.error('Failed to remove from wishlist');
-                return;
+            if (!res.ok || !data.success) throw new Error(data.error || 'Couldn’t remove this product. Try again.');
+            if (account.current === userId) toast.success('Removed from wishlist');
+        } catch (saveError) {
+            if (account.current === userId) {
+                setState((current) => {
+                    if (current.items.some((item) => getProductId(item) === productId)) return current;
+                    const items = [...current.items];
+                    items.splice(Math.min(index, items.length), 0, removed);
+                    return { ...current, items };
+                });
+                toast.error(saveError instanceof Error ? saveError.message : 'Couldn’t remove this product. Try again.');
             }
-            toast.success('Removed from wishlist');
-        } catch (error) {
-            console.error(error);
-            await fetchWishlist();
-            toast.error('Error removing from wishlist');
-        }
-    }, [user?._id, fetchWishlist]);
+        } finally { pending.current.delete(key); revision.current++; }
+    }, [userId, wishlistItems]);
 
     const value = useMemo<WishlistContextType>(() => ({
         wishlistItems,
-        loading,
-        addToWishlist,
-        removeFromWishlist,
-        isInWishlist,
-    }), [wishlistItems, loading, addToWishlist, removeFromWishlist, isInWishlist]);
-
+        loading: Boolean(userId && (state.owner !== userId || state.loading)),
+        error: state.owner === userId ? state.error : null,
+        retry: fetchWishlist,
+        addToWishlist, removeFromWishlist, isInWishlist,
+    }), [wishlistItems, userId, state.owner, state.loading, state.error, fetchWishlist, addToWishlist, removeFromWishlist, isInWishlist]);
     return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 
 export function useWishlist() {
     const context = useContext(WishlistContext);
-    if (context === undefined) {
-        throw new Error('useWishlist must be used within a WishlistProvider');
-    }
+    if (context === undefined) throw new Error('useWishlist must be used within a WishlistProvider');
     return context;
 }

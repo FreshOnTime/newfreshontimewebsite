@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { CheckCircle2, Clock, Home, Package, Truck, ArrowLeft, Calendar, MapPin, CreditCard, XCircle, RotateCcw, ShoppingBag } from "lucide-react";
+import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import { AccountPage, AccountState, AccountLoading, accountSecondaryButton } from '@/components/account/AccountPage';
+import { CheckCircle2, Clock, Package, Truck, ArrowLeft, MapPin, CreditCard, XCircle, RotateCcw } from "lucide-react";
 
 type ApiOrderItem = {
   productId?: { _id: string; name: string } | null;
@@ -53,150 +56,76 @@ export default function OrderDetailPage() {
   const [addressSaved, setAddressSaved] = useState(false);
   const [notFoundError, setNotFoundError] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
-  // recurrence UI state
-  const [recurrenceFreq, setRecurrenceFreq] = useState<'weekly' | 'monthly' | 'quarterly'>('weekly');
-  const [recurrenceInterval, setRecurrenceInterval] = useState<number>(1);
-  const [monthlyMode, setMonthlyMode] = useState<'bymonthday' | 'byweekday'>('bymonthday');
-  const [monthlyDay, setMonthlyDay] = useState<number | ''>('');
-  const [monthlyNth, setMonthlyNth] = useState<number>(1);
-  const [monthlyWeekday, setMonthlyWeekday] = useState<number>(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    // Wait for id to be available
-    if (!id) {
-      return;
-    }
-
+    if (!id || authLoading) return;
+    setOrder(null);
+    setNotFoundError(false);
+    setLoadError(null);
+    setActionError(null);
+    setAddressSaved(false);
+    if (!user?._id) { router.replace(`/auth/login?redirect=/orders/${id}`); setLoading(false); return; }
+    const controller = new AbortController();
+    setLoading(true);
     const load = async () => {
-      setLoading(true);
-      setNotFoundError(false);
       try {
-        let res = await fetch(`/api/orders/${id}`, { credentials: 'include', cache: 'no-store' });
-
-        if (res.status === 401) {
-          await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-          res = await fetch(`/api/orders/${id}`, { credentials: 'include', cache: 'no-store' });
-        }
-
-        if (res.status === 401) {
-          router.push(`/auth/login?redirect=/orders/${id}`);
-          return;
-        }
-
-        if (res.status === 404) {
-          setNotFoundError(true);
-          return;
-        }
-
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data?.success) setOrder(data.data);
-        else setNotFoundError(true);
+        const res = await authenticatedApiFetch(`/api/orders/${id}`, { cache: 'no-store', signal: controller.signal });
+        if (res.status === 401) { router.replace(`/auth/login?redirect=/orders/${id}`); return; }
+        if (res.status === 404) { if (!controller.signal.aborted) setNotFoundError(true); return; }
+        const data = await res.json();
+        if (!res.ok || !data?.success) throw new Error(data.error || 'Please try again in a moment.');
+        if (!controller.signal.aborted) setOrder(data.data);
+      } catch (error) {
+        if (!controller.signal.aborted) setLoadError(error instanceof Error ? error.message : 'Please try again in a moment.');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
-    load();
-  }, [id, router]);
-
-  const stages = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
-
-  function Stepper({ status }: { status: string }) {
-    const s = (status || '').toLowerCase();
-    const idx = stages.indexOf(s);
-    const isKnownStage = idx >= 0;
-
-    const icons = [
-      <Clock key="pending" className="w-5 h-5" />,
-      <CheckCircle2 key="confirmed" className="w-5 h-5" />,
-      <Package key="processing" className="w-5 h-5" />,
-      <Truck key="shipped" className="w-5 h-5" />,
-      <Home key="delivered" className="w-5 h-5" />
-    ];
-
-    const labels = ["Pending", "Confirmed", "Packing", "Shipped", "Delivered"];
-
-    return (
-      <div className="w-full py-8 px-4">
-        <div className="flex items-center justify-between relative max-w-2xl mx-auto">
-          {/* Background Line */}
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-background rounded-full" />
-
-          {/* Active Progress Line */}
-          <div
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-brand-green rounded-full transition-all duration-1000 ease-out"
-            style={{ width: `${Math.max(0, (idx / (stages.length - 1)) * 100)}%` }}
-          />
-
-          {stages.map((stage, i) => {
-            const isCompleted = isKnownStage && i <= idx;
-            const isCurrent = isKnownStage && i === idx;
-
-            return (
-              <div key={stage} className="flex flex-col items-center gap-3 relative z-10">
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 border-4 shadow-sm ${isCompleted
-                      ? 'bg-brand-green border-background text-white'
-                      : 'bg-background border-gray-100 text-gray-300'
-                    }  ${isCurrent ? 'ring-4 ring-emerald-100 scale-110' : ''} `}
-                >
-                  {isCompleted ? icons[i] : <div className="w-3 h-3 rounded-full bg-gray-200" />}
-                </div>
-                <span className={`text-xs font-semibold transition-colors duration-300 whitespace-nowrap ${isCompleted ? 'text-emerald-700' : 'text-muted-foreground'} `}>
-                  {labels[i]}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {!isKnownStage && s && (
-          <div className="mt-6 text-center">
-            <span className="px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-medium border border-red-100 inline-flex items-center gap-2">
-              <XCircle className="w-4 h-4" />
-              Status: {status}
-            </span>
-          </div>
-        )}
-      </div>
-    );
-  }
+    void load();
+    return () => controller.abort();
+  }, [id, user?._id, authLoading, router, retryCount]);
 
   const doRecurringAction = async (action: 'pause' | 'resume' | 'end') => {
-    if (!order?._id) return;
+    if (!order?._id || saving) return;
     setSaving(true);
+    setActionError(null);
     try {
-      const res = await fetch(`/api/orders/recurring/${order._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) });
-      if (res.status === 401) {
-        await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-        return doRecurringAction(action);
-      }
+      const res = await authenticatedApiFetch(`/api/orders/recurring/${order._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) });
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrder(data.data);
       } else {
         const msg = (data && (data.error || data.message)) || 'Failed to update schedule';
-        alert(msg);
+        setActionError(msg);
       }
+    } catch {
+      setActionError('Couldn’t save your changes. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
   const cancelOrder = async () => {
-    if (!order?._id) return;
+    if (!order?._id || saving) return;
     if (!confirm('Cancel this order?')) return;
     setSaving(true);
+    setActionError(null);
     try {
-      const res = await fetch(`/api/orders/${order._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel' }) });
+      const res = await authenticatedApiFetch(`/api/orders/${order._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel' }) });
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrder(data.data);
       } else {
         const msg = (data && (data.error || data.message)) || 'Failed to cancel order';
-        alert(msg);
+        setActionError(msg);
       }
+    } catch {
+      setActionError('Couldn’t save your changes. Please try again.');
     } finally { setSaving(false); }
   };
 
@@ -210,59 +139,9 @@ export default function OrderDetailPage() {
     return `${y}-${m}-${day}`;
   };
 
-  const formatDateList = (isos?: string[]) => {
-    if (!Array.isArray(isos) || !isos.length) return '';
-    const toYmd = (s: string) => {
-      const d = new Date(s);
-      if (Number.isNaN(d.getTime())) return '';
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    };
-    return isos.map(toYmd).filter(Boolean).join(', ');
-  };
-
-  useEffect(() => {
-    if (!order || !order.recurrence) return;
-    if (Array.isArray(order.recurrence.daysOfWeek) && order.recurrence.daysOfWeek.length) {
-      setRecurrenceFreq('weekly');
-      setRecurrenceInterval(1);
-    }
-  }, [order]);
-
-  // Not Found State
-  if (!loading && notFoundError) {
-    return (
-      <div className="min-h-0 flex flex-col items-center justify-center p-6 bg-gray-50/50">
-        <div className="w-20 h-20 bg-background rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag className="w-10 h-10 text-muted-foreground" />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
-        <p className="text-gray-500 mb-8 text-center max-w-md">
-          We couldn&apos;t find the order you&apos;re looking for. It may have been deleted or you don&apos;t have permission to view it.
-        </p>
-        <div className="flex gap-4">
-          <Link href="/orders">
-            <Button variant="outline" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Orders
-            </Button>
-          </Link>
-          <Link href="/">
-            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700">
-              <Home className="w-4 h-4" />
-              Go Home
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const saveRecurrence = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!order?._id) return;
+    if (!order?._id || saving) return;
     const fd = new FormData(e.currentTarget);
     const startDate = String(fd.get('recurrence_start') || '');
     const endDate = String(fd.get('recurrence_end') || '');
@@ -286,24 +165,23 @@ export default function OrderDetailPage() {
     };
 
     setSaving(true);
+    setActionError(null);
     try {
-      const res = await fetch(`/api/orders/recurring/${order._id}`, {
+      const res = await authenticatedApiFetch(`/api/orders/recurring/${order._id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (res.status === 401) {
-        await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-        return saveRecurrence(e);
-      }
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrder(data.data);
       } else {
         const msg = (data && (data.error || data.message)) || 'Failed to save schedule';
-        alert(msg);
+        setActionError(msg);
       }
+    } catch {
+      setActionError('Couldn’t save your changes. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -311,7 +189,7 @@ export default function OrderDetailPage() {
 
   const saveAddress = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!order?._id) return;
+    if (!order?._id || saving) return;
     const form = e.currentTarget as HTMLFormElement;
     const fd = new FormData(form);
     const shippingAddress = {
@@ -324,17 +202,20 @@ export default function OrderDetailPage() {
       phone: String(fd.get('phone') || ''),
     };
     setSaving(true);
+    setActionError(null);
     try {
-      const res = await fetch(`/api/orders/${order._id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shippingAddress }) });
+      const res = await authenticatedApiFetch(`/api/orders/${order._id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shippingAddress }) });
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrder(data.data);
         setAddressSaved(true);
-        alert('Address saved');
+        toast.success('Delivery address updated');
       } else {
         const msg = (data && (data.error || data.message)) || 'Failed to save address';
-        alert(msg);
+        setActionError(msg);
       }
+    } catch {
+      setActionError('Couldn’t save your changes. Please try again.');
     } finally { setSaving(false); }
   };
 
@@ -342,82 +223,31 @@ export default function OrderDetailPage() {
     const s = (status || '').toLowerCase();
     if (s === 'delivered') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-200';
-    if (s === 'confirmed' || s === 'processing') return 'bg-blue-50 text-blue-700 border-blue-200';
-    if (s === 'shipped') return 'bg-purple-50 text-purple-700 border-purple-200';
+    if (s === 'confirmed' || s === 'processing') return 'bg-secondary text-brand-green border-border';
+    if (s === 'shipped') return 'bg-secondary text-brand-green border-border';
     if (s === 'cancelled' || s === 'canceled' || s === 'refunded') return 'bg-red-50 text-red-700 border-red-200';
     return 'bg-gray-50 text-gray-700 border-gray-200';
   };
 
-  // Loading State
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-            <div className="h-32 bg-gray-200 rounded-xl"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-48 bg-gray-200 rounded-xl"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (authLoading || loading || loadError || notFoundError || !order) {
+    return <AccountPage title="Order details" description="Delivery updates and purchased items." action={<Link href="/orders" className={accountSecondaryButton}><ArrowLeft className="h-4 w-4" />All orders</Link>}>
+      {authLoading || loading ? <AccountLoading label="Loading your order…" /> : loadError ?
+        <AccountState error title="Couldn’t load this order" description={loadError} action={<button type="button" className={accountSecondaryButton} onClick={() => setRetryCount((count) => count + 1)}>Try again</button>} /> : notFoundError ?
+        <AccountState title="Order not found" description="This order is unavailable for your account." action={<Link href="/orders" className={accountSecondaryButton}>View your orders</Link>} /> : null}
+    </AccountPage>;
   }
 
-  if (!order) return null;
+  const addressEditable = !['cancelled', 'canceled', 'shipped', 'delivered', 'refunded'].includes(order.status.toLowerCase());
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/orders" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Orders
-          </Link>
-
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order #{order.orderNumber}</h1>
-                <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${getStatusBadge(order.status)} `}>
-                  {order.status}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4" />
-                  {new Date(order.createdAt).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}
-                </span>
-                {order.bagName && (
-                  <span className="flex items-center gap-1.5">
-                    <ShoppingBag className="w-4 h-4" />
-                    {order.bagName}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {user && ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase()) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={cancelOrder}
-                disabled={saving}
-                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-              >
-                <XCircle className="w-4 h-4 mr-2" />
-                Cancel Order
-              </Button>
-            )}
-          </div>
+    <AccountPage title={`Order #${order.orderNumber}`} description={`${new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}${order.bagName ? ` · ${order.bagName}` : ''}`} action={<Link href="/orders" className={accountSecondaryButton}><ArrowLeft className="h-4 w-4" />All orders</Link>}>
+        {actionError && <p role="alert" className="mb-6 rounded-lg border border-rose-200 px-4 py-3 text-sm text-rose-700">{actionError}</p>}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-medium text-brand-green">Delivery status</h2>
+          <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${getStatusBadge(order.status)}`}>{order.status}</span>
         </div>
-
         {/* Status Stepper */}
-        <Card className="shadow-sm border-none ring-1 ring-black/5 mb-8 overflow-hidden">
+        <Card className="shadow-none border-border bg-background mb-8 overflow-hidden">
           <CardContent className="p-0">
             <Stepper status={order.status} />
           </CardContent>
@@ -426,28 +256,25 @@ export default function OrderDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Order Items */}
-            <Card className="shadow-sm border-none ring-1 ring-black/5 overflow-hidden">
-              <div className="bg-gray-50/80 px-6 py-4 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            {/* Items */}
+            <Card className="shadow-none border-border bg-background overflow-hidden">
+              <div className="bg-background px-6 py-4 border-b border-border">
+                <h2 className="text-lg font-medium text-brand-green flex items-center gap-2">
                   <Package className="w-5 h-5 text-gray-500" />
-                  Order Items
+                  Items
                   <span className="ml-auto text-sm font-normal text-gray-500">{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
                 </h2>
               </div>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {order.items.map((it: ApiOrderItem, idx: number) => (
-                    <div key={`${it.name || it.productId?._id || idx}`} className="flex items-center gap-4 p-4 bg-background rounded-xl hover:bg-background transition-colors">
-                      <div className="w-16 h-16 bg-background rounded-lg flex items-center justify-center text-muted-foreground shadow-sm border border-gray-100">
-                        <Package className="w-6 h-6" />
-                      </div>
+                    <div key={`${it.name || it.productId?._id || idx}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border py-4 last:border-0">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{it.name || it.productId?.name || 'Item'}</h3>
-                        <p className="text-sm text-gray-500">Quantity: {it.qty} × Rs. {Number(it.price).toFixed(2)}</p>
+                        <h3 className="font-medium text-foreground break-words">{it.name || it.productId?.name || 'Item'}</h3>
+                        <p className="text-sm text-gray-500">{it.qty} × Rs. {Number(it.price).toFixed(2)}</p>
                       </div>
-                      <div className="text-right">
-                        <span className="font-bold text-gray-900">Rs. {Number(it.total ?? (it.qty * it.price)).toFixed(2)}</span>
+                      <div className="text-right text-sm tabular-nums">
+                        <span className="font-medium text-foreground">Rs. {Number(it.total ?? (it.qty * it.price)).toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
@@ -455,14 +282,14 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Recurring Schedule */}
+            {/* Recurring delivery */}
             {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus || order.recurrence) && (
-              <Card className="shadow-sm border-none ring-1 ring-black/5 overflow-hidden">
-                <div className="bg-blue-50/80 px-6 py-4 border-b border-blue-100">
+              <Card className="shadow-none border-border bg-background overflow-hidden">
+                <div className="bg-background px-6 py-4 border-b border-border">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
-                      <RotateCcw className="w-5 h-5 text-blue-600" />
-                      Recurring Schedule
+                    <h2 className="text-lg font-medium text-brand-green flex items-center gap-2">
+                      <RotateCcw className="w-5 h-5 text-brand-green" />
+                      Recurring delivery
                     </h2>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${order.scheduleStatus === 'active' ? 'bg-green-100 text-green-700' :
                       order.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
@@ -486,7 +313,7 @@ export default function OrderDetailPage() {
                     )}
                   </div>
 
-                  <div className="bg-emerald-50 rounded-lg p-4 mb-6 border border-emerald-100">
+                  <div className="mb-6 border-b border-border pb-5">
                     <p className="text-sm text-emerald-800">
                       <span className="font-semibold">Next delivery:</span>{' '}
                       {order.nextDeliveryAt ? new Date(order.nextDeliveryAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
@@ -515,16 +342,17 @@ export default function OrderDetailPage() {
                   )}
 
                   {/* Recurrence edit form */}
-                  <form className="space-y-4 border-t pt-6" onSubmit={saveRecurrence}>
-                    <h3 className="font-semibold text-gray-900 mb-4">Edit Schedule</h3>
+                  <details className="border-t border-border pt-5">
+                    <summary className="cursor-pointer text-sm font-medium text-brand-green">Edit schedule</summary>
+                    <form className="space-y-4 pt-5" onSubmit={saveRecurrence}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">Start date</Label>
-                        <Input type="date" name="recurrence_start" defaultValue={formatDateInput(order.recurrence?.startDate)} className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-recurrence_start">Start date</Label>
+                        <Input type="date" id="order-recurrence_start" name="recurrence_start" disabled={saving} defaultValue={formatDateInput(order.recurrence?.startDate)} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">End date</Label>
-                        <Input type="date" name="recurrence_end" defaultValue={formatDateInput(order.recurrence?.endDate)} className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-recurrence_end">End date</Label>
+                        <Input type="date" id="order-recurrence_end" name="recurrence_end" disabled={saving} defaultValue={formatDateInput(order.recurrence?.endDate)} className="h-11" />
                       </div>
                     </div>
 
@@ -533,7 +361,7 @@ export default function OrderDetailPage() {
                       <div className="flex flex-wrap gap-2">
                         {[0, 1, 2, 3, 4, 5, 6].map((d) => (
                           <label key={d} className="inline-flex items-center gap-2 bg-background border rounded-lg px-4 py-2.5 cursor-pointer hover:bg-background transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:text-emerald-700">
-                            <input type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} className="rounded text-emerald-600" />
+                            <input disabled={saving} type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} className="rounded text-emerald-600" />
                             <span className="font-medium text-sm">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]}</span>
                           </label>
                         ))}
@@ -541,62 +369,71 @@ export default function OrderDetailPage() {
                     </div>
 
                     <div>
-                      <Label className="text-sm text-gray-600 mb-2 block">Notes</Label>
-                      <textarea name="recurrence_notes" className="w-full border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none" rows={2} defaultValue={order.recurrence?.notes || ''} placeholder="Any special instructions..."></textarea>
+                      <Label htmlFor="order-notes" className="text-sm text-gray-600 mb-2 block">Notes</Label>
+                      <textarea id="order-notes" disabled={saving} name="recurrence_notes" className="w-full bg-background border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none" rows={2} defaultValue={order.recurrence?.notes || ''} placeholder="Any special instructions..."></textarea>
                     </div>
 
                     <div className="flex items-center gap-3 pt-2">
-                      <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">Save Schedule</Button>
+                      <Button type="submit" disabled={saving} className="bg-brand-amber text-accent-foreground hover:bg-brand-amber/85">Save Schedule</Button>
                       {order.scheduleStatus === 'ended' && (
                         <Button type="button" variant="outline" onClick={() => doRecurringAction('resume')} disabled={saving}>Reactivate</Button>
                       )}
                     </div>
-                  </form>
+                    </form>
+                  </details>
                 </CardContent>
               </Card>
             )}
 
-            {/* Delivery Address */}
+            {/* Delivery address */}
             {order.shippingAddress && (
-              <Card className="shadow-sm border-none ring-1 ring-black/5 overflow-hidden">
-                <div className="bg-gray-50/80 px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Card className="shadow-none border-border bg-background overflow-hidden">
+                <div className="bg-background px-6 py-4 border-b border-border">
+                  <h2 className="text-lg font-medium text-brand-green flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-gray-500" />
-                    Delivery Address
+                    Delivery address
                   </h2>
                 </div>
                 <CardContent className="p-6">
-                  <form className="space-y-4" onSubmit={saveAddress} onChange={() => { if (addressSaved) setAddressSaved(false); }}>
+                  <address className="text-sm not-italic leading-6 text-muted-foreground">
+                    <p className="font-medium text-foreground">{order.shippingAddress.name}</p>
+                    <p>{order.shippingAddress.street}</p>
+                    <p>{[order.shippingAddress.city, order.shippingAddress.state, order.shippingAddress.zipCode].filter(Boolean).join(', ')}</p>
+                    <p>{order.shippingAddress.country}</p>
+                  </address>
+                  {addressEditable ? <details className="mt-5 border-t border-border pt-5">
+                    <summary className="cursor-pointer text-sm font-medium text-brand-green">Edit delivery address</summary>
+                    <form className="space-y-4 pt-5" onSubmit={saveAddress} onChange={() => { if (addressSaved) setAddressSaved(false); }}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">Name</Label>
-                        <Input name="name" defaultValue={order.shippingAddress.name || ''} placeholder="Recipient name" className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-name">Name</Label>
+                        <Input id="order-name" name="name" disabled={saving} defaultValue={order.shippingAddress.name || ''} placeholder="Recipient name" className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">Phone</Label>
-                        <Input name="phone" defaultValue={(order.shippingAddress as unknown as { phone?: string })?.phone || ''} placeholder="+94 77 123 4567" className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-phone">Phone</Label>
+                        <Input id="order-phone" name="phone" disabled={saving} defaultValue={(order.shippingAddress as unknown as { phone?: string })?.phone || ''} placeholder="+94 77 123 4567" className="h-11" />
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm text-gray-600 mb-2 block">Street Address</Label>
-                      <Input name="street" defaultValue={order.shippingAddress.street || ''} placeholder="123 Main St, Apt 4B" className="h-11" />
+                      <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-street">Street Address</Label>
+                        <Input id="order-street" name="street" disabled={saving} defaultValue={order.shippingAddress.street || ''} placeholder="123 Main St, Apt 4B" className="h-11" />
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">City</Label>
-                        <Input name="city" defaultValue={order.shippingAddress.city || ''} className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-city">City</Label>
+                        <Input id="order-city" name="city" disabled={saving} defaultValue={order.shippingAddress.city || ''} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">State</Label>
-                        <Input name="state" defaultValue={order.shippingAddress.state || ''} className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-state">State</Label>
+                        <Input id="order-state" name="state" disabled={saving} defaultValue={order.shippingAddress.state || ''} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">Postal Code</Label>
-                        <Input name="zip" defaultValue={order.shippingAddress.zipCode || ''} className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-zip">Postal Code</Label>
+                        <Input id="order-zip" name="zip" disabled={saving} defaultValue={order.shippingAddress.zipCode || ''} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block">Country</Label>
-                        <Input name="country" defaultValue={(order.shippingAddress as unknown as { country?: string })?.country || 'LK'} className="h-11" />
+                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-country">Country</Label>
+                        <Input id="order-country" name="country" disabled={saving} defaultValue={(order.shippingAddress as unknown as { country?: string })?.country || 'LK'} className="h-11" />
                       </div>
                     </div>
                     <div className="pt-2">
@@ -607,7 +444,7 @@ export default function OrderDetailPage() {
                           addressSaved ||
                           ['cancelled', 'canceled', 'shipped', 'delivered'].includes((order.status || '').toLowerCase())
                         }
-                        className="bg-emerald-600 hover:bg-emerald-700"
+                        className="bg-brand-amber text-accent-foreground hover:bg-brand-amber/85"
                       >
                         {addressSaved ? 'Address Saved ✓' : 'Save Address'}
                       </Button>
@@ -615,7 +452,8 @@ export default function OrderDetailPage() {
                         <p className="text-xs text-gray-500 mt-2">Address cannot be modified for {order.status} orders.</p>
                       )}
                     </div>
-                  </form>
+                    </form>
+                  </details> : <p className="mt-4 text-xs text-muted-foreground">Address cannot be modified for {order.status} orders.</p>}
                 </CardContent>
               </Card>
             )}
@@ -624,11 +462,11 @@ export default function OrderDetailPage() {
           {/* Right summary column */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-8 space-y-6">
-              <Card className="shadow-none border-none ring-1 ring-black/5 overflow-hidden">
-                <div className="bg-brand-green px-6 py-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <Card className="shadow-none border-border bg-background overflow-hidden">
+                <div className="border-b border-border px-6 py-4">
+                  <h3 className="text-lg font-medium text-brand-green flex items-center gap-2">
                     <CreditCard className="w-5 h-5" />
-                    Order Summary
+                    Order summary
                   </h3>
                 </div>
                 <CardContent className="p-6">
@@ -651,7 +489,7 @@ export default function OrderDetailPage() {
 
                   <div className="flex justify-between items-center border-t border-dashed pt-4 mb-6">
                     <span className="text-gray-600">Total</span>
-                    <span className="text-2xl font-bold text-gray-900">Rs. {Number(order.total ?? 0).toFixed(2)}</span>
+                    <span className="text-2xl font-medium text-foreground">Rs. {Number(order.total ?? 0).toFixed(2)}</span>
                   </div>
 
                   {user && ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase()) && (
@@ -669,7 +507,7 @@ export default function OrderDetailPage() {
               </Card>
 
               {/* Need Help Card */}
-              <Card className="shadow-sm border-none ring-1 ring-black/5 overflow-hidden">
+              <Card className="shadow-none border-border bg-background overflow-hidden">
                 <CardContent className="p-6 text-center">
                   <p className="text-sm text-gray-500 mb-3">Need help with your order?</p>
                   <Link href="/help">
@@ -680,7 +518,29 @@ export default function OrderDetailPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </AccountPage>
+  );
+}
+
+const stages = [
+  { value: 'pending', label: 'Pending', icon: Clock },
+  { value: 'confirmed', label: 'Confirmed', icon: CheckCircle2 },
+  { value: 'processing', label: 'Packing', icon: Package },
+  { value: 'shipped', label: 'Shipped', icon: Truck },
+  { value: 'delivered', label: 'Delivered', icon: CheckCircle2 },
+];
+
+function Stepper({ status }: { status: string }) {
+  const index = stages.findIndex((stage) => stage.value === status.toLowerCase());
+  if (index < 0) return <p className="px-6 py-6 text-sm capitalize text-muted-foreground">Order {status}</p>;
+  return (
+    <ol aria-label="Delivery progress" className="grid grid-cols-5 gap-1 px-3 py-6 md:px-6">
+      {stages.map(({ value, label, icon: Icon }, position) => (
+        <li key={value} aria-current={position === index ? 'step' : undefined} className="flex min-w-0 flex-col items-center gap-3">
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full border ${position <= index ? 'border-brand-green bg-brand-green text-white' : 'border-border text-muted-foreground'}`}><Icon className="h-4 w-4" aria-hidden="true" /></span>
+          <span className={`text-[10px] sm:text-xs ${position <= index ? 'font-medium text-brand-green' : 'text-muted-foreground'}`}>{label}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
