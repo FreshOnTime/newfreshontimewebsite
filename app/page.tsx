@@ -8,7 +8,7 @@ import { Product } from "@/models/product";
 import HeroSection from "@/components/home/HeroSection";
 import { AnimatedSection, AnimatedProductItem } from "@/components/home/AnimatedSection";
 import CategoryBento from "@/components/home/CategoryBento";
-import FoodDiscovery from "@/components/home/FoodDiscovery";
+import MarketDiscovery from "@/components/home/MarketDiscovery";
 import CreatorNetwork from "@/components/home/CreatorNetwork";
 import { serverApiFetch } from "@/lib/api/server";
 
@@ -74,23 +74,29 @@ async function getHomeData(): Promise<HomeData> {
 
 export default async function Home() {
   const { products, categories } = await getHomeData();
+  const spotlightProduct = products.find((product) =>
+    product.image?.url && !product.image.url.includes("placeholder.svg") && !product.isOutOfStock
+  );
 
   return (
     <main className="overflow-hidden bg-background">
-      <HeroSection />
+      <HeroSection product={spotlightProduct} />
       <CategoryBento categories={categories} />
 
-      <section className="bg-background py-6 md:py-8">
-        <div className="container mx-auto max-w-7xl px-4 md:px-8">
-          <AnimatedSection className="mb-6 flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-semibold text-foreground">Fresh from the market</h2>
-            <Link href="/products" className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" /></Link>
+      <section aria-labelledby="market-title" className="bg-background pt-10 md:pt-14">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <AnimatedSection className="mb-7 flex items-end justify-between gap-4 md:mb-8">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">The everyday essentials</p>
+              <h2 id="market-title" className="mt-3 text-2xl font-medium tracking-tight text-brand-green md:text-3xl">Fresh from the market</h2>
+            </div>
+            <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </AnimatedSection>
 
           <ProductErrorBoundary>
             {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                {products.slice(0, 12).map((product, index) => (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-6 md:gap-y-10 lg:grid-cols-4">
+                {products.slice(0, 8).map((product, index) => (
                   <AnimatedProductItem key={product.sku} index={index}>
                     <ProductCard
                       id={product._id?.toString() || ""}
@@ -102,7 +108,7 @@ export default async function Home() {
                       pricePerBaseQuantity={product.pricePerBaseQuantity}
                       measurementType={product.measurementUnit as "g" | "kg" | "ml" | "l" | "ea" | "lb"}
                       isDiscreteItem={product.isSoldAsUnit}
-                      priority={index < 2}
+                      variant="market"
                     />
                   </AnimatedProductItem>
                 ))}
@@ -117,7 +123,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <FoodDiscovery />
+      <MarketDiscovery />
       <CreatorNetwork />
     </main>
   );
