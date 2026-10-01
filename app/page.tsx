@@ -109,6 +109,8 @@ export default async function Home() {
                       measurementType={product.measurementUnit as "g" | "kg" | "ml" | "l" | "ea" | "lb"}
                       isDiscreteItem={product.isSoldAsUnit}
                       variant="market"
+                      isOutOfStock={product.isOutOfStock}
+                      isBundle={product.isBundle}
                     />
                   </AnimatedProductItem>
                 ))}

@@ -106,6 +106,7 @@ export function Footer() {
               <Link href="/terms" className="transition-colors hover:text-brand-cream">Terms of Service</Link>
               <Link href="/cookies" className="transition-colors hover:text-brand-cream">Cookie Policy</Link>
               <Link href="/help-us" className="transition-colors hover:text-brand-cream">Help</Link>
+              <Link href="/site-map" className="transition-colors hover:text-brand-cream">Site map</Link>
             </div>
           </div>
         </div>

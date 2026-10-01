@@ -138,7 +138,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       if (!userId) {
         const redirectTo = typeof window !== 'undefined' ? window.location.pathname : '/';
         router.push(`/auth/login?redirect=${encodeURIComponent(redirectTo)}`);
-        return;
+        throw new Error('Please sign in to create a bag');
       }
 
       const response = await apiFetch('/api/bags', {
@@ -157,6 +157,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error while creating bag');
       console.error('Error creating bag:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -183,6 +184,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error while adding item to bag');
       console.error('Error adding to bag:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -206,6 +208,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error while removing item from bag');
       console.error('Error removing from bag:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -274,6 +277,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error while deleting bag');
       console.error('Error deleting bag:', err);
+      throw err;
     } finally {
       setLoading(false);
     }

@@ -55,20 +55,21 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
   const end = products.length === 0 ? 0 : start + products.length - 1;
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="bg-background">
       <PremiumPageHeader
         title="Shop the market"
         subtitle="Fresh produce, pantry essentials and everyday favourites for your kitchen."
         eyebrow="FreshPick · Colombo"
       />
 
-      <div className="container mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-8">
+      <div className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
         <ProductsFilterBar />
 
         <div className="mt-6 flex items-center justify-between border-b border-border pb-4 text-sm text-muted-foreground">
           <span>{pagination.count} products</span>
           <span>{products.length === 0 ? "No items found" : `Showing ${start}–${end}`}</span>
-        </div>      <div className="mt-8">
+        </div>
+        <div className="mt-8">
           {products.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-card px-6 py-6 text-center">
               <p className="font-sans text-3xl font-normal text-zinc-950">Nothing matches those filters yet.</p>
@@ -78,7 +79,7 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
               </Link>
             </div>
           ) : (
-            <ProductGrid products={products} className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4" />
+            <ProductGrid products={products} />
           )}
 
           {(products.length > 0 || pagination.hasPrev) && (

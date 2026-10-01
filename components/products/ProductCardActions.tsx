@@ -15,9 +15,10 @@ interface ProductCardActionsProps {
   name: string;
   image: string;
   price: number;
+  isOutOfStock?: boolean;
 }
 
-export default function ProductCardActions({ id, sku, name, image, price }: ProductCardActionsProps) {
+export default function ProductCardActions({ id, sku, name, image, price, isOutOfStock = false }: ProductCardActionsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
@@ -50,6 +51,7 @@ export default function ProductCardActions({ id, sku, name, image, price }: Prod
   };
 
   const quickAdd = async () => {
+    if (isOutOfStock) return;
     if (!user) {
       toast.error("Please sign in to add products to a bag");
       router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
@@ -73,12 +75,12 @@ export default function ProductCardActions({ id, sku, name, image, price }: Prod
       <button
         type="button"
         onClick={quickAdd}
-        aria-label={`Add ${name} to ${currentBag?.name || "bag"}`}
-        disabled={loading && Boolean(user && currentBag)}
-        className="flex h-12 flex-1 items-center justify-center gap-2 rounded-l-lg bg-brand-amber px-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-wait disabled:opacity-60"
+        aria-label={isOutOfStock ? `${name} is unavailable` : `Add ${name} to ${currentBag?.name || "bag"}`}
+        disabled={isOutOfStock || (loading && Boolean(user && currentBag))}
+        className="flex h-12 flex-1 items-center justify-center gap-2 rounded-l-lg bg-brand-amber px-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <ShoppingBag className="h-4 w-4 shrink-0" />
-        <span className="sm:hidden">Add</span><span className="hidden min-w-0 truncate sm:inline">Add to bag</span>
+        {isOutOfStock ? <span>Unavailable</span> : <><span className="sm:hidden">Add</span><span className="hidden min-w-0 truncate sm:inline">Add to bag</span></>}
       </button>
       <button
         type="button"

@@ -115,8 +115,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         subtitle={`Explore our fresh selection of ${name.toLowerCase()}.`}
         count={products.length}
       />
-      <div className="container mx-auto px-4 md:px-8 pb-10">
-        <ProductGrid products={products} />
+      <div className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
+        {products.length > 0 && <ProductGrid products={products} />}
 
         {products.length === 0 && (
           <div className="text-center py-8">

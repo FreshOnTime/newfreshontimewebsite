@@ -1,7 +1,5 @@
-import { Product } from "@/models/product";
+import type { Product } from "@/models/product";
 import { ProductCard } from "./ProductCard";
-
-import { BundleCard } from "./BundleCard";
 
 export default function ProductGrid({
   products,
@@ -21,30 +19,26 @@ export default function ProductGrid({
     <div
       className={
         className ??
-        "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+        "grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-6 md:gap-y-10 lg:grid-cols-4"
       }
     >
       {products.map((p, index) => (
-        <div key={p.sku || p._id} className="group">
-          <div className="transform transition-transform duration-300 h-full">
-            {p.isBundle ? (
-              <BundleCard product={p} />
-            ) : (
-              <ProductCard
-                id={p._id || ''}
-                sku={p.sku}
-                name={p.name}
-                image={p.image.url}
-                discountPercentage={p.discountPercentage || 0}
-                baseMeasurementQuantity={p.baseMeasurementQuantity}
-                pricePerBaseQuantity={p.pricePerBaseQuantity}
-                measurementType={p.measurementUnit}
-                isDiscreteItem={p.isSoldAsUnit}
-                priority={index < priorityCount}
-              />
-            )}
-          </div>
-        </div>
+        <ProductCard
+          key={p.sku || p._id}
+          id={p._id || ''}
+          sku={p.sku}
+          name={p.name}
+          image={p.image?.url || ""}
+          discountPercentage={p.discountPercentage || 0}
+          baseMeasurementQuantity={p.baseMeasurementQuantity}
+          pricePerBaseQuantity={p.pricePerBaseQuantity}
+          measurementType={p.measurementUnit}
+          isDiscreteItem={p.isSoldAsUnit}
+          priority={index < priorityCount}
+          variant="market"
+          isOutOfStock={p.isOutOfStock}
+          isBundle={p.isBundle}
+        />
       ))}
     </div>
   );

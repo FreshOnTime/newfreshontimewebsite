@@ -15,6 +15,8 @@ interface ProductCardProps {
   isDiscreteItem: boolean;
   priority?: boolean;
   variant?: "default" | "market";
+  isOutOfStock?: boolean;
+  isBundle?: boolean;
 }
 
 const DISCOUNT_THRESHOLD = 0.01;
@@ -31,6 +33,8 @@ export function ProductCard({
   isDiscreteItem,
   priority = false,
   variant = "default",
+  isOutOfStock = false,
+  isBundle = false,
 }: ProductCardProps) {
   const pricePerBaseQuantityWithDiscount = calculateDiscountedPrice(
     pricePerBaseQuantity,
@@ -63,7 +67,8 @@ export function ProductCard({
       <div className={cn(variant === "market" ? "flex flex-1 flex-col pt-4" : "p-3 sm:p-4")}>
         <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <span className="sr-only">Unit</span>
-          <span>{unitLabel}</span>
+          <span>{isBundle ? "Bundle" : unitLabel}</span>
+          {isOutOfStock && <span>Unavailable</span>}
         </div>
 
         <Link href={`/products/${sku}`} prefetch={false} className="block">
@@ -86,6 +91,7 @@ export function ProductCard({
             name={name}
             image={imageUrl}
             price={pricePerBaseQuantityWithDiscount}
+            isOutOfStock={isOutOfStock}
           />
         </div>
       </div>

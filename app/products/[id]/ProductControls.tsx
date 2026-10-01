@@ -36,9 +36,12 @@ export const ProductControls = ({ product }: { product: Product }) => {
               <button
                 key={`${opt.label}-${idx}`}
                 type="button"
-                onClick={() => setSelectedOptionIndex(idx)}
-                className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all ${idx === selectedOptionIndex
-                  ? "bg-brand-amber text-accent-foreground shadow-sm"
+                onClick={() => {
+                  setSelectedOptionIndex(idx);
+                  setQuantity(product.isSoldAsUnit ? Math.max(1, product.minOrderQuantity) : Math.max(opt.quantity, product.minOrderQuantity));
+                }}
+                className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${idx === selectedOptionIndex
+                  ? "bg-brand-green text-white"
                   : "border border-zinc-200 bg-background text-zinc-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
                   } `}
                 aria-pressed={idx === selectedOptionIndex}
@@ -50,7 +53,7 @@ export const ProductControls = ({ product }: { product: Product }) => {
         </div>
       )}
 
-      <div className="rounded-xl bg-background p-5">
+      <div className="border-b border-border pb-5">
         {!derivedProduct.isSoldAsUnit && (
           <div className="flex items-center justify-between gap-4 border-b border-zinc-200 pb-4">
             <span className="text-xs font-bold normal-case text-zinc-500">
@@ -63,7 +66,7 @@ export const ProductControls = ({ product }: { product: Product }) => {
         )}
 
         <div className={` ${!derivedProduct.isSoldAsUnit ? "pt-4" : ""} flex items-end justify-between gap-4`}>
-          <span className="text-xs font-bold normal-case text-zinc-500">Basket total</span>
+          <span className="text-xs font-bold normal-case text-zinc-500">Item total</span>
           <div className="text-right">
             <span className="font-sans text-2xl text-zinc-950">Rs. {total.toFixed(2)}</span>
             {savings > 0 && (
@@ -85,7 +88,8 @@ export const ProductControls = ({ product }: { product: Product }) => {
             step={derivedProduct.stepQuantity}
             unit={derivedProduct.isSoldAsUnit ? "" : derivedProduct.measurementUnit}
             isDiscreteItem={derivedProduct.isSoldAsUnit}
-            className="h-14 w-full rounded-full"
+            className="h-12 w-full rounded-lg"
+            key={`${selectedOptionIndex}-${effectiveUnit}-${effectiveBaseQty}`}
           />
         </div>
 
