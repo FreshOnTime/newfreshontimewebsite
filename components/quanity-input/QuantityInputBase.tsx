@@ -86,6 +86,7 @@ export default function QuantityInputBase({
       <Button
         variant="ghost"
         size="icon"
+        aria-label="Decrease quantity"
         onClick={() =>
           adjustQuantity(
             isDiscreteItem ? validQuantity - 1 : validQuantity - step
@@ -99,6 +100,8 @@ export default function QuantityInputBase({
       <label className="flex items-center gap-1 flex-1">
         <Input
           type="text"
+          inputMode={isDiscreteItem ? "numeric" : "decimal"}
+          aria-label="Quantity"
           value={quantity}
           onChange={(e) => handleInputChange(e.target.value)}
           onBlur={handleInputBlur}
@@ -120,6 +123,7 @@ export default function QuantityInputBase({
       <Button
         variant="ghost"
         size="icon"
+        aria-label="Increase quantity"
         onClick={() =>
           adjustQuantity(
             isDiscreteItem ? validQuantity + 1 : validQuantity + step

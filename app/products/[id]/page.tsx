@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Markdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
-import { ArrowLeft, CalendarClock, ShieldCheck, Sprout, Truck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 import ProductImage from "@/components/products/ProductImage";
 import { Product } from "@/models/product";
@@ -111,136 +111,46 @@ export default async function ProductPage({
   ];
 
   return (
-    <main className="min-h-screen bg-background">
-      <ProductJsonLd
-        product={{
-          name: product.name,
-          description: product.description,
-          sku: product.sku,
-          image: product.image?.url,
-          price: discountedPrice,
-          currency: "LKR",
-          inStock: !product.isOutOfStock,
-          category: product.category?.name,
-          url: `${SITE_URL}/products/${product.sku}`,
-        }}
-      />
+    <main className="bg-background">
+      <ProductJsonLd product={{ name: product.name, description: product.description, sku: product.sku, image: product.image?.url, price: discountedPrice, currency: "LKR", inStock: !product.isOutOfStock, category: product.category?.name, url: `${SITE_URL}/products/${product.sku}` }} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
-
-      <div className="container mx-auto max-w-7xl px-4 pb-8 pt-8 md:px-8 md:pb-10 md:pt-6">
-        <Link
-          href="/products"
-          className="mb-8 inline-flex items-center gap-2 text-xs font-bold normal-case text-zinc-500 transition-colors hover:text-emerald-800"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to collection
-        </Link>
-
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:gap-14">
-          <div className="relative">
-            <div className="sticky top-28 overflow-hidden rounded-xl bg-background">
-              <div className="relative aspect-[4/5] w-full">
-                <ProductImage src={product.image?.url || ""} alt={product.name} priority />
-              </div>
-
-              <div className="pointer-events-none absolute left-5 top-5 flex flex-wrap gap-2">
-                {!product.isOutOfStock && (
-                  <span className="rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold normal-case text-emerald-800 shadow-sm">
-                    FreshPick selection
-                  </span>
-                )}
-                {showDiscount && (
-                  <span className="rounded-lg bg-brand-amber px-3 py-1.5 text-xs font-bold normal-case text-accent-foreground shadow-sm">
-                    {product.discountPercentage}% off
-                  </span>
-                )}
-              </div>
-            </div>
+      <div className="mx-auto max-w-7xl px-5 pb-12 pt-6 md:px-8 md:pb-16 md:pt-8">
+        <nav aria-label="Product navigation" className="mb-7 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          <Link href="/products" className="inline-flex min-h-11 items-center gap-2 hover:text-brand-green"><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to market</Link>
+          {product.category?.slug && <Link href={`/categories/${product.category.slug}`} className="border-l border-border pl-4 hover:text-brand-green">{product.category.name}</Link>}
+        </nav>
+        <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
+          <div className="relative aspect-square overflow-hidden rounded-xl border border-border [&_img]:mix-blend-multiply lg:sticky lg:top-40">
+            <ProductImage src={product.image?.url || ""} alt={product.name} priority sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 576px" />
+            {showDiscount && <span className="absolute right-4 top-4 rounded-md bg-brand-amber px-3 py-1.5 text-xs font-semibold text-accent-foreground">{product.discountPercentage}% off</span>}
           </div>
-
-          <div className="lg:pt-4">
-            <div className="lg:sticky lg:top-36">
-              <div className="rounded-xl border border-zinc-200 bg-background p-6 md:p-8 lg:p-9">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-bold normal-case text-emerald-700">
-                  {product.category?.name && (
-                    <Link href={`/categories/${product.category.slug || ""}`} className="transition-colors hover:text-zinc-950">
-                      {product.category.name}
-                    </Link>
-                  )}
-                  <span className="text-zinc-300">/</span>
-                  <span className={product.isOutOfStock ? "text-red-500" : "text-muted-foreground"}>
-                    {product.isOutOfStock ? "Currently unavailable" : "In stock"}
-                  </span>
-                </div>
-
-                <h1 className="mt-5 text-balance font-sans text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl">
-                  {product.name}
-                </h1>
-
-                <div className="mt-7 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-zinc-100 pb-7">
-                  <span className="font-sans text-3xl text-zinc-950">Rs. {discountedPrice.toFixed(2)}</span>
-                  {showDiscount && (
-                    <span className="text-sm text-muted-foreground line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>
-                  )}
-                  {!product.isSoldAsUnit && (
-                    <span className="w-full text-xs font-bold normal-case text-muted-foreground">
-                      Per {product.baseMeasurementQuantity}{product.measurementUnit}
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-7">
-                  <ProductControls product={product} />
-                </div>
-
-                <div className="mt-8 grid gap-3 border-t border-zinc-100 pt-7 sm:grid-cols-2">
-                  <TrustItem icon={Truck} title="Considered delivery" text="FreshPick delivery across Colombo" />
-                  <TrustItem icon={CalendarClock} title="Make it recurring" text="Add it to your regular basket" />
-                  <TrustItem icon={Sprout} title="Curated quality" text="Selected for freshness and flavour" />
-                  <TrustItem icon={ShieldCheck} title="Simple guarantee" text="Easy replacement or refund support" />
-                </div>
-              </div>
+          <div className="lg:py-4">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{product.isBundle ? "Market bundle" : "From the market"}</p>
+            <h1 className="mt-4 text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">{product.name}</h1>
+            <p className="mt-3 text-sm text-muted-foreground">{product.isOutOfStock ? "Currently unavailable" : "In stock"} · SKU {product.sku}</p>
+            <div className="mt-6 flex flex-wrap items-baseline gap-3">
+              <span className="text-2xl font-semibold text-foreground">Rs. {discountedPrice.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              {showDiscount && <span className="text-sm text-muted-foreground line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>}
+              <span className="text-sm text-muted-foreground">{product.isSoldAsUnit ? "Each" : `Per ${product.baseMeasurementQuantity}${product.measurementUnit}`}</span>
+            </div>
+            <div className="mt-7 border-t border-border pt-7"><ProductControls product={product} /></div>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-5 text-sm text-brand-green">
+              <Link href="/help" className="inline-flex min-h-11 items-center gap-2 hover:underline">Delivery & ordering <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+              <Link href="/refund" className="inline-flex min-h-11 items-center gap-2 hover:underline">Returns & refunds <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
             </div>
           </div>
         </div>
-
-        <section className="mt-8 rounded-xl bg-background px-6 py-10 md:mt-10 md:px-10 md:py-14 lg:px-14">
-          <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
-            <div>
-              <span className="text-xs font-bold normal-case text-emerald-700">About this selection</span>
-              <h2 className="mt-4 font-sans text-3xl font-semibold leading-tight text-zinc-950">Good food deserves a little context.</h2>
+        {(product.description || product.ingredients || product.nutritionFacts) && (
+          <section aria-labelledby="product-details-title" className="mt-10 grid gap-6 border-t border-border pt-8 md:mt-14 md:grid-cols-[1fr_2fr] md:gap-16 md:pt-10">
+            <h2 id="product-details-title" className="text-2xl font-medium text-brand-green">Product details</h2>
+            <div className="space-y-6">
+              {product.description && <div className="prose max-w-none text-sm leading-7 text-muted-foreground prose-headings:font-medium prose-headings:text-brand-green prose-a:text-brand-green"><Markdown rehypePlugins={[rehypeSanitize]}>{product.description}</Markdown></div>}
+              {product.ingredients && <div><h3 className="text-base font-medium text-brand-green">Ingredients</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">{product.ingredients}</p></div>}
+              {product.nutritionFacts && <div><h3 className="text-base font-medium text-brand-green">Nutrition</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">{product.nutritionFacts}</p></div>}
             </div>
-            <div className="prose prose-zinc max-w-none font-normal leading-8 text-zinc-600 prose-headings:font-sans prose-headings:font-normal prose-a:text-emerald-800">
-              {product.description ? (
-                <Markdown rehypePlugins={[rehypeSanitize]}>{product.description}</Markdown>
-              ) : (
-                <p>Selected by FreshPick for quality, freshness, and everyday usefulness. Add it to today&apos;s basket or make it part of a recurring delivery.</p>
-              )}
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
     </main>
-  );
-}
-
-function TrustItem({
-  icon: Icon,
-  title,
-  text,
-}: {
-  icon: typeof Truck;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="flex gap-3 rounded-xl bg-background p-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-emerald-800 shadow-sm">
-        <Icon className="h-4 w-4 stroke-[1.5]" />
-      </div>
-      <div>
-        <p className="text-sm font-medium text-zinc-900">{title}</p>
-        <p className="mt-1 text-xs font-normal leading-5 text-zinc-500">{text}</p>
-      </div>
-    </div>
   );
 }

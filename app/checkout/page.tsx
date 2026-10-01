@@ -466,7 +466,7 @@ export default function CheckoutPage() {
                           <button
                             type="button"
                             aria-label={`Remove ${item.product.name}`}
-                            onClick={() => previewBag ? setPreviewBag(null) : bag && removeFromBag(bag.id, item.product.id)}
+                            onClick={() => previewBag ? setPreviewBag(null) : bag && removeFromBag(bag.id, item.product.id).catch((error: Error) => setError(error.message))}
                             className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -487,7 +487,7 @@ export default function CheckoutPage() {
                                   items: previous.items.map((candidate) => candidate.product.id === item.product.id ? { ...candidate, quantity } : candidate),
                                 } : null);
                               } else if (bag) {
-                                updateBagItem(bag.id, item.product.id, quantity);
+                                updateBagItem(bag.id, item.product.id, quantity).catch((error: Error) => setError(error.message));
                               }
                             }}
                             className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
@@ -497,7 +497,7 @@ export default function CheckoutPage() {
                           <span className="min-w-9 text-center text-sm font-medium text-zinc-900">{item.quantity}</span>
                           <button
                             type="button"
-                            disabled={Boolean(planSlug)}
+                            disabled={Boolean(planSlug) || bagUpdating || bagsLoading}
                             onClick={() => {
                               const quantity = item.quantity + 1;
                               if (previewBag) {
@@ -506,7 +506,7 @@ export default function CheckoutPage() {
                                   items: previous.items.map((candidate) => candidate.product.id === item.product.id ? { ...candidate, quantity } : candidate),
                                 } : null);
                               } else if (bag) {
-                                updateBagItem(bag.id, item.product.id, quantity);
+                                updateBagItem(bag.id, item.product.id, quantity).catch((error: Error) => setError(error.message));
                               }
                             }}
                             className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"

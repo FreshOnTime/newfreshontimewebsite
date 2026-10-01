@@ -58,19 +58,19 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const total = products.length + recipes.length;
 
   return (
-    <main className="min-h-screen bg-background pb-10 text-zinc-950">
+    <main className="bg-background pb-10 text-zinc-950">
       <section className="border-b border-zinc-200 bg-card px-5 py-10 md:px-8 md:py-6">
-        <div className="mx-auto max-w-6xl">
-          <span className="text-xs font-bold normal-case text-emerald-700">Search FreshPick</span>
-          <h1 className="mt-4 max-w-4xl font-sans text-3xl font-semibold leading-tight text-brand-green md:text-4xl">
+        <div className="mx-auto max-w-7xl">
+          <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Search FreshPick</span>
+          <h1 className="mt-4 max-w-4xl font-sans text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">
             {query ? <>Results for <span className="not-italic text-emerald-900">“{query}”</span></> : <>What are you <span className="not-italic text-emerald-900">looking for?</span></>}
           </h1>
           <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">
-            Search across the live market and published shoppable recipes from the same place.
+            Find groceries and recipes in one search.
           </p>
 
           <form action="/search" className="mt-8 max-w-2xl">
-            <div className="flex h-14 items-center rounded-full border border-zinc-300 bg-background px-5 transition-colors focus-within:border-emerald-400 focus-within:bg-card">
+            <div className="flex h-14 items-center rounded-lg border border-border bg-background px-5 transition-colors focus-within:border-emerald-400 focus-within:bg-card">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
               <input aria-label="Search food and recipes" name="q" defaultValue={query} autoFocus={!query} placeholder="Try dinner, mango, pasta, tea…" className="ml-3 min-w-0 flex-1 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground" />
               <button type="submit" className="ml-3 rounded-lg bg-brand-amber px-5 py-2 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">Search</button>
@@ -81,7 +81,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-5 pt-6 md:px-8 md:pt-8">
+      <div className="mx-auto max-w-7xl px-5 pt-6 md:px-8 md:pt-8">
         {!query ? (
           <section className="grid gap-4 md:grid-cols-3">
             {[
@@ -89,8 +89,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               ["Just browsing?", "Open Discover for moods, makers and ready food.", "/discover"],
               ["Know the list?", "Go straight to the live market and its filters.", "/products"],
             ].map(([title, copy, href]) => (
-              <Link key={href} href={href} className="group rounded-xl border border-zinc-200 bg-card p-6 transition-all hover:border-emerald-300">
-                <h2 className="font-sans text-3xl font-semibold text-zinc-950">{title}</h2>
+              <Link key={href} href={href} className="group border-t border-border py-5 transition-colors">
+                <h2 className="text-xl font-medium text-brand-green">{title}</h2>
                 <p className="mt-3 text-sm font-normal leading-6 text-muted-foreground">{copy}</p>
                 <span className="mt-7 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800">Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span>
               </Link>
@@ -108,7 +108,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <section>
                 <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-300 pb-5">
                   <div>
-                    <p className="inline-flex items-center gap-2 text-xs font-bold normal-case text-emerald-700"><ChefHat className="h-3.5 w-3.5" /> Cook from this</p>
+                    <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"><ChefHat className="h-3.5 w-3.5" /> Cook from this</p>
                     <h2 className="mt-2 font-sans text-2xl font-semibold text-zinc-950">Shoppable recipes</h2>
                   </div>
                   <Link href="/recipes" className="text-xs font-semibold text-emerald-800">All recipes</Link>
@@ -121,7 +121,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
                       </div>
                       <div className="p-5">
-                        <h3 className="font-sans text-2xl font-semibold leading-tight text-zinc-950">{recipe.title}</h3>
+                        <h3 className="text-lg font-medium leading-tight text-brand-green">{recipe.title}</h3>
                         <p className="mt-3 line-clamp-2 text-sm font-normal leading-6 text-muted-foreground">{recipe.excerpt}</p>
                         <span className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800">Shop the recipe <ArrowRight className="h-3.5 w-3.5" /></span>
                       </div>
@@ -135,7 +135,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <section>
                 <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-300 pb-5">
                   <div>
-                    <p className="text-xs font-bold normal-case text-emerald-700">From the market</p>
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">From the market</p>
                     <h2 className="mt-2 font-sans text-2xl font-semibold text-zinc-950">Products</h2>
                   </div>
                   <span className="text-xs text-muted-foreground">{products.length} matched</span>

@@ -23,8 +23,8 @@ export default function PremiumPageHeader({ title, subtitle, backgroundImage, co
         ) : (
           <div className={`grid items-center gap-6 ${backgroundImage ? "md:grid-cols-[1fr_240px]" : ""} `}>
             <div>
-              {eyebrow && <p className="mb-2 text-sm font-medium text-brand-green">{eyebrow}</p>}
-              <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-foreground md:text-4xl">{title}</h1>
+              {eyebrow && <p className="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{eyebrow}</p>}
+              <h1 className="max-w-3xl text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">{title}</h1>
               {subtitle && <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">{subtitle}</p>}
               {count !== undefined && <p className="mt-3 text-sm text-muted-foreground">{count} {count === 1 ? "item" : "items"}</p>}
             </div>

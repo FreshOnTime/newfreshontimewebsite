@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChevronDown, Plus } from "lucide-react";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { useBag } from "@/contexts/BagContext";
 import { toast } from "sonner";
 
@@ -34,16 +36,23 @@ interface IAddToBagButtonProps {
 export default function AddToBagButton(props: IAddToBagButtonProps) {
   const { product, quantity } = props;
   const { bags, currentBag, addToBag, createBag, selectBag, loading } = useBag();
-  const [selectedBagId, setSelectedBagId] = useState(currentBag?.id || "");
+  const { user, loading: authLoading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newBagName, setNewBagName] = useState("");
   const [newBagDescription, setNewBagDescription] = useState("");
 
-  const selectedBag = bags.find(bag => bag.id === selectedBagId);
+  const selectedBag = currentBag;
+  const selectedBagId = selectedBag?.id || "";
 
   const handleAddToBag = async () => {
+    if (!user) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
     if (!selectedBagId) {
-      toast.error("Please select a bag first");
+      setShowCreateDialog(true);
       return;
     }
 
@@ -75,7 +84,6 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
   };
 
   const handleBagSelect = (bagId: string) => {
-    setSelectedBagId(bagId);
     selectBag(bagId);
   };
 
@@ -84,17 +92,17 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
       <div className="w-full flex">
         <Button
           className="h-12 w-full rounded-l-lg rounded-r-none bg-brand-amber px-4 text-sm font-semibold leading-tight text-accent-foreground hover:bg-brand-amber/85"
-          disabled={product.isOutOfStock || loading || !selectedBagId}
+          disabled={product.isOutOfStock || authLoading || loading || !Number.isFinite(quantity) || quantity <= 0}
           onClick={handleAddToBag}
         >
           <span className="line-clamp-2">
-            Add to {selectedBag?.name || "selected"} bag
+            {product.isOutOfStock ? "Currently unavailable" : !user ? "Sign in to add" : selectedBag ? `Add to ${selectedBag.name}` : "Create a bag to add"}
           </span>
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger
             className="rounded-r-lg border-l border-accent-foreground/20 bg-brand-amber px-4 text-accent-foreground transition-colors hover:bg-brand-amber/85"
-            disabled={loading}
+            disabled={loading || !user || product.isOutOfStock}
             aria-label="Choose shopping bag"
           >
             <ChevronDown className="h-5 w-5" />
