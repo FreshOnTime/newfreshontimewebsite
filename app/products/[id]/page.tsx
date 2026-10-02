@@ -134,7 +134,7 @@ export default async function ProductPage({
         <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
           <div className="relative aspect-[4/5] overflow-hidden bg-secondary [&_img]:mix-blend-multiply lg:sticky lg:top-40">
             <ProductImage src={product.image?.url || ""} alt={product.name} priority sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 576px" />
-            {showDiscount && <span className="absolute right-4 top-4 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-accent-foreground">{product.discountPercentage}% off</span>}
+            {showDiscount && <span className="absolute right-4 top-4 bg-brand-amber px-3 py-1.5 text-xs font-semibold text-foreground">{product.discountPercentage}% off</span>}
           </div>
           <div className="lg:py-4">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{product.isBundle ? "Market bundle" : "From the market"}</p>

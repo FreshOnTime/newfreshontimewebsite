@@ -5,37 +5,37 @@
 @layer base {
   :root {
     --font-sans: Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
-    --font-heading: Georgia, "Times New Roman", serif;
+    --font-heading: var(--font-sans);
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
-    /* Editorial market: warm paper, deep green, quiet sage. */
-    --freshpick-green: 148.5000 46.5116% 16.8627%;
+    /* Produce-led editorial system: the original ivory, green and amber palette. */
+    --freshpick-green: 142.0000 38.9610% 30.1961%;
     --freshpick-green-deep: 148.0000 48.3871% 12.1569%;
-    --freshpick-orange: 148.5000 46.5116% 16.8627%;
+    --freshpick-orange: 36.0000 77.2727% 56.8627%;
     --freshpick-lime: 99.3103 12.2363% 53.5294%;
-    --freshpick-cream: 46.6667 36.0000% 95.0980%;
-    --background: 46.6667 36.0000% 95.0980%;
+    --freshpick-cream: 50.0000 30.0000% 96.0784%;
+    --background: 50.0000 30.0000% 96.0784%;
     --foreground: 105.0000 9.0909% 8.6275%;
-    --card: 46.6667 36.0000% 95.0980%;
+    --card: 50.0000 30.0000% 96.0784%;
     --card-foreground: 105.0000 9.0909% 8.6275%;
-    --popover: 46.6667 36.0000% 95.0980%;
+    --popover: 50.0000 30.0000% 96.0784%;
     --popover-foreground: 105.0000 9.0909% 8.6275%;
-    --primary: 148.5000 46.5116% 16.8627%;
+    --primary: 142.0000 38.9610% 30.1961%;
     --primary-foreground: 0.0000 0.0000% 100.0000%;
     --secondary: 45.0000 27.2727% 91.3725%;
-    --secondary-foreground: 148.5000 46.5116% 16.8627%;
+    --secondary-foreground: 142.0000 38.9610% 30.1961%;
     --muted: 45.0000 27.2727% 91.3725%;
     --muted-foreground: 100.0000 3.0928% 38.0392%;
-    --accent: 148.5000 46.5116% 16.8627%;
+    --accent: 142.0000 38.9610% 30.1961%;
     --accent-foreground: 0.0000 0.0000% 100.0000%;
-    --gold: 99.3103 12.2363% 53.5294%;
+    --gold: 36.0000 77.2727% 56.8627%;
     --gold-dark: 148.5000 46.5116% 16.8627%;
     --destructive: 0.0000 54.9550% 43.5294%;
     --destructive-foreground: 0.0000 0.0000% 100.0000%;
     --border: 65.4545 13.2530% 83.7255%;
     --input: 78.4615 11.7117% 78.2353%;
-    --ring: 148.5000 46.5116% 16.8627%;
-    --radius: 0.375rem;
+    --ring: 142.0000 38.9610% 30.1961%;
+    --radius: 0rem;
     --chart-1: 148 46% 17%;
     --chart-2: 99 13% 54%;
     --chart-3: 32 35% 52%;
@@ -73,12 +73,20 @@
 }
 
 @layer components {
-  .editorial-wrap { @apply mx-auto w-full max-w-7xl px-5 md:px-8; }
+  .editorial-wrap { @apply mx-auto w-full max-w-[1440px] px-5 md:px-10; }
   .editorial-section { @apply py-12 md:py-20; }
-  .editorial-label { @apply text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground; }
-  .editorial-title { @apply font-serif text-3xl font-normal leading-[1.08] text-brand-green md:text-5xl; }
-  .editorial-link { @apply inline-flex min-h-11 items-center gap-3 border-b border-current text-sm font-medium text-brand-green; }
-  .editorial-button { @apply inline-flex min-h-12 items-center justify-center gap-4 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50; }
+  .editorial-label { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground; }
+  .editorial-title { @apply font-sans text-3xl font-bold uppercase leading-[1.02] tracking-[-0.045em] text-foreground md:text-5xl; }
+  .editorial-link { @apply inline-flex min-h-11 items-center gap-3 border-b border-current text-xs font-semibold uppercase tracking-[0.03em] text-brand-green; }
+  .editorial-button { @apply inline-flex min-h-12 items-center justify-center gap-4 bg-brand-amber px-6 py-3 text-xs font-bold uppercase tracking-[0.03em] text-foreground transition-colors hover:bg-brand-amber/85 disabled:opacity-50; }
+  .freshpick-market h1, .freshpick-market h2 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.045em;
+  }
+  .freshpick-market h1 { text-wrap: balance; overflow-wrap: anywhere; }
+  .market-story-title { @apply font-sans font-bold uppercase tracking-[-0.025em] text-foreground; }
 }
 
 @layer utilities {

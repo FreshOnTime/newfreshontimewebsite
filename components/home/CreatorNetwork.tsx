@@ -17,12 +17,12 @@ export default function CreatorNetwork({ creators }: { creators: CreatorSummary[
         </div>
         <div className="mt-6 grid content-start gap-5 md:mt-0 xl:grid-cols-2">
           {creators.map((creator) => (
-            <Link key={creator.id} href={`/creators/${creator.id}`} className="group flex items-center gap-4 rounded-lg py-2">
-              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-secondary">
+            <Link key={creator.id} href={`/creators/${creator.id}`} className="group flex items-center gap-4  py-2">
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden  bg-secondary">
                 {creator.latestRecipe?.image?.url ? <Image src={creator.latestRecipe.image.url} alt={creator.latestRecipe.title} fill sizes="96px" className="object-cover" /> : <div className="flex h-full items-center justify-center"><ChefHat className="h-8 w-8 text-brand-green" aria-hidden="true" /></div>}
               </div>
               <div className="min-w-0">
-                <h3 className="text-base font-medium text-brand-green group-hover:underline">{creator.name}</h3>
+                <h3 className="text-base font-bold uppercase text-foreground group-hover:underline">{creator.name}</h3>
                 {creator.latestRecipe && <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{creator.latestRecipe.title}</p>}
                 <p className="mt-3 text-sm text-muted-foreground">{creator.recipeCount} recipe{creator.recipeCount === 1 ? "" : "s"}</p>
               </div>

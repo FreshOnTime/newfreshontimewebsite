@@ -126,7 +126,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       <PremiumPageHeader
         title={name}
         subtitle={category.description || `Explore our fresh selection of ${name.toLowerCase()}.`}
-        backgroundImage={categoryImage.split('?')[0].endsWith('.svg') ? null : categoryImage}
+        imageLayout="compact" backgroundImage={categoryImage.split('?')[0].endsWith('.svg') ? null : categoryImage}
       />
       <div className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4 text-sm"><p className="text-muted-foreground">{unavailable ? "Selection temporarily unavailable" : `${total} ${total === 1 ? 'product' : 'products'}`}</p><Link href="/categories" className="inline-flex min-h-11 items-center gap-2 text-brand-green hover:underline">All categories <ArrowRight strokeWidth={1.75} className="h-4 w-4" aria-hidden="true" /></Link></div>

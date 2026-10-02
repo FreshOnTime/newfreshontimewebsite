@@ -41,7 +41,7 @@ export function getCategoryImage(slug: string, imageUrl?: string | null): string
   const key = slug.trim().toLowerCase();
   // The prototype guard keeps unknown database slugs on the neutral fallback.
   const photo = Object.hasOwn(categoryPhotos, key) ? categoryPhotos[key] : undefined;
-  if (photo === 'produce') return '/images/home/produce-basket.webp';
+  if (photo === 'produce') return '/images/editorial/market-crates.webp';
   if (photo) return `/images/categories/${photo}.webp`;
   return `/category-icons/${categoryIcons.has(key) ? key : 'placeholder'}.svg`;
 }

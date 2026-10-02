@@ -88,10 +88,10 @@ export default async function Home() {
       <CategoryBento categories={categories} />
 
       <section aria-labelledby="market-title" className="bg-background pb-14 md:pb-20">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <div className="mx-auto max-w-7xl px-5 md:px-10">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 id="market-title" className="editorial-title">Fresh picks for your kitchen</h2>
+              <h2 id="market-title" className="editorial-title">Fresh picks.</h2>
               <p className="mt-2 text-sm text-muted-foreground">Our current selection. Choose something good to cook with.</p>
             </div>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>

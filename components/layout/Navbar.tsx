@@ -51,14 +51,14 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
-      <div className="editorial-wrap flex h-20 items-center justify-between gap-2 sm:gap-5 lg:h-24">
-        <Link href="/" aria-label="FreshPick home" className="shrink-0 font-serif text-[26px] font-normal sm:text-[31px] tracking-[-0.07em] text-brand-green lg:text-4xl">FreshPick</Link>
+      <div className="editorial-wrap max-[359px]:px-3 flex h-[76px] items-center justify-between gap-2 sm:gap-5 lg:h-[104px]">
+        <Link href="/" aria-label="FreshPick home" className="shrink-0 font-sans text-[24px] max-[359px]:text-[22px] font-bold uppercase sm:text-[30px] tracking-[-0.06em] text-brand-green lg:text-[34px]">FreshPick</Link>
         {checkout ? <>
           <span className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><LockKeyhole strokeWidth={1.5} className="h-4 w-4" aria-hidden="true" />Secure checkout</span>
           <Link href="/bags" className="inline-flex min-h-11 items-center gap-2 text-xs text-brand-green"><ArrowLeft strokeWidth={1.5} className="h-4 w-4" aria-hidden="true" />Back to bag</Link>
         </> : <>
-          <nav aria-label="Shop navigation" className="hidden h-full items-center gap-6 xl:flex">
-            {links.map((link) => { const active = pathname === link.href || pathname.startsWith(`${link.href}/`); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b text-[13px] transition-colors ${active ? "border-brand-green text-brand-green" : "border-transparent text-foreground hover:border-brand-green"}`}>{link.label}</Link>; })}
+          <nav aria-label="Shop navigation" className="hidden h-full items-center gap-6 2xl:gap-9 xl:flex">
+            {links.map((link) => { const active = pathname === link.href || pathname.startsWith(`${link.href}/`); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b text-[13px] font-bold uppercase tracking-[-0.01em] transition-colors ${active ? "border-brand-green text-brand-green" : "border-transparent text-foreground hover:border-brand-green"}`}>{link.label}</Link>; })}
           </nav>
           <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             <button type="button" aria-label={searchOpen ? "Close search" : "Open search"} aria-expanded={searchOpen} aria-controls="header-search" onClick={() => { setSearchOpen((open) => !open); setMenuOpen(false); }} className="flex h-11 w-10 sm:w-11 items-center justify-center text-brand-green"><Search strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /></button>
@@ -78,7 +78,7 @@ export function Navbar() {
       </div>
       {searchOpen && !checkout && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search produce, ingredients and recipes" className="h-12 min-w-0 flex-1 border-0 border-b border-border bg-transparent text-base outline-none focus:border-primary" /><button type="submit" className="editorial-button">Search</button></form></div>}
       {menuOpen && !checkout && <div id="mobile-navigation" className="max-h-[75svh] overflow-y-auto border-t border-border bg-background xl:hidden">
-        <nav aria-label="Mobile shop navigation" className="editorial-wrap grid gap-x-5 py-5 sm:grid-cols-2">{[...links,...moreLinks,{label:'Help & contact',href:'/contact'}].map((link) => <Link key={link.href} href={link.href} className="flex min-h-12 items-center border-b border-border py-3 text-sm text-brand-green">{link.label}</Link>)}</nav>
+        <nav aria-label="Mobile shop navigation" className="editorial-wrap grid gap-x-5 py-5 sm:grid-cols-2">{[...links,...moreLinks,{label:'Help & contact',href:'/contact'}].map((link) => <Link key={link.href} href={link.href} className="flex min-h-12 items-center border-b border-border py-3 text-sm font-bold uppercase text-brand-green">{link.label}</Link>)}</nav>
       </div>}
     </header>
   );

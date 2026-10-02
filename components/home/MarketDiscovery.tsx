@@ -15,13 +15,13 @@ export default function MarketDiscovery({ recipes }: { recipes: RecipeSummary[] 
           <div className="relative aspect-[3/2] overflow-hidden bg-secondary"><Image src={recipe.featuredImage?.url || '/placeholder.svg'} alt={recipe.featuredImage?.alt || recipe.title} fill sizes="(max-width: 767px) 85vw, (max-width: 1280px) 33vw, 390px" className={recipe.featuredImage?.url ? 'object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transform-none' : 'object-contain p-16 opacity-50'} /></div>
           <div className="pt-5">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">{recipe.cuisine ? <span>{recipe.cuisine}</span> : <span>From the kitchen</span>}{recipe.prepTimeMinutes + recipe.cookTimeMinutes > 0 && <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" aria-hidden="true" />{recipe.prepTimeMinutes + recipe.cookTimeMinutes} min</span>}</div>
-            <h3 className="font-serif text-2xl font-normal leading-snug text-brand-green group-hover:underline underline-offset-4">{recipe.title}</h3>
+            <h3 className="market-story-title text-xl md:text-2xl leading-snug text-brand-green group-hover:underline underline-offset-4">{recipe.title}</h3>
             {recipe.authorName && <p className="mt-2 text-sm text-muted-foreground">By {recipe.authorName}</p>}
           </div>
         </Link>)}
       </div> : <div className="grid overflow-hidden md:grid-cols-[1fr_0.8fr]">
         <div className="flex flex-col items-start justify-center px-6 py-8 md:px-8"><p className="max-w-lg text-base leading-7 text-muted-foreground">Find inspiration for your next meal in our recipe collection.</p><Link href="/recipes" className="mt-5 inline-flex min-h-12 items-center gap-3 border-b border-current text-sm font-medium text-brand-green">Explore recipes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
-        <div className="relative aspect-[2/1] md:aspect-auto md:min-h-56"><Image src="/images/home/tomatoes.webp" alt="Fresh tomatoes on the vine" fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
+        <div className="relative aspect-[2/1] md:aspect-auto md:min-h-56"><Image src="/images/editorial/recipe-ingredients.webp" alt="Herbs and spices arranged for cooking" fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
       </div>}
     </section>
   );
