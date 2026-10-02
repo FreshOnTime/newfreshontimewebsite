@@ -1,17 +1,21 @@
 import Link from "next/link";
+import { ArrowRight, ChevronRight, Search, ShoppingBasket } from "lucide-react";
 import ProductGrid from "@/components/products/ProductGrid";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import ProductsFilterBar from "@/components/products/ProductsFilterBar";
 import ProductsPagination from "@/components/products/ProductsPagination";
+import CatalogRetryButton from "@/components/products/CatalogRetryButton";
 import { Product } from "@/models/product";
 import { serverApiFetch } from "@/lib/api/server";
 
 interface ProductPageResult {
+  unavailable?: boolean;
   products: Product[];
   pagination: {
     page: number;
     limit: number;
     count: number;
+    total?: number;
     hasNext: boolean;
     hasPrev: boolean;
   };
@@ -29,6 +33,7 @@ async function getProducts(query: string): Promise<ProductPageResult> {
   } catch (error) {
     console.error("[Products page] Failed to load catalog:", error);
     return {
+      unavailable: true,
       products: [],
       pagination: { page: 1, limit: 24, count: 0, hasNext: false, hasPrev: false },
     };
@@ -50,40 +55,42 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
     }
   }
 
-  const { products, pagination } = await getProducts(sp.toString());
+  const { products, pagination, unavailable } = await getProducts(sp.toString());
+  const filtered = ["search", "categoryId", "supplierId", "minPrice", "maxPrice", "inStock", "tags"].some((key) => sp.has(key));
   const start = products.length === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
   const end = products.length === 0 ? 0 : start + products.length - 1;
 
   return (
-    <main className="bg-background">
+    <div className="bg-background">
+      <nav aria-label="Breadcrumb" className="mx-auto flex max-w-7xl items-center gap-2 px-5 pt-6 text-xs text-muted-foreground md:px-8">
+        <Link href="/" className="inline-flex min-h-9 items-center hover:text-brand-green">Home</Link><ChevronRight className="h-3 w-3" aria-hidden="true" /><span aria-current="page">The market</span>
+      </nav>
       <PremiumPageHeader
         title="Shop the market"
         subtitle="Fresh produce, pantry essentials and everyday favourites for your kitchen."
-        eyebrow="FreshPick · Colombo"
       />
 
       <div className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
         <ProductsFilterBar />
 
-        <div className="mt-6 flex items-center justify-between border-b border-border pb-4 text-sm text-muted-foreground">
-          <span>{pagination.count} products</span>
-          <span>{products.length === 0 ? "No items found" : `Showing ${start}–${end}`}</span>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+          <span>{unavailable ? "The market is temporarily unavailable" : products.length === 0 ? "No items found" : `Showing ${start}–${end}${pagination.total !== undefined ? ` of ${pagination.total}` : " products"}`}</span>
+          <Link href="/categories" className="inline-flex min-h-11 items-center gap-2 text-brand-green hover:underline">Browse categories <ArrowRight strokeWidth={1.75} className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
         <div className="mt-8">
           {products.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-card px-6 py-6 text-center">
-              <p className="font-sans text-3xl font-normal text-zinc-950">Nothing matches those filters yet.</p>
-              <p className="mx-auto mt-3 max-w-md text-sm font-normal leading-7 text-zinc-500">Try another search or reset the filters to browse all products.</p>
-              <Link href="/products" className="mt-6 inline-flex rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">
-                Clear all filters
-              </Link>
-            </div>
+            <section className="py-14 text-center md:py-20" aria-labelledby="catalog-empty-title">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-brand-green">{filtered && !unavailable ? <Search strokeWidth={1.5} className="h-7 w-7" aria-hidden="true" /> : <ShoppingBasket strokeWidth={1.5} className="h-7 w-7" aria-hidden="true" />}</div>
+              <h2 id="catalog-empty-title" className="mt-6 text-2xl font-medium tracking-tight text-brand-green">{unavailable ? "We couldn’t load the market." : filtered ? "Nothing matches just yet." : "The market is being refreshed."}</h2>
+              <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted-foreground">{unavailable ? "Please try again in a moment." : filtered ? "Try a different search or remove a filter to see more of the market." : "Check back soon for fresh groceries and everyday essentials."}</p>
+              {unavailable ? <CatalogRetryButton /> : filtered ? <Link href="/products" className="mt-6 inline-flex min-h-11 rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">Clear all filters</Link> : <Link href="/categories" className="mt-6 inline-flex min-h-11 rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85">Browse categories</Link>}
+            </section>
           ) : (
             <ProductGrid products={products} />
           )}
 
-          {(products.length > 0 || pagination.hasPrev) && (
-            <div className="mt-6 flex justify-center border-t border-zinc-200 pt-10 md:mt-8 md:pt-6">
+          {(pagination.hasNext || pagination.hasPrev) && (
+            <div className="mt-8 border-t border-border pt-6">
               <ProductsPagination
                 page={pagination.page}
                 limit={pagination.limit}
@@ -95,6 +102,6 @@ export default async function ProductsIndex({ searchParams }: { searchParams: Pr
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

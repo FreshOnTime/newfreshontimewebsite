@@ -111,7 +111,7 @@ export default async function ProductPage({
   ];
 
   return (
-    <main className="bg-background">
+    <div className="bg-background">
       <ProductJsonLd product={{ name: product.name, description: product.description, sku: product.sku, image: product.image?.url, price: discountedPrice, currency: "LKR", inStock: !product.isOutOfStock, category: product.category?.name, url: `${SITE_URL}/products/${product.sku}` }} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
       <div className="mx-auto max-w-7xl px-5 pb-12 pt-6 md:px-8 md:pb-16 md:pt-8">
@@ -151,6 +151,6 @@ export default async function ProductPage({
           </section>
         )}
       </div>
-    </main>
+    </div>
   );
 }
