@@ -1,18 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ChefHat } from "lucide-react";
-import { listCreators } from "@/lib/creatorService";
+import type { CreatorSummary } from "@/lib/creatorService";
 
-export default async function CreatorNetwork() {
-  const creators = await listCreators(4).catch(() => []);
+export default function CreatorNetwork({ creators }: { creators: CreatorSummary[] }) {
   if (!creators.length) return null;
 
   return (
     <section aria-labelledby="creators-title" className="mx-auto max-w-7xl px-5 pb-12 md:px-8 md:pb-16">
-      <div className="border-t border-border pt-8 md:grid md:grid-cols-[1fr_2fr] md:gap-16 md:pt-10">
+      <div className="pt-0 md:grid md:grid-cols-[1fr_2fr] md:gap-12 md:pt-0">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">People behind the food</p>
-          <h2 id="creators-title" className="mt-3 text-3xl font-medium tracking-tight text-brand-green">From local kitchens</h2>
+          <h2 id="creators-title" className="home-display mt-3 text-3xl leading-tight text-brand-green md:text-[2.5rem]">From local kitchens</h2>
           <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground">Meet the people sharing their favourite recipes.</p>
           <Link href="/creators" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Meet the cooks <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>

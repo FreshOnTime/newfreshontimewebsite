@@ -15,6 +15,7 @@ interface DeferredProductCardActionsProps {
   image: string;
   price: number;
   isOutOfStock?: boolean;
+  subtle?: boolean;
 }
 
 /**

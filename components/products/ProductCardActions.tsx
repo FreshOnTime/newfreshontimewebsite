@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, Plus, ShoppingBag } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,9 +16,10 @@ interface ProductCardActionsProps {
   image: string;
   price: number;
   isOutOfStock?: boolean;
+  subtle?: boolean;
 }
 
-export default function ProductCardActions({ id, sku, name, image, price, isOutOfStock = false }: ProductCardActionsProps) {
+export default function ProductCardActions({ id, sku, name, image, price, isOutOfStock = false, subtle = false }: ProductCardActionsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
@@ -71,15 +72,15 @@ export default function ProductCardActions({ id, sku, name, image, price, isOutO
   };
 
   return (
-    <div className="flex w-full">
+    <div className={cn("flex w-full", subtle && "gap-2")}>
       <button
         type="button"
         onClick={quickAdd}
         aria-label={isOutOfStock ? `${name} is unavailable` : `Add ${name} to ${currentBag?.name || "bag"}`}
         disabled={isOutOfStock || (loading && Boolean(user && currentBag))}
-        className="flex h-12 flex-1 items-center justify-center gap-2 rounded-l-lg bg-brand-amber px-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-not-allowed disabled:opacity-60"
+        className={cn("flex h-12 min-w-0 flex-1 items-center justify-center gap-2 px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60", subtle ? "rounded-md border border-brand-green/25 text-brand-green hover:border-brand-green hover:bg-secondary" : "rounded-l-lg bg-brand-amber text-accent-foreground hover:bg-brand-amber/85")}
       >
-        <ShoppingBag className="h-4 w-4 shrink-0" />
+        {subtle ? <Plus className="h-4 w-4 shrink-0" /> : <ShoppingBag className="h-4 w-4 shrink-0" />}
         {isOutOfStock ? <span>Unavailable</span> : <><span className="sm:hidden">Add</span><span className="hidden min-w-0 truncate sm:inline">Add to bag</span></>}
       </button>
       <button
@@ -87,6 +88,7 @@ export default function ProductCardActions({ id, sku, name, image, price, isOutO
         onClick={toggleWishlist}
         className={cn(
           "flex h-12 w-12 shrink-0 items-center justify-center rounded-r-lg border border-l-0 border-border bg-card text-brand-green transition-colors hover:bg-secondary",
+          subtle && "rounded-md border-l border-transparent hover:border-border",
           isWishlisted && "text-[#8b2635]"
         )}
         aria-label={isWishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
