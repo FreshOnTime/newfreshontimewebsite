@@ -1,5 +1,7 @@
 # Homepage photography
 
+`fresh-market-hero.webp`: AI-generated editorial campaign artwork created for FreshPick on October 3, 2026, using the approved mixed-produce banner concept. Optimized to WebP (1774 × 887 px). The image contains no embedded text or controls; the live heading and shop link are rendered in `HeroSection`. This is illustrative brand artwork, not documentation of a particular farm, supplier or catalogue item.
+
 `tomatoes.webp`: Photograph by Anna (@anna_c_wilhelm), published December 11, 2021.
 
 - Source: https://unsplash.com/photos/a-bunch-of-red-tomatoes-sitting-on-top-of-a-table-AnSyKEtwypM

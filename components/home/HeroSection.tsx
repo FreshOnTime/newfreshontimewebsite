@@ -5,14 +5,19 @@ import { ArrowRight } from 'lucide-react';
 export default function HeroSection() {
   return (
     <section aria-labelledby="home-title" className="editorial-wrap pt-5 md:pt-6">
-      <div className="relative isolate flex min-h-[520px] items-center justify-center overflow-hidden bg-foreground px-5 py-16 text-center text-white sm:min-h-[620px] md:min-h-[min(720px,78svh)] md:px-12">
-        <Image src="/images/home/tomatoes.webp" alt="Ripe tomatoes on the vine" fill priority sizes="(max-width: 1440px) 100vw, 1360px" className="-z-20 object-cover" />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/35" />
-        <div className="max-w-5xl">
-          <p className="text-xs font-bold uppercase tracking-[0.08em]">The FreshPick market · Colombo</p>
-          <h1 id="home-title" className="mt-5 font-sans text-[clamp(2.4rem,7.2vw,6.75rem)] font-bold uppercase leading-[0.96] tracking-[-0.055em] text-white">Good food starts<br className="hidden sm:block" /> with good produce.</h1>
-          <p className="mx-auto mt-7 max-w-lg text-base leading-6 text-white md:text-lg">Vegetables, fruit and everyday ingredients.<br className="hidden sm:block" /> From the market to your kitchen.</p>
-          <Link href="/products" className="editorial-button mt-8">Shop the market <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+      <div className="relative isolate overflow-hidden bg-background text-brand-green lg:flex lg:min-h-[520px] lg:items-center xl:min-h-[640px]">
+        <div className="relative z-10 px-6 py-10 sm:px-10 sm:py-12 lg:w-[52%] lg:py-14 xl:px-12">
+          <p className="max-w-xs text-[10px] font-bold uppercase leading-5 tracking-[0.08em] sm:max-w-none sm:text-xs">The FreshPick market · Colombo</p>
+          <h1 id="home-title" className="mt-5 font-sans text-[clamp(2rem,9vw,4.5rem)] font-bold uppercase leading-[0.96] tracking-[-0.055em] text-brand-green lg:text-[clamp(3rem,5.5vw,5.25rem)]">
+            <span className="block whitespace-nowrap">Fresh food.</span>
+            <span className="block">Full of</span>
+            <span className="block">life.</span>
+          </h1>
+          <p className="mt-6 max-w-[23rem] text-base leading-7 text-brand-green xl:text-lg">Vegetables, fruit and everyday ingredients.<br />From the market to your kitchen.</p>
+          <Link href="/products" className="editorial-button mt-7">Shop the market <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        </div>
+        <div className="relative aspect-[4/3] w-full sm:aspect-[2/1] lg:absolute lg:inset-0 lg:aspect-auto">
+          <Image src="/images/home/fresh-market-hero.webp" alt="Papaya, bananas, carrots, aubergine, limes and leafy greens arranged on pale stone" fill priority sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) calc(100vw - 80px), 1360px" className="object-cover object-right lg:object-center" />
         </div>
       </div>
       <nav aria-label="More ways to shop" className="flex flex-wrap justify-between gap-x-5 border-b border-border py-3 text-xs font-semibold uppercase text-brand-green">
