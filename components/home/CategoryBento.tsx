@@ -6,7 +6,7 @@ import { getCategoryImage } from '@/lib/categoryImage';
 interface Category { name: string; slug: string; imageUrl?: string; description?: string; }
 const marketEdits = [
   { name: 'Vegetables for the week', href: '/products?search=vegetables', image: '/images/home/produce-basket.webp' },
-  { name: 'Something green', href: '/products?search=greens', image: '/images/home/market-bag.webp' },
+  { name: 'Something green', href: '/products?search=greens', image: getCategoryImage('greens') },
   { name: 'Everyday favourites', href: '/products', image: '/images/home/tomatoes.webp' },
 ];
 export default function CategoryBento({ categories }: { categories: Category[] }) {
