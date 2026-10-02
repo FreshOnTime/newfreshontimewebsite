@@ -1,3 +1,4 @@
+import { pageMetadata } from '@/lib/seo';
 import FoodStoryCard from "@/components/ui/FoodStoryCard";
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
@@ -14,21 +15,10 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const collection = await getPublishedCollectionBySlug(slug);
-  if (!collection) return { title: "Collection not found | FreshPick" };
+  if (!collection) return { title: "Collection not found | FreshPick", robots: { index: false, follow: false } };
   const title = collection.metaTitle || `${collection.title} | FreshPick Collections`;
   const description = collection.metaDescription || collection.excerpt;
-  return {
-    title,
-    description,
-    alternates: { canonical: `https://freshpick.lk/collections/${collection.slug}` },
-    openGraph: {
-      title,
-      description,
-      url: `https://freshpick.lk/collections/${collection.slug}`,
-      type: "website",
-      images: collection.featuredImage?.url ? [collection.featuredImage.url] : [],
-    },
-  };
+  return pageMetadata({ title, description, path: `/collections/${encodeURIComponent(collection.slug)}`, image: collection.featuredImage?.url, type: 'website' });
 }
 
 export default async function CollectionPage({ params }: Props) {

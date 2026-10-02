@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -7,11 +8,7 @@ import { listPublishedCollections } from "@/lib/collectionService";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Food Collections | FreshPick Colombo",
-  description: "Curated FreshPick food edits for occasions, cravings and routines — combining shoppable recipes and live products.",
-  alternates: { canonical: "https://freshpick.lk/collections" },
-};
+export const metadata: Metadata = publicPageMetadata('/collections');
 
 export default async function CollectionsPage() {
   const collections = await listPublishedCollections(36);

@@ -1,3 +1,5 @@
+import { publicPageMetadata } from '@/lib/publicPages';
+export const metadata = publicPageMetadata('/about');
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { CalendarClock, ShieldCheck, Sprout } from "lucide-react";
 

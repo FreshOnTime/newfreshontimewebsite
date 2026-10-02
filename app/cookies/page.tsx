@@ -1,12 +1,10 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import type { Metadata } from "next";
 import Link from "next/link";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { SUPPORT_EMAIL } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-  title: "Cookie Policy",
-  description: "How FreshPick uses sign-in cookies, browser storage and optional analytics.",
-};
+export const metadata: Metadata = publicPageMetadata('/cookies');
 
 export default function CookiesPage() {
   return (

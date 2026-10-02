@@ -7,6 +7,11 @@ import ProductsPagination from "@/components/products/ProductsPagination";
 import CatalogRetryButton from "@/components/products/CatalogRetryButton";
 import { Product } from "@/models/product";
 import { serverApiFetch } from "@/lib/api/server";
+import { catalogueMetadata } from '@/lib/seo';
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return catalogueMetadata('/products', 'Shop groceries in Colombo', 'Browse FreshPick groceries and check current prices and availability.', await searchParams);
+}
 
 interface ProductPageResult {
   unavailable?: boolean;

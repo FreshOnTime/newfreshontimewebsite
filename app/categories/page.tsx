@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,10 +9,7 @@ import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Shop by Category",
-  description: "Browse FreshPick grocery categories and shop fresh food, pantry essentials and everyday favourites across Colombo.",
-};
+export const metadata: Metadata = publicPageMetadata('/categories');
 
 type Category = {
   name: string;

@@ -1,11 +1,11 @@
-const normalizeUrl = (value: string) => value.replace(/\/$/, "");
+const normalizeUrl = (value: string) => value.trim().replace(/\/+$/, "");
 
 export const SITE_URL = normalizeUrl(
   process.env.NEXT_PUBLIC_SITE_URL || "https://freshpick.lk"
 );
 
-export const SITE_NAME = "Fresh Pick";
-export const SITE_NAME_LONG = "Fresh Pick Sri Lanka";
+export const SITE_NAME = "FreshPick";
+export const SITE_NAME_LONG = "FreshPick Sri Lanka";
 
 export const SUPPORT_EMAIL =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "concierge@freshpick.lk";
@@ -39,5 +39,6 @@ export const SERVICE_AREAS = [
 
 export function absoluteUrl(path = "") {
   if (!path) return SITE_URL;
+  if (/^https?:\/\//i.test(path)) return new URL(path).href;
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }

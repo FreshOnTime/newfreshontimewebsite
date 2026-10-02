@@ -1,13 +1,11 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
 
 import Link from "next/link";
 import { ArrowRight, MapPin, RefreshCw, ShoppingBasket } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Send FreshPick to Family in Sri Lanka",
-  description: "Shop FreshPick from abroad and send a local delivery to family or friends in supported Colombo delivery areas.",
-};
+export const metadata: Metadata = publicPageMetadata('/diaspora');
 
 export default function DiasporaPage() {
   return (

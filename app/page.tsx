@@ -1,3 +1,5 @@
+import HomeHelp from '@/components/home/HomeHelp';
+import { publicPageMetadata } from '@/lib/publicPages';
 import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -20,28 +22,7 @@ import HomeJournal from "@/components/home/HomeJournal";
 export const dynamic = "force-static";
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "FreshPick | Fresh Groceries & Local Food in Sri Lanka",
-  description: "Discover recipes, fresh groceries, ready meals and independent Sri Lankan makers for everyday cooking in Colombo.",
-  keywords: [
-    "food discovery Colombo",
-    "smart grocery Sri Lanka",
-    "fresh grocery delivery Colombo",
-    "shoppable recipes Sri Lanka",
-    "recurring grocery delivery Sri Lanka",
-    "homemade food Colombo",
-    "online groceries Sri Lanka",
-  ],
-  openGraph: {
-    title: "FreshPick | Discover what to eat. Get everything to make it.",
-    description: "Fresh groceries, recipes, ready meals and local makers in Sri Lanka.",
-    type: "website",
-    locale: "en_LK",
-    url: "https://freshpick.lk",
-    siteName: "Fresh Pick Sri Lanka",
-  },
-  alternates: { canonical: "https://freshpick.lk" },
-};
+export const metadata: Metadata = publicPageMetadata('/');
 
 type CategoryDisplay = { _id: string; name: string; slug: string; imageUrl?: string; description?: string };
 
@@ -138,6 +119,7 @@ export default async function Home() {
       <CreatorNetwork creators={creators} />
       <HomeJournal posts={journal} />
       <BusinessStory />
+      <HomeHelp />
     </div>
   );
 }

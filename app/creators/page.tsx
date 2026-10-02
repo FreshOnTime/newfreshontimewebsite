@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -6,10 +7,7 @@ import { listCreators } from "@/lib/creatorService";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "FreshPick Creators | Recipes & Food Ideas",
-  description: "Meet the people publishing shoppable recipes and food ideas on FreshPick.",
-};
+export const metadata: Metadata = publicPageMetadata('/creators');
 
 export default async function CreatorsPage() {
   const creators = await listCreators(48);

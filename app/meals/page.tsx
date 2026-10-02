@@ -1,3 +1,5 @@
+import { serializeJsonLd } from '@/lib/seo';
+import { publicPageMetadata } from '@/lib/publicPages';
 import { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
@@ -7,25 +9,7 @@ import MealsContent from "./MealsContent";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Meals on Deals | FreshPick Cooked Food",
-  description: "Order FreshPick cooked-food favourites online, or set up flexible recurring meal deliveries in Colombo.",
-  keywords: ["cooked food delivery Colombo", "ready meals Colombo", "recurring meal delivery Sri Lanka", "FreshPick Meals on Deals"],
-  openGraph: {
-    title: "Meals on Deals | FreshPick Cooked Food in Colombo",
-    description: "Order cooked-food favourites today or make them part of your recurring FreshPick delivery.",
-    url: "https://freshpick.lk/meals",
-    locale: "en_LK",
-    type: "website",
-  },
-  other: {
-    "geo.region": "LK-11",
-    "geo.placename": "Colombo, Sri Lanka",
-    "geo.position": "6.9271;79.8612",
-    "ICBM": "6.9271, 79.8612",
-  },
-  alternates: { canonical: "https://freshpick.lk/meals" },
-};
+export const metadata: Metadata = publicPageMetadata('/meals');
 
 const getCookedFoodProducts = unstable_cache(async () => {
   try {
@@ -69,7 +53,7 @@ export default async function MealsPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(pageJsonLd) }} />
       <MealsContent products={products} />
     </>
   );

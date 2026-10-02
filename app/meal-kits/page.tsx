@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -8,10 +9,7 @@ import { listPublishedRecipes } from "@/lib/recipeService";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Dinner Ideas | FreshPick",
-  description: "Choose a published FreshPick recipe and turn its ingredients into a stock-aware shopping basket.",
-};
+export const metadata: Metadata = publicPageMetadata('/meal-kits');
 
 export default async function MealKitsPage() {
   const recipes = await listPublishedRecipes(8).catch(() => []);

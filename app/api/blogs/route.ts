@@ -5,8 +5,8 @@ import prisma from '@/lib/prisma';
 import { COMMERCE_BLOG_CATEGORIES, publishedJournalWhere } from '@/lib/journalService';
 
 const querySchema = z.object({
-  page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 50) : 12)),
+  page: z.coerce.number().int().min(1).max(100000).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(12),
   search: z.string().optional(),
   category: z.string().optional(),
   tag: z.string().optional(),
@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       { headers: CACHE_HEADERS }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid journal query' }, { status: 400 });
     console.error('Get public blogs error:', error);
     return NextResponse.json({ error: 'Failed to fetch blogs' }, { status: 500 });
   }

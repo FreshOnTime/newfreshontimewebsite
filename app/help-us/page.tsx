@@ -1,3 +1,5 @@
+import { publicPageMetadata } from '@/lib/publicPages';
+export const metadata = publicPageMetadata('/help-us');
 import Link from "next/link";
 import { ArrowRight, Lightbulb, MessageCircleWarning } from "lucide-react";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";

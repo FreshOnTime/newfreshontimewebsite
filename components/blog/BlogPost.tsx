@@ -6,6 +6,9 @@ import { ArrowLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
+import JsonLd from '@/components/seo/JsonLd';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import { absoluteUrl } from '@/lib/config/site';
 
 interface Blog {
   _id: string;
@@ -20,6 +23,7 @@ interface Blog {
   category?: string;
   tags: string[];
   publishedAt?: string;
+  updatedAt?: string;
   views: number;
   authorName?: string;
   author?: {
@@ -37,10 +41,13 @@ export function BlogPost({ blog }: BlogPostProps) {
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
+      const date = new Date(dateString);
+      if (!Number.isFinite(date.getTime())) return '';
+      return date.toLocaleDateString('en-GB', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        timeZone: 'Asia/Colombo',
       });
     } catch {
       return '';
@@ -49,6 +56,8 @@ export function BlogPost({ blog }: BlogPostProps) {
 
   return (
     <article className="min-h-screen bg-background">
+      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BlogPosting', '@id': absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}#article`), headline: blog.title, description: blog.excerpt, mainEntityOfPage: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`), image: blog.featuredImage?.url ? absoluteUrl(blog.featuredImage.url) : undefined, datePublished: blog.publishedAt || undefined, dateModified: blog.updatedAt || undefined, author: { '@type': blog.authorName && blog.authorName !== 'FreshPick' ? 'Person' : 'Organization', name: blog.authorName || 'FreshPick' }, publisher: { '@id': absoluteUrl('/#organization') }, inLanguage: 'en-LK' }} />
+      <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Journal', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`) }]} />
       {/* Back Button - Minimalist */}
       <div className="w-full bg-background border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -68,9 +77,9 @@ export function BlogPost({ blog }: BlogPostProps) {
               {blog.category && (
                 <span>{blog.category}</span>
               )}
-              <span className="text-muted-foreground">•</span>
+              <span>By {blog.authorName || 'FreshPick'}</span>
               {blog.publishedAt && (
-                <span>{formatDate(blog.publishedAt)}</span>
+                <time dateTime={blog.publishedAt}>{formatDate(blog.publishedAt)}</time>
               )}
             </div>
 
@@ -110,6 +119,7 @@ export function BlogPost({ blog }: BlogPostProps) {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}
+                components={{ h1: ({ children }) => <h2>{children}</h2> }}
               >
                 {blog.content}
               </ReactMarkdown>

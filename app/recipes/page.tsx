@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -7,17 +8,7 @@ import { listPublishedRecipes } from "@/lib/recipeService";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Shoppable Recipes | FreshPick Food Discovery",
-  description: "Discover FreshPick recipes, then add the available ingredients for the whole meal to your basket in one action.",
-  alternates: { canonical: "https://freshpick.lk/recipes" },
-  openGraph: {
-    title: "FreshPick Recipes | See dinner, shop the whole idea",
-    description: "Recipe discovery connected directly to FreshPick's live catalogue and stock-aware ingredient flow.",
-    url: "https://freshpick.lk/recipes",
-    type: "website",
-  },
-};
+export const metadata: Metadata = publicPageMetadata('/recipes');
 
 export default async function RecipesPage() {
   const recipes = await listPublishedRecipes(36);

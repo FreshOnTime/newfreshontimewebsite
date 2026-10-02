@@ -1,3 +1,5 @@
+import { catalogueMetadata } from '@/lib/seo';
+import { SITE_URL, absoluteUrl } from '@/lib/config/site';
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,7 +16,6 @@ import { getCategoryImage } from '@/lib/categoryImage';
 
 export const revalidate = 300;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
 
 const getCategoryBySlug = unstable_cache(async (slug: string) => {
   try {
@@ -47,57 +48,11 @@ const getCategoryProducts = unstable_cache(async (categoryId: string, page: numb
   }
 }, ['category-products-v2'], { revalidate: 300, tags: ['products'] });
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ page?: string }> }): Promise<Metadata> {
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
   const category = await getCategoryBySlug(slug);
-  const name = category?.name || slug.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
-
-  const description = category?.description
-    || `Shop fresh ${name.toLowerCase()} online at Fresh Pick. Premium quality groceries delivered to your door in Colombo, Sri Lanka.`;
-
-  const categoryUrl = `${SITE_URL}/categories/${slug}`;
-
-  return {
-    title: `${name} - Fresh Groceries`,
-    description,
-    keywords: [
-      name.toLowerCase(),
-      'fresh groceries',
-      'colombo delivery',
-      'sri lanka',
-      'online grocery',
-      'fresh produce',
-    ].join(', '),
-    alternates: {
-      canonical: categoryUrl,
-    },
-    openGraph: {
-      title: `${name} | Fresh Pick`,
-      description,
-      url: categoryUrl,
-      siteName: 'Fresh Pick',
-      images: [
-        {
-          url: `${SITE_URL}/og-image.jpg`,
-          width: 1200,
-          height: 630,
-          alt: `${name} - Fresh Pick`,
-        },
-      ],
-      locale: 'en_LK',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${name} | Fresh Pick`,
-      description,
-      images: [`${SITE_URL}/og-image.jpg`],
-    },
-  };
+  if (!category) return { title: 'Category not found', robots: { index: false, follow: false } };
+  return catalogueMetadata(`/categories/${encodeURIComponent(category.slug)}`, category.name, category.description || `Browse ${category.name.toLowerCase()} in the FreshPick market.`, query);
 }
 
 export default async function CategoryPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ page?: string }> }) {
@@ -116,7 +71,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const breadcrumbItems = [
     { name: 'Home', url: SITE_URL },
     { name: 'Categories', url: `${SITE_URL}/categories` },
-    { name, url: `${SITE_URL}/categories/${slug}` },
+    { name, url: absoluteUrl(`/categories/${encodeURIComponent(slug)}`) },
   ];
 
   return (
