@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CalendarClock, ChevronRight, ImageIcon, LockKeyhole, MapPin, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
@@ -22,6 +22,7 @@ type CheckoutItem = {
     id: string;
     name: string;
     price: number;
+    stock?: number;
     unit?: string;
     images?: Array<Partial<Image>>;
   };
@@ -53,8 +54,8 @@ const WEEKDAYS = [
 
 function LoadingState({ message }: { message: string }) {
   return (
-    <div className="flex min-h-0 flex-col items-center justify-center gap-4 bg-background">
-      <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-200 border-t-emerald-700" />
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 bg-background">
+      <div className="h-10 w-10 animate-spin rounded-full border-2 border-border border-t-brand-green" />
       <p className="text-sm text-zinc-500">{message}</p>
     </div>
   );
@@ -87,6 +88,7 @@ export default function CheckoutPage() {
   const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<SelectedSubscriptionPlan | null>(null);
   const [previewLoading, setPreviewLoading] = useState(Boolean(planSlug || quickSku));
   const [submitting, setSubmitting] = useState(false);
+  const submissionLock = useRef(false);
   const [orderingViaWhatsapp, setOrderingViaWhatsapp] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,6 +125,14 @@ export default function CheckoutPage() {
       router.replace(`/auth/login?callbackUrl=${returnUrl}`);
     }
   }, [user, authLoading, router]);
+
+  useEffect(() => {
+    setPreviewBag(null);
+    setSelectedSubscriptionPlan(null);
+    setIsRecurring(Boolean(planSlug));
+    setError(null);
+    if (!planSlug && !quickSku) setPreviewLoading(false);
+  }, [planSlug, quickSku, bagId]);
 
   useEffect(() => {
     if (!planSlug) return;
@@ -212,6 +222,7 @@ export default function CheckoutPage() {
               id: productId,
               name: product.name || "Product",
               price: Number(product.pricePerBaseQuantity || 0),
+              stock: product.isOutOfStock ? 0 : product.stockQuantity,
               unit: product.measurementUnit || "ea",
               images: image?.url || image?.path
                 ? [{ url: image.url || image.path || "", alt: image.alt || product.name }]
@@ -235,7 +246,7 @@ export default function CheckoutPage() {
   }, [quickSku, quickQty, planSlug]);
 
   const effectiveItems: CheckoutItem[] = useMemo(() => {
-    if (previewBag) return previewBag.items;
+    if (planSlug || quickSku) return previewBag?.items || [];
     if (!bag?.items?.length) return [];
 
     return bag.items.map((item: Bag["items"][number]) => ({
@@ -243,15 +254,16 @@ export default function CheckoutPage() {
         id: item.product.id,
         name: item.product.name,
         price: Number(item.product.price || 0),
+        stock: item.product.stock,
         unit: item.product.unit || undefined,
         images: item.product.images || [],
       },
       quantity: item.quantity,
     }));
-  }, [bag, previewBag]);
+  }, [bag, previewBag, planSlug, quickSku]);
 
-  const effectiveBagId = previewBag ? undefined : bag?.id;
-  const effectiveBagName = previewBag?.name || bag?.name;
+  const effectiveBagId = planSlug || quickSku ? undefined : bag?.id;
+  const effectiveBagName = planSlug || quickSku ? previewBag?.name : bag?.name;
   const total = useMemo(
     () => effectiveItems.reduce((sum, item) => sum + Number(item.product.price || 0) * item.quantity, 0),
     [effectiveItems],
@@ -261,8 +273,9 @@ export default function CheckoutPage() {
     [effectiveItems],
   );
 
-  const customAddressComplete = Boolean(shipName && shipPhone && shipStreet && shipCity && shipZip);
-  const canPlaceOrder = effectiveItems.length > 0 && (useAccountAddress ? Boolean(user?.registrationAddress) : customAddressComplete);
+  const customAddressComplete = [shipName, shipPhone, shipStreet, shipCity, shipZip].every((value) => value.trim().length > 0);
+  const stockAvailable = effectiveItems.every((item) => item.product.stock === undefined || item.quantity <= item.product.stock);
+  const canPlaceOrder = effectiveItems.length > 0 && stockAvailable && !bagsLoading && !bagUpdating && (useAccountAddress ? Boolean(user?.registrationAddress) : customAddressComplete);
 
   const buildRecurrence = () => {
     if (!isRecurring) return undefined;
@@ -289,12 +302,21 @@ export default function CheckoutPage() {
   };
 
   const placeOrder = async (isWhatsapp = false) => {
+    if (submissionLock.current || bagUpdating || bagsLoading) return;
     if (!user || effectiveItems.length === 0) {
       setError("Your order is not ready yet.");
       return;
     }
     if (!canPlaceOrder) {
-      setError("Please complete the delivery address before placing your order.");
+      setError(stockAvailable ? "Please complete the delivery address before placing your order." : "Please remove unavailable items or reduce their quantities before placing your order.");
+      return;
+    }
+    if (isRecurring && recurrenceFreq === RRule.WEEKLY && recurrenceByWeekday.length === 0) {
+      setError("Please choose at least one delivery day.");
+      return;
+    }
+    if (isRecurring && startDate && endDate && endDate < startDate) {
+      setError("The end date must be on or after the start date.");
       return;
     }
     if (isWhatsapp && !WHATSAPP_NUMBER) {
@@ -302,6 +324,8 @@ export default function CheckoutPage() {
       return;
     }
 
+    submissionLock.current = true;
+    let completed = false;
     setSubmitting(true);
     setOrderingViaWhatsapp(isWhatsapp);
     setError(null);
@@ -341,6 +365,7 @@ export default function CheckoutPage() {
           throw new Error(data.message || "Subscription could not be created");
         }
 
+        completed = true;
         router.replace("/profile/subscriptions");
         return;
       }
@@ -369,6 +394,7 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || "Order failed");
+      completed = true;
 
       const orderId = data.data?._id || data.data?.id;
       const orderNo = data.data?.orderNumber || orderId?.slice(-6) || "New";
@@ -390,7 +416,10 @@ export default function CheckoutPage() {
       setError(placeOrderError instanceof Error ? placeOrderError.message : "Unable to place the order.");
       setOrderingViaWhatsapp(false);
     } finally {
-      if (!isWhatsapp) setSubmitting(false);
+      if (!completed) {
+        submissionLock.current = false;
+        setSubmitting(false);
+      }
     }
   };
 
@@ -404,14 +433,14 @@ export default function CheckoutPage() {
 
   if (effectiveItems.length === 0) {
     return (
-      <div className="flex min-h-0 flex-col items-center justify-center bg-background p-6 text-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm">
-          <ShoppingBag className="h-7 w-7" />
+      <div className="flex min-h-[50vh] flex-col items-center justify-center bg-background px-5 py-16 text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-brand-green">
+          <ShoppingBag strokeWidth={1.5} aria-hidden="true" className="h-7 w-7" />
         </span>
-        <h2 className="mt-5 font-sans text-3xl text-zinc-950">Nothing to check out yet.</h2>
+        <h1 className="mt-5 text-3xl font-medium text-brand-green">Nothing to check out yet.</h1>
         <p className="mt-2 max-w-md text-zinc-500">Choose products or an active recurring plan, then come back here to complete the order.</p>
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-        <Link href="/products" className="mt-7 rounded-full bg-brand-amber px-7 py-3.5 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">
+        {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
+        <Link href="/products" className="mt-7 rounded-lg bg-brand-amber px-7 py-3.5 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">
           Browse products
         </Link>
       </div>
@@ -423,36 +452,36 @@ export default function CheckoutPage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-8">
         <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <span className="text-xs font-bold normal-case text-emerald-700">Secure order</span>
-            <h1 className="mt-3 font-sans text-4xl tracking-tight text-zinc-950 md:text-4xl">Checkout</h1>
+            <span className="text-xs font-medium text-brand-green">Secure order</span>
+            <h1 className="mt-3 text-3xl font-medium tracking-tight text-brand-green md:text-4xl">Checkout</h1>
             {effectiveBagName && (
               <p className="mt-2 text-zinc-600">
                 {effectiveBagName} · {itemCount} item{itemCount === 1 ? "" : "s"}
               </p>
             )}
           </div>
-          <Link href="/products" className="inline-flex items-center gap-1 text-sm font-medium text-emerald-800 hover:text-emerald-950">
-            Continue shopping <ChevronRight className="h-4 w-4" />
+          <Link href="/products" className="inline-flex items-center gap-1 text-sm font-medium text-brand-green hover:text-brand-green">
+            Continue shopping <ChevronRight strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" />
           </Link>
         </div>
 
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-6">
-          <div className="space-y-7 lg:col-span-7">
-            <Card className="overflow-hidden rounded-xl border-zinc-200 bg-background shadow-sm">
-              <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-5">
-                <h2 className="font-sans text-2xl text-zinc-950">Order items</h2>
-                {bagUpdating && <span className="text-xs font-medium text-emerald-700">Updating…</span>}
+          <fieldset disabled={submitting} aria-label="Order details" className="min-w-0 space-y-7 lg:col-span-7">
+            <Card className="overflow-hidden rounded-xl border-border bg-background shadow-none">
+              <div className="flex items-center justify-between border-b border-border px-6 py-5">
+                <h2 className="text-xl font-medium text-brand-green">Order items</h2>
+                {bagUpdating && <span className="text-xs font-medium text-brand-green">Updating…</span>}
               </div>
               <CardContent className="space-y-5 p-6">
                 {effectiveItems.map((item, index) => (
-                  <div key={`${item.product.id}-${index}`} className="flex gap-4 border-b border-zinc-100 pb-5 last:border-0 last:pb-0">
-                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background">
+                  <div key={`${item.product.id}-${index}`} className="flex gap-4 border-b border-border pb-5 last:border-0 last:pb-0">
+                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-background">
                       {item.product.images?.[0]?.url ? (
                         // Small checkout thumbnail. Product images can originate from supplier storage domains not controlled by Next image config.
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.product.images[0].url} alt={item.product.images[0].alt || item.product.name} className="h-full w-full object-cover" />
+                        <img src={item.product.images[0].url} alt={item.product.images[0].alt || item.product.name} className="h-full w-full object-contain p-2" />
                       ) : (
-                        <ImageIcon className="h-6 w-6 text-zinc-300" />
+                        <ImageIcon strokeWidth={1.5} aria-hidden="true" className="h-6 w-6 text-zinc-300" />
                       )}
                     </div>
 
@@ -466,19 +495,21 @@ export default function CheckoutPage() {
                           <button
                             type="button"
                             aria-label={`Remove ${item.product.name}`}
+                            disabled={submitting || bagUpdating || bagsLoading}
                             onClick={() => previewBag ? setPreviewBag(null) : bag && removeFromBag(bag.id, item.product.id).catch((error: Error) => setError(error.message))}
-                            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" />
                           </button>
                         )}
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between gap-4">
-                        <div className="flex h-9 items-center overflow-hidden rounded-full border border-zinc-200 bg-background">
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex h-11 items-center overflow-hidden rounded-lg border border-border bg-background">
                           <button
                             type="button"
-                            disabled={item.quantity <= 1 || Boolean(planSlug)}
+                            aria-label={`Decrease ${item.product.name}`}
+                            disabled={item.quantity <= 1 || Boolean(planSlug) || submitting || bagUpdating || bagsLoading}
                             onClick={() => {
                               const quantity = Math.max(1, item.quantity - 1);
                               if (previewBag) {
@@ -490,14 +521,15 @@ export default function CheckoutPage() {
                                 updateBagItem(bag.id, item.product.id, quantity).catch((error: Error) => setError(error.message));
                               }
                             }}
-                            className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
+                            className="flex h-full w-11 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
                           >
-                            <Minus className="h-3.5 w-3.5" />
+                            <Minus strokeWidth={1.75} aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
-                          <span className="min-w-9 text-center text-sm font-medium text-zinc-900">{item.quantity}</span>
+                          <span className="min-w-8 text-center text-sm font-medium text-zinc-900">{item.quantity}</span>
                           <button
                             type="button"
-                            disabled={Boolean(planSlug) || bagUpdating || bagsLoading}
+                            aria-label={`Increase ${item.product.name}`}
+                            disabled={Boolean(planSlug) || submitting || bagUpdating || bagsLoading || (item.product.stock !== undefined && item.quantity >= item.product.stock)}
                             onClick={() => {
                               const quantity = item.quantity + 1;
                               if (previewBag) {
@@ -509,9 +541,9 @@ export default function CheckoutPage() {
                                 updateBagItem(bag.id, item.product.id, quantity).catch((error: Error) => setError(error.message));
                               }
                             }}
-                            className="flex h-full w-9 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
+                            className="flex h-full w-11 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
                           >
-                            <Plus className="h-3.5 w-3.5" />
+                            <Plus strokeWidth={1.75} aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
                         </div>
                         <strong className="text-zinc-950">Rs. {(item.product.price * item.quantity).toFixed(2)}</strong>
@@ -522,16 +554,27 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
+            {planSlug && (
+              <section aria-labelledby="delivery-schedule-title" className="rounded-xl border border-border p-6 md:p-8">
+                <div className="flex items-center gap-2 text-brand-green"><CalendarClock strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" /><h2 id="delivery-schedule-title" className="text-xl font-medium">Delivery schedule</h2></div>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">Choose a delivery day for your {selectedSubscriptionPlan?.frequency === 'biweekly' ? 'fortnightly' : selectedSubscriptionPlan?.frequency === 'monthly' ? 'monthly' : 'weekly'} basket.</p>
+                <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Subscription delivery day">
+                  {WEEKDAYS.map((day) => <button key={day.value} type="button" aria-pressed={recurrenceByWeekday[0] === day.value} onClick={() => setRecurrenceByWeekday([day.value])} className={`h-11 min-w-11 rounded-lg border px-3 text-sm ${recurrenceByWeekday[0] === day.value ? 'border-brand-green bg-brand-green text-primary-foreground' : 'border-border text-muted-foreground hover:border-brand-green'}`}>{day.label}</button>)}
+                </div>
+                <label className="mt-5 block text-sm text-muted-foreground">Start date <span>(optional)</span><Input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="mt-2 max-w-sm" /></label>
+              </section>
+            )}
+
             {!planSlug && (
-              <Card className="rounded-xl border-zinc-200 bg-background shadow-sm">
+              <Card className="rounded-xl border-border bg-background shadow-none">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex items-start justify-between gap-6">
                     <div>
-                      <div className="flex items-center gap-2 text-emerald-800">
-                        <CalendarClock className="h-5 w-5" />
-                        <span className="text-xs font-bold normal-case">Recurring order</span>
+                      <div className="flex items-center gap-2 text-brand-green">
+                        <CalendarClock strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" />
+                        <span className="text-xs font-medium">Recurring order</span>
                       </div>
-                      <h2 className="mt-3 font-sans text-2xl text-zinc-950">Repeat this order automatically</h2>
+                      <h2 className="mt-3 text-xl font-medium text-brand-green">Repeat this order automatically</h2>
                       <p className="mt-2 text-sm leading-6 text-zinc-500">Optional. Choose a cadence and delivery days for this bag.</p>
                     </div>
                     <input
@@ -539,12 +582,12 @@ export default function CheckoutPage() {
                       type="checkbox"
                       checked={isRecurring}
                       onChange={(event) => setIsRecurring(event.target.checked)}
-                      className="mt-2 h-5 w-5 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
+                      className="mt-2 h-5 w-5 rounded border-zinc-300 text-brand-green focus:ring-brand-green"
                     />
                   </div>
 
                   {isRecurring && (
-                    <div className="mt-7 space-y-7 border-t border-zinc-100 pt-7">
+                    <div className="mt-7 space-y-7 border-t border-border pt-7">
                       <div className="grid gap-4 sm:grid-cols-3">
                         {[
                           { label: "Weekly", value: RRule.WEEKLY },
@@ -554,8 +597,9 @@ export default function CheckoutPage() {
                           <button
                             key={option.label}
                             type="button"
+                            aria-pressed={recurrenceFreq === option.value}
                             onClick={() => setRecurrenceFreq(option.value)}
-                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${recurrenceFreq === option.value ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-zinc-200 text-zinc-600 hover:border-emerald-300"} `}
+                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${recurrenceFreq === option.value ? "border-brand-green bg-secondary text-brand-green" : "border-border text-zinc-600 hover:border-brand-green/40"} `}
                           >
                             {option.label}
                           </button>
@@ -587,8 +631,9 @@ export default function CheckoutPage() {
                                 <button
                                   key={day.label}
                                   type="button"
+                                  aria-pressed={selected}
                                   onClick={() => setRecurrenceByWeekday((previous) => selected ? previous.filter((value) => value !== day.value) : [...previous, day.value])}
-                                  className={`h-10 w-10 rounded-full text-xs font-semibold transition-colors ${selected ? "bg-emerald-800 text-white" : "border border-zinc-200 bg-background text-zinc-600 hover:border-emerald-300"} `}
+                                  className={`h-11 w-11 rounded-lg text-xs font-semibold transition-colors ${selected ? "bg-brand-green text-white" : "border border-border bg-background text-zinc-600 hover:border-brand-green/40"} `}
                                 >
                                   {day.label}
                                 </button>
@@ -609,7 +654,7 @@ export default function CheckoutPage() {
                           rows={3}
                           value={recurrenceNotes}
                           onChange={(event) => setRecurrenceNotes(event.target.value)}
-                          className="mt-2 w-full resize-none rounded-xl border border-zinc-200 bg-background px-4 py-3 outline-none focus:border-emerald-500"
+                          className="mt-2 w-full resize-none rounded-xl border border-border bg-background px-4 py-3 outline-none focus:border-brand-green"
                           placeholder="Anything we should know about the recurring schedule?"
                         />
                       </label>
@@ -619,26 +664,26 @@ export default function CheckoutPage() {
               </Card>
             )}
 
-            <Card className="rounded-xl border-zinc-200 bg-background shadow-sm">
+            <Card className="rounded-xl border-border bg-background shadow-none">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                   <div>
-                    <div className="flex items-center gap-2 text-emerald-800">
-                      <MapPin className="h-5 w-5" />
-                      <span className="text-xs font-bold normal-case">Delivery</span>
+                    <div className="flex items-center gap-2 text-brand-green">
+                      <MapPin strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" />
+                      <span className="text-xs font-medium">Delivery</span>
                     </div>
-                    <h2 className="mt-3 font-sans text-2xl text-zinc-950">Where should we deliver?</h2>
+                    <h2 className="mt-3 text-xl font-medium text-brand-green">Where should we deliver?</h2>
                   </div>
                   {user?.registrationAddress && (
                     <label className="inline-flex items-center gap-2 text-sm text-zinc-600">
-                      <input type="checkbox" checked={useAccountAddress} onChange={(event) => setUseAccountAddress(event.target.checked)} className="rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600" />
+                      <input type="checkbox" checked={useAccountAddress} onChange={(event) => setUseAccountAddress(event.target.checked)} className="rounded border-zinc-300 text-brand-green focus:ring-brand-green" />
                       Use saved address
                     </label>
                   )}
                 </div>
 
                 {useAccountAddress && user?.registrationAddress ? (
-                  <div className="mt-6 rounded-xl bg-background p-5 text-sm leading-6 text-zinc-600">
+                  <div className="mt-6 rounded-lg bg-secondary/50 p-5 text-sm leading-6 text-zinc-600">
                     <strong className="block text-zinc-950">{user.registrationAddress.recipientName || user.firstName}</strong>
                     <span>{user.registrationAddress.streetAddress}</span><br />
                     <span>{user.registrationAddress.city}</span><br />
@@ -646,28 +691,28 @@ export default function CheckoutPage() {
                   </div>
                 ) : (
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
-                    <label className="text-sm text-zinc-600">Recipient name<Input value={shipName} onChange={(event) => setShipName(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">Phone<Input value={shipPhone} onChange={(event) => setShipPhone(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600 md:col-span-2">Street address<Input value={shipStreet} onChange={(event) => setShipStreet(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">City<Input value={shipCity} onChange={(event) => setShipCity(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">State / province<Input value={shipState} onChange={(event) => setShipState(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">Postal code<Input value={shipZip} onChange={(event) => setShipZip(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">Country<Input value={shipCountry} onChange={(event) => setShipCountry(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600">Recipient name<Input autoComplete="shipping name" value={shipName} onChange={(event) => setShipName(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600">Phone<Input type="tel" autoComplete="shipping tel" value={shipPhone} onChange={(event) => setShipPhone(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600 md:col-span-2">Street address<Input autoComplete="shipping street-address" value={shipStreet} onChange={(event) => setShipStreet(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600">City<Input autoComplete="shipping address-level2" value={shipCity} onChange={(event) => setShipCity(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600">State / province<Input autoComplete="shipping address-level1" value={shipState} onChange={(event) => setShipState(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600">Postal code<Input autoComplete="shipping postal-code" value={shipZip} onChange={(event) => setShipZip(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-zinc-600">Country<Input autoComplete="shipping country" value={shipCountry} onChange={(event) => setShipCountry(event.target.value)} className="mt-2" /></label>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>
+              <div role="alert" className="rounded-lg border border-destructive/20 px-5 py-4 text-sm text-destructive">{error}</div>
             )}
-          </div>
+          </fieldset>
 
           <aside className="lg:col-span-5">
             <div className="space-y-5 lg:sticky lg:top-28">
-              <Card className="overflow-hidden rounded-xl border-zinc-200 bg-background shadow-none">
+              <Card className="overflow-hidden rounded-xl border-border bg-background shadow-none">
                 <CardContent className="p-6 md:p-8">
-                  <span className="text-xs font-bold normal-case text-emerald-700">Order summary</span>
+                  <span className="text-xs font-medium text-brand-green">Order summary</span>
                   <div className="mt-6 space-y-3">
                     {effectiveItems.map((item) => (
                       <div key={`summary-${item.product.id}`} className="flex justify-between gap-4 text-sm">
@@ -677,7 +722,7 @@ export default function CheckoutPage() {
                     ))}
                   </div>
 
-                  <div className="mt-6 border-t border-zinc-100 pt-5">
+                  <div className="mt-6 border-t border-border pt-5">
                     <div className="flex items-end justify-between gap-4">
                       <div>
                         <p className="text-sm text-zinc-500">Items total</p>
@@ -687,13 +732,15 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  <p className="mt-5 text-sm text-muted-foreground">Payment: cash on delivery</p>
+                  {!stockAvailable && <p className="mt-3 text-sm leading-6 text-destructive">Update unavailable items before placing your order.</p>}
                   <Button
                     size="lg"
                     onClick={() => placeOrder(false)}
                     disabled={submitting || !canPlaceOrder}
-                    className="mt-7 h-14 w-full rounded-full bg-brand-amber text-base font-semibold text-accent-foreground hover:bg-brand-amber/85"
+                    className="mt-7 min-h-12 h-auto w-full whitespace-normal rounded-lg px-4 py-3 bg-brand-amber text-base font-semibold text-accent-foreground hover:bg-brand-amber/85"
                   >
-                    {submitting && !orderingViaWhatsapp ? "Placing order…" : "Place order · Cash on delivery"}
+                    {submitting && !orderingViaWhatsapp ? "Placing order…" : "Place order"}
                   </Button>
 
                   {WHATSAPP_NUMBER && !planSlug && (
@@ -701,14 +748,14 @@ export default function CheckoutPage() {
                       size="lg"
                       onClick={() => placeOrder(true)}
                       disabled={submitting || !canPlaceOrder}
-                      className="mt-3 h-14 w-full rounded-full bg-[#25D366] text-base font-semibold text-white hover:bg-[#20bd5a]"
+                      className="mt-3 min-h-12 h-auto w-full whitespace-normal rounded-lg px-4 py-3 border border-brand-green bg-background text-base font-medium text-brand-green hover:bg-secondary"
                     >
                       {submitting && orderingViaWhatsapp ? "Opening WhatsApp…" : "Place order & open WhatsApp"}
                     </Button>
                   )}
 
                   <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <LockKeyhole className="h-4 w-4" />
+                    <LockKeyhole strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" />
                     Account-protected checkout
                   </div>
                 </CardContent>
