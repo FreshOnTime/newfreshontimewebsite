@@ -17,7 +17,7 @@ interface MarketCollectionPageProps {
 /** A photography-led introduction followed by the live collection, without decorative feature cards. */
 export default function MarketCollectionPage({products, title, eyebrow, description, image, selectionTitle, emptyCopy, notes}: MarketCollectionPageProps) {
   return <div>
-    <PremiumPageHeader title={title} eyebrow={eyebrow} subtitle={description} backgroundImage={image} />
+    <PremiumPageHeader title={title} eyebrow={eyebrow} subtitle={description} backgroundImage={image} imageLayout="compact" />
     <section className="editorial-wrap editorial-section">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-5"><h2 className="editorial-title">{selectionTitle}</h2><p className="text-xs text-muted-foreground">{products.length} {products.length === 1 ? 'item' : 'items'} available</p></div>
       {products.length > 0 ? <ProductGrid products={products} /> : <div className="border-y border-border py-12"><p className="max-w-xl text-base leading-7 text-muted-foreground">{emptyCopy}</p><Link href="/products" className="editorial-link mt-6">Browse the full market</Link></div>}

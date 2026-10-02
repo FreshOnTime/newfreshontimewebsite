@@ -5,16 +5,29 @@ interface PremiumPageHeaderProps {
   count?: number; isLoading?: boolean; eyebrow?: string;
   imageLayout?: 'feature' | 'compact';
 }
-/** Shared editorial introduction, with a generous image when a story has one. */
+
+/** Bold editorial introductions; browsing pages can keep their photography compact. */
 export default function PremiumPageHeader({ title, subtitle, backgroundImage, count, isLoading = false, eyebrow, imageLayout = 'feature' }: PremiumPageHeaderProps) {
+  const compact = imageLayout === 'compact';
   return (
     <section className="border-b border-border bg-background">
       <div className="editorial-wrap py-9 md:py-14">
-        {isLoading ? <div className="max-w-xl animate-pulse" role="status" aria-label="Loading page"><div className="h-12 w-3/4 rounded bg-muted" /><div className="mt-5 h-4 w-1/2 rounded bg-muted" /></div> :
-          <div className={`grid items-center gap-8 ${backgroundImage ? imageLayout === 'compact' ? 'md:grid-cols-[1fr_0.55fr] md:gap-10' : 'md:grid-cols-2 md:gap-16' : ''}`}>
-            <div>{eyebrow && <p className="editorial-label mb-5">{eyebrow}</p>}<h1 className="max-w-3xl font-serif text-[2.6rem] font-normal leading-[1.06] text-brand-green md:text-6xl">{title}</h1>{subtitle && <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground md:text-base">{subtitle}</p>}{count !== undefined && <p className="mt-5 text-xs text-muted-foreground">{count} {count === 1 ? 'item' : 'items'}</p>}</div>
-            {backgroundImage && <div className={`relative overflow-hidden bg-secondary ${imageLayout === 'compact' ? 'aspect-[16/9] max-h-48' : 'aspect-[4/3]'}`}><Image src={backgroundImage} alt="" fill sizes={imageLayout === 'compact' ? '(max-width: 767px) calc(100vw - 40px), (max-width: 1280px) 35vw, 425px' : '(max-width: 767px) calc(100vw - 40px), 50vw'} className="object-cover" /></div>}
-          </div>}
+        {isLoading ? <div className="max-w-xl animate-pulse" role="status" aria-label="Loading page"><div className="h-12 w-3/4 bg-muted" /><div className="mt-5 h-4 w-1/2 bg-muted" /></div> : <>
+          <div className={compact && backgroundImage ? 'grid items-center gap-7 md:grid-cols-[1fr_0.45fr] md:gap-12' : ''}>
+            <div>
+              {eyebrow && <p className="editorial-label mb-5">{eyebrow}</p>}
+              <div className={!compact && backgroundImage ? 'grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-end md:gap-14' : ''}>
+                <h1 className={compact ? 'max-w-4xl font-sans text-[clamp(2.2rem,5vw,4.5rem)] font-bold uppercase leading-[1.02] text-foreground' : 'max-w-5xl font-sans text-[clamp(2.4rem,6vw,5.5rem)] font-bold uppercase leading-[1.02] text-foreground'}>{title}</h1>
+                {(subtitle || count !== undefined) && <div className={backgroundImage && !compact ? '' : 'mt-5'}>
+                  {subtitle && <p className="max-w-xl text-base leading-7 text-muted-foreground md:text-lg">{subtitle}</p>}
+                  {count !== undefined && <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">{count} {count === 1 ? 'item' : 'items'}</p>}
+                </div>}
+              </div>
+            </div>
+            {backgroundImage && compact && <div className="relative aspect-[16/9] max-h-48 overflow-hidden bg-secondary"><Image src={backgroundImage} alt="" fill sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 30vw, 395px" className="object-cover" /></div>}
+          </div>
+          {backgroundImage && !compact && <div className="relative mt-9 aspect-[4/3] overflow-hidden bg-secondary md:aspect-[2.4/1]"><Image src={backgroundImage} alt="" fill sizes="(max-width: 1440px) 100vw, 1360px" className="object-cover" /></div>}
+        </>}
       </div>
     </section>
   );

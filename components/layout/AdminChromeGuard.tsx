@@ -19,7 +19,7 @@ export default function AdminChromeGuard({ children, footer }: { children: React
   if (workspace) return <AuthProvider><div className="flex min-h-screen flex-col"><main id="main-content" className="flex-1">{children}</main></div></AuthProvider>;
   return (
     <AuthProvider><BagProvider><WishlistProvider>
-      <div className={`flex min-h-screen flex-col ${checkout || authentication ? '' : 'pb-20 md:pb-0'}`}>
+      <div className={`freshpick-market flex min-h-screen flex-col ${checkout || authentication ? '' : 'pb-20 md:pb-0'}`}>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-5 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-3 focus:text-primary-foreground">Skip to content</a>
         <Navbar />
         <main id="main-content" className="flex-1">{authentication ? <AuthFrame>{children}</AuthFrame> : children}</main>

@@ -52,4 +52,4 @@ All photos below are free Unsplash photos under https://unsplash.com/license, no
 - Source: https://unsplash.com/photos/a-pile-of-fresh-green-herbs-including-parsley-and-dill-Zz2prRbsgsk
 - Original image: https://images.unsplash.com/photo-1779173932688-2bc0e3ecb95e
 
-`fresh-produce` and vegetable aliases reuse `../home/produce-basket.webp`; see `../home/CREDITS.md` for attribution. Uploaded category images take precedence. Unknown categories retain a neutral icon.
+`fresh-produce` and vegetable aliases reuse `../editorial/market-crates.webp`; see `../editorial/CREDITS.md` for attribution. Uploaded category images take precedence. Unknown categories retain a neutral icon.

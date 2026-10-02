@@ -1,5 +1,7 @@
 # FreshPick editorial revamp
 
+The visual direction below records the initial revamp. The current typography, palette and homepage composition are documented in [NATOORA_UI.md](NATOORA_UI.md).
+
 Reviewed 2026-10-02. This implements the supplied site-wide editorial food-brand brief on top of the completed checkout and account work.
 
 ## Design system
