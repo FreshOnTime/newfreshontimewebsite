@@ -8,7 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Search, User, Home } from 'lucide-react';
+import { User, Home } from 'lucide-react';
+import Link from 'next/link';
 import NotificationsBell from './NotificationsBell';
 import { useRouter } from 'next/navigation';
 
@@ -40,31 +41,19 @@ export function AdminHeader() {
               </Button>
             </div>
             <div className="flex-shrink-0">
-              <p className="text-sm font-medium text-brand-green">FreshPick administration</p>
+              <p className="hidden text-sm font-medium text-brand-green sm:block">FreshPick administration</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Search */}
-            <div className="relative hidden md:block">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search..."
-                className="block w-full pl-10 pr-3 py-2 border border-border rounded-md leading-5 bg-background placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
-              />
-            </div>
-
             {/* Notifications */}
             <NotificationsBell />
 
             {/* User menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
+                <Button variant="ghost" aria-label="Admin account and settings" className="flex items-center space-x-2">
+                  <User className="h-5 w-5" aria-hidden="true" />
                   <span className="hidden md:block">
                     {user?.firstName} {user?.lastName}
                   </span>
@@ -77,6 +66,12 @@ export function AdminHeader() {
                 <DropdownMenuItem className="text-sm text-muted-foreground">
                   Role: {user?.role}
                 </DropdownMenuItem>
+                {[
+                  ['Your profile', '/profile'],
+                  ['User access', '/admin/users'],
+                  ['Activity log', '/admin/audit-logs'],
+                  ['Send notifications', '/admin/notifications'],
+                ].map(([label, href]) => <DropdownMenuItem key={href} asChild><Link href={href} className="min-h-11">{label}</Link></DropdownMenuItem>)}
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-600 focus:text-red-600"

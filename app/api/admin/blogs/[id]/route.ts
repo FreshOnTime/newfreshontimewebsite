@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { revalidateJournal, journalCategoryWhere, COMMERCE_BLOG_CATEGORIES } from '@/lib/journalService';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const imageSchema = z.object({
@@ -17,7 +18,7 @@ const updateBlogSchema = z.object({
   excerpt: z.string().min(10).max(500).optional(),
   content: z.string().min(50).optional(),
   featuredImage: imageSchema.optional().nullable(),
-  category: z.string().max(100).optional().nullable(),
+  category: z.string().max(100).optional().nullable().refine(value => !value || !COMMERCE_BLOG_CATEGORIES.includes(value), 'Use the recipe or collection editor for this content'),
   tags: z.array(z.string()).max(20).optional(),
   published: z.boolean().optional(),
   publishedAt: z.string().datetime().optional().nullable(),
@@ -49,7 +50,7 @@ export const GET = requireAdmin(async (request, { params }) => {
     const { id } = await params;
 
     const blog = await prisma.blog.findFirst({
-      where: { id, isDeleted: false },
+      where: { ...journalCategoryWhere, id, isDeleted: false },
       include: { author: { select: AUTHOR_SELECT } },
     });
 
@@ -71,7 +72,7 @@ export const PUT = requireAdmin(async (request, { params }) => {
     const body = await request.json();
     const data = updateBlogSchema.parse(body);
 
-    const existingBlog = await prisma.blog.findFirst({ where: { id, isDeleted: false } });
+    const existingBlog = await prisma.blog.findFirst({ where: { ...journalCategoryWhere, id, isDeleted: false } });
     if (!existingBlog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
@@ -137,6 +138,7 @@ export const PUT = requireAdmin(async (request, { params }) => {
       request
     );
 
+    revalidateJournal(existingBlog.slug, updated.slug);
     return NextResponse.json({ blog: serializeBlog(updated) });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
@@ -152,7 +154,7 @@ export const DELETE = requireAdmin(async (request, { params }) => {
   try {
     const { id } = await params;
 
-    const blog = await prisma.blog.findFirst({ where: { id, isDeleted: false } });
+    const blog = await prisma.blog.findFirst({ where: { ...journalCategoryWhere, id, isDeleted: false } });
     if (!blog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
@@ -170,6 +172,7 @@ export const DELETE = requireAdmin(async (request, { params }) => {
       request
     );
 
+    revalidateJournal(blog.slug);
     return NextResponse.json({ message: 'Blog deleted successfully' });
   } catch (error) {
     console.error('Delete blog error:', error);

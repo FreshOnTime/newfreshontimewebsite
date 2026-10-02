@@ -12,7 +12,7 @@ export default function BlogPage() {
         <div className="min-h-screen bg-background">
             <PremiumPageHeader title="The Journal" subtitle="Recipes, ingredient ideas and stories from the FreshPick market." eyebrow="Editorial" backgroundImage="/images/editorial/pepper-mortar.webp" imageLayout="compact" />
 
-            <div className="container mx-auto max-w-7xl px-4 py-8 md:py-10">
+            <div className="editorial-wrap py-10 md:py-16">
                 <BlogList />
             </div>
         </div>

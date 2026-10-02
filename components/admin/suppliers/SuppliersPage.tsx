@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,15 +78,18 @@ export function SuppliersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-normal text-foreground">Suppliers</h1>
           <p className="text-muted-foreground mt-2">Manage supplier records</p>
         </div>
+        <div className="flex flex-wrap gap-3">
+        <Button variant="outline" asChild><Link href="/admin/supplier-uploads">Review supplier uploads</Link></Button>
         <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />
           Add Supplier
         </Button>
+        </div>
       </div>
 
       <Card>

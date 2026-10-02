@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { COMMERCE_BLOG_CATEGORIES, publishedJournalWhere } from '@/lib/journalService';
 
 const querySchema = z.object({
   page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
@@ -15,7 +16,6 @@ const CACHE_HEADERS = {
   'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
 };
 
-const COMMERCE_CATEGORIES = ['recipe', 'collection'];
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
     const where: Prisma.BlogWhereInput = {
-      isDeleted: false,
-      published: true,
-      category: { notIn: COMMERCE_CATEGORIES },
+      ...publishedJournalWhere,
     };
 
     if (query.search) {
@@ -35,7 +33,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (query.category && !COMMERCE_CATEGORIES.includes(query.category)) {
+    if (query.category && !COMMERCE_BLOG_CATEGORIES.includes(query.category)) {
       where.category = query.category;
     }
 
@@ -62,7 +60,7 @@ export async function GET(request: NextRequest) {
           views: true,
           authorName: true,
         },
-        orderBy: { publishedAt: 'desc' },
+        orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
         skip,
         take: limit,
       }),

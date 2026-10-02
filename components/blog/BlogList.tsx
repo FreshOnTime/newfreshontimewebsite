@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import JournalCard from './JournalCard';
 import { Input } from '@/components/ui/input';
 
 import { Button } from '@/components/ui/button';
 
-import { Search, ArrowRight } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 
 interface Blog {
@@ -35,50 +34,34 @@ export function BlogList() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 0 });
 
   // Debounce search to reduce API calls
   const debouncedSearch = useDebounce(search, 300);
 
-  const fetchBlogs = useCallback(async (searchTerm: string, pageNum: number) => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: String(pageNum),
-        limit: '12',
-        ...(searchTerm && { search: searchTerm }),
-      });
-
-      const res = await fetch(`/api/blogs?${params}`);
-      if (!res.ok) throw new Error('Failed to fetch blogs');
-
-      const data: BlogsResponse = await res.json();
-      setBlogs(data.blogs);
-      setPagination(data.pagination);
-    } catch (error) {
-      console.error('Failed to fetch blogs:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchBlogs(debouncedSearch, page);
-  }, [page, debouncedSearch, fetchBlogs]);
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return '';
+    const controller = new AbortController();
+    async function load() {
+      setLoading(true);
+      setError(false);
+      try {
+        const params = new URLSearchParams({ page: String(page), limit: '12', ...(debouncedSearch && { search: debouncedSearch }) });
+        const response = await fetch(`/api/blogs?${params}`, { signal: controller.signal });
+        if (!response.ok) throw new Error('Failed to fetch journal');
+        const data: BlogsResponse = await response.json();
+        if (!controller.signal.aborted) { setBlogs(data.blogs); setPagination(data.pagination); }
+      } catch (error) {
+        if (!controller.signal.aborted) { console.error('Failed to fetch journal:', error); setError(true); }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
     }
-  };
+    void load();
+    return () => controller.abort();
+  }, [page, debouncedSearch, retry]);
 
   return (
     <div className="space-y-16">
@@ -88,7 +71,8 @@ export function BlogList() {
           <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
           <Input
             type="text"
-            placeholder="Search the archives..."
+            aria-label="Search the journal"
+            placeholder="Search stories"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -111,51 +95,22 @@ export function BlogList() {
             </div>
           ))}
         </div>
+      ) : error ? (
+        <section role="alert" className="border-y border-border py-12 text-center">
+          <h2 className="text-xl">We couldn’t load the journal.</h2>
+          <p className="mt-3 text-sm text-muted-foreground">Please try again in a moment.</p>
+          <Button className="mt-6" onClick={() => setRetry(value => value + 1)}>Try again</Button>
+        </section>
       ) : blogs.length === 0 ? (
         <div className="text-center py-12 border-y border-border">
           <p className="text-xl font-sans text-muted-foreground not-italic">
-            {search ? 'No archives found matching your query.' : 'The journal is currently empty.'}
+            {search ? 'No stories match your search.' : 'The journal is currently empty.'}
           </p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-            {blogs.map((blog) => (
-              <Link href={`/blog/${blog.slug}`} key={blog._id} className="group cursor-pointer">
-                <div className="relative w-full aspect-[4/3] overflow-hidden bg-secondary mb-6">
-                  {blog.featuredImage?.url && (
-                    <Image
-                      src={blog.featuredImage.url}
-                      alt={blog.featuredImage.alt || blog.title}
-                      fill
-                      className="object-cover transition-transform duration-700 ease-out"
-                      loading="lazy"
-                    />
-                  )}
-
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-xs font-bold normal-case text-brand-green">
-                    {blog.category || 'Feature'}
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">{formatDate(blog.publishedAt)}</span>
-                  </div>
-
-                  <h3 className="text-2xl font-serif font-normal text-foreground group-hover:text-brand-green transition-colors leading-tight">
-                    {blog.title}
-                  </h3>
-
-                  <p className="text-muted-foreground font-normal leading-relaxed line-clamp-3">
-                    {blog.excerpt}
-                  </p>
-
-                  <div className="pt-4 flex items-center text-xs font-bold normal-case text-foreground group-hover:text-brand-green transition-colors">
-                    Read Article <ArrowRight className="ml-2 w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </Link>
-            ))}
+            {blogs.map(blog => <JournalCard key={blog._id} post={{ ...blog, id: blog._id }} headingLevel="h2" />)}
           </div>
 
           {/* Pagination - Minimalist */}
