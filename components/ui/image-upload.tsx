@@ -71,7 +71,7 @@ export function ImageUpload({
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center gap-2">
           <ImagePlus className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Drag & drop or click to upload images
           </p>
           {aspectRatio && (

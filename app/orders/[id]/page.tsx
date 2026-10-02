@@ -239,12 +239,12 @@ export default function OrderDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const s = (status || '').toLowerCase();
-    if (s === 'delivered') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (s === 'delivered') return 'bg-secondary text-brand-green border-border';
     if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-200';
     if (s === 'confirmed' || s === 'processing') return 'bg-secondary text-brand-green border-border';
     if (s === 'shipped') return 'bg-secondary text-brand-green border-border';
     if (s === 'cancelled' || s === 'canceled' || s === 'refunded') return 'bg-red-50 text-red-700 border-red-200';
-    return 'bg-gray-50 text-gray-700 border-gray-200';
+    return 'bg-secondary text-foreground border-border';
   };
 
   if (authLoading || loading || loadError || notFoundError || !order) {
@@ -262,7 +262,7 @@ export default function OrderDetailPage() {
         <ConfirmAction open={confirmingCancel} onOpenChange={setConfirmingCancel} title={`Cancel order #${order.orderNumber}?`} description="This stops this delivery. You can buy these items again afterward." label="Cancel order" busy={saving} error={actionError} onConfirm={() => void cancelOrder()} />
         {actionError && !confirmingCancel && <p role="alert" className="mb-6 rounded-lg border border-rose-200 px-4 py-3 text-sm text-rose-700">{actionError}</p>}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-medium text-brand-green">Delivery status</h2>
+          <h2 className="text-lg font-normal text-brand-green">Delivery status</h2>
           <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${getStatusBadge(order.status)}`}>{order.status}</span>
         </div>
         {/* Status Stepper */}
@@ -279,10 +279,10 @@ export default function OrderDetailPage() {
             {/* Items */}
             <Card className="shadow-none border-border bg-background overflow-hidden">
               <div className="bg-background px-6 py-4 border-b border-border">
-                <h2 className="text-lg font-medium text-brand-green flex items-center gap-2">
-                  <Package className="w-5 h-5 text-gray-500" />
+                <h2 className="text-lg font-normal text-brand-green flex items-center gap-2">
+                  <Package className="w-5 h-5 text-muted-foreground" />
                   Items
-                  <span className="ml-auto text-sm font-normal text-gray-500">{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
+                  <span className="ml-auto text-sm font-normal text-muted-foreground">{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
                 </h2>
               </div>
               <CardContent className="p-6">
@@ -291,7 +291,7 @@ export default function OrderDetailPage() {
                     <div key={`${it.name || it.productId?._id || idx}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border py-4 last:border-0">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-foreground break-words">{it.name || it.productId?.name || 'Item'}</h3>
-                        <p className="text-sm text-gray-500">{it.qty} × Rs. {Number(it.price).toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">{it.qty} × Rs. {Number(it.price).toFixed(2)}</p>
                       </div>
                       <div className="text-right text-sm tabular-nums">
                         <span className="font-medium text-foreground">Rs. {Number(it.total ?? (it.qty * it.price)).toFixed(2)}</span>
@@ -307,13 +307,13 @@ export default function OrderDetailPage() {
               <Card className="shadow-none border-border bg-background overflow-hidden">
                 <div className="bg-background px-6 py-4 border-b border-border">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium text-brand-green flex items-center gap-2">
+                    <h2 className="text-lg font-normal text-brand-green flex items-center gap-2">
                       <RotateCcw className="w-5 h-5 text-brand-green" />
                       Recurring delivery
                     </h2>
-                    <span className={`text-xs px-3 py-1 rounded-full font-semibold ${order.scheduleStatus === 'active' ? 'bg-green-100 text-green-700' :
+                    <span className={`text-xs px-3 py-1 rounded-full font-semibold ${order.scheduleStatus === 'active' ? 'bg-secondary text-brand-green' :
                       order.scheduleStatus === 'paused' ? 'bg-amber-100 text-amber-700' :
-                        'bg-background text-gray-700'
+                        'bg-background text-foreground'
                       } `}>
                       {order.scheduleStatus || 'active'}
                     </span>
@@ -334,7 +334,7 @@ export default function OrderDetailPage() {
                   </div>
 
                   <div className="mb-6 border-b border-border pb-5">
-                    <p className="text-sm text-emerald-800">
+                    <p className="text-sm text-brand-green">
                       <span className="font-semibold">Next delivery:</span>{' '}
                       {order.nextDeliveryAt ? new Date(order.nextDeliveryAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
                     </p>
@@ -343,19 +343,19 @@ export default function OrderDetailPage() {
                   {order.recurrence && (
                     <div className="grid grid-cols-2 gap-4 text-sm mb-6">
                       <div className="bg-background rounded-lg p-3">
-                        <span className="text-gray-500">Start Date</span>
+                        <span className="text-muted-foreground">Start Date</span>
                         <p className="font-medium">{order.recurrence.startDate ? new Date(order.recurrence.startDate).toLocaleDateString() : '—'}</p>
                       </div>
                       <div className="bg-background rounded-lg p-3">
-                        <span className="text-gray-500">End Date</span>
+                        <span className="text-muted-foreground">End Date</span>
                         <p className="font-medium">{order.recurrence.endDate ? new Date(order.recurrence.endDate).toLocaleDateString() : '—'}</p>
                       </div>
                       <div className="bg-background rounded-lg p-3">
-                        <span className="text-gray-500">Days</span>
+                        <span className="text-muted-foreground">Days</span>
                         <p className="font-medium">{Array.isArray(order.recurrence.daysOfWeek) && order.recurrence.daysOfWeek.length ? order.recurrence.daysOfWeek.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ') : '—'}</p>
                       </div>
                       <div className="bg-background rounded-lg p-3">
-                        <span className="text-gray-500">Excludes</span>
+                        <span className="text-muted-foreground">Excludes</span>
                         <p className="font-medium">{order.recurrence.excludeDates?.length || 0} dates</p>
                       </div>
                     </div>
@@ -367,21 +367,21 @@ export default function OrderDetailPage() {
                     <form className="space-y-4 pt-5" onSubmit={saveRecurrence}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-recurrence_start">Start date</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-recurrence_start">Start date</Label>
                         <Input type="date" id="order-recurrence_start" name="recurrence_start" disabled={saving} defaultValue={formatDateInput(order.recurrence?.startDate)} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-recurrence_end">End date</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-recurrence_end">End date</Label>
                         <Input type="date" id="order-recurrence_end" name="recurrence_end" disabled={saving} defaultValue={formatDateInput(order.recurrence?.endDate)} className="h-11" />
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-sm text-gray-600 mb-3 block">Days of week</Label>
+                      <Label className="text-sm text-muted-foreground mb-3 block">Days of week</Label>
                       <div className="flex flex-wrap gap-2">
                         {[0, 1, 2, 3, 4, 5, 6].map((d) => (
-                          <label key={d} className="inline-flex items-center gap-2 bg-background border rounded-lg px-4 py-2.5 cursor-pointer hover:bg-background transition-colors has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-300 has-[:checked]:text-emerald-700">
-                            <input disabled={saving} type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} className="rounded text-emerald-600" />
+                          <label key={d} className="inline-flex items-center gap-2 bg-background border rounded-lg px-4 py-2.5 cursor-pointer hover:bg-background transition-colors has-[:checked]:bg-secondary has-[:checked]:border-border has-[:checked]:text-brand-green">
+                            <input disabled={saving} type="checkbox" name="recurrence_dow" value={d} defaultChecked={order.recurrence?.daysOfWeek?.includes(d)} className="rounded text-brand-green" />
                             <span className="font-medium text-sm">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]}</span>
                           </label>
                         ))}
@@ -389,12 +389,12 @@ export default function OrderDetailPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="order-notes" className="text-sm text-gray-600 mb-2 block">Notes</Label>
-                      <textarea id="order-notes" disabled={saving} name="recurrence_notes" className="w-full bg-background border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none" rows={2} defaultValue={order.recurrence?.notes || ''} placeholder="Any special instructions..."></textarea>
+                      <Label htmlFor="order-notes" className="text-sm text-muted-foreground mb-2 block">Notes</Label>
+                      <textarea id="order-notes" disabled={saving} name="recurrence_notes" className="w-full bg-background border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none" rows={2} defaultValue={order.recurrence?.notes || ''} placeholder="Any special instructions..."></textarea>
                     </div>
 
                     <div className="flex items-center gap-3 pt-2">
-                      <Button type="submit" disabled={saving} className="bg-brand-amber text-accent-foreground hover:bg-brand-amber/85">Save Schedule</Button>
+                      <Button type="submit" disabled={saving} className="bg-primary text-accent-foreground hover:bg-primary/85">Save Schedule</Button>
                       {order.scheduleStatus === 'ended' && (
                         <Button type="button" variant="outline" onClick={() => doRecurringAction('resume')} disabled={saving}>Reactivate</Button>
                       )}
@@ -409,8 +409,8 @@ export default function OrderDetailPage() {
             {order.shippingAddress && (
               <Card className="shadow-none border-border bg-background overflow-hidden">
                 <div className="bg-background px-6 py-4 border-b border-border">
-                  <h2 className="text-lg font-medium text-brand-green flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-gray-500" />
+                  <h2 className="text-lg font-normal text-brand-green flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-muted-foreground" />
                     Delivery address
                   </h2>
                 </div>
@@ -426,33 +426,33 @@ export default function OrderDetailPage() {
                     <form className="space-y-4 pt-5" onSubmit={saveAddress} onChange={() => { if (addressSaved) setAddressSaved(false); }}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-name">Name</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-name">Name</Label>
                         <Input id="order-name" name="name" disabled={saving} defaultValue={order.shippingAddress.name || ''} placeholder="Recipient name" className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-phone">Phone</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-phone">Phone</Label>
                         <Input id="order-phone" name="phone" disabled={saving} defaultValue={order.shippingAddress.phone || ''} placeholder="+94 77 123 4567" className="h-11" />
                       </div>
                     </div>
                     <div>
-                      <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-street">Street Address</Label>
+                      <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-street">Street Address</Label>
                         <Input id="order-street" name="street" disabled={saving} defaultValue={order.shippingAddress.street || ''} placeholder="123 Main St, Apt 4B" className="h-11" />
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-city">City</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-city">City</Label>
                         <Input id="order-city" name="city" disabled={saving} defaultValue={order.shippingAddress.city || ''} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-state">State</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-state">State</Label>
                         <Input id="order-state" name="state" disabled={saving} defaultValue={order.shippingAddress.state || ''} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-zip">Postal Code</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-zip">Postal Code</Label>
                         <Input id="order-zip" name="zip" disabled={saving} defaultValue={order.shippingAddress.zipCode || ''} className="h-11" />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-country">Country</Label>
+                        <Label className="text-sm text-muted-foreground mb-2 block" htmlFor="order-country">Country</Label>
                         <Input id="order-country" name="country" disabled={saving} defaultValue={order.shippingAddress.country || 'LK'} className="h-11" />
                       </div>
                     </div>
@@ -464,12 +464,12 @@ export default function OrderDetailPage() {
                           addressSaved ||
                           ['cancelled', 'canceled', 'shipped', 'delivered'].includes((order.status || '').toLowerCase())
                         }
-                        className="bg-brand-amber text-accent-foreground hover:bg-brand-amber/85"
+                        className="bg-primary text-accent-foreground hover:bg-primary/85"
                       >
                         {addressSaved ? 'Address Saved ✓' : 'Save Address'}
                       </Button>
                       {['cancelled', 'canceled', 'shipped', 'delivered'].includes((order.status || '').toLowerCase()) && (
-                        <p className="text-xs text-gray-500 mt-2">Address cannot be modified for {order.status} orders.</p>
+                        <p className="text-xs text-muted-foreground mt-2">Address cannot be modified for {order.status} orders.</p>
                       )}
                     </div>
                     </form>
@@ -491,26 +491,26 @@ export default function OrderDetailPage() {
                 </div>
                 <CardContent className="p-6">
                   <div className="space-y-3 mb-6">
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-muted-foreground">
                       <span>Subtotal</span>
-                      <span className="font-medium text-gray-900">Rs. {Number(order.subtotal ?? 0).toFixed(2)}</span>
+                      <span className="font-medium text-foreground">Rs. {Number(order.subtotal ?? 0).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-muted-foreground">
                       <span>Shipping</span>
-                      <span className="font-medium text-emerald-600">
+                      <span className="font-medium text-brand-green">
                         {Number(order.shipping ?? 0) === 0 ? 'Free' : `Rs. ${Number(order.shipping ?? 0).toFixed(2)}`}
                       </span>
                     </div>
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-muted-foreground">
                       <span>Tax</span>
-                      <span className="font-medium text-gray-900">Rs. {Number(order.tax ?? 0).toFixed(2)}</span>
+                      <span className="font-medium text-foreground">Rs. {Number(order.tax ?? 0).toFixed(2)}</span>
                     </div>
                   </div>
 
                   {Number(order.discount || 0) > 0 && <div className="mb-4 flex justify-between text-sm"><span>Discount</span><span>−Rs. {Number(order.discount).toFixed(2)}</span></div>}
                   <p className="mb-4 text-sm capitalize text-muted-foreground">Payment: {order.paymentMethod === 'cash' ? 'Cash on delivery' : order.paymentMethod?.replaceAll('_', ' ') || 'Not recorded'} · {order.paymentStatus || 'Pending'}</p>
                   <div className="flex justify-between items-center border-t border-dashed pt-4 mb-6">
-                    <span className="text-gray-600">Total</span>
+                    <span className="text-muted-foreground">Total</span>
                     <span className="text-2xl font-medium text-foreground">Rs. {Number(order.total ?? 0).toFixed(2)}</span>
                   </div>
 
@@ -533,7 +533,7 @@ export default function OrderDetailPage() {
               {/* Need Help Card */}
               <Card className="shadow-none border-border bg-background overflow-hidden">
                 <CardContent className="p-6 text-center">
-                  <p className="text-sm text-gray-500 mb-3">Need help with your order?</p>
+                  <p className="text-sm text-muted-foreground mb-3">Need help with your order?</p>
                   <Link href="/help">
                     <Button variant="outline" size="sm" className="w-full">Contact Support</Button>
                   </Link>

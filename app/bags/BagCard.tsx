@@ -42,7 +42,7 @@ export function BagCard({
             </Button>
           )}
         </div>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
           {bag.description}
         </p>
         <div className="flex justify-between items-center mb-2">
@@ -51,7 +51,7 @@ export function BagCard({
           </Badge>
           <span className="text-sm font-semibold">Rs. {total.toFixed(2)}</span>
         </div>
-        <div className="text-sm text-right text-green-600 mb-3">
+        <div className="text-sm text-right text-brand-green mb-3">
           Savings: Rs. {savings.toFixed(2)}
         </div>
         <div className="flex flex-wrap gap-2 mb-3">
@@ -65,16 +65,16 @@ export function BagCard({
       {onOrderNow ? (
         <button
           onClick={() => onOrderNow(bag.id)}
-          className="h-12 w-full bg-brand-amber text-accent-foreground rounded-t-full flex items-center justify-center"
+          className="h-12 w-full bg-primary text-accent-foreground rounded-md flex items-center justify-center"
         >
-          <ShoppingBag className="w-6 h-6 mr-2 text-foreground" /> Order Now
+          <ShoppingBag className="w-6 h-6 mr-2 text-primary-foreground" /> Order Now
         </button>
       ) : (
         <Link
           href={bagUrl}
-          className="h-12 w-full bg-gray-900 text-accent-foreground rounded-t-full flex items-center justify-center hover:bg-brand-amber transition-colors"
+          className="h-12 w-full bg-primary text-accent-foreground rounded-md flex items-center justify-center hover:bg-primary transition-colors"
         >
-          <ShoppingBag className="w-6 h-6 mr-2 text-foreground" /> View Bag
+          <ShoppingBag className="w-6 h-6 mr-2 text-primary-foreground" /> View Bag
         </Link>
       )}
     </div>

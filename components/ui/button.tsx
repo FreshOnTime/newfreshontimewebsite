@@ -5,26 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 duration-200 ease-out",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 duration-200 ease-out",
   {
     variants: {
       variant: {
-        default: "bg-accent text-accent-foreground hover:bg-accent/85",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
         outline:
-          "border-2 border-input bg-background hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200",
+          "border border-input bg-background hover:bg-secondary hover:text-brand-green hover:border-border",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-emerald-50 hover:text-emerald-700",
+        ghost: "hover:bg-secondary hover:text-brand-green",
         link: "text-primary underline-offset-4 hover:underline",
         "elite": "bg-accent text-accent-foreground hover:bg-accent/85",
         "luxury": "bg-primary text-primary-foreground hover:bg-primary/90",
       },
       size: {
         default: "h-12 px-6 py-2 text-base",
-        sm: "h-10 rounded-lg px-4 text-xs tracking-wide uppercase",
-        lg: "h-14 rounded-lg px-10 text-lg font-bold tracking-tight",
+        sm: "h-11 rounded-md px-4 text-sm",
+        lg: "h-12 rounded-md px-7 text-sm font-medium",
         icon: "h-12 w-12 rounded-lg",
       },
     },

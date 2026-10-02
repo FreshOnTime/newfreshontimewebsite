@@ -227,7 +227,7 @@ export default function BrandPage() {
       <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="sticky top-0 bg-background z-10 pb-6 pt-2">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Product Brands</h2>
+            <h1 className="font-serif text-3xl font-normal text-brand-green md:text-4xl">Product Brands</h1>
             <div className="flex gap-2">
               <Button
                 variant="outline"

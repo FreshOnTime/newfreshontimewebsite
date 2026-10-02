@@ -20,7 +20,7 @@ export default function QuantityInputLarge(props: QuantityInputLargeProps) {
   return (
     <div
       className={cn(
-        "flex items-center max-w-44 space-x-3 border border-primary rounded-full overflow-hidden",
+        "flex items-center max-w-44 space-x-3 border border-primary rounded-md overflow-hidden",
         className
       )}
     >

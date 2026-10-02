@@ -35,9 +35,9 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading your FreshPick workspace…</div>
-      </main>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading your FreshPick workspace…</div>
+      </div>
     );
   }
 
@@ -68,20 +68,20 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-zinc-950">
+    <div className="min-h-screen bg-background text-foreground">
       <DashboardSidebar role={user.role} active={section} onSelect={setSection} title={title} />
       <div className="lg:pl-64">
         <DashboardHeader title={title} />
-        <main className="px-5 py-8 md:px-7 md:py-10 lg:px-10 lg:py-6">
+        <div className="px-5 py-8 md:px-7 md:py-10 lg:px-10 lg:py-6">
           <div className="mx-auto max-w-7xl space-y-8">
-            <header className="border-b border-zinc-300 pb-6">
-              <p className="text-xs font-bold normal-case text-emerald-700">{isSupplier ? 'Partner operations' : 'Account home'}</p>
-              <h2 className="mt-3 font-sans text-2xl font-semibold leading-tight text-zinc-950 md:text-2xl">{heading}</h2>
-              {description && <p className="mt-4 max-w-2xl text-sm font-normal leading-7 text-zinc-500">{description}</p>}
+            <header className="border-b border-border pb-6">
+              <p className="text-xs font-bold normal-case text-brand-green">{isSupplier ? 'Partner operations' : 'Account home'}</p>
+              <h1 className="mt-3 font-serif text-3xl font-normal leading-tight text-brand-green md:text-4xl">{heading}</h1>
+              {description && <p className="mt-4 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">{description}</p>}
             </header>
             {renderSection()}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

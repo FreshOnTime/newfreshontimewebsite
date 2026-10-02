@@ -36,7 +36,7 @@ export default function WhatsAppButton() {
             {/* Floating Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 bg-brand-amber hover:bg-brand-amber rounded-full shadow-none flex items-center justify-center transition-all duration-300  group"
+                className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary rounded-full shadow-none flex items-center justify-center transition-all duration-300  group"
                 aria-label="Contact via WhatsApp"
             >
                 {isOpen ? (
@@ -52,7 +52,7 @@ export default function WhatsAppButton() {
 
             {/* Chat Popup */}
             {isOpen && (
-                <div className="fixed bottom-36 md:bottom-24 right-6 z-50 w-[calc(100vw-3rem)] max-w-80 border border-border bg-background rounded-xl shadow-sm overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="fixed bottom-36 md:bottom-24 right-6 z-50 w-[calc(100vw-3rem)] max-w-80 border border-border bg-background rounded-lg shadow-sm overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
                     <div className="bg-brand-green p-4 text-white">
                         <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ export default function WhatsAppButton() {
 
                     {/* Content */}
                     <div className="p-4">
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                             How can we help?
                         </p>
 
@@ -78,7 +78,7 @@ export default function WhatsAppButton() {
                                 <button
                                     key={i}
                                     onClick={() => sendMessage(msg)}
-                                    className="w-full text-left text-sm px-3 py-2 bg-background hover:bg-green-50 rounded-lg border border-gray-100 hover:border-green-200 transition-colors"
+                                    className="w-full text-left text-sm px-3 py-2 bg-background hover:bg-secondary rounded-lg border border-border hover:border-border transition-colors"
                                 >
                                     {msg}
                                 </button>
@@ -92,13 +92,13 @@ export default function WhatsAppButton() {
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 placeholder="Type a message..."
-                                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                                 onKeyDown={(e) => e.key === 'Enter' && sendMessage(message)}
                             />
                             <button
                                 onClick={() => sendMessage(message)}
                                 disabled={!message.trim()}
-                                className="px-3 py-2 bg-brand-amber hover:bg-brand-amber disabled:bg-gray-300 text-accent-foreground rounded-lg transition-colors"
+                                className="px-3 py-2 bg-primary hover:bg-primary disabled:bg-muted text-accent-foreground rounded-lg transition-colors"
                             >
                                 <Send className="w-4 h-4" />
                             </button>
@@ -109,7 +109,7 @@ export default function WhatsAppButton() {
                     <div className="px-4 py-3 bg-background border-t text-center">
                         <a
                             href={`tel:+${phoneNumber}`}
-                            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-green-600"
+                            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-green"
                         >
                             <Phone className="w-4 h-4" />
                             Call FreshPick

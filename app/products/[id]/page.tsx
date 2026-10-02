@@ -7,6 +7,7 @@ import rehypeSanitize from "rehype-sanitize";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 import ProductImage from "@/components/products/ProductImage";
+import ProductGrid from "@/components/products/ProductGrid";
 import { Product } from "@/models/product";
 import { ProductControls } from "./ProductControls";
 import ProductJsonLd from "@/components/seo/ProductJsonLd";
@@ -30,6 +31,17 @@ async function getProduct(id: string): Promise<Product | null> {
     console.error("[Product page] Failed to load product:", error);
     return null;
   }
+}
+
+async function getRelatedProducts(product: Product): Promise<Product[]> {
+  if (!product.category?.id) return [];
+  try {
+    const query = new URLSearchParams({ categoryId: product.category.id, limit: '5', inStock: 'true' });
+    const response = await serverApiFetch(`/api/storefront/products?${query}`, { next: { revalidate: 300, tags: ['products'] } } as RequestInit & { next: { revalidate: number; tags: string[] } });
+    if (!response.ok) return [];
+    const data = await response.json() as { products: Product[] };
+    return data.products.filter(item => item.sku !== product.sku).slice(0, 4);
+  } catch { return []; }
 }
 
 export async function generateMetadata({
@@ -99,6 +111,7 @@ export default async function ProductPage({
   const product = await getProduct(productId);
 
   if (!product) notFound();
+  const relatedProducts = await getRelatedProducts(product);
 
   const discountedPrice = discountedUnitPrice(product.pricePerBaseQuantity, product.discountPercentage || 0);
   const showDiscount = Boolean(product.discountPercentage && product.discountPercentage > 0);
@@ -119,13 +132,13 @@ export default async function ProductPage({
           {product.category?.slug && <Link href={`/categories/${product.category.slug}`} className="border-l border-border pl-4 hover:text-brand-green">{product.category.name}</Link>}
         </nav>
         <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
-          <div className="relative aspect-square overflow-hidden rounded-xl border border-border [&_img]:mix-blend-multiply lg:sticky lg:top-40">
+          <div className="relative aspect-[4/5] overflow-hidden bg-secondary [&_img]:mix-blend-multiply lg:sticky lg:top-40">
             <ProductImage src={product.image?.url || ""} alt={product.name} priority sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 576px" />
-            {showDiscount && <span className="absolute right-4 top-4 rounded-md bg-brand-amber px-3 py-1.5 text-xs font-semibold text-accent-foreground">{product.discountPercentage}% off</span>}
+            {showDiscount && <span className="absolute right-4 top-4 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-accent-foreground">{product.discountPercentage}% off</span>}
           </div>
           <div className="lg:py-4">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{product.isBundle ? "Market bundle" : "From the market"}</p>
-            <h1 className="mt-4 text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">{product.name}</h1>
+            <h1 className="mt-4 text-3xl font-normal leading-tight tracking-[-0.035em] text-brand-green md:text-5xl">{product.name}</h1>
             <p className="mt-3 text-sm text-muted-foreground">{product.isOutOfStock ? "Currently unavailable" : "In stock"} · SKU {product.sku}</p>
             <div className="mt-6 flex flex-wrap items-baseline gap-3">
               <span className="text-2xl font-semibold text-foreground">Rs. {discountedPrice.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -141,7 +154,7 @@ export default async function ProductPage({
         </div>
         {(product.description || product.ingredients || product.nutritionFacts) && (
           <section aria-labelledby="product-details-title" className="mt-10 grid gap-6 border-t border-border pt-8 md:mt-14 md:grid-cols-[1fr_2fr] md:gap-16 md:pt-10">
-            <h2 id="product-details-title" className="text-2xl font-medium text-brand-green">Product details</h2>
+            <h2 id="product-details-title" className="text-2xl font-normal text-brand-green">Product details</h2>
             <div className="space-y-6">
               {product.description && <div className="prose max-w-none text-sm leading-7 text-muted-foreground prose-headings:font-medium prose-headings:text-brand-green prose-a:text-brand-green"><Markdown rehypePlugins={[rehypeSanitize]}>{product.description}</Markdown></div>}
               {product.ingredients && <div><h3 className="text-base font-medium text-brand-green">Ingredients</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">{product.ingredients}</p></div>}
@@ -149,6 +162,7 @@ export default async function ProductPage({
             </div>
           </section>
         )}
+        {relatedProducts.length > 0 && <section aria-labelledby="related-products-title" className="mt-14 border-t border-border pt-10 md:mt-20 md:pt-14"><h2 id="related-products-title" className="editorial-title mb-8">More for your kitchen.</h2><ProductGrid products={relatedProducts} /></section>}
       </div>
     </div>
   );

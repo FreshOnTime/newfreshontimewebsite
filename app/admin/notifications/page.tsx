@@ -53,17 +53,17 @@ export default function NotificationsPage() {
 
     return (
         <div className="space-y-8 p-8 max-w-4xl mx-auto animate-fade-in-up">
-            <div className="flex items-center gap-4 border-b border-gray-100 pb-6">
-                <div className="bg-blue-50 p-3 rounded-2xl">
-                    <Bell className="w-8 h-8 text-blue-600" />
+            <div className="flex items-center gap-4 border-b border-border pb-6">
+                <div className="bg-secondary p-3 rounded-lg">
+                    <Bell className="w-8 h-8 text-brand-green" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Notification Center</h1>
-                    <p className="text-gray-500 mt-1">Send updates, alerts, and promotions to your users.</p>
+                    <h1 className="text-3xl font-normal text-foreground tracking-tight">Notification Center</h1>
+                    <p className="text-muted-foreground mt-1">Send updates, alerts, and promotions to your users.</p>
                 </div>
             </div>
 
-            <Card className="border-0 shadow-xl bg-white/50 backdrop-blur-xl ring-1 ring-black/5">
+            <Card className="border-0 shadow-sm bg-white/50  ring-1 ring-black/5">
                 <CardHeader>
                     <CardTitle>Send Web Notification</CardTitle>
                     <CardDescription>Create a new notification to broadcast.</CardDescription>
@@ -72,19 +72,19 @@ export default function NotificationsPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Notification Title</label>
+                                <label className="text-sm font-medium text-foreground">Notification Title</label>
                                 <Input
                                     {...register("title", { required: "Title is required" })}
                                     placeholder="e.g., Flash Sale Alert!"
-                                    className="bg-white/50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                                    className="bg-white/50 border-border focus:border-primary focus:ring-primary"
                                 />
                                 {errors.title && <span className="text-xs text-red-500">{errors.title.message}</span>}
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Notification Type</label>
+                                <label className="text-sm font-medium text-foreground">Notification Type</label>
                                 <Select onValueChange={(val) => setValue("type", val as NotificationForm["type"])} defaultValue="info">
-                                    <SelectTrigger className="bg-white/50 border-gray-200">
+                                    <SelectTrigger className="bg-white/50 border-border">
                                         <SelectValue placeholder="Select type" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -99,35 +99,35 @@ export default function NotificationsPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Message Content</label>
+                            <label className="text-sm font-medium text-foreground">Message Content</label>
                             <Textarea
                                 {...register("message", { required: "Message is required" })}
                                 placeholder="Write your message here..."
-                                className="bg-white/50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-[100px]"
+                                className="bg-white/50 border-border focus:border-primary focus:ring-primary min-h-[100px]"
                             />
                             {errors.message && <span className="text-xs text-red-500">{errors.message.message}</span>}
                         </div>
 
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Target User</label>
+                                <label className="text-sm font-medium text-foreground">Target User</label>
                                 <Select onValueChange={(val) => setValue("targetUserId", val)} defaultValue="all">
-                                    <SelectTrigger className="bg-white/50 border-gray-200">
+                                    <SelectTrigger className="bg-white/50 border-border">
                                         <SelectValue placeholder="Select target" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Users (Broadcast)</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">Currently only &apos;All Users&apos; broadcast is supported in this UI.</p>
+                                <p className="text-xs text-muted-foreground">Currently only &apos;All Users&apos; broadcast is supported in this UI.</p>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Action Link (Optional)</label>
+                                <label className="text-sm font-medium text-foreground">Action Link (Optional)</label>
                                 <Input
                                     {...register("link")}
                                     placeholder="e.g., /deals"
-                                    className="bg-white/50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                                    className="bg-white/50 border-border focus:border-primary focus:ring-primary"
                                 />
                             </div>
                         </div>
@@ -136,7 +136,7 @@ export default function NotificationsPage() {
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 px-8"
+                                className="bg-primary hover:bg-primary text-white shadow-sm shadow-blue-500/20 px-8"
                             >
                                 {isSubmitting ? (
                                     "Sending..."

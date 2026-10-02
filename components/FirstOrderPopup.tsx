@@ -50,16 +50,16 @@ export default function FirstOrderPopup() {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-300">
-            <div className="relative bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="relative bg-background rounded-lg max-w-lg w-full overflow-hidden shadow-sm animate-in zoom-in-95 duration-300">
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 hover:bg-white text-gray-600 hover:text-gray-900 transition-colors"
+                    className="absolute top-4 right-4 z-10 p-2 rounded-md bg-white/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <X className="w-5 h-5" />
                 </button>
 
                 <div className="flex flex-col md:flex-row">
-                    <div className="md:w-2/5 bg-gradient-to-br from-emerald-500 to-teal-600 p-8 flex flex-col items-center justify-center text-white">
+                    <div className="md:w-2/5    p-8 flex flex-col items-center justify-center text-white">
                         <Sparkles className="w-12 h-12 mb-4 animate-pulse" />
                         <div className="text-5xl font-bold mb-2">15%</div>
                         <div className="text-lg font-semibold">OFF</div>
@@ -72,9 +72,9 @@ export default function FirstOrderPopup() {
                             Welcome Offer
                         </div>
 
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Fresh Pick! 🥬</h2>
+                        <h2 className="text-2xl font-normal text-foreground mb-2">Welcome to Fresh Pick! 🥬</h2>
 
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-muted-foreground mb-6">
                             Get 15% off your first order when you sign up for our newsletter. Plus, exclusive deals delivered to your inbox!
                         </p>
 
@@ -85,12 +85,12 @@ export default function FirstOrderPopup() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                                 required
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                             <Button
                                 onClick={handleSubscribe}
                                 disabled={isSubmitting || !email}
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white py-3 rounded-xl font-semibold"
+                                className="w-full bg-primary hover:bg-primary disabled:bg-primary text-white py-3 rounded-lg font-semibold"
                             >
                                 {isSubmitting ? 'Joining…' : 'Get 15% Off'}
                                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -99,13 +99,13 @@ export default function FirstOrderPopup() {
 
                         {error && <p className="mb-3 text-sm text-red-600" role="alert">{error}</p>}
 
-                        <p className="text-xs text-gray-500 text-center">
-                            Use code <span className="font-bold text-emerald-600">WELCOME15</span> at checkout
+                        <p className="text-xs text-muted-foreground text-center">
+                            Use code <span className="font-bold text-brand-green">WELCOME15</span> at checkout
                         </p>
 
                         <button
                             onClick={handleClose}
-                            className="w-full text-center text-sm text-gray-400 hover:text-gray-600 mt-4"
+                            className="w-full text-center text-sm text-muted-foreground hover:text-muted-foreground mt-4"
                         >
                             No thanks, I&apos;ll pay full price
                         </button>

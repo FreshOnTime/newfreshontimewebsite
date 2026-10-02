@@ -125,11 +125,11 @@ export function AdminOverview() {
         {[...Array(6)].map((_, index) => (
           <Card key={index} className="animate-pulse">
             <CardHeader className="pb-2">
-              <div className="h-4 w-1/2 rounded bg-gray-200" />
-              <div className="h-8 w-3/4 rounded bg-gray-200" />
+              <div className="h-4 w-1/2 rounded bg-secondary" />
+              <div className="h-8 w-3/4 rounded bg-secondary" />
             </CardHeader>
             <CardContent>
-              <div className="h-4 w-1/3 rounded bg-gray-200" />
+              <div className="h-4 w-1/3 rounded bg-secondary" />
             </CardContent>
           </Card>
         ))}
@@ -143,8 +143,8 @@ export function AdminOverview() {
       value: stats?.totalCustomers ?? 0,
       icon: Users,
       description: 'Registered customers',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       href: '/admin/customers',
       viewText: 'View Customers',
     },
@@ -153,8 +153,8 @@ export function AdminOverview() {
       value: stats?.totalProducts ?? 0,
       icon: Package,
       description: 'Active products',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       href: '/admin/products',
       viewText: 'View Products',
     },
@@ -163,8 +163,8 @@ export function AdminOverview() {
       value: stats?.totalOrders ?? 0,
       icon: ShoppingCart,
       description: 'All-time orders',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       href: '/admin/orders',
       viewText: 'View Orders',
     },
@@ -176,8 +176,8 @@ export function AdminOverview() {
       })}`,
       icon: DollarSign,
       description: 'All-time revenue',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       href: '/admin/analytics',
       viewText: 'View Analytics',
     },
@@ -186,8 +186,8 @@ export function AdminOverview() {
       value: stats?.lowStockProducts ?? 0,
       icon: AlertTriangle,
       description: 'Need restocking',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       alert: (stats?.lowStockProducts ?? 0) > 0,
       href: '/admin/products?filter=low-stock',
       viewText: 'View Low Stock',
@@ -197,8 +197,8 @@ export function AdminOverview() {
       value: stats?.pendingOrders ?? 0,
       icon: Clock,
       description: 'Awaiting processing',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       alert: (stats?.pendingOrders ?? 0) > 0,
       href: '/admin/orders?status=pending',
       viewText: 'View Pending',
@@ -221,8 +221,8 @@ export function AdminOverview() {
       })}`,
       icon: TrendingUp,
       description: 'Revenue from recurring orders',
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
+      color: 'text-brand-green',
+      bgColor: 'bg-secondary',
       href: '/admin/analytics?type=recurring',
       viewText: 'View Analytics',
     },
@@ -231,12 +231,12 @@ export function AdminOverview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-        <p className="mt-2 text-gray-600">Live operational data from FreshPick.</p>
+        <h2 className="text-3xl font-normal text-foreground">Dashboard Overview</h2>
+        <p className="mt-2 text-muted-foreground">Live operational data from FreshPick.</p>
       </div>
 
       {!stats && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Dashboard metrics could not be loaded. Values below default to zero until the analytics service responds.
         </div>
       )}
@@ -245,7 +245,7 @@ export function AdminOverview() {
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title} className="relative transition-shadow hover:shadow-md">
+            <Card key={stat.title} className="relative transition-shadow hover:shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                 <div className={`rounded-lg p-2 ${stat.bgColor}`}>
@@ -277,7 +277,7 @@ export function AdminOverview() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-blue-600" />
+                <UserPlus className="h-5 w-5 text-brand-green" />
                 Recent Customers
               </CardTitle>
               <CardDescription>Latest customer registrations</CardDescription>
@@ -291,18 +291,18 @@ export function AdminOverview() {
           <CardContent>
             <div className="space-y-4">
               {recentCustomers.length === 0 ? (
-                <p className="text-sm text-gray-600">No recent customers.</p>
+                <p className="text-sm text-muted-foreground">No recent customers.</p>
               ) : (
                 recentCustomers.slice(0, 5).map((customer) => (
                   <div key={customer._id} className="flex items-center space-x-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                      <Users className="h-4 w-4 text-blue-600" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
+                      <Users className="h-4 w-4 text-brand-green" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{customer.name}</p>
-                      <p className="truncate text-xs text-gray-500">{customer.email}</p>
+                      <p className="truncate text-xs text-muted-foreground">{customer.email}</p>
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-muted-foreground">
                       {new Date(customer.createdAt).toLocaleDateString()}
                     </div>
                   </div>
@@ -316,7 +316,7 @@ export function AdminOverview() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Package2 className="h-5 w-5 text-green-600" />
+                <Package2 className="h-5 w-5 text-brand-green" />
                 Recent Activities
               </CardTitle>
               <CardDescription>Recorded admin and store activity</CardDescription>
@@ -332,24 +332,24 @@ export function AdminOverview() {
               {activityError ? (
                 <p className="text-sm text-amber-700">{activityError}</p>
               ) : recentActivities.length === 0 ? (
-                <p className="text-sm text-gray-600">No recent activity.</p>
+                <p className="text-sm text-muted-foreground">No recent activity.</p>
               ) : (
                 recentActivities.map((activity) => (
                   <div key={activity._id} className="flex items-start space-x-3">
                     <div
                       className={`mt-2 h-2 w-2 rounded-full ${
                         activity.type === 'customer_registered'
-                          ? 'bg-blue-500'
+                          ? 'bg-primary'
                           : activity.type === 'order_created'
-                            ? 'bg-green-500'
+                            ? 'bg-primary'
                             : activity.type === 'order_updated'
                               ? 'bg-yellow-500'
-                              : 'bg-purple-500'
+                              : 'bg-primary'
                       }`}
                     />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">{activity.description}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {new Date(activity.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -364,7 +364,7 @@ export function AdminOverview() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-orange-600" />
+                <Clock className="h-5 w-5 text-brand-green" />
                 Upcoming Deliveries
               </CardTitle>
               <CardDescription>Next scheduled recurring deliveries</CardDescription>
@@ -378,22 +378,22 @@ export function AdminOverview() {
           <CardContent>
             <div className="space-y-3">
               {(stats?.upcomingRecurring ?? []).length === 0 ? (
-                <p className="text-sm text-gray-600">No upcoming recurring deliveries in the next 14 days.</p>
+                <p className="text-sm text-muted-foreground">No upcoming recurring deliveries in the next 14 days.</p>
               ) : (
                 (stats?.upcomingRecurring ?? []).slice(0, 5).map((delivery, index) => (
                   <div
                     key={`${delivery.orderNumber}-${index}`}
-                    className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-gray-50"
+                    className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-secondary"
                   >
                     <div>
                       <div className="text-sm font-medium">{delivery.orderNumber}</div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-muted-foreground">
                         {delivery.nextDeliveryAt
                           ? new Date(delivery.nextDeliveryAt).toLocaleDateString()
                           : 'Date not set'}
                       </div>
                     </div>
-                    <div className="text-sm font-semibold text-green-600">
+                    <div className="text-sm font-semibold text-brand-green">
                       Rs. {Number(delivery.total ?? 0).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,

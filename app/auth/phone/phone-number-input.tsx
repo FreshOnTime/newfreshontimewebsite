@@ -142,7 +142,7 @@ export function PhoneNumberInput({
         <Button
           disabled={disabled}
           type="submit"
-          className="w-full rounded-full"
+          className="w-full rounded-md"
         >
           Send Verification Code
         </Button>

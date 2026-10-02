@@ -44,7 +44,7 @@ export default function SupplierUploadsList() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   if (error) return <div className="text-red-500 p-4 bg-red-50 rounded-md border border-red-100 flex items-center gap-2"><AlertCircle size={20} /> Failed to load uploads</div>;
-  if (!data) return <div className="p-8 text-center text-gray-500 animate-pulse">Loading uploads...</div>;
+  if (!data) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading uploads...</div>;
 
   const uploads = data.data as UploadData[];
 
@@ -118,7 +118,7 @@ export default function SupplierUploadsList() {
 
   const getBadges = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'active': return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>;
+      case 'active': return <Badge className="bg-secondary text-brand-green hover:bg-secondary">Active</Badge>;
       case 'pending': return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
       case 'rejected': return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rejected</Badge>;
       default: return <Badge variant="outline">{status || 'Unknown'}</Badge>;
@@ -127,19 +127,19 @@ export default function SupplierUploadsList() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-            <FileSpreadsheet className="h-4 w-4 text-blue-600" />
+      <div className="bg-background rounded-lg shadow-sm border border-border">
+        <div className="p-4 border-b border-border flex justify-between items-center bg-secondary/50">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4 text-brand-green" />
             Uploaded Files
           </h3>
-          <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded-full">{uploads.length} files</span>
+          <span className="text-xs text-muted-foreground font-mono bg-secondary px-2 py-1 rounded-full">{uploads.length} files</span>
         </div>
 
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50/50">
+              <TableRow className="bg-secondary/50">
                 <TableHead className="w-[250px]">Supplier Details</TableHead>
                 <TableHead>File Info</TableHead>
                 <TableHead>Status</TableHead>
@@ -149,25 +149,25 @@ export default function SupplierUploadsList() {
             <TableBody>
               {uploads.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                     No uploads found
                   </TableCell>
                 </TableRow>
               ) : uploads.map((u) => (
-                <TableRow key={u._id} className="group hover:bg-gray-50 transition-colors">
+                <TableRow key={u._id} className="group hover:bg-secondary transition-colors">
                   <TableCell className="align-top py-4">
                     <div className="space-y-1">
-                      <div className="font-medium text-gray-900">{u.supplierName || u.supplierCompany || 'Unknown Supplier'}</div>
-                      <div className="text-sm text-gray-500">{u.supplierEmail}</div>
-                      <div className="text-xs text-gray-400 font-mono mt-1">{u.supplierId}</div>
+                      <div className="font-medium text-foreground">{u.supplierName || u.supplierCompany || 'Unknown Supplier'}</div>
+                      <div className="text-sm text-muted-foreground">{u.supplierEmail}</div>
+                      <div className="text-xs text-muted-foreground font-mono mt-1">{u.supplierId}</div>
                     </div>
                   </TableCell>
                   <TableCell className="align-top py-4">
                     <div className="space-y-1">
-                      <div className="font-medium text-gray-700 flex items-center gap-2">
+                      <div className="font-medium text-foreground flex items-center gap-2">
                         {u.originalName}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {new Date(u.createdAt).toLocaleString(undefined, {
                           dateStyle: 'medium',
                           timeStyle: 'short'
@@ -183,7 +183,7 @@ export default function SupplierUploadsList() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-8 gap-1 text-gray-600 border-gray-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
+                        className="h-8 gap-1 text-muted-foreground border-border hover:bg-secondary hover:text-brand-green hover:border-border"
                         onClick={() => handlePreview(u)}
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -191,7 +191,7 @@ export default function SupplierUploadsList() {
                       </Button>
 
                       {u.path && (
-                        <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-gray-600 border-gray-300">
+                        <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-muted-foreground border-border">
                           <a href={u.path} download>
                             <Download className="h-3.5 w-3.5" />
                             Download
@@ -202,7 +202,7 @@ export default function SupplierUploadsList() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-8 gap-1 text-green-700 border-green-200 bg-green-50 hover:bg-green-100 hover:border-green-300"
+                        className="h-8 gap-1 text-brand-green border-border bg-secondary hover:bg-secondary hover:border-border"
                         onClick={() => doImport(u._id)}
                       >
                         <CheckCircle className="h-3.5 w-3.5" />
@@ -250,9 +250,9 @@ export default function SupplierUploadsList() {
             {selectedUpload?.preview && selectedUpload.preview.length > 0 ? (
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-100 sticky top-0">
+                  <TableRow className="bg-secondary sticky top-0">
                     {Object.keys(selectedUpload.preview[0]).map((header) => (
-                      <TableHead key={header} className="whitespace-nowrap font-bold text-gray-700">
+                      <TableHead key={header} className="whitespace-nowrap font-bold text-foreground">
                         {header}
                       </TableHead>
                     ))}
@@ -260,7 +260,7 @@ export default function SupplierUploadsList() {
                 </TableHeader>
                 <TableBody>
                   {selectedUpload.preview.map((row, i) => (
-                    <TableRow key={i} className="hover:bg-gray-50">
+                    <TableRow key={i} className="hover:bg-secondary">
                       {Object.values(row).map((val, j) => (
                         <TableCell key={j} className="whitespace-nowrap max-w-[200px] truncate" title={String(val)}>
                           {String(val ?? '')}
@@ -271,7 +271,7 @@ export default function SupplierUploadsList() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 No preview data available for this file.
               </div>
             )}

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default async function CollectionsPage() {
   const collections = await listPublishedCollections(36);
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <PremiumPageHeader title="Collections" subtitle="Food and ingredients selected for different occasions." />
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         {collections.length ? (
@@ -24,12 +24,12 @@ export default async function CollectionsPage() {
             {collections.map(collection => <FoodStoryCard key={collection.id} href={`/collections/${collection.slug}`} title={collection.title} image={collection.featuredImage?.url} description={collection.excerpt} label={collection.eyebrow} meta={`${collection.recipeCount} recipes · ${collection.productCount} products`} action="Browse collection" />)}
           </div>
         ) : (
-          <div className="rounded-xl border border-border p-8 text-center">
-            <h2 className="text-xl font-semibold">No collections yet</h2>
+          <div className="rounded-lg border border-border p-8 text-center">
+            <h2 className="text-xl font-normal">No collections yet</h2>
             <Link href="/recipes" className="mt-5 inline-block text-sm font-medium text-brand-green hover:underline">Browse recipes</Link>
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

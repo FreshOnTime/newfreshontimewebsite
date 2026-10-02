@@ -77,7 +77,7 @@ export default function QuickReorderWidget() {
     const daysAgo = Math.floor((Date.now() - new Date(lastOrder.createdAt).getTime()) / (1000 * 60 * 60 * 24));
 
     return (
-        <div className="bg-brand-green rounded-xl p-6 text-white mb-8">
+        <div className="bg-brand-green rounded-lg p-6 text-white mb-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -100,7 +100,7 @@ export default function QuickReorderWidget() {
                     <Button
                         onClick={handleReorder}
                         disabled={reordering}
-                        className="bg-background text-emerald-700 hover:bg-emerald-50 font-semibold"
+                        className="bg-background text-brand-green hover:bg-secondary font-semibold"
                     >
                         {reordering ? (
                             <Loader2 className="w-4 h-4 animate-spin mr-2" />

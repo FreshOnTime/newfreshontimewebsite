@@ -138,7 +138,7 @@ export function NotificationsBell() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {loading && (
-          <div className="p-4 text-sm text-gray-500 flex items-center gap-2">
+          <div className="p-4 text-sm text-muted-foreground flex items-center gap-2">
             <Clock className="h-4 w-4 animate-spin" /> Loading…
           </div>
         )}
@@ -148,7 +148,7 @@ export function NotificationsBell() {
           </div>
         )}
         {!loading && !error && items.length === 0 && (
-          <div className="p-4 text-sm text-gray-500">No notifications</div>
+          <div className="p-4 text-sm text-muted-foreground">No notifications</div>
         )}
         {!loading && !error && items.length > 0 && (
           <div className="max-h-96 overflow-auto py-1">
@@ -156,8 +156,8 @@ export function NotificationsBell() {
               <DropdownMenuItem key={n._id} className="flex items-start gap-2 py-3 px-3">
                 <div className="mt-0.5">{badgeFor(n.type)}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-gray-900 truncate">{n.description}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">
+                  <div className="text-sm text-foreground truncate">{n.description}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     {n.userName ? `${n.userName} · ` : ''}{timeAgo(n.timestamp)}
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export function NotificationsBell() {
         )}
         <DropdownMenuSeparator />
         <div className="p-2">
-          <a href="/admin/audit-logs" className="block w-full text-center text-sm text-blue-600 hover:underline">
+          <a href="/admin/audit-logs" className="block w-full text-center text-sm text-brand-green hover:underline">
             View all activity
           </a>
         </div>

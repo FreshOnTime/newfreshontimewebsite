@@ -117,7 +117,7 @@ export default function ForYouClient() {
           {tasteLabels.length > 0 && <section aria-label="Your preferences" className="flex flex-wrap items-center gap-2 border-b border-border pb-6"><p className="mr-3 text-sm text-muted-foreground">Your interests</p>{tasteLabels.map((signal) => <span key={`${signal.key}-${signal.label}`} className="rounded-full border border-brand-green/20 px-3 py-1.5 text-xs text-brand-green">{signal.label}</span>)}</section>}
           <section aria-labelledby="repeat-title">
             <div className="flex flex-wrap items-end justify-between gap-5">
-              <div><h2 id="repeat-title" className="text-xl font-medium text-brand-green">Buy again</h2><p className="mt-2 text-sm text-muted-foreground">Essentials you tend to buy regularly.</p></div>
+              <div><h2 id="repeat-title" className="text-xl font-normal text-brand-green">Buy again</h2><p className="mt-2 text-sm text-muted-foreground">Essentials you tend to buy regularly.</p></div>
               {data.smartBasket.length > 0 && <button type="button" onClick={() => void buildSmartBasket()} disabled={building} className={accountButton}>{building && <Loader2 className="h-4 w-4 animate-spin" />} {building ? 'Adding…' : 'Add repeat essentials'}</button>}
             </div>
             {buildError && <p role="alert" className="mt-5 rounded-lg border border-rose-200 px-4 py-3 text-sm text-rose-700">{buildError}</p>}
@@ -127,7 +127,7 @@ export default function ForYouClient() {
             )}
           </section>
           <section aria-labelledby="picks-title">
-            <h2 id="picks-title" className="mb-6 text-xl font-medium text-brand-green">Picked for you</h2>
+            <h2 id="picks-title" className="mb-6 text-xl font-normal text-brand-green">Picked for you</h2>
             {data.recommendations.length === 0 ? <AccountState title="More to discover" description="Save a few favourites or place an order to help us find products you’ll enjoy." action={<Link href="/products" className={accountButton}>Shop the market</Link>} /> : (
               <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">{data.recommendations.slice(0, 8).map((item, index) => <div key={item.product._id}><p className="mb-3 text-xs leading-5 text-muted-foreground">{item.reason}</p><ProductCard id={item.product._id} sku={item.product.sku} name={item.product.name} image={item.product.image?.url || ''} discountPercentage={item.product.discountPercentage || 0} baseMeasurementQuantity={item.product.baseMeasurementQuantity} pricePerBaseQuantity={item.product.pricePerBaseQuantity} measurementType={item.product.measurementUnit} isDiscreteItem={item.product.isSoldAsUnit} isOutOfStock={item.product.isOutOfStock} priority={index < 2} /></div>)}</div>
             )}

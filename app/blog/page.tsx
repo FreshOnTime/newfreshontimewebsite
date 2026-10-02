@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function BlogPage() {
     return (
         <div className="min-h-screen bg-background">
-            <PremiumPageHeader title="The Journal" subtitle="Notes on provenance, culinary culture, and the quiet art of living well." eyebrow="Editorial" />
+            <PremiumPageHeader title="The Journal" subtitle="Recipes, ingredient ideas and stories from the FreshPick market." eyebrow="Editorial" />
 
             <div className="container mx-auto max-w-7xl px-4 py-8 md:py-10">
                 <BlogList />

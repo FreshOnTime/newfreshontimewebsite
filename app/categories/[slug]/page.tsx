@@ -10,6 +10,7 @@ import { Product } from "@/models/product";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 import prisma from '@/lib/prisma';
 import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
+import { getCategoryImage } from '@/lib/categoryImage';
 
 export const revalidate = 300;
 
@@ -106,7 +107,11 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const requestedPage = Number(query.page);
   const page = Number.isInteger(requestedPage) && requestedPage > 0 && requestedPage <= 100000 ? requestedPage : 1;
   const name = category.name;
-  const { products, total, hasNext, unavailable } = await getCategoryProducts(category.id, page);
+  const [{ products, total, hasNext, unavailable }, relatedCategories] = await Promise.all([
+    getCategoryProducts(category.id, page),
+    prisma.category.findMany({ where: { isActive: true, id: { not: category.id } }, select: { name: true, slug: true }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }], take: 5 }).catch(() => []),
+  ]);
+  const categoryImage = getCategoryImage(category.slug, category.imageUrl);
 
   const breadcrumbItems = [
     { name: 'Home', url: SITE_URL },
@@ -121,7 +126,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       <PremiumPageHeader
         title={name}
         subtitle={category.description || `Explore our fresh selection of ${name.toLowerCase()}.`}
-        backgroundImage={category.imageUrl?.split('?')[0].endsWith('.svg') ? null : category.imageUrl}
+        backgroundImage={categoryImage.split('?')[0].endsWith('.svg') ? null : categoryImage}
       />
       <div className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4 text-sm"><p className="text-muted-foreground">{unavailable ? "Selection temporarily unavailable" : `${total} ${total === 1 ? 'product' : 'products'}`}</p><Link href="/categories" className="inline-flex min-h-11 items-center gap-2 text-brand-green hover:underline">All categories <ArrowRight strokeWidth={1.75} className="h-4 w-4" aria-hidden="true" /></Link></div>
@@ -130,14 +135,15 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         {products.length === 0 && (
           <div className="text-center py-12">
             <ShoppingBasket strokeWidth={1.5} aria-hidden="true" className="mx-auto mb-5 h-9 w-9 text-brand-green" />
-            <h2 className="text-2xl font-medium text-brand-green">{unavailable ? 'We couldn’t load this selection.' : page > 1 ? 'You’ve reached the end of this selection.' : 'Fresh arrivals are on their way.'}</h2>
+            <h2 className="text-2xl font-normal text-brand-green">{unavailable ? 'We couldn’t load this selection.' : page > 1 ? 'You’ve reached the end of this selection.' : 'Fresh arrivals are on their way.'}</h2>
             <p className="mt-3 text-sm text-muted-foreground">{unavailable ? 'Please try again in a moment, or browse the full market.' : 'Explore the rest of the market for your everyday essentials.'}</p>
             <div className="mt-6">
-              <Link href="/products" className="inline-flex min-h-11 items-center rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">Shop the market</Link>
+              <Link href="/products" className="inline-flex min-h-11 items-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-primary/85">Shop the market</Link>
             </div>
           </div>
         )}
         {!unavailable && (hasNext || page > 1) && <div className="mt-8 border-t border-border pt-6"><ProductsPagination page={page} limit={PAGE_SIZE} currentCount={products.length} hasPrev={page > 1} hasNext={hasNext} /></div>}
+        {relatedCategories.length > 0 && <section className="mt-14 border-t border-border pt-8" aria-labelledby="related-categories-title"><h2 id="related-categories-title" className="font-serif text-2xl text-brand-green">Explore more of the market.</h2><nav aria-label="Related categories" className="mt-5 flex flex-wrap gap-6">{relatedCategories.map(item => <Link key={item.slug} href={`/categories/${encodeURIComponent(item.slug)}`} className="editorial-link">{item.name}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>)}</nav></section>}
       </div>
     </>
   );

@@ -14,7 +14,7 @@ export function PageContainer({
   disablePadding = false,
 }: PageTemplateProps) {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <div
         className={cn(
           !disablePadding && "px-4 py-8 md:py-10",
@@ -24,6 +24,6 @@ export function PageContainer({
       >
         {children}
       </div>
-    </main>
+    </div>
   );
 }

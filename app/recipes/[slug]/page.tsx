@@ -76,7 +76,7 @@ export default async function RecipePage({ params }: PageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
@@ -88,7 +88,7 @@ export default async function RecipePage({ params }: PageProps) {
           <div className="grid gap-8 md:grid-cols-[1.2fr_1fr] md:items-center">
             <div>
               <p className="mb-3 text-sm text-brand-green">{[recipe.cuisine, ...recipe.dietaryTags].filter(Boolean).join(" · ")}</p>
-              <h1 className="text-3xl font-semibold leading-tight md:text-4xl">{recipe.title}</h1>
+              <h1 className="text-3xl font-normal leading-tight md:text-4xl">{recipe.title}</h1>
               <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">{recipe.excerpt}</p>
               <div className="mt-6 flex flex-wrap gap-5 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-2"><Clock3 className="h-4 w-4" /> {totalMinutes} min</span>
@@ -96,7 +96,7 @@ export default async function RecipePage({ params }: PageProps) {
                 <span className="inline-flex items-center gap-2"><ShoppingBasket className="h-4 w-4" /> {recipe.ingredientCount} ingredients</span>
               </div>
             </div>
-            {recipe.featuredImage?.url && <div className="relative aspect-[4/3] overflow-hidden rounded-xl"><Image src={recipe.featuredImage.url} alt={recipe.title} fill priority sizes="(max-width: 768px) 100vw, 42vw" className="object-cover" /></div>}
+            {recipe.featuredImage?.url && <div className="relative aspect-[4/3] overflow-hidden rounded-lg"><Image src={recipe.featuredImage.url} alt={recipe.title} fill priority sizes="(max-width: 768px) 100vw, 42vw" className="object-cover" /></div>}
           </div>
         </div>
       </section>
@@ -106,7 +106,7 @@ export default async function RecipePage({ params }: PageProps) {
           <div className="space-y-10">
             {recipe.story && (
               <section>
-                <span className="mb-4 block text-xs font-bold normal-case text-emerald-700">Why this works</span>
+                <span className="mb-4 block text-xs font-bold normal-case text-brand-green">Why this works</span>
                 <div className="max-w-3xl space-y-4 text-base leading-7 text-muted-foreground">
                   {recipe.story.split(/\n\s*\n/).filter(Boolean).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
                 </div>
@@ -116,35 +116,35 @@ export default async function RecipePage({ params }: PageProps) {
             <section>
               <div className="mb-8 flex items-end justify-between gap-4">
                 <div>
-                  <span className="mb-4 block text-xs font-bold normal-case text-emerald-700">The basket</span>
-                  <h2 className="font-sans text-2xl font-semibold text-zinc-950 md:text-2xl">Ingredients</h2>
+                  <span className="mb-4 block text-xs font-bold normal-case text-brand-green">The basket</span>
+                  <h2 className="font-serif text-2xl font-normal text-foreground md:text-2xl">Ingredients</h2>
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-xl border border-zinc-200 bg-background">
+              <div className="overflow-hidden rounded-lg border border-border bg-background">
                 {recipe.ingredients.map((ingredient, index) => {
                   const chosen = choices[index];
                   const substituted = Boolean(chosen && ingredient.product && chosen._id !== ingredient.product._id);
                   return (
-                    <div key={`${ingredient.productId}-${index}`} className="grid gap-4 border-b border-zinc-100 p-5 last:border-b-0 sm:grid-cols-[72px_minmax(0,1fr)_auto] sm:items-center md:p-6">
+                    <div key={`${ingredient.productId}-${index}`} className="grid gap-4 border-b border-border p-5 last:border-b-0 sm:grid-cols-[72px_minmax(0,1fr)_auto] sm:items-center md:p-6">
                       <div
-                        className="h-[72px] w-[72px] rounded-xl bg-background bg-cover bg-center"
+                        className="h-[72px] w-[72px] rounded-lg bg-background bg-cover bg-center"
                         style={chosen?.image?.url ? { backgroundImage: `url("${chosen.image.url.replace(/"/g, "%22")}")` } : undefined}
                       />
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-medium text-zinc-950">{chosen?.name || ingredient.product?.name || "Ingredient unavailable"}</h3>
-                          {ingredient.optional && <span className="rounded-full bg-background px-2.5 py-1 text-xs font-bold normal-case text-zinc-500">Optional</span>}
+                          <h3 className="font-medium text-foreground">{chosen?.name || ingredient.product?.name || "Ingredient unavailable"}</h3>
+                          {ingredient.optional && <span className="rounded-full bg-background px-2.5 py-1 text-xs font-bold normal-case text-muted-foreground">Optional</span>}
                           {substituted && <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold normal-case text-amber-800"><RefreshCw className="h-3 w-3" /> Substitute</span>}
                         </div>
-                        <p className="mt-2 text-sm font-normal text-zinc-500">{ingredient.quantity} × item{ingredient.note ? ` · ${ingredient.note}` : ""}</p>
+                        <p className="mt-2 text-sm font-normal text-muted-foreground">{ingredient.quantity} × item{ingredient.note ? ` · ${ingredient.note}` : ""}</p>
                         {!chosen && <p className="mt-2 text-xs font-medium text-red-600">Unavailable right now — FreshPick will skip this item.</p>}
                       </div>
                       <div className="sm:text-right">
                         {chosen ? (
                           <>
-                            <p className="font-sans text-xl text-zinc-950">LKR {(chosen.pricePerBaseQuantity * ingredient.quantity).toLocaleString("en-LK", { maximumFractionDigits: 0 })}</p>
-                            <p className="mt-1 inline-flex items-center gap-1 text-xs font-bold normal-case text-emerald-700"><Check className="h-3.5 w-3.5" /> Available</p>
+                            <p className="font-sans text-xl text-foreground">LKR {(chosen.pricePerBaseQuantity * ingredient.quantity).toLocaleString("en-LK", { maximumFractionDigits: 0 })}</p>
+                            <p className="mt-1 inline-flex items-center gap-1 text-xs font-bold normal-case text-brand-green"><Check className="h-3.5 w-3.5" /> Available</p>
                           </>
                         ) : <span className="text-xs text-muted-foreground">Not charged</span>}
                       </div>
@@ -155,28 +155,28 @@ export default async function RecipePage({ params }: PageProps) {
             </section>
 
             <section>
-              <span className="mb-4 block text-xs font-bold normal-case text-emerald-700">Method</span>
-              <h2 className="font-sans text-2xl font-semibold text-zinc-950 md:text-2xl">Make it at home.</h2>
+              <span className="mb-4 block text-xs font-bold normal-case text-brand-green">Method</span>
+              <h2 className="font-serif text-2xl font-normal text-foreground md:text-2xl">Make it at home.</h2>
               <ol className="mt-9 space-y-5">
                 {recipe.steps.map((step, index) => (
-                  <li key={`${index}-${step}`} className="grid gap-4 rounded-xl border border-zinc-200 bg-background p-6 sm:grid-cols-[48px_1fr] md:p-7">
-                    <span className="font-sans text-2xl not-italic text-emerald-800">{String(index + 1).padStart(2, "0")}</span>
-                    <p className="text-base font-normal leading-8 text-zinc-700">{step}</p>
+                  <li key={`${index}-${step}`} className="grid gap-4 rounded-lg border border-border bg-background p-6 sm:grid-cols-[48px_1fr] md:p-7">
+                    <span className="font-sans text-2xl not-italic text-brand-green">{String(index + 1).padStart(2, "0")}</span>
+                    <p className="text-base font-normal leading-8 text-foreground">{step}</p>
                   </li>
                 ))}
               </ol>
             </section>
           </div>
 
-          <aside className="rounded-xl border border-zinc-200 bg-background p-7 lg:sticky lg:top-28 md:p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-950 text-white"><ChefHat className="h-5 w-5" /></div>
-            <span className="mt-7 block text-xs font-bold normal-case text-emerald-700">One-tap meal basket</span>
-            <h2 className="mt-4 font-sans text-3xl font-semibold leading-tight text-zinc-950">The recipe becomes the shopping list.</h2>
-            <p className="mt-4 text-sm font-normal leading-7 text-zinc-600">FreshPick adds what is available, uses approved substitutes when stock changes, and skips anything unavailable instead of blocking the whole meal.</p>
+          <aside className="rounded-lg border border-border bg-background p-7 lg:sticky lg:top-28 md:p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-white"><ChefHat className="h-5 w-5" /></div>
+            <span className="mt-7 block text-xs font-bold normal-case text-brand-green">One-tap meal basket</span>
+            <h2 className="mt-4 font-serif text-3xl font-normal leading-tight text-foreground">The recipe becomes the shopping list.</h2>
+            <p className="mt-4 text-sm font-normal leading-7 text-muted-foreground">FreshPick adds what is available, uses approved substitutes when stock changes, and skips anything unavailable instead of blocking the whole meal.</p>
 
-            <div className="my-7 space-y-3 border-y border-zinc-100 py-6 text-sm">
-              <div className="flex items-center justify-between gap-4"><span className="text-zinc-500">Available now</span><span className="font-medium text-zinc-950">{availableIngredientCount}/{recipe.ingredientCount}</span></div>
-              <div className="flex items-center justify-between gap-4"><span className="text-zinc-500">Estimated basket</span><span className="font-sans text-xl text-zinc-950">LKR {estimatedBasket.toLocaleString("en-LK", { maximumFractionDigits: 0 })}</span></div>
+            <div className="my-7 space-y-3 border-y border-border py-6 text-sm">
+              <div className="flex items-center justify-between gap-4"><span className="text-muted-foreground">Available now</span><span className="font-medium text-foreground">{availableIngredientCount}/{recipe.ingredientCount}</span></div>
+              <div className="flex items-center justify-between gap-4"><span className="text-muted-foreground">Estimated basket</span><span className="font-sans text-xl text-foreground">LKR {estimatedBasket.toLocaleString("en-LK", { maximumFractionDigits: 0 })}</span></div>
             </div>
 
             <RecipeAddToBag slug={recipe.slug} availableIngredientCount={availableIngredientCount} />
@@ -184,6 +184,6 @@ export default async function RecipePage({ params }: PageProps) {
           </aside>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

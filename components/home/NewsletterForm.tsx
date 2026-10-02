@@ -44,9 +44,9 @@ export default function NewsletterForm() {
     };
 
     return (
-        <section className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-800 py-16 text-white md:py-24">
-            <div className="absolute left-0 top-0 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/30 blur-3xl" />
-            <div className="absolute bottom-0 right-0 h-96 w-96 translate-x-1/2 translate-y-1/2 rounded-full bg-teal-500/20 blur-3xl" />
+        <section className="relative overflow-hidden    py-16 text-white md:py-24">
+            <div className="absolute left-0 top-0 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/30 blur-3xl" />
+            <div className="absolute bottom-0 right-0 h-96 w-96 translate-x-1/2 translate-y-1/2 rounded-full bg-primary/20 blur-3xl" />
 
             <div className="container relative mx-auto px-4 md:px-8">
                 <motion.div
@@ -59,7 +59,7 @@ export default function NewsletterForm() {
                     <span className="mb-4 block text-sm font-semibold uppercase tracking-wider text-emerald-200">
                         Stay Updated
                     </span>
-                    <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+                    <h2 className="mb-4 text-3xl font-normal tracking-tight md:text-4xl lg:text-5xl">
                         Get fresh ideas in your inbox
                     </h2>
                     <p className="mx-auto mb-8 max-w-lg text-lg text-emerald-100">
@@ -74,12 +74,12 @@ export default function NewsletterForm() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                                 disabled={isLoading}
-                                className="flex-1 rounded-full bg-white px-5 py-4 text-base text-gray-900 shadow-lg focus:outline-none focus:ring-4 focus:ring-white/30 disabled:opacity-50"
+                                className="flex-1 rounded-full bg-background px-5 py-4 text-base text-foreground shadow-sm focus:outline-none focus:ring-4 focus:ring-white/30 disabled:opacity-50"
                             />
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="whitespace-nowrap rounded-full bg-gray-900 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:bg-gray-800 hover:shadow-xl disabled:opacity-50"
+                                className="whitespace-nowrap rounded-md bg-primary px-8 py-4 font-semibold text-white shadow-sm transition-all hover:bg-primary hover:shadow-sm disabled:opacity-50"
                             >
                                 {isLoading ? "Subscribing..." : "Subscribe"}
                             </Button>
@@ -90,7 +90,7 @@ export default function NewsletterForm() {
                         </p>
                     </form>
 
-                    <div className="mt-12 border-t border-emerald-500/30 pt-8">
+                    <div className="mt-12 border-t border-primary/30 pt-8">
                         <a
                             href={`mailto:${SUPPORT_EMAIL}`}
                             className="group inline-flex items-center text-emerald-100 transition-colors hover:text-white"

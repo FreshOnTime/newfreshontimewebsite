@@ -309,7 +309,7 @@ export default function RolesPage() {
         </div>
         <div className="sticky top-0 bg-background z-10 pb-6 pt-2">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Roles</h2>
+            <h1 className="font-serif text-3xl font-normal text-brand-green md:text-4xl">Roles</h1>
             <div className="flex gap-2">
               <Button
                 variant="outline"

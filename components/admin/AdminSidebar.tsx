@@ -42,7 +42,7 @@ const navigation = [
   { name: 'Blog Posts', href: '/admin/blogs', icon: BookOpen },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Audit Logs', href: '/admin/audit-logs', icon: FileText },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Account settings', href: '/profile', icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -53,12 +53,12 @@ export function AdminSidebar() {
     <>
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-          <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
+          <div className="fixed inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
+          <div className="relative flex h-[100svh] w-full max-w-xs flex-1 flex-col overflow-y-auto bg-background">
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
                 type="button"
-                className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                className="ml-1 flex h-10 w-10 items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
                 onClick={() => setSidebarOpen(false)}
               >
                 <X className="h-6 w-6 text-white" />
@@ -70,20 +70,20 @@ export function AdminSidebar() {
       )}
 
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-border bg-background px-6">
           <SidebarContent pathname={pathname} />
         </div>
       </div>
 
-      <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
+      <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-background px-4 py-4 shadow-sm sm:px-6 lg:hidden">
         <button
           type="button"
-          className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+          className="-m-2.5 p-2.5 text-foreground lg:hidden"
           onClick={() => setSidebarOpen(true)}
         >
           <Menu className="h-6 w-6" />
         </button>
-        <div className="flex-1 text-sm font-semibold leading-6 text-gray-900">
+        <div className="flex-1 text-sm font-semibold leading-6 text-foreground">
           Admin Dashboard
         </div>
       </div>
@@ -96,10 +96,10 @@ function SidebarContent({ pathname }: { pathname: string }) {
     <>
       <div className="flex h-16 shrink-0 items-center">
         <Link href="/admin" className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-emerald-800 rounded-lg flex items-center justify-center">
+          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">FP</span>
           </div>
-          <span className="font-bold text-xl text-gray-900">Fresh Pick</span>
+          <span className="font-bold text-xl text-foreground">Fresh Pick</span>
         </Link>
       </div>
       <nav className="flex flex-1 flex-col">
@@ -112,14 +112,14 @@ function SidebarContent({ pathname }: { pathname: string }) {
                     href={item.href}
                     className={cn(
                       pathname?.startsWith(item.href)
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'text-gray-700 hover:text-emerald-700 hover:bg-emerald-50',
+                        ? 'bg-secondary text-brand-green'
+                        : 'text-foreground hover:text-brand-green hover:bg-secondary',
                       'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                     )}
                   >
                     <item.icon
                       className={cn(
-                        pathname?.startsWith(item.href) ? 'text-emerald-700' : 'text-gray-400 group-hover:text-emerald-700',
+                        pathname?.startsWith(item.href) ? 'text-brand-green' : 'text-muted-foreground group-hover:text-brand-green',
                         'h-6 w-6 shrink-0'
                       )}
                     />

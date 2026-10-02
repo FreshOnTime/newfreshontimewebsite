@@ -7,9 +7,9 @@ import { Bag } from "@/models/Bag";
 export default function CuratedBags() {
   // Mock bags removed - show empty state
   const bags: Bag[] = [];
-  
+
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <SectionHeader
           title="Curated Bags"
@@ -19,7 +19,7 @@ export default function CuratedBags() {
         />
         {bags.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">Coming soon! Create custom shopping lists for your needs.</p>
+            <p className="text-muted-foreground">Coming soon! Create custom shopping lists for your needs.</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

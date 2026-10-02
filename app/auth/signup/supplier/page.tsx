@@ -2,8 +2,8 @@ import { SupplierSignupForm } from '@/components/auth/SupplierSignupForm';
 
 export default function SupplierSignupFromPage() {
   return (
-    <main>
+    <div>
       <SupplierSignupForm />
-    </main>
+    </div>
   );
 }

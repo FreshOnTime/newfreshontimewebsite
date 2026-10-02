@@ -46,10 +46,10 @@ export function BlogsPage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({ 
-        page: String(page), 
-        limit: '20', 
-        ...(search && { search }) 
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: '20',
+        ...(search && { search })
       });
       const res = await fetch(`/api/admin/blogs?${params}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch blogs');
@@ -63,28 +63,28 @@ export function BlogsPage() {
     }
   };
 
-  useEffect(() => { 
-    fetchItems(); 
+  useEffect(() => {
+    fetchItems();
   }, [page, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleEdit = (blog: Blog) => { 
-    setEditing(blog); 
+  const handleEdit = (blog: Blog) => {
+    setEditing(blog);
     setViewMode(false);
-    setIsDialogOpen(true); 
+    setIsDialogOpen(true);
   };
-  
-  const handleView = (blog: Blog) => { 
-    setEditing(blog); 
+
+  const handleView = (blog: Blog) => {
+    setEditing(blog);
     setViewMode(true);
-    setIsDialogOpen(true); 
+    setIsDialogOpen(true);
   };
-  
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this blog post? This action cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/admin/blogs/${id}`, { 
-        method: 'DELETE', 
-        credentials: 'include' 
+      const res = await fetch(`/api/admin/blogs/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Blog deleted successfully');
@@ -94,11 +94,11 @@ export function BlogsPage() {
     }
   };
 
-  const handleSaved = () => { 
-    setIsDialogOpen(false); 
-    setEditing(null); 
+  const handleSaved = () => {
+    setIsDialogOpen(false);
+    setEditing(null);
     setViewMode(false);
-    fetchItems(); 
+    fetchItems();
   };
 
   const formatDate = (dateString?: string) => {
@@ -118,13 +118,13 @@ export function BlogsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Posts</h1>
-          <p className="text-gray-600 mt-2">Create and manage blog content</p>
+          <h1 className="text-3xl font-normal text-foreground">Blog Posts</h1>
+          <p className="text-muted-foreground mt-2">Create and manage blog content</p>
         </div>
-        <Button onClick={() => { 
-          setEditing(null); 
+        <Button onClick={() => {
+          setEditing(null);
           setViewMode(false);
-          setIsDialogOpen(true); 
+          setIsDialogOpen(true);
         }}>
           <Plus className="h-4 w-4 mr-2" />
           New Blog Post
@@ -139,22 +139,22 @@ export function BlogsPage() {
         <CardContent>
           <div className="flex items-center space-x-2 mb-6">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input 
-                placeholder="Search blogs..." 
-                value={search} 
-                onChange={(e) => { 
-                  setSearch(e.target.value); 
-                  setPage(1); 
-                }} 
-                className="pl-10" 
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search blogs..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-10"
               />
             </div>
           </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : (
             <>
@@ -177,7 +177,7 @@ export function BlogsPage() {
                         <TableCell className="font-medium">
                           <div>
                             <div className="font-semibold">{blog.title}</div>
-                            <div className="text-xs text-gray-500 mt-1 line-clamp-1">
+                            <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
                               {blog.excerpt}
                             </div>
                           </div>
@@ -186,7 +186,7 @@ export function BlogsPage() {
                           {blog.category ? (
                             <Badge variant="outline">{blog.category}</Badge>
                           ) : (
-                            <span className="text-gray-400 text-sm">Uncategorized</span>
+                            <span className="text-muted-foreground text-sm">Uncategorized</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -198,7 +198,7 @@ export function BlogsPage() {
                           <span className="text-sm">{blog.views}</span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-muted-foreground">
                             {formatDate(blog.publishedAt)}
                           </span>
                         </TableCell>
@@ -219,8 +219,8 @@ export function BlogsPage() {
                               <DropdownMenuItem onClick={() => handleEdit(blog)}>
                                 <Edit className="h-4 w-4 mr-2" /> Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleDelete(blog._id)} 
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(blog._id)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" /> Delete
@@ -235,29 +235,29 @@ export function BlogsPage() {
               </div>
 
               {items.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   No blog posts found. Create your first post to get started!
                 </div>
               )}
 
               {pagination.pages > 1 && (
                 <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-foreground">
                     Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
                     {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
                     {pagination.total} blog posts
                   </div>
                   <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setPage(page - 1)} 
+                    <Button
+                      variant="outline"
+                      onClick={() => setPage(page - 1)}
                       disabled={page <= 1}
                     >
                       Previous
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setPage(page + 1)} 
+                    <Button
+                      variant="outline"
+                      onClick={() => setPage(page + 1)}
                       disabled={page >= pagination.pages}
                     >
                       Next
@@ -270,10 +270,10 @@ export function BlogsPage() {
         </CardContent>
       </Card>
 
-      <BlogDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
-        blog={editing} 
+      <BlogDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        blog={editing}
         onSave={handleSaved}
         readOnly={viewMode}
       />

@@ -156,7 +156,7 @@ export default function PhoneAuthPage() {
 
   return (
     <PageContainer className="flex items-start justify-center py-10">
-  <div className="w-full max-w-md mx-auto bg-background border border-border rounded-xl shadow-none p-8">
+  <div className="w-full max-w-md mx-auto bg-background border border-border rounded-lg shadow-none p-8">
         <div className="flex justify-center mb-8">
           <Image
             src="/fresh-pick.svg"
@@ -183,7 +183,7 @@ export default function PhoneAuthPage() {
         )}
 
         {resendCountdown > 0 && (
-          <p className="text-center font-semibold text-gray-600 text-sm mt-4">
+          <p className="text-center font-semibold text-muted-foreground text-sm mt-4">
             Resend OTP in {resendCountdown}s
           </p>
         )}

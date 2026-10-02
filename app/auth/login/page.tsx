@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 
 export default function LoginPage() {
   return (
-    <main>
+    <div>
       <Suspense fallback={null}>
         <LoginForm />
       </Suspense>
-    </main>
+    </div>
   );
 }

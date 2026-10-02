@@ -250,7 +250,7 @@ export default function AddProduct() {
   return (
     <PageContainer>
       <div className="max-w-7xl mx-auto py-8 px-4">
-        <h2 className="text-2xl font-bold mb-6">Add Product</h2>
+        <h1 className="font-serif text-3xl font-normal text-brand-green md:text-4xl">Add Product</h1>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -399,12 +399,12 @@ export default function AddProduct() {
                 )}
               />
               <div className="border rounded-md p-4 bg-background col-span-12">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-sm font-medium text-foreground mb-2">
                   Description Preview
                 </h3>
                 <Markdown
                   rehypePlugins={[rehypeSanitize]}
-                  className="text-gray-600 prose"
+                  className="text-muted-foreground prose"
                 >
                   {form.watch("description") ||
                     "Enter a description to see the preview"}
@@ -424,12 +424,12 @@ export default function AddProduct() {
                 )}
               />
               <div className="border rounded-md p-4 bg-background col-span-12">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-sm font-medium text-foreground mb-2">
                   Ingredients Preview
                 </h3>
                 <Markdown
                   rehypePlugins={[rehypeSanitize]}
-                  className="text-gray-600 prose"
+                  className="text-muted-foreground prose"
                 >
                   {form.watch("ingredients") ||
                     "Enter ingredients to see the preview"}
@@ -449,12 +449,12 @@ export default function AddProduct() {
                 )}
               />
               <div className="border rounded-md p-4 bg-background col-span-12">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-sm font-medium text-foreground mb-2">
                   Nutrition Facts Preview
                 </h3>
                 <Markdown
                   rehypePlugins={[rehypeSanitize]}
-                  className="text-gray-600 prose"
+                  className="text-muted-foreground prose"
                 >
                   {form.watch("nutritionFacts") ||
                     "Enter nutrition facts to see the preview"}
@@ -465,7 +465,7 @@ export default function AddProduct() {
                   type="button"
                   variant="outline"
                   onClick={enhanceWithAI}
-                  className="w-full bg-brand-amber text-accent-foreground hover:bg-brand-amber/85"
+                  className="w-full bg-primary text-accent-foreground hover:bg-primary/85"
                   disabled={
                     isLoading ||
                     form.watch("name") === "" ||
@@ -475,7 +475,7 @@ export default function AddProduct() {
                   <WandSparkles className="h-5 w-5" />
                   Enhance with AI
                 </Button>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Click to auto-enhance Name, Description, Ingredients, and
                   Nutrition Facts.
                 </p>
@@ -617,13 +617,13 @@ export default function AddProduct() {
                 )}
               />
               <div className="border rounded-md p-4 bg-background col-span-12">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                <h3 className="text-sm font-medium text-foreground mb-2">
                   Price Label Preview
                 </h3>
                 <div className="space-y-1">
-                  <p className="text-xl font-semibold text-gray-900">
+                  <p className="text-xl font-semibold text-foreground">
                     LKR {pricePerBaseQuantityWithDiscount.toFixed(2)}
-                    <span className="text-lg text-gray-600">
+                    <span className="text-lg text-muted-foreground">
                       /
                       {form.watch("isSoldAsUnit")
                         ? "unit"
@@ -632,21 +632,21 @@ export default function AddProduct() {
                           )}`}
                     </span>
                     {(form.watch("discountPercentage") || 0) > 0 && (
-                      <span className="ml-2 text-lg text-gray-500 line-through">
+                      <span className="ml-2 text-lg text-muted-foreground line-through">
                         LKR {form.watch("pricePerBaseQuantity").toFixed(2)}
                       </span>
                     )}
                   </p>
                   {form.watch("isSoldAsUnit") &&
                     form.watch("baseMeasurementQuantity") > 0 && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         (Est. {form.watch("baseMeasurementQuantity")}
                         {form.watch("measurementUnit")})
                       </p>
                     )}
                   {!form.watch("isSoldAsUnit") &&
                     form.watch("baseMeasurementQuantity") > 0 && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         LKR {pricePerMeasurement.toFixed(2)}/
                         {form.watch("measurementUnit")}
                       </p>
@@ -662,12 +662,12 @@ export default function AddProduct() {
                     Add Option
                   </Button>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   Add predefined sizes like 500g, 1kg, 5kg with their own prices. Leave empty for loose/weight-based items.
                 </p>
                 <div className="space-y-3">
                   {fields.length === 0 && (
-                    <div className="text-sm text-gray-500">No unit options added.</div>
+                    <div className="text-sm text-muted-foreground">No unit options added.</div>
                   )}
                   {fields.map((field, index) => (
                     <div key={field.id} className="grid grid-cols-12 gap-3 items-end border rounded-md p-3">

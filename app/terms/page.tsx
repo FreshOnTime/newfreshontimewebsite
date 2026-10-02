@@ -18,23 +18,23 @@ export default function TermsPage() {
 
             <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="prose prose-emerald max-w-none">
-                    <p className="mb-8 font-medium text-gray-500">Effective Date: December 2025</p>
+                    <p className="mb-8 font-medium text-muted-foreground">Effective Date: December 2025</p>
 
-                    <p className="mb-8 text-lg leading-relaxed text-gray-600">
+                    <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
                         Welcome to <strong>Fresh Pick</strong>. By accessing or using our website and services, you agree to these Terms and Conditions.
                     </p>
 
                     <div className="space-y-12">
                         <section>
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900">1. Account Registration</h2>
-                            <p className="text-gray-600">
+                            <h2 className="mb-4 text-2xl font-normal text-foreground">1. Account Registration</h2>
+                            <p className="text-muted-foreground">
                                 To access certain features, you may be required to register for an account. You agree to provide accurate, current, and complete information and to keep that information updated.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900">2. Orders and Pricing</h2>
-                            <ul className="list-disc space-y-2 pl-6 text-gray-600">
+                            <h2 className="mb-4 text-2xl font-normal text-foreground">2. Orders and Pricing</h2>
+                            <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
                                 <li><strong>Availability:</strong> Orders are subject to product availability.</li>
                                 <li><strong>Pricing:</strong> Product prices may change. The applicable price is the price presented when the order is confirmed.</li>
                                 <li><strong>Order limits:</strong> Fresh Pick may limit or cancel quantities where necessary for availability, fraud prevention, operational constraints, or service integrity.</li>
@@ -42,29 +42,29 @@ export default function TermsPage() {
                         </section>
 
                         <section>
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900">3. Delivery</h2>
-                            <p className="text-gray-600">
+                            <h2 className="mb-4 text-2xl font-normal text-foreground">3. Delivery</h2>
+                            <p className="text-muted-foreground">
                                 Delivery availability depends on the service area and order. Any delivery timing shown or communicated is an estimate unless Fresh Pick explicitly confirms otherwise.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900">4. User Conduct</h2>
-                            <p className="text-gray-600">
+                            <h2 className="mb-4 text-2xl font-normal text-foreground">4. User Conduct</h2>
+                            <p className="text-muted-foreground">
                                 You agree not to use Fresh Pick for unlawful activity or in a way that could damage, interfere with, or misuse the website, services, other users, or Fresh Pick operations.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900">5. Governing Law</h2>
-                            <p className="text-gray-600">
+                            <h2 className="mb-4 text-2xl font-normal text-foreground">5. Governing Law</h2>
+                            <p className="text-muted-foreground">
                                 These terms and conditions are governed by and construed in accordance with the laws of Sri Lanka.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="mb-4 text-2xl font-bold text-gray-900">6. Contact Information</h2>
-                            <p className="text-gray-600">
+                            <h2 className="mb-4 text-2xl font-normal text-foreground">6. Contact Information</h2>
+                            <p className="text-muted-foreground">
                                 Questions about these terms can be sent to <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-primary hover:underline">{SUPPORT_EMAIL}</a>.
                             </p>
                         </section>

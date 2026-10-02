@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function DiasporaPage() {
   return (
-    <main className="min-h-screen bg-background pb-10 text-zinc-950">
+    <div className="min-h-screen bg-background pb-10 text-foreground">
       <PremiumPageHeader title="Send a little home" subtitle="Order groceries for family and friends in Colombo." />
 
       <div className="mx-auto max-w-6xl px-5 pt-14 md:px-8 md:pt-8">
@@ -21,11 +21,11 @@ export default function DiasporaPage() {
           <Step icon={RefreshCw} number="03" title="Repeat when it makes sense" copy="For ongoing household support, use a recurring plan or repeat ordering rather than relying on a hardcoded gift box." />
         </section>
 
-        <section className="mt-14 grid overflow-hidden rounded-xl bg-background lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="mt-14 grid overflow-hidden rounded-lg bg-background lg:grid-cols-[1.05fr_0.95fr]">
           <div className="p-7 md:p-10">
-            <p className="text-xs font-bold normal-case text-emerald-700">A local transaction</p>
-            <h2 className="mt-3 max-w-2xl font-sans text-2xl font-semibold leading-tight md:text-2xl">The important part happens in Sri Lanka.</h2>
-            <p className="mt-5 max-w-xl text-sm font-normal leading-7 text-zinc-500">FreshPick fulfils against the local catalogue and service area. Product availability, substitutions, delivery charges and minimums remain the same live rules used by any other order.</p>
+            <p className="text-xs font-bold normal-case text-brand-green">A local transaction</p>
+            <h2 className="mt-3 max-w-2xl font-serif text-2xl font-normal leading-tight md:text-2xl">The important part happens in Sri Lanka.</h2>
+            <p className="mt-5 max-w-xl text-sm font-normal leading-7 text-muted-foreground">FreshPick fulfils against the local catalogue and service area. Product availability, substitutions, delivery charges and minimums remain the same live rules used by any other order.</p>
           </div>
           <div className="bg-background p-7 text-foreground md:p-10">
             <p className="text-xs font-bold normal-case text-brand-green">Before checkout</p>
@@ -38,10 +38,10 @@ export default function DiasporaPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }
 
 function Step({ icon: Icon, number, title, copy }: { icon: typeof ShoppingBasket; number: string; title: string; copy: string }) {
-  return <article className="rounded-xl border border-zinc-200 bg-background p-6"><div className="flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><Icon className="h-4 w-4" /></span><span className="font-sans text-sm not-italic text-emerald-700">{number}</span></div><h2 className="mt-7 font-sans text-3xl font-semibold leading-tight">{title}</h2><p className="mt-4 text-sm font-normal leading-6 text-zinc-500">{copy}</p></article>;
+  return <article className="rounded-lg border border-border bg-background p-6"><div className="flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-brand-green"><Icon className="h-4 w-4" /></span><span className="font-sans text-sm not-italic text-brand-green">{number}</span></div><h2 className="mt-7 font-serif text-3xl font-normal leading-tight">{title}</h2><p className="mt-4 text-sm font-normal leading-6 text-muted-foreground">{copy}</p></article>;
 }

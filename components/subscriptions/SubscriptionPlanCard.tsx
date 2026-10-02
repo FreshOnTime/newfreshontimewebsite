@@ -43,31 +43,31 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
     return (
         <div
             className={cn(
-                'group relative flex h-full flex-col overflow-hidden rounded-xl border p-8 transition-all duration-300 md:p-9',
+                'group relative flex h-full flex-col overflow-hidden border-t p-6 transition-colors md:p-8',
                 isFeatured
-                    ? 'z-20 border-brand-amber bg-background text-foreground shadow-none '
-                    : 'z-10 border-zinc-200 bg-background text-zinc-900 hover:border-emerald-300 hover:shadow-none'
+                    ? 'z-20 border-primary bg-background text-foreground shadow-none '
+                    : 'z-10 border-border bg-background text-foreground hover:border-border hover:shadow-none'
             )}
         >
-            {isFeatured && <div className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-brand-amber" />}
+            {isFeatured && <div className="absolute inset-x-8 top-0 h-1 rounded-b-md bg-primary" />}
 
-            <div className="relative z-10 mb-8 text-center">
-                <h3 className={cn('mb-3 font-sans text-2xl md:text-3xl', isFeatured ? 'text-foreground' : 'text-zinc-900')}>
+            <div className="relative z-10 mb-8 text-left">
+                <h3 className={cn('mb-3 font-serif text-2xl font-normal md:text-3xl', isFeatured ? 'text-foreground' : 'text-foreground')}>
                     {plan.name}
                 </h3>
-                <p className={cn('mx-auto max-w-[240px] text-sm font-normal leading-relaxed', isFeatured ? 'text-muted-foreground' : 'text-zinc-500')}>
+                <p className={cn('max-w-sm text-sm font-normal leading-relaxed', isFeatured ? 'text-muted-foreground' : 'text-muted-foreground')}>
                     {plan.description}
                 </p>
             </div>
 
-            <div className={cn('relative z-10 mb-8 border-b pb-8 text-center', isFeatured ? 'border-border' : 'border-zinc-100')}>
-                <div className="flex flex-col items-center justify-center gap-1">
+            <div className={cn('relative z-10 mb-8 border-b pb-8 text-left', isFeatured ? 'border-border' : 'border-border')}>
+                <div className="flex flex-col items-start justify-center gap-1">
                     {plan.originalPrice && plan.originalPrice > plan.price && (
-                        <span className={cn('font-sans text-sm line-through', isFeatured ? 'text-zinc-500' : 'text-muted-foreground')}>
+                        <span className={cn('font-sans text-sm line-through', isFeatured ? 'text-muted-foreground' : 'text-muted-foreground')}>
                             Rs. {plan.originalPrice.toLocaleString()}
                         </span>
                     )}
-                    <span className={cn('font-sans text-4xl md:text-3xl', isFeatured ? 'text-foreground' : 'text-emerald-900')}>
+                    <span className={cn('font-sans text-4xl md:text-3xl', isFeatured ? 'text-foreground' : 'text-brand-green')}>
                         Rs. {plan.price.toLocaleString()}
                     </span>
                     <span className="mt-2 text-xs normal-case text-muted-foreground">
@@ -87,7 +87,7 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
                         ))}
                     </ul>
                 ) : (
-                    <p className={cn('text-center text-sm leading-relaxed', isFeatured ? 'text-muted-foreground' : 'text-zinc-500')}>
+                    <p className={cn('text-left text-sm leading-relaxed', isFeatured ? 'text-muted-foreground' : 'text-muted-foreground')}>
                         See the current plan details during checkout.
                     </p>
                 )}
@@ -98,14 +98,14 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
                     <Button
                         className={cn(
                             'h-12 w-full rounded-lg text-sm font-bold normal-case shadow-none transition-all duration-300',
-                            'bg-brand-amber text-accent-foreground hover:bg-brand-amber/85'
+                            'bg-primary text-accent-foreground hover:bg-primary/85'
                         )}
                     >
                         Choose plan
                     </Button>
                 </Link>
 
-                <div className={cn('mt-6 flex items-center justify-center gap-1.5 text-xs normal-case', isFeatured ? 'text-zinc-500' : 'text-muted-foreground')}>
+                <div className={cn('mt-6 flex items-center gap-1.5 text-xs normal-case', isFeatured ? 'text-muted-foreground' : 'text-muted-foreground')}>
                     <CalendarClock className="h-3.5 w-3.5" />
                     Recurring schedule
                 </div>

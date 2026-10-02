@@ -67,7 +67,7 @@ export default function SupplierDashboard() {
 
     if (loading) {
         return (
-            <div className="flex min-h-0 items-center gap-3 border border-zinc-200 bg-background p-6 text-sm text-zinc-500">
+            <div className="flex min-h-0 items-center gap-3 border border-border bg-background p-6 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading supplier operations…
             </div>
         );
@@ -114,18 +114,18 @@ export default function SupplierDashboard() {
     ];
 
     return (
-        <div className="space-y-6 text-zinc-950">
-            <header className="flex flex-col gap-5 border-b border-zinc-300 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-6 text-foreground">
+            <header className="flex flex-col gap-5 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <p className="text-xs font-bold normal-case text-emerald-700">Supplier operations</p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-tight">Catalogue and sell-through</h2>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+                    <p className="text-xs font-bold normal-case text-brand-green">Supplier operations</p>
+                    <h2 className="mt-2 text-3xl font-normal tracking-tight">Catalogue and sell-through</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                         Current product availability, order activity and catalogue exceptions from your linked FreshPick supplier record.
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2 text-xs text-zinc-500">
-                    <span className="border border-zinc-300 bg-background px-3 py-2">{stats.totalUploads} uploads</span>
-                    <span className="border border-zinc-300 bg-background px-3 py-2">{stats.unreadMessages} unread messages</span>
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span className="border border-border bg-background px-3 py-2">{stats.totalUploads} uploads</span>
+                    <span className="border border-border bg-background px-3 py-2">{stats.unreadMessages} unread messages</span>
                 </div>
             </header>
 
@@ -139,41 +139,41 @@ export default function SupplierDashboard() {
                 </div>
             )}
 
-            <section className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-px border border-border bg-muted sm:grid-cols-2 xl:grid-cols-4">
                 {metrics.map(({ label, value, detail, icon: Icon }) => (
                     <article key={label} className="bg-background p-5">
                         <div className="flex items-center justify-between gap-4 text-muted-foreground">
                             <span className="text-xs font-semibold normal-case">{label}</span>
                             <Icon className="h-4 w-4" />
                         </div>
-                        <div className="mt-4 break-words text-3xl font-semibold tabular-nums text-zinc-950">{value}</div>
+                        <div className="mt-4 break-words text-3xl font-semibold tabular-nums text-foreground">{value}</div>
                         <p className="mt-2 text-xs text-muted-foreground">{detail}</p>
                     </article>
                 ))}
             </section>
 
             <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-                <div className="border border-zinc-200 bg-background">
-                    <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-4">
+                <div className="border border-border bg-background">
+                    <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
                         <div>
-                            <h3 className="font-semibold text-zinc-950">Stock exceptions</h3>
+                            <h3 className="font-semibold text-foreground">Stock exceptions</h3>
                             <p className="mt-1 text-xs text-muted-foreground">Products at or below their configured minimum level</p>
                         </div>
                         <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                     </div>
 
                     {data.lowStockList.length === 0 ? (
-                        <div className="flex items-center gap-3 px-5 py-8 text-sm text-zinc-500">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600" /> No low-stock exceptions right now.
+                        <div className="flex items-center gap-3 px-5 py-8 text-sm text-muted-foreground">
+                            <CheckCircle2 className="h-4 w-4 text-brand-green" /> No low-stock exceptions right now.
                         </div>
                     ) : (
-                        <div className="divide-y divide-zinc-100">
+                        <div className="divide-y divide-border">
                             {data.lowStockList.map((product) => {
                                 const deficit = Math.max(0, product.minStockLevel - product.stockQty);
                                 return (
                                     <div key={product._id} className="grid gap-3 px-5 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
                                         <div>
-                                            <p className="text-sm font-medium text-zinc-900">{product.name}</p>
+                                            <p className="text-sm font-medium text-foreground">{product.name}</p>
                                             <p className="mt-1 text-xs text-muted-foreground">{product.sku}</p>
                                         </div>
                                         <div className="text-right">
@@ -181,7 +181,7 @@ export default function SupplierDashboard() {
                                             <p className="text-xs text-muted-foreground">on hand</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-sm font-semibold tabular-nums text-zinc-800">{product.minStockLevel}</p>
+                                            <p className="text-sm font-semibold tabular-nums text-foreground">{product.minStockLevel}</p>
                                             <p className="text-xs text-muted-foreground">minimum{deficit > 0 ? ` · ${deficit} short` : ''}</p>
                                         </div>
                                     </div>
@@ -191,32 +191,32 @@ export default function SupplierDashboard() {
                     )}
                 </div>
 
-                <div className="border border-zinc-200 bg-background">
-                    <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-4">
+                <div className="border border-border bg-background">
+                    <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
                         <div>
-                            <h3 className="font-semibold text-zinc-950">Catalogue uploads</h3>
+                            <h3 className="font-semibold text-foreground">Catalogue uploads</h3>
                             <p className="mt-1 text-xs text-muted-foreground">Most recent supplier product-list submissions</p>
                         </div>
                         <Upload className="h-4 w-4 text-muted-foreground" />
                     </div>
 
                     {data.recentUploads.length === 0 ? (
-                        <div className="flex items-center gap-3 px-5 py-8 text-sm text-zinc-500">
+                        <div className="flex items-center gap-3 px-5 py-8 text-sm text-muted-foreground">
                             <Boxes className="h-4 w-4" /> No catalogue uploads yet.
                         </div>
                     ) : (
-                        <div className="divide-y divide-zinc-100">
+                        <div className="divide-y divide-border">
                             {data.recentUploads.map((upload) => (
                                 <div key={upload._id} className="flex items-center justify-between gap-4 px-5 py-4">
                                     <div className="flex min-w-0 items-center gap-3">
                                         <ShoppingCart className="h-4 w-4 shrink-0 text-muted-foreground" />
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-medium text-zinc-900">{upload.name}</p>
+                                            <p className="truncate text-sm font-medium text-foreground">{upload.name}</p>
                                             <p className="mt-1 text-xs text-muted-foreground">{new Date(upload.createdAt).toLocaleDateString()}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-600">
-                                        {upload.rows} rows <ArrowUpRight className="h-3.5 w-3.5 text-zinc-300" />
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                                        {upload.rows} rows <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
                                     </div>
                                 </div>
                             ))}

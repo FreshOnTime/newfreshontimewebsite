@@ -166,8 +166,8 @@ export default function SubscriptionsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Subscriptions</h1>
-                    <p className="text-gray-600 mt-2">Manage subscription packages and plans</p>
+                    <h1 className="text-3xl font-normal text-foreground">Subscriptions</h1>
+                    <p className="text-muted-foreground mt-2">Manage subscription packages and plans</p>
                 </div>
                 <Button
                     onClick={() => {
@@ -181,7 +181,7 @@ export default function SubscriptionsPage() {
                         });
                         setIsDialogOpen(true);
                     }}
-                    className="bg-emerald-800 hover:bg-emerald-900 text-white"
+                    className="bg-primary hover:bg-primary text-white"
                 >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Plan
@@ -189,10 +189,10 @@ export default function SubscriptionsPage() {
             </div>
 
             {/* List Card */}
-            <Card className="border-gray-100 shadow-premium">
+            <Card className="border-border shadow-premium">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-emerald-900">
-                        <Layers className="w-5 h-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 text-brand-green">
+                        <Layers className="w-5 h-5 text-brand-green" />
                         Active Plans
                     </CardTitle>
                     <CardDescription>View and manage your subscription offerings</CardDescription>
@@ -200,24 +200,24 @@ export default function SubscriptionsPage() {
                 <CardContent>
                     <div className="flex items-center space-x-2 mb-6">
                         <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                             <Input
                                 placeholder="Search plans..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500/20"
+                                className="pl-10 border-border focus:border-primary focus:ring-primary/20"
                             />
                         </div>
                     </div>
 
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                         </div>
                     ) : (
-                        <div className="rounded-md border border-gray-100 overflow-hidden">
+                        <div className="rounded-md border border-border overflow-hidden">
                             <Table>
-                                <TableHeader className="bg-gray-50/50">
+                                <TableHeader className="bg-secondary/50">
                                     <TableRow>
                                         <TableHead>Name</TableHead>
                                         <TableHead>Price</TableHead>
@@ -230,10 +230,10 @@ export default function SubscriptionsPage() {
                                 <TableBody>
                                     {filteredPlans.length > 0 ? (
                                         filteredPlans.map((plan) => (
-                                            <TableRow key={plan._id} className="hover:bg-gray-50/50">
+                                            <TableRow key={plan._id} className="hover:bg-secondary/50">
                                                 <TableCell className="font-medium">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden relative">
+                                                        <div className="w-10 h-10 rounded-lg bg-secondary overflow-hidden relative">
                                                             <img
                                                                 src={plan.image}
                                                                 alt={plan.name}
@@ -244,31 +244,31 @@ export default function SubscriptionsPage() {
                                                             />
                                                         </div>
                                                         <div>
-                                                            <div className="font-semibold text-gray-900">{plan.name}</div>
-                                                            <div className="text-xs text-gray-500 truncate max-w-[200px]">{plan.shortDescription}</div>
+                                                            <div className="font-semibold text-foreground">{plan.name}</div>
+                                                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">{plan.shortDescription}</div>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-emerald-700 font-semibold">
+                                                <TableCell className="text-brand-green font-semibold">
                                                     Rs. {plan.price.toLocaleString()}
                                                 </TableCell>
-                                                <TableCell className="capitalize text-gray-600">
+                                                <TableCell className="capitalize text-muted-foreground">
                                                     {plan.frequency}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
+                                                    <Badge variant="secondary" className="bg-secondary text-brand-green hover:bg-secondary">
                                                         {plan.currentSubscribers} Active
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={plan.isActive ? "default" : "outline"} className={plan.isActive ? "bg-emerald-600 hover:bg-emerald-700" : ""}>
+                                                    <Badge variant={plan.isActive ? "default" : "outline"} className={plan.isActive ? "bg-primary hover:bg-primary" : ""}>
                                                         {plan.isActive ? "Active" : "Inactive"}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0 text-gray-400 hover:text-emerald-700">
+                                                            <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-brand-green">
                                                                 <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
@@ -286,7 +286,7 @@ export default function SubscriptionsPage() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="h-24 text-center text-gray-500">
+                                            <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                                 No subscription plans found.
                                             </TableCell>
                                         </TableRow>
@@ -302,7 +302,7 @@ export default function SubscriptionsPage() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-serif text-emerald-950">
+                        <DialogTitle className="text-2xl font-serif text-brand-green">
                             {editingPlan ? "Edit Subscription Plan" : "Create Subscription Plan"}
                         </DialogTitle>
                         <DialogDescription>
@@ -313,52 +313,52 @@ export default function SubscriptionsPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Plan Name</label>
+                                <label className="text-sm font-medium text-foreground">Plan Name</label>
                                 <Input
                                     {...register("name", { required: "Name is required" })}
                                     placeholder="e.g., The Family Bureau"
-                                    className="focus-visible:ring-emerald-500"
+                                    className="focus-visible:ring-primary"
                                 />
                                 {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Short Description (Card)</label>
+                                <label className="text-sm font-medium text-foreground">Short Description (Card)</label>
                                 <Input
                                     {...register("shortDescription", { required: "Short description is required" })}
                                     placeholder="e.g., Perfect for families of 4-5"
-                                    className="focus-visible:ring-emerald-500"
+                                    className="focus-visible:ring-primary"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Full Description</label>
+                            <label className="text-sm font-medium text-foreground">Full Description</label>
                             <Textarea
                                 {...register("description", { required: "Description is required" })}
                                 placeholder="Detailed description of what makes this box special..."
-                                className="focus-visible:ring-emerald-500 min-h-[100px]"
+                                className="focus-visible:ring-primary min-h-[100px]"
                             />
                         </div>
 
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Price (LKR)</label>
+                                <label className="text-sm font-medium text-foreground">Price (LKR)</label>
                                 <Input
                                     type="number"
                                     {...register("price", { required: "Price is required", min: 0 })}
                                     placeholder="0.00"
-                                    className="focus-visible:ring-emerald-500"
+                                    className="focus-visible:ring-primary"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Frequency</label>
+                                <label className="text-sm font-medium text-foreground">Frequency</label>
                                 <Select
                                     onValueChange={(val) => setValue("frequency", val as any)}
                                     defaultValue={editingPlan?.frequency || 'weekly'}
                                 >
-                                    <SelectTrigger className="focus:ring-emerald-500">
+                                    <SelectTrigger className="focus:ring-primary">
                                         <SelectValue placeholder="Select Frequency" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -371,23 +371,23 @@ export default function SubscriptionsPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Image URL</label>
+                            <label className="text-sm font-medium text-foreground">Image URL</label>
                             <Input
                                 {...register("image")}
                                 placeholder="https://..."
-                                className="focus-visible:ring-emerald-500"
+                                className="focus-visible:ring-primary"
                             />
                         </div>
 
-                        <div className="border border-gray-100 rounded-lg p-4 bg-gray-50/50">
+                        <div className="border border-border rounded-lg p-4 bg-secondary/50">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-medium text-gray-900">Box Contents</h3>
+                                <h3 className="font-medium text-foreground">Box Contents</h3>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() => append({ name: "", quantity: "", category: "Vegetables" })}
-                                    className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                                    className="text-brand-green border-border hover:bg-secondary"
                                 >
                                     <Plus className="h-3 w-3 mr-1" /> Add Item
                                 </Button>
@@ -400,28 +400,28 @@ export default function SubscriptionsPage() {
                                             <Input
                                                 {...register(`contents.${index}.name` as const, { required: true })}
                                                 placeholder="Item Name"
-                                                className="bg-white"
+                                                className="bg-background"
                                             />
                                         </div>
                                         <div className="col-span-3">
                                             <Input
                                                 {...register(`contents.${index}.quantity` as const, { required: true })}
                                                 placeholder="Qty"
-                                                className="bg-white"
+                                                className="bg-background"
                                             />
                                         </div>
                                         <div className="col-span-3">
                                             <Input
                                                 {...register(`contents.${index}.category` as const)}
                                                 placeholder="Category"
-                                                className="bg-white"
+                                                className="bg-background"
                                             />
                                         </div>
                                         <div className="col-span-1 pt-1 flex justify-center">
                                             <button
                                                 type="button"
                                                 onClick={() => remove(index)}
-                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                className="text-muted-foreground hover:text-red-500 transition-colors"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
@@ -436,10 +436,10 @@ export default function SubscriptionsPage() {
                                 <input
                                     type="checkbox"
                                     id="isActive"
-                                    className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                                    className="rounded border-border text-brand-green focus:ring-primary h-4 w-4"
                                     {...register("isActive")}
                                 />
-                                <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer">
+                                <label htmlFor="isActive" className="text-sm font-medium text-foreground cursor-pointer">
                                     Active (Visible on site)
                                 </label>
                             </div>
@@ -448,22 +448,22 @@ export default function SubscriptionsPage() {
                                 <input
                                     type="checkbox"
                                     id="isFeatured"
-                                    className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                                    className="rounded border-border text-brand-green focus:ring-primary h-4 w-4"
                                     {...register("isFeatured")}
                                 />
-                                <label htmlFor="isFeatured" className="text-sm font-medium text-gray-700 cursor-pointer">
+                                <label htmlFor="isFeatured" className="text-sm font-medium text-foreground cursor-pointer">
                                     Featured Plan
                                 </label>
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-border">
                             <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
-                                className="bg-emerald-800 hover:bg-emerald-900 text-white min-w-[120px]"
+                                className="bg-primary hover:bg-primary text-white min-w-[120px]"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (

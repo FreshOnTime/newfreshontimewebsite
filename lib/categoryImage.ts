@@ -3,7 +3,10 @@ const categoryIcons = new Set([
   'meat-seafood', 'beverages', 'snacks', 'frozen-foods',
 ]);
 
-/** Use the category's uploaded artwork first, then its matching food icon. */
+/** Uploaded artwork takes priority; produce categories share real market photography. */
 export function getCategoryImage(slug: string, imageUrl?: string | null): string {
-  return imageUrl?.trim() || `/category-icons/${categoryIcons.has(slug) ? slug : 'placeholder'}.svg`;
+  if (imageUrl?.trim()) return imageUrl.trim();
+  if (/fresh-produce|vegetables|fruit/.test(slug)) return '/images/home/produce-basket.webp';
+  if (/greens|herbs/.test(slug)) return '/images/home/market-bag.webp';
+  return `/category-icons/${categoryIcons.has(slug) ? slug : 'placeholder'}.svg`;
 }

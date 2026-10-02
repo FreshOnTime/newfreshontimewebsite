@@ -1,41 +1,13 @@
-import { Sprout, Store, PackageCheck, Building2 } from "lucide-react";
-import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
-import PartnershipRequestForm from "./PartnershipRequestForm";
+import Link from 'next/link';
+import { ArrowDown } from 'lucide-react';
+import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
+import PartnershipRequestForm from './PartnershipRequestForm';
 
 const partners = [
-  { icon: Sprout, title: "Growers & farms", description: "Fresh produce, herbs, eggs and dairy." },
-  { icon: Store, title: "Local makers", description: "Bakery, pantry and small-batch food." },
-  { icon: PackageCheck, title: "Brands & distributors", description: "Packaged food and specialty products." },
-  { icon: Building2, title: "Business partners", description: "Recurring supply for offices and hospitality." },
+  ['Restaurants, cafés & hotels', 'Tell us about your kitchen, your regular needs and the quantities you use. We’ll discuss product availability, sourcing and delivery with you.'],
+  ['Offices & workplaces', 'Explore fresh food for your team, with an arrangement built around what your workplace needs.'],
+  ['Growers, makers & brands', 'Share your produce, products and story. We review each supplier application for quality, availability and fit.'],
 ];
-
 export default function B2BContent() {
-  return (
-    <main className="bg-background">
-      <PremiumPageHeader title="Partner with FreshPick" subtitle="For growers, food makers and businesses in Sri Lanka." />
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {partners.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="rounded-xl border border-border p-5">
-              <Icon className="mb-4 h-5 w-5 text-brand-green" aria-hidden="true" />
-              <h2 className="text-base font-semibold">{title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-            </div>
-          ))}
-        </div>
-        <section className="mt-10 grid gap-8 border-t border-border pt-8 lg:grid-cols-[1fr_2fr]">
-          <div>
-            <h2 className="text-2xl font-semibold">Tell us about your business</h2>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Share what you supply and where you operate. Our team will review the details and discuss quality, availability and commercial terms with you.</p>
-            <ol className="mt-6 space-y-3 text-sm text-brand-green">
-              <li>1. Send your application</li>
-              <li>2. Review the fit with our team</li>
-              <li>3. Agree the details and get set up</li>
-            </ol>
-          </div>
-          <PartnershipRequestForm />
-        </section>
-      </div>
-    </main>
-  );
+  return <div className="bg-background"><PremiumPageHeader eyebrow="FreshPick for business" title="Good food. A bigger table." subtitle="Fresh produce and considered supply partnerships for kitchens, workplaces and food businesses in Sri Lanka." backgroundImage="/images/home/kitchen.webp" /><div className="editorial-wrap editorial-section"><section className="grid gap-7 md:grid-cols-2 md:gap-20"><h2 className="editorial-title">Let’s talk about what your business needs.</h2><div><p className="text-sm leading-8 text-muted-foreground md:text-base">From a restaurant’s weekly produce to a grower’s next harvest, a good partnership starts with a conversation. Share what you buy or supply, and we’ll work through availability, quality standards and commercial terms together.</p><Link href="#business-enquiry" className="editorial-link mt-5">Start a conversation <ArrowDown strokeWidth={1.5} className="h-4 w-4" aria-hidden="true" /></Link></div></section><section className="my-12 divide-y divide-border border-y border-border md:my-20">{partners.map(([title,copy],index) => <div key={title} className="grid gap-4 py-7 md:grid-cols-[50px_1fr_1.4fr] md:gap-8"><span className="text-xs text-muted-foreground">0{index+1}</span><h3 className="font-serif text-2xl font-normal text-brand-green">{title}</h3><p className="text-sm leading-7 text-muted-foreground">{copy}</p></div>)}</section><section id="business-enquiry" className="grid scroll-mt-28 gap-9 lg:grid-cols-[1fr_1.5fr] lg:gap-16"><div><p className="editorial-label">Business & supplier enquiries</p><h2 className="editorial-title mt-5">Tell us a little about yourself.</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">Our team will review your enquiry and discuss the next steps. Supplier accounts are opened after an application is reviewed.</p></div><PartnershipRequestForm /></section></div></div>;
 }
