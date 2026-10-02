@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Package, RefreshCw, Truck, XCircle } from "lucide-react";
@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { AccountPage, AccountState, AccountLoading, accountButton, accountSecondaryButton } from '@/components/account/AccountPage';
+
+import { ConfirmAction } from '@/components/account/ConfirmAction';
 
 type OrderSummary = {
   _id: string;
@@ -47,9 +49,17 @@ export default function OrdersPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, pages: 1, hasNext: false, hasPrev: false });
+  const [cancelTarget, setCancelTarget] = useState<OrderSummary | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const cancelLock = useRef(false);
 
 
   const cancelOrder = async (id: string) => {
+    if (cancelLock.current) return;
+    cancelLock.current = true;
+    setCancelError(null);
     try {
       setCancellingId(id);
       const res = await authenticatedApiFetch(`/api/orders/${id}`, {
@@ -58,13 +68,15 @@ export default function OrdersPage() {
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrders((current) => current.map((order) => order._id === id ? { ...order, status: 'cancelled' } : order));
+        setCancelTarget(null);
         toast.success('Order cancelled');
       } else {
-        toast.error(data?.error || 'Failed to cancel order');
+        setCancelError(data?.error || 'Failed to cancel order');
       }
     } catch {
-      toast.error('Network error');
+      setCancelError('Couldn’t cancel the order. Please try again.');
     } finally {
+      cancelLock.current = false;
       setCancellingId(null);
     }
   };
@@ -82,14 +94,17 @@ export default function OrdersPage() {
     setLoading(true);
     const load = async () => {
       try {
-        const res = await authenticatedApiFetch('/api/orders?limit=20&summary=1', { signal: controller.signal });
+        const res = await authenticatedApiFetch(`/api/orders?page=${page}&limit=20&summary=1`, { cache: 'no-store', signal: controller.signal });
         if (res.status === 401) {
           router.replace('/auth/login?redirect=/orders');
           return;
         }
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Please try again in a moment.');
-        if (!controller.signal.aborted) setOrders(data.data.orders || []);
+        if (!controller.signal.aborted) {
+          setOrders(data.data.orders || []);
+          setPagination(data.data.pagination);
+        }
       } catch (loadError) {
         if (!controller.signal.aborted) setError(loadError instanceof Error ? loadError.message : 'Please try again in a moment.');
       } finally {
@@ -98,20 +113,21 @@ export default function OrdersPage() {
     };
     void load();
     return () => controller.abort();
-  }, [user?._id, authLoading, router, retryCount]);
+  }, [user?._id, authLoading, router, retryCount, page]);
 
   return (
     <AccountPage title="Orders" description="Track deliveries and revisit recent purchases." action={<Link href="/products" className={accountSecondaryButton}>Shop the market</Link>}>
+        <ConfirmAction open={cancelTarget !== null} onOpenChange={(open) => { if (!open) setCancelTarget(null); }} title={`Cancel order #${cancelTarget?.orderNumber || ''}?`} description="This stops this delivery. You can buy these items again from your order details." label="Cancel order" busy={cancellingId !== null} error={cancelError} onConfirm={() => { if (cancelTarget) void cancelOrder(cancelTarget._id); }} />
         {authLoading || loading ? <AccountLoading label="Loading your orders…" /> : error ? (
           <AccountState error title="Couldn’t load your orders" description={error} action={<button type="button" className={accountSecondaryButton} onClick={() => setRetryCount((count) => count + 1)}>Try again</button>} />
         ) : orders.length === 0 ? (
-          <AccountState title="No orders yet" description="Your purchases and delivery updates will appear here." action={<Link href="/products" className={accountButton}>Shop the market</Link>} />
+          <AccountState title={page === 1 ? 'No orders yet' : 'No orders on this page'} description={page === 1 ? 'Your purchases and delivery updates will appear here.' : 'Return to your latest orders.'} action={page === 1 ? <Link href="/products" className={accountButton}>Shop the market</Link> : <button type="button" className={accountSecondaryButton} onClick={() => setPage(1)}>Latest orders</button>} />
         ) : (
           <section className="overflow-hidden rounded-lg border border-zinc-200 bg-background">
             <div className="flex items-end justify-between gap-5 border-b border-border px-6 py-5 md:px-6">
               <div>
                 <h2 className="text-base font-medium text-brand-green">Recent orders</h2>
-                <p className="mt-1 text-sm font-normal text-muted-foreground">{orders.length} recent order{orders.length === 1 ? '' : 's'}</p>
+                <p className="mt-1 text-sm font-normal text-muted-foreground">{pagination.total} order{pagination.total === 1 ? '' : 's'} · Page {page} of {Math.max(1, pagination.pages)}</p>
               </div>
               <Link href="/bags" className="text-xs font-semibold text-emerald-800">Saved bags</Link>
             </div>
@@ -145,8 +161,8 @@ export default function OrdersPage() {
                           <button
                             type="button"
                             disabled={cancellingId !== null}
-                            onClick={() => void cancelOrder(order._id)}
-                            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                            onClick={() => { setCancelError(null); setCancelTarget(order); }}
+                            className="min-h-11 rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
                           >
                             {cancellingId === order._id ? 'Cancelling…' : 'Cancel'}
                           </button>
@@ -158,6 +174,11 @@ export default function OrdersPage() {
                 );
               })}
             </div>
+            <nav aria-label="Order history pages" className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-5">
+              <button type="button" className={accountSecondaryButton} disabled={!pagination.hasPrev} onClick={() => setPage((current) => current - 1)}>Previous</button>
+              <span className="text-sm text-muted-foreground">Page {page} of {Math.max(1, pagination.pages)}</span>
+              <button type="button" className={accountSecondaryButton} disabled={!pagination.hasNext} onClick={() => setPage((current) => current + 1)}>Next</button>
+            </nav>
           </section>
         )}
     </AccountPage>

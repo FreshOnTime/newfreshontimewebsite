@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+import { z } from 'zod';
+
+const actionSchema = z.object({
+  action: z.enum(['pause', 'resume', 'cancel', 'skip']),
+  pauseUntil: z.string().datetime({ offset: true }).optional(),
+  cancelReason: z.string().trim().max(500).optional(),
+});
+class SubscriptionConflict extends Error {}
 import { verifyToken } from '@/lib/auth';
 import { advanceByFrequency, nextWeekday, serializeSubscription } from '@/lib/subscriptionUtils';
 
@@ -8,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
     const user = await verifyToken(request);
-    if (!user) {
+    if (!user?.mongoId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -34,12 +43,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     const { id } = await params;
     const user = await verifyToken(request);
-    if (!user) {
+    if (!user?.mongoId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { action, pauseUntil, cancelReason } = body;
+    const parsed = actionSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) return NextResponse.json({ success: false, message: 'Invalid subscription action' }, { status: 400 });
+    const { action, pauseUntil, cancelReason } = parsed.data;
 
     const subscription = await prisma.subscription.findFirst({
       where: { id, userId: user.mongoId },
@@ -55,61 +65,53 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const invalidTransition = (msg: string) =>
       NextResponse.json({ success: false, message: msg }, { status: 400 });
 
+    const data: Prisma.SubscriptionUpdateManyMutationInput = {};
     switch (action) {
-      case 'pause': {
+      case 'pause':
         if (subscription.status !== 'active') return invalidTransition('Only active subscriptions can be paused');
-        await prisma.subscription.update({
-          where: { id },
-          data: { status: 'paused', pausedUntil: pauseUntil ? new Date(pauseUntil) : null },
-        });
+        if (pauseUntil && new Date(pauseUntil) <= new Date()) return invalidTransition('Pause end must be in the future');
+        data.status = 'paused';
+        data.pausedUntil = pauseUntil ? new Date(pauseUntil) : null;
         break;
-      }
-
       case 'resume': {
         if (subscription.status !== 'paused') return invalidTransition('Only paused subscriptions can be resumed');
-        // Respect pausedUntil: don't schedule a delivery before the pause ends.
         const now = new Date();
         const base = subscription.pausedUntil && subscription.pausedUntil > now ? subscription.pausedUntil : now;
-        await prisma.subscription.update({
-          where: { id },
-          data: { status: 'active', pausedUntil: null, nextDeliveryDate: nextWeekday(base, day) },
-        });
+        data.status = 'active';
+        data.pausedUntil = null;
+        data.nextDeliveryDate = nextWeekday(base, day);
         break;
       }
-
-      case 'cancel': {
+      case 'cancel':
         if (subscription.status === 'cancelled') return invalidTransition('Subscription is already cancelled');
-        // Cancel and decrement the plan's counter atomically; the conditional
-        // decrement (currentSubscribers > 0) prevents it going negative.
-        await prisma.$transaction([
-          prisma.subscription.update({
-            where: { id },
-            data: { status: 'cancelled', cancelledAt: new Date(), cancelReason: cancelReason || null },
-          }),
-          prisma.subscriptionPlan.updateMany({
-            where: { id: subscription.planId, currentSubscribers: { gt: 0 } },
-            data: { currentSubscribers: { decrement: 1 } },
-          }),
-        ]);
+        data.status = 'cancelled';
+        data.cancelledAt = new Date();
+        data.cancelReason = cancelReason || null;
         break;
-      }
-
-      case 'skip': {
+      case 'skip':
         if (subscription.status !== 'active') return invalidTransition('Only active subscriptions can skip a delivery');
-        await prisma.subscription.update({
-          where: { id },
-          data: {
-            skippedDates: { push: subscription.nextDeliveryDate },
-            skippedDeliveries: { increment: 1 },
-            nextDeliveryDate: advanceByFrequency(subscription.nextDeliveryDate, day, frequency),
-          },
-        });
+        data.skippedDates = { push: subscription.nextDeliveryDate };
+        data.skippedDeliveries = { increment: 1 };
+        data.nextDeliveryDate = advanceByFrequency(subscription.nextDeliveryDate, day, frequency);
         break;
-      }
-
-      default:
-        return invalidTransition('Invalid action');
     }
+
+    await prisma.$transaction(async (tx) => {
+      // Compare status, date, and version to reject overlapping pause/skip/cancel
+      // actions without advancing twice or decrementing the plan twice.
+      const changed = await tx.subscription.updateMany({
+        where: { id, userId: user.mongoId, status: subscription.status,
+          nextDeliveryDate: subscription.nextDeliveryDate, updatedAt: subscription.updatedAt },
+        data,
+      });
+      if (changed.count !== 1) throw new SubscriptionConflict();
+      if (action === 'cancel') {
+        await tx.subscriptionPlan.updateMany({
+          where: { id: subscription.planId, currentSubscribers: { gt: 0 } },
+          data: { currentSubscribers: { decrement: 1 } },
+        });
+      }
+    });
 
     const updated = await prisma.subscription.findUnique({
       where: { id },
@@ -122,6 +124,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       message: `Subscription ${action} successful`,
     });
   } catch (error) {
+    if (error instanceof SubscriptionConflict) return NextResponse.json({ success: false, message: 'This subscription changed. Refresh it before trying again.' }, { status: 409 });
     console.error('Error updating subscription:', error);
     return NextResponse.json({ success: false, message: 'Failed to update subscription' }, { status: 500 });
   }

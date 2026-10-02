@@ -7,7 +7,7 @@ import { isValidDeliveryDay, nextWeekday, serializeSubscription } from '@/lib/su
 export async function GET(request: NextRequest) {
   try {
     const user = await verifyToken(request);
-    if (!user) {
+    if (!user?.mongoId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         success: true,
         subscriptions: subscriptions.map(serializeSubscription),
       },
-      { headers: { 'Cache-Control': 'private, max-age=30' } }
+      { headers: { 'Cache-Control': 'private, no-store' } }
     );
   } catch (error) {
     console.error('Error fetching subscriptions:', error);

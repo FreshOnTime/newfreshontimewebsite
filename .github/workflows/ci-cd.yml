@@ -49,8 +49,8 @@ jobs:
     - name: Run linter
       run: npm run lint
 
-    - name: Run tests
-      run: npm test
+    - name: Run unit and API tests
+      run: npm run test:unit -- --runInBand
       env:
         FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
         FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
@@ -58,6 +58,31 @@ jobs:
 
     - name: Build application
       run: npm run build
+      env:
+        NODE_ENV: production
+
+    - name: Verify HTTP endpoints against the built app
+      env:
+        NODE_ENV: production
+        BASE_URL: http://localhost:3000
+      run: |
+        npm start > /tmp/freshpick-server.log 2>&1 &
+        server_pid=$!
+        trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+        ready=false
+        for attempt in $(seq 1 60); do
+          status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/orders || true)
+          if [ "$status" = "401" ]; then
+            ready=true
+            break
+          fi
+          sleep 1
+        done
+        if [ "$ready" != "true" ]; then
+          cat /tmp/freshpick-server.log
+          exit 1
+        fi
+        npm run test:smoke -- --runInBand
 
   deploy-preview:
     if: github.event_name == 'pull_request'
