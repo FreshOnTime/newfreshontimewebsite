@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const inputClass = 'h-12 rounded-xl border-zinc-200 bg-white px-4 shadow-none focus-visible:ring-emerald-700/20';
+const inputClass = 'h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20';
 
 export function SupplierSignupForm() {
   const [formData, setFormData] = useState({
@@ -107,26 +107,26 @@ export function SupplierSignupForm() {
   };
 
   return (
-    <main className="bg-background">
+    <div className="bg-background">
 
       <section className="px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between gap-4">
-            <Link href="/auth/signup" className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900"><ArrowLeft className="h-4 w-4" /> Account type</Link>
+            <Link href="/auth/signup" className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Account type</Link>
 
           </div>
 
-          <div className="mt-6 border-b border-zinc-300 pb-8">
-            <span className="text-xs font-bold normal-case text-emerald-700">Partner application</span>
-            <h1 className="mt-4 font-sans text-4xl font-semibold leading-tight text-zinc-950 md:text-4xl">Create a supplier account</h1>
-            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-zinc-500">This creates your account and sends the supplier details needed for onboarding. Product catalogue work can continue from the supplier dashboard.</p>
+          <div className="mt-6 border-b border-border pb-8">
+            <span className="text-xs font-bold normal-case text-brand-green">Partner application</span>
+            <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Create a supplier account</h1>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">This creates your account and sends the supplier details needed for onboarding. Product catalogue work can continue from the supplier dashboard.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-9 space-y-10">
             <section>
               <div className="mb-5">
-                <p className="text-xs font-bold normal-case text-emerald-700">01 · Business</p>
-                <h2 className="mt-2 font-sans text-2xl font-semibold text-zinc-950">Who are we partnering with?</h2>
+                <p className="text-xs font-bold normal-case text-brand-green">01 · Business</p>
+                <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">Who are we partnering with?</h2>
               </div>
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="md:col-span-2"><Field label="Company name *" htmlFor="companyName"><Input id="companyName" value={formData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)} required className={inputClass} /></Field></div>
@@ -139,10 +139,10 @@ export function SupplierSignupForm() {
               </div>
             </section>
 
-            <section className="border-t border-zinc-300 pt-9">
+            <section className="border-t border-border pt-9">
               <div className="mb-5">
-                <p className="text-xs font-bold normal-case text-emerald-700">02 · Operations</p>
-                <h2 className="mt-2 font-sans text-2xl font-semibold text-zinc-950">Where do you operate?</h2>
+                <p className="text-xs font-bold normal-case text-brand-green">02 · Operations</p>
+                <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">Where do you operate?</h2>
               </div>
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="md:col-span-2"><Field label="Business address *" htmlFor="addressLine1"><Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className={inputClass} /></Field></div>
@@ -150,47 +150,47 @@ export function SupplierSignupForm() {
                 <Field label="City *" htmlFor="city"><Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required className={inputClass} /></Field>
                 <Field label="Province *" htmlFor="province"><Input id="province" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required className={inputClass} /></Field>
                 <Field label="Postal code *" htmlFor="postalCode"><Input id="postalCode" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required className={inputClass} /></Field>
-                <Field label="Country" htmlFor="country"><Input id="country" value={formData.registrationAddress.country} disabled className={` ${inputClass} text-zinc-500`} /></Field>
+                <Field label="Country" htmlFor="country"><Input id="country" value={formData.registrationAddress.country} disabled className={` ${inputClass} text-muted-foreground`} /></Field>
               </div>
             </section>
 
-            <section className="border-t border-zinc-300 pt-9">
+            <section className="border-t border-border pt-9">
               <div className="mb-4 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-900"><Truck className="h-4 w-4" /></span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-brand-green"><Truck className="h-4 w-4" /></span>
                 <div>
-                  <p className="text-xs font-bold normal-case text-emerald-700">03 · Supply</p>
-                  <h2 className="mt-1 font-sans text-2xl font-semibold text-zinc-950">What do you supply?</h2>
+                  <p className="text-xs font-bold normal-case text-brand-green">03 · Supply</p>
+                  <h2 className="mt-1 font-serif text-2xl font-normal text-foreground">What do you supply?</h2>
                 </div>
               </div>
-              <Label htmlFor="productList" className="text-sm font-medium text-zinc-700">Product list or short catalogue note</Label>
-              <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-zinc-200 bg-background p-4 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-700/10" placeholder="E.g. fresh produce, bakery, dairy, ready meals, specialty pantry items…" />
+              <Label htmlFor="productList" className="text-sm font-medium text-foreground">Product list or short catalogue note</Label>
+              <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" placeholder="E.g. fresh produce, bakery, dairy, ready meals, specialty pantry items…" />
               <p className="mt-2 text-xs font-normal leading-5 text-muted-foreground">A full product list can be uploaded later from your supplier dashboard.</p>
             </section>
 
             {(serverError || fieldErrors) && (
-              <div className="rounded-[1.25rem] border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+              <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
                 {serverError && <p>{serverError}</p>}
                 {fieldErrors && Object.keys(fieldErrors).map((key) => <p key={key} className="mt-1">{key}: {fieldErrors[key]?.join(', ')}</p>)}
               </div>
             )}
 
-            <div className="flex flex-col gap-4 border-t border-zinc-300 pt-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">Submitting does not imply automatic public listing. FreshPick reviews and manages supplier relationships as a curated network.</p>
-              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-full bg-brand-amber px-7 text-xs font-bold normal-case text-accent-foreground shadow-none hover:bg-brand-amber/85">
+              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-md bg-primary px-7 text-xs font-bold normal-case text-accent-foreground shadow-none hover:bg-primary/85">
                 {isLoading ? 'Submitting…' : <span className="inline-flex items-center gap-2">Submit application <ArrowRight className="h-4 w-4" /></span>}
               </Button>
             </div>
           </form>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={htmlFor} className="text-sm font-medium text-zinc-700">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-sm font-medium text-foreground">{label}</Label>
       {children}
     </div>
   );

@@ -59,7 +59,7 @@ function LoadingState({ message }: { message: string }) {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 bg-background">
       <div className="h-10 w-10 animate-spin rounded-full border-2 border-border border-t-brand-green" />
-      <p className="text-sm text-zinc-500">{message}</p>
+      <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );
 }
@@ -506,10 +506,10 @@ export default function CheckoutPage() {
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-brand-green">
           <ShoppingBag strokeWidth={1.5} aria-hidden="true" className="h-7 w-7" />
         </span>
-        <h1 className="mt-5 text-3xl font-medium text-brand-green">Nothing to check out yet.</h1>
-        <p className="mt-2 max-w-md text-zinc-500">Choose products or an active recurring plan, then come back here to complete the order.</p>
+        <h1 className="mt-5 text-3xl font-normal text-brand-green">Nothing to check out yet.</h1>
+        <p className="mt-2 max-w-md text-muted-foreground">Choose products or an active recurring plan, then come back here to complete the order.</p>
         {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
-        <Link href="/products" className="mt-7 rounded-lg bg-brand-amber px-7 py-3.5 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">
+        <Link href="/products" className="mt-7 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-accent-foreground hover:bg-primary/85">
           Browse products
         </Link>
       </div>
@@ -522,9 +522,9 @@ export default function CheckoutPage() {
         <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <span className="text-xs font-medium text-brand-green">Secure order</span>
-            <h1 className="mt-3 text-3xl font-medium tracking-tight text-brand-green md:text-4xl">Checkout</h1>
+            <h1 className="mt-3 text-3xl font-normal tracking-tight text-brand-green md:text-4xl">Checkout</h1>
             {effectiveBagName && (
-              <p className="mt-2 text-zinc-600">
+              <p className="mt-2 text-muted-foreground">
                 {effectiveBagName} · {itemCount} item{itemCount === 1 ? "" : "s"}
               </p>
             )}
@@ -536,9 +536,9 @@ export default function CheckoutPage() {
 
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-6">
           <fieldset disabled={submitting} aria-label="Order details" className="min-w-0 space-y-7 lg:col-span-7">
-            <Card className="overflow-hidden rounded-xl border-border bg-background shadow-none">
+            <Card className="overflow-hidden rounded-lg border-border bg-background shadow-none">
               <div className="flex items-center justify-between border-b border-border px-6 py-5">
-                <h2 className="text-xl font-medium text-brand-green">Order items</h2>
+                <h2 className="text-xl font-normal text-brand-green">Order items</h2>
                 {bagUpdating && <span className="text-xs font-medium text-brand-green">Updating…</span>}
               </div>
               <CardContent className="space-y-5 p-6">
@@ -550,15 +550,15 @@ export default function CheckoutPage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={item.product.images[0].url} alt={item.product.images[0].alt || item.product.name} className="h-full w-full object-contain p-2" />
                       ) : (
-                        <ImageIcon strokeWidth={1.5} aria-hidden="true" className="h-6 w-6 text-zinc-300" />
+                        <ImageIcon strokeWidth={1.5} aria-hidden="true" className="h-6 w-6 text-muted-foreground" />
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-medium text-zinc-950">{item.product.name}</h3>
-                          <p className="mt-1 text-sm text-zinc-500">Rs. {quotedUnitPrice(item).toFixed(2)} {item.product.unit ? `/ ${item.product.unit}` : ""}</p>
+                          <h3 className="font-medium text-foreground">{item.product.name}</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">Rs. {quotedUnitPrice(item).toFixed(2)} {item.product.unit ? `/ ${item.product.unit}` : ""}</p>
                         </div>
                         {!planSlug && (
                           <button
@@ -590,11 +590,11 @@ export default function CheckoutPage() {
                                 updateBagItem(bag.id, item.product.id, quantity).catch((error: Error) => setError(error.message));
                               }
                             }}
-                            className="flex h-full w-11 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
+                            className="flex h-full w-11 items-center justify-center text-muted-foreground hover:bg-background disabled:opacity-30"
                           >
                             <Minus strokeWidth={1.75} aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
-                          <span className="min-w-8 text-center text-sm font-medium text-zinc-900">{item.quantity}</span>
+                          <span className="min-w-8 text-center text-sm font-medium text-foreground">{item.quantity}</span>
                           <button
                             type="button"
                             aria-label={`Increase ${item.product.name}`}
@@ -610,12 +610,12 @@ export default function CheckoutPage() {
                                 updateBagItem(bag.id, item.product.id, quantity).catch((error: Error) => setError(error.message));
                               }
                             }}
-                            className="flex h-full w-11 items-center justify-center text-zinc-500 hover:bg-background disabled:opacity-30"
+                            className="flex h-full w-11 items-center justify-center text-muted-foreground hover:bg-background disabled:opacity-30"
                           >
                             <Plus strokeWidth={1.75} aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        <strong className="text-zinc-950">Rs. {(quotedUnitPrice(item) * item.quantity).toFixed(2)}</strong>
+                        <strong className="text-foreground">Rs. {(quotedUnitPrice(item) * item.quantity).toFixed(2)}</strong>
                       </div>
                     </div>
                   </div>
@@ -624,8 +624,8 @@ export default function CheckoutPage() {
             </Card>
 
             {planSlug && (
-              <section aria-labelledby="delivery-schedule-title" className="rounded-xl border border-border p-6 md:p-8">
-                <div className="flex items-center gap-2 text-brand-green"><CalendarClock strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" /><h2 id="delivery-schedule-title" className="text-xl font-medium">Delivery schedule</h2></div>
+              <section aria-labelledby="delivery-schedule-title" className="rounded-lg border border-border p-6 md:p-8">
+                <div className="flex items-center gap-2 text-brand-green"><CalendarClock strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" /><h2 id="delivery-schedule-title" className="text-xl font-normal">Delivery schedule</h2></div>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">Choose a delivery day for your {selectedSubscriptionPlan?.frequency === 'biweekly' ? 'fortnightly' : selectedSubscriptionPlan?.frequency === 'monthly' ? 'monthly' : 'weekly'} basket.</p>
                 <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Subscription delivery day">
                   {WEEKDAYS.map((day) => <button key={day.value} type="button" aria-pressed={recurrenceByWeekday[0] === day.value} onClick={() => setRecurrenceByWeekday([day.value])} className={`h-11 min-w-11 rounded-lg border px-3 text-sm ${recurrenceByWeekday[0] === day.value ? 'border-brand-green bg-brand-green text-primary-foreground' : 'border-border text-muted-foreground hover:border-brand-green'}`}>{day.label}</button>)}
@@ -635,7 +635,7 @@ export default function CheckoutPage() {
             )}
 
             {!planSlug && (
-              <Card className="rounded-xl border-border bg-background shadow-none">
+              <Card className="rounded-lg border-border bg-background shadow-none">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex items-start justify-between gap-6">
                     <div>
@@ -643,15 +643,15 @@ export default function CheckoutPage() {
                         <CalendarClock strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" />
                         <span className="text-xs font-medium">Recurring order</span>
                       </div>
-                      <h2 className="mt-3 text-xl font-medium text-brand-green">Repeat this order automatically</h2>
-                      <p className="mt-2 text-sm leading-6 text-zinc-500">Optional. Choose a cadence and delivery days for this bag.</p>
+                      <h2 className="mt-3 text-xl font-normal text-brand-green">Repeat this order automatically</h2>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">Optional. Choose a cadence and delivery days for this bag.</p>
                     </div>
                     <input
                       aria-label="Enable recurring order"
                       type="checkbox"
                       checked={isRecurring}
                       onChange={(event) => setIsRecurring(event.target.checked)}
-                      className="mt-2 h-5 w-5 rounded border-zinc-300 text-brand-green focus:ring-brand-green"
+                      className="mt-2 h-5 w-5 rounded border-border text-brand-green focus:ring-brand-green"
                     />
                   </div>
 
@@ -668,7 +668,7 @@ export default function CheckoutPage() {
                             type="button"
                             aria-pressed={recurrenceFreq === option.value}
                             onClick={() => setRecurrenceFreq(option.value)}
-                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${recurrenceFreq === option.value ? "border-brand-green bg-secondary text-brand-green" : "border-border text-zinc-600 hover:border-brand-green/40"} `}
+                            className={`rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${recurrenceFreq === option.value ? "border-brand-green bg-secondary text-brand-green" : "border-border text-muted-foreground hover:border-brand-green/40"} `}
                           >
                             {option.label}
                           </button>
@@ -676,15 +676,15 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="grid gap-4 md:grid-cols-3">
-                        <label className="text-sm text-zinc-600">
+                        <label className="text-sm text-muted-foreground">
                           Repeat every
                           <Input type="number" min={1} value={recurrenceInterval} onChange={(event) => setRecurrenceInterval(Math.max(1, Number(event.target.value) || 1))} className="mt-2" />
                         </label>
-                        <label className="text-sm text-zinc-600">
+                        <label className="text-sm text-muted-foreground">
                           Start date
                           <Input type="date" value={startDate} onChange={(event: ChangeEvent<HTMLInputElement>) => setStartDate(event.target.value)} className="mt-2" />
                         </label>
-                        <label className="text-sm text-zinc-600">
+                        <label className="text-sm text-muted-foreground">
                           End date <span className="text-muted-foreground">(optional)</span>
                           <Input type="date" value={endDate} onChange={(event: ChangeEvent<HTMLInputElement>) => setEndDate(event.target.value)} className="mt-2" />
                         </label>
@@ -692,7 +692,7 @@ export default function CheckoutPage() {
 
                       {recurrenceFreq === RRule.WEEKLY && (
                         <div>
-                          <p className="mb-3 text-sm font-medium text-zinc-700">Delivery days</p>
+                          <p className="mb-3 text-sm font-medium text-foreground">Delivery days</p>
                           <div className="flex flex-wrap gap-2">
                             {WEEKDAYS.map((day) => {
                               const selected = recurrenceByWeekday.includes(day.value);
@@ -702,7 +702,7 @@ export default function CheckoutPage() {
                                   type="button"
                                   aria-pressed={selected}
                                   onClick={() => setRecurrenceByWeekday((previous) => selected ? previous.filter((value) => value !== day.value) : [...previous, day.value])}
-                                  className={`h-11 w-11 rounded-lg text-xs font-semibold transition-colors ${selected ? "bg-brand-green text-white" : "border border-border bg-background text-zinc-600 hover:border-brand-green/40"} `}
+                                  className={`h-11 w-11 rounded-lg text-xs font-semibold transition-colors ${selected ? "bg-brand-green text-white" : "border border-border bg-background text-muted-foreground hover:border-brand-green/40"} `}
                                 >
                                   {day.label}
                                 </button>
@@ -717,13 +717,13 @@ export default function CheckoutPage() {
                         <MultiDateSelector label="Exclude dates" helperText="Optional dates to skip" values={excludeDates} onChange={setExcludeDates} />
                       </div>
 
-                      <label className="block text-sm text-zinc-600">
+                      <label className="block text-sm text-muted-foreground">
                         Schedule notes <span className="text-muted-foreground">(optional)</span>
                         <textarea
                           rows={3}
                           value={recurrenceNotes}
                           onChange={(event) => setRecurrenceNotes(event.target.value)}
-                          className="mt-2 w-full resize-none rounded-xl border border-border bg-background px-4 py-3 outline-none focus:border-brand-green"
+                          className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-4 py-3 outline-none focus:border-brand-green"
                           placeholder="Anything we should know about the recurring schedule?"
                         />
                       </label>
@@ -733,7 +733,7 @@ export default function CheckoutPage() {
               </Card>
             )}
 
-            <Card className="rounded-xl border-border bg-background shadow-none">
+            <Card className="rounded-lg border-border bg-background shadow-none">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                   <div>
@@ -741,32 +741,32 @@ export default function CheckoutPage() {
                       <MapPin strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" />
                       <span className="text-xs font-medium">Delivery</span>
                     </div>
-                    <h2 className="mt-3 text-xl font-medium text-brand-green">Where should we deliver?</h2>
+                    <h2 className="mt-3 text-xl font-normal text-brand-green">Where should we deliver?</h2>
                   </div>
                   {user?.registrationAddress && (
-                    <label className="inline-flex items-center gap-2 text-sm text-zinc-600">
-                      <input type="checkbox" checked={useAccountAddress} onChange={(event) => setUseAccountAddress(event.target.checked)} className="rounded border-zinc-300 text-brand-green focus:ring-brand-green" />
+                    <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                      <input type="checkbox" checked={useAccountAddress} onChange={(event) => setUseAccountAddress(event.target.checked)} className="rounded border-border text-brand-green focus:ring-brand-green" />
                       Use saved address
                     </label>
                   )}
                 </div>
 
                 {useAccountAddress && user?.registrationAddress ? (
-                  <div className="mt-6 rounded-lg bg-secondary/50 p-5 text-sm leading-6 text-zinc-600">
-                    <strong className="block text-zinc-950">{user.registrationAddress.recipientName || user.firstName}</strong>
+                  <div className="mt-6 rounded-lg bg-secondary/50 p-5 text-sm leading-6 text-muted-foreground">
+                    <strong className="block text-foreground">{user.registrationAddress.recipientName || user.firstName}</strong>
                     <span>{user.registrationAddress.streetAddress}</span><br />
                     <span>{user.registrationAddress.city}</span><br />
                     <span>{user.registrationAddress.phoneNumber || user.phoneNumber}</span>
                   </div>
                 ) : (
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
-                    <label className="text-sm text-zinc-600">Recipient name<Input autoComplete="shipping name" value={shipName} onChange={(event) => setShipName(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">Phone<Input type="tel" autoComplete="shipping tel" value={shipPhone} onChange={(event) => setShipPhone(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600 md:col-span-2">Street address<Input autoComplete="shipping street-address" value={shipStreet} onChange={(event) => setShipStreet(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">City<Input autoComplete="shipping address-level2" value={shipCity} onChange={(event) => setShipCity(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">State / province<Input autoComplete="shipping address-level1" value={shipState} onChange={(event) => setShipState(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">Postal code<Input autoComplete="shipping postal-code" value={shipZip} onChange={(event) => setShipZip(event.target.value)} className="mt-2" /></label>
-                    <label className="text-sm text-zinc-600">Country<Input autoComplete="shipping country" value={shipCountry} onChange={(event) => setShipCountry(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground">Recipient name<Input autoComplete="shipping name" value={shipName} onChange={(event) => setShipName(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground">Phone<Input type="tel" autoComplete="shipping tel" value={shipPhone} onChange={(event) => setShipPhone(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground md:col-span-2">Street address<Input autoComplete="shipping street-address" value={shipStreet} onChange={(event) => setShipStreet(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground">City<Input autoComplete="shipping address-level2" value={shipCity} onChange={(event) => setShipCity(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground">State / province<Input autoComplete="shipping address-level1" value={shipState} onChange={(event) => setShipState(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground">Postal code<Input autoComplete="shipping postal-code" value={shipZip} onChange={(event) => setShipZip(event.target.value)} className="mt-2" /></label>
+                    <label className="text-sm text-muted-foreground">Country<Input autoComplete="shipping country" value={shipCountry} onChange={(event) => setShipCountry(event.target.value)} className="mt-2" /></label>
                   </div>
                 )}
               </CardContent>
@@ -779,30 +779,30 @@ export default function CheckoutPage() {
 
           <aside className="lg:col-span-5">
             <div className="space-y-5 lg:sticky lg:top-28">
-              <Card className="overflow-hidden rounded-xl border-border bg-background shadow-none">
+              <Card className="overflow-hidden rounded-lg border-border bg-background shadow-none">
                 <CardContent className="p-6 md:p-8">
                   <span className="text-xs font-medium text-brand-green">Order summary</span>
                   <div className="mt-6 space-y-3">
                     {(quote?.items || effectiveItems.map((item) => ({ productId: item.product.id, name: item.product.name, quantity: item.quantity, total: item.product.price * item.quantity }))).map((item) => (
                       <div key={`summary-${item.productId}`} className="flex justify-between gap-4 text-sm">
-                        <span className="min-w-0 truncate text-zinc-500">{item.quantity} × {item.name}</span>
-                        <span className="shrink-0 font-medium text-zinc-900">Rs. {item.total.toFixed(2)}</span>
+                        <span className="min-w-0 truncate text-muted-foreground">{item.quantity} × {item.name}</span>
+                        <span className="shrink-0 font-medium text-foreground">Rs. {item.total.toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="mt-6 space-y-3 border-t border-border pt-5" aria-live="polite">
                     {quote && <>
-                      <div className="flex justify-between text-sm text-zinc-500"><span>Items subtotal</span><span>Rs. {quote.subtotal.toFixed(2)}</span></div>
-                      <div className="flex justify-between text-sm text-zinc-500"><span>Delivery</span><span>{quote.shipping ? `Rs. ${quote.shipping.toFixed(2)}` : "Free"}</span></div>
+                      <div className="flex justify-between text-sm text-muted-foreground"><span>Items subtotal</span><span>Rs. {quote.subtotal.toFixed(2)}</span></div>
+                      <div className="flex justify-between text-sm text-muted-foreground"><span>Delivery</span><span>{quote.shipping ? `Rs. ${quote.shipping.toFixed(2)}` : "Free"}</span></div>
                     </>}
                     <div className="flex items-end justify-between gap-4">
-                      <p className="text-sm text-zinc-500">{planSlug ? "Plan price" : "Order total"}</p>
-                      <p className="font-sans text-3xl text-zinc-950">{planSlug || quote ? `Rs. ${(quote?.total ?? total).toFixed(2)}` : "—"}</p>
+                      <p className="text-sm text-muted-foreground">{planSlug ? "Plan price" : "Order total"}</p>
+                      <p className="font-sans text-3xl text-foreground">{planSlug || quote ? `Rs. ${(quote?.total ?? total).toFixed(2)}` : "—"}</p>
                     </div>
-                    {!planSlug && !quote && !quoteError && <p className="text-sm text-zinc-500">Confirming prices and availability…</p>}
+                    {!planSlug && !quote && !quoteError && <p className="text-sm text-muted-foreground">Confirming prices and availability…</p>}
                     {quoteError && <div role="alert" className="text-sm text-destructive"><p>{quoteError}</p><button type="button" disabled={submitting} onClick={() => setQuoteVersion((version) => version + 1)} className="mt-2 underline">Check total again</button></div>}
-                    {recovering && <p className="text-sm text-zinc-500">Checking your previous checkout…</p>}
+                    {recovering && <p className="text-sm text-muted-foreground">Checking your previous checkout…</p>}
                     {recoveryError && <div role="alert" className="text-sm text-destructive"><p>{recoveryError}</p><button type="button" onClick={() => setRecoveryVersion((version) => version + 1)} className="mt-2 underline">Check previous order again</button></div>}
                   </div>
 
@@ -813,7 +813,7 @@ export default function CheckoutPage() {
                     size="lg"
                     onClick={() => placeOrder(false)}
                     disabled={submitting || !canPlaceOrder}
-                    className="mt-7 min-h-12 h-auto w-full whitespace-normal rounded-lg px-4 py-3 bg-brand-amber text-base font-semibold text-accent-foreground hover:bg-brand-amber/85"
+                    className="mt-7 min-h-12 h-auto w-full whitespace-normal rounded-lg px-4 py-3 bg-primary text-base font-semibold text-accent-foreground hover:bg-primary/85"
                   >
                     {submitting && !orderingViaWhatsapp ? "Placing order…" : "Place order"}
                   </Button>
@@ -836,8 +836,8 @@ export default function CheckoutPage() {
                 </CardContent>
               </Card>
 
-              <p className="px-4 text-center text-xs leading-5 text-zinc-500">
-                By placing an order you agree to our <Link href="/terms" className="underline hover:text-zinc-800">Terms</Link> and <Link href="/privacy" className="underline hover:text-zinc-800">Privacy Policy</Link>.
+              <p className="px-4 text-center text-xs leading-5 text-muted-foreground">
+                By placing an order you agree to our <Link href="/terms" className="underline hover:text-foreground">Terms</Link> and <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
               </p>
             </div>
           </aside>

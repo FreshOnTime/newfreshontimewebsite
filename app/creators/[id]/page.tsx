@@ -25,13 +25,13 @@ export default async function CreatorPage({ params }: Props) {
   if (!creator) notFound();
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <PremiumPageHeader title={creator.name} subtitle={`${creator.recipeCount} published recipe${creator.recipeCount === 1 ? "" : "s"}`} />
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {creator.recipes.map(recipe => <FoodStoryCard key={recipe.id} href={`/recipes/${recipe.slug}`} title={recipe.title} image={recipe.image?.url} description={recipe.excerpt} label={recipe.cuisine} meta={`${recipe.prepMinutes + recipe.cookMinutes} min`} action="View recipe" />)}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

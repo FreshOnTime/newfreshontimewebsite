@@ -52,40 +52,40 @@ export function LoginForm() {
   };
 
   return (
-    <main className="bg-background">
+    <div className="bg-background">
 
       <section className="flex items-start justify-center px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
         <div className="w-full max-w-[460px]">
 
           <div className="mt-0">
-            <span className="text-xs font-bold normal-case text-emerald-700">Your account</span>
-            <h1 className="mt-4 font-sans text-4xl font-semibold leading-tight text-zinc-950">Sign in</h1>
-            <p className="mt-4 text-sm font-normal leading-6 text-zinc-500">Use your email or phone number to continue.</p>
+            <span className="text-xs font-bold normal-case text-brand-green">Your account</span>
+            <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground">Sign in</h1>
+            <p className="mt-4 text-sm font-normal leading-6 text-muted-foreground">Use your email or phone number to continue.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-9 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="identifier" className="text-sm font-medium text-zinc-700">Email or phone</Label>
-              <Input id="identifier" type="text" placeholder="name@example.com" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="h-12 rounded-lg border-zinc-200 bg-background px-4 shadow-none focus-visible:ring-emerald-700/20" />
+              <Label htmlFor="identifier" className="text-sm font-medium text-foreground">Email or phone</Label>
+              <Input id="identifier" type="text" placeholder="name@example.com" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20" />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-4">
-                <Label htmlFor="password" className="text-sm font-medium text-zinc-700">Password</Label>
-                <Link href="/auth/forgot" className="text-xs font-medium text-emerald-800 transition-colors hover:text-emerald-950">Forgot password?</Link>
+                <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
+                <Link href="/auth/forgot" className="text-xs font-medium text-brand-green transition-colors hover:text-brand-green">Forgot password?</Link>
               </div>
-              <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 rounded-[1rem] border-zinc-200 bg-background px-4 shadow-none focus-visible:ring-emerald-700/20" />
+              <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20" />
             </div>
 
-            {error && <div className="rounded-[1rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+            {error && <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
-            <Button type="submit" className="h-12 w-full rounded-lg bg-brand-amber text-xs font-bold normal-case text-accent-foreground shadow-none transition-colors hover:bg-brand-amber/85" disabled={isLoading || !identifier || !password}>
+            <Button type="submit" className="h-12 w-full rounded-lg bg-primary text-xs font-bold normal-case text-accent-foreground shadow-none transition-colors hover:bg-primary/85" disabled={isLoading || !identifier || !password}>
               {isLoading ? 'Signing in…' : <span className="inline-flex items-center gap-2">Continue <ArrowRight className="h-4 w-4" /></span>}
             </Button>
 
-            <div className="flex items-center gap-4 py-1"><span className="h-px flex-1 bg-zinc-200" /><span className="text-xs font-semibold normal-case text-muted-foreground">or</span><span className="h-px flex-1 bg-zinc-200" /></div>
+            <div className="flex items-center gap-4 py-1"><span className="h-px flex-1 bg-secondary" /><span className="text-xs font-semibold normal-case text-muted-foreground">or</span><span className="h-px flex-1 bg-secondary" /></div>
 
-            <Button type="button" variant="outline" className="h-12 w-full rounded-full border-zinc-300 bg-background text-sm font-medium text-zinc-700 shadow-none hover:bg-background" disabled={isLoading} onClick={handleGoogleSignIn}>
+            <Button type="button" variant="outline" className="h-12 w-full rounded-md border-border bg-background text-sm font-medium text-foreground shadow-none hover:bg-background" disabled={isLoading} onClick={handleGoogleSignIn}>
               <svg aria-hidden="true" viewBox="0 0 24 24" className="mr-3 h-5 w-5">
                 <path fill="#4285F4" d="M21.35 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.51h3.14c1.84-1.69 2.91-4.18 2.91-7.28Z" />
                 <path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.34L15.3 16.9c-.89.6-2.03.96-3.3.96-2.54 0-4.7-1.72-5.47-4.03H3.29v2.59A9.75 9.75 0 0 0 12 21.75Z" />
@@ -96,9 +96,9 @@ export function LoginForm() {
             </Button>
           </form>
 
-          <p className="mt-8 text-sm text-zinc-500">New to FreshPick? <Link href="/auth/signup" className="font-semibold text-emerald-800 hover:text-emerald-950">Create an account</Link></p>
+          <p className="mt-8 text-sm text-muted-foreground">New to FreshPick? <Link href="/auth/signup" className="font-semibold text-brand-green hover:text-brand-green">Create an account</Link></p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

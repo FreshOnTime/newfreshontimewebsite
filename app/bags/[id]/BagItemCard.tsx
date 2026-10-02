@@ -23,7 +23,7 @@ export default function BagItemCard({ item, onRemove }: BagItemCardProps) {
           <div className="text-right ml-auto">
             <p className="font-medium">Rs. {total.toFixed(2)}</p>
             {(item.product.discountPercentage ?? 0) > 0 && (
-              <p className="text-sm text-green-600">
+              <p className="text-sm text-brand-green">
                 -Rs. {savings.toFixed(2)}
               </p>
             )}

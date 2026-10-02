@@ -46,18 +46,18 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="text-gray-600">Key store metrics and insights.</p>
+        <h1 className="text-2xl font-normal">Analytics</h1>
+        <p className="text-muted-foreground">Key store metrics and insights.</p>
       </div>
 
       {error && <div className="text-sm text-red-600">{error}</div>}
 
       {/* Top cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[{title:'Customers',value:stats?.totalCustomers||0,icon:Users,color:'text-blue-600',bg:'bg-blue-50'},
-          {title:'Products',value:stats?.totalProducts||0,icon:Package,color:'text-green-600',bg:'bg-green-50'},
-          {title:'Orders',value:stats?.totalOrders||0,icon:ShoppingCart,color:'text-purple-600',bg:'bg-purple-50'},
-          {title:'Revenue',value:`Rs ${(stats?.totalRevenue||0).toLocaleString()}`,icon:DollarSign,color:'text-emerald-600',bg:'bg-emerald-50'}]
+          {[{title:'Customers',value:stats?.totalCustomers||0,icon:Users,color:'text-brand-green',bg:'bg-secondary'},
+          {title:'Products',value:stats?.totalProducts||0,icon:Package,color:'text-brand-green',bg:'bg-secondary'},
+          {title:'Orders',value:stats?.totalOrders||0,icon:ShoppingCart,color:'text-brand-green',bg:'bg-secondary'},
+          {title:'Revenue',value:`Rs ${(stats?.totalRevenue||0).toLocaleString()}`,icon:DollarSign,color:'text-brand-green',bg:'bg-secondary'}]
         .map((c) => {
           const Icon: React.ComponentType<{ className?: string }> = c.icon as unknown as React.ComponentType<{ className?: string }>;
           return (
@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
                 </TableHeader>
                 <TableBody>
                   {(stats?.upcomingRecurring || []).length === 0 ? (
-                    <TableRow><TableCell colSpan={3} className="text-sm text-gray-600">No upcoming deliveries in 14 days</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={3} className="text-sm text-muted-foreground">No upcoming deliveries in 14 days</TableCell></TableRow>
                   ) : (
                     (stats?.upcomingRecurring || []).map((u) => (
                       <TableRow key={u.orderNumber}>

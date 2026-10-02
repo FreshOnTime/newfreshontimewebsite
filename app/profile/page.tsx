@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { AccountPage, accountSecondaryButton } from '@/components/account/AccountPage';
 
-const inputClass = 'h-11 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-emerald-700/20';
+const inputClass = 'h-11 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20';
 
 export default function ProfilePage() {
   const { user, loading, refreshAuth } = useAuth();
@@ -35,9 +35,9 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-0 bg-background px-5 py-12">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading your account…</div>
-      </main>
+      <div className="min-h-0 bg-background px-5 py-12">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading your account…</div>
+      </div>
     );
   }
 
@@ -93,23 +93,23 @@ export default function ProfilePage() {
   return (
     <AccountPage title="Account details" description="Your contact information and delivery address." action={<Link href={dashboardHref} className={accountSecondaryButton}>Account home <ArrowRight className="h-4 w-4" /></Link>}>
         <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <form onSubmit={(event) => { event.preventDefault(); void handleSave(); }} className="rounded-lg border border-zinc-200 bg-background p-6 md:p-8">
-            <div className="flex flex-wrap items-start justify-between gap-5 border-b border-zinc-100 pb-6">
+          <form onSubmit={(event) => { event.preventDefault(); void handleSave(); }} className="rounded-lg border border-border bg-background p-6 md:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-6">
               <div>
-                <p className="text-xs font-bold normal-case text-emerald-700">Personal details</p>
-                <h2 className="mt-2 text-xl font-medium text-brand-green">Personal information</h2>
+                <p className="text-xs font-bold normal-case text-brand-green">Personal details</p>
+                <h2 className="mt-2 text-xl font-normal text-brand-green">Personal information</h2>
               </div>
               {!isEditing ? (
-                <button type="button" onClick={() => { setIsEditing(true); setMessage(null); setError(null); }} className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition-colors hover:border-emerald-300 hover:text-emerald-800"><Edit3 className="h-3.5 w-3.5" /> Edit details</button>
+                <button type="button" onClick={() => { setIsEditing(true); setMessage(null); setError(null); }} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-border hover:text-brand-green"><Edit3 className="h-3.5 w-3.5" /> Edit details</button>
               ) : (
                 <div className="flex gap-2">
-                  <button type="button" onClick={handleCancel} disabled={isSaving} className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600"><X className="h-3.5 w-3.5" /> Cancel</button>
-                  <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 rounded-full bg-brand-amber px-4 py-2 text-xs font-semibold text-accent-foreground hover:bg-brand-amber/85 disabled:opacity-50">{isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save</button>
+                  <button type="button" onClick={handleCancel} disabled={isSaving} className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-xs font-semibold text-muted-foreground"><X className="h-3.5 w-3.5" /> Cancel</button>
+                  <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-accent-foreground hover:bg-primary/85 disabled:opacity-50">{isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save</button>
                 </div>
               )}
             </div>
 
-            {message && <div role="status" className="mt-5 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"><Check className="h-4 w-4" /> {message}</div>}
+            {message && <div role="status" className="mt-5 flex items-center gap-2 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-brand-green"><Check className="h-4 w-4" /> {message}</div>}
             {error && <div role="alert" className="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
             <fieldset disabled={isSaving} className="mt-7 grid gap-6 md:grid-cols-2">
@@ -121,16 +121,16 @@ export default function ProfilePage() {
           </form>
 
           <aside className="space-y-6">
-            <section className="rounded-lg border border-zinc-200 bg-background p-6">
-              <p className="text-xs font-bold normal-case text-emerald-700">Delivery</p>
-              <h2 className="mt-2 text-lg font-medium text-brand-green">Registration address</h2>
+            <section className="rounded-lg border border-border bg-background p-6">
+              <p className="text-xs font-bold normal-case text-brand-green">Delivery</p>
+              <h2 className="mt-2 text-lg font-normal text-brand-green">Registration address</h2>
               {address ? (
-                <div className="mt-5 flex gap-3 text-sm font-normal leading-6 text-zinc-500">
-                  <MapPin className="mt-1 h-4 w-4 shrink-0 text-emerald-700" />
+                <div className="mt-5 flex gap-3 text-sm font-normal leading-6 text-muted-foreground">
+                  <MapPin className="mt-1 h-4 w-4 shrink-0 text-brand-green" />
                   <p>{[address.streetAddress, address.streetAddress2, address.town, address.city, address.state, address.postalCode].filter(Boolean).join(', ')}</p>
                 </div>
               ) : (
-                <p className="mt-5 text-sm font-normal leading-6 text-zinc-500">Add your delivery address at checkout.</p>
+                <p className="mt-5 text-sm font-normal leading-6 text-muted-foreground">Add your delivery address at checkout.</p>
               )}
             </section>
 
@@ -159,7 +159,7 @@ function ProfileField({ label, icon: Icon, editing, value, display, type = 'text
   return (
     <div>
       <Label htmlFor={id} className="flex items-center gap-2 text-xs font-semibold normal-case text-muted-foreground"><Icon className="h-3.5 w-3.5" /> {label}</Label>
-      {editing ? <Input id={id} type={type} value={value} onChange={(event) => onChange(event.target.value)} className={`mt-2 ${inputClass} `} /> : <p className="mt-3 text-base text-zinc-900">{display}</p>}
+      {editing ? <Input id={id} type={type} value={value} onChange={(event) => onChange(event.target.value)} className={`mt-2 ${inputClass} `} /> : <p className="mt-3 text-base text-foreground">{display}</p>}
     </div>
   );
 }
@@ -169,5 +169,5 @@ function StatusRow({ label, value, verified }: { label: string; value: string; v
 }
 
 function AccountLink({ href, title, copy }: { href: string; title: string; copy: string }) {
-  return <Link href={href} className="group rounded-lg border border-zinc-200 bg-background p-4 transition-colors hover:border-emerald-300"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold text-zinc-900">{title}</span><ArrowRight className="h-4 w-4 text-zinc-300 group-hover:text-emerald-700" /></div><p className="mt-1 text-xs font-normal leading-5 text-muted-foreground">{copy}</p></Link>;
+  return <Link href={href} className="group rounded-lg border border-border bg-background p-4 transition-colors hover:border-border"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold text-foreground">{title}</span><ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-brand-green" /></div><p className="mt-1 text-xs font-normal leading-5 text-muted-foreground">{copy}</p></Link>;
 }

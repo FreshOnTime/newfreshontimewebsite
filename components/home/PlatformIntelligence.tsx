@@ -28,8 +28,8 @@ export default async function PlatformIntelligence() {
   const availability = pulse.catalogue > 0 ? Math.round((pulse.inStock / pulse.catalogue) * 100) : 0;
 
   return (
-    <section className="relative overflow-hidden bg-[#08120d] py-24 text-white md:py-32">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(52,211,153,0.12),transparent_30%),radial-gradient(circle_at_82%_75%,rgba(163,230,53,0.05),transparent_24%)]" />
+    <section className="relative overflow-hidden bg-primary py-24 text-white md:py-32">
+      <div className="absolute inset-0 bg-primary" />
       <div className="container relative mx-auto max-w-7xl px-4 md:px-8">
         <div className="grid gap-12 xl:grid-cols-[0.88fr_1.12fr] xl:items-center">
           <div>
@@ -60,12 +60,12 @@ export default async function PlatformIntelligence() {
               </div>
             </div>
 
-            <Link href="/for-you" className="mt-9 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#08120d] transition-colors hover:bg-emerald-50">
+            <Link href="/for-you" className="mt-9 inline-flex items-center gap-2 rounded-md bg-background px-6 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-green transition-colors hover:bg-secondary">
               See what FreshPick has learned <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] shadow-[0_30px_100px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+          <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.05] shadow-[0_30px_100px_rgba(0,0,0,0.24)] ">
             <div className="border-b border-white/10 p-6 md:p-8">
               <div className="flex items-end justify-between gap-6">
                 <div>

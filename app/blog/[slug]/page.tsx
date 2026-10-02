@@ -85,15 +85,15 @@ function BlogSkeleton() {
     <div className="min-h-screen bg-background animate-pulse">
       <div className="bg-background border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="h-10 w-32 bg-gray-200 rounded" />
+          <div className="h-10 w-32 bg-secondary rounded" />
         </div>
       </div>
       <div className="bg-background">
         <div className="container mx-auto px-4 py-6">
           <div className="max-w-4xl mx-auto space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-3/4" />
-            <div className="h-12 bg-gray-200 rounded" />
-            <div className="h-64 bg-gray-200 rounded" />
+            <div className="h-8 bg-secondary rounded w-3/4" />
+            <div className="h-12 bg-secondary rounded" />
+            <div className="h-64 bg-secondary rounded" />
           </div>
         </div>
       </div>

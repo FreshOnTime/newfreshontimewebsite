@@ -253,85 +253,85 @@ export default function AdminRecipesPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700"><ChefHat className="h-4 w-4" /> FreshPick content commerce</div>
-          <h1 className="text-3xl font-bold text-gray-950">Recipe Studio</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Publish food stories that are attached to real inventory and can become a customer basket in one action.</p>
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-brand-green"><ChefHat className="h-4 w-4" /> FreshPick content commerce</div>
+          <h1 className="text-3xl font-normal text-foreground">Recipe Studio</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Publish food stories that are attached to real inventory and can become a customer basket in one action.</p>
         </div>
-        <button onClick={openNew} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800"><Plus className="h-4 w-4" /> New recipe</button>
+        <button onClick={openNew} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary"><Plus className="h-4 w-4" /> New recipe</button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="grid grid-cols-[1fr_120px_140px_90px] gap-4 border-b border-gray-100 bg-gray-50 px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-background shadow-sm">
+        <div className="grid grid-cols-[1fr_120px_140px_90px] gap-4 border-b border-border bg-secondary px-6 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span>Recipe</span><span>Status</span><span>Commerce</span><span className="text-right">Actions</span>
         </div>
         {loading ? (
-          <div className="px-6 py-16 text-center text-sm text-gray-500">Loading recipe studio…</div>
+          <div className="px-6 py-16 text-center text-sm text-muted-foreground">Loading recipe studio…</div>
         ) : recipes.length ? recipes.map((recipe) => (
-          <div key={recipe.id} className="grid grid-cols-[1fr_120px_140px_90px] items-center gap-4 border-b border-gray-100 px-6 py-5 last:border-b-0">
+          <div key={recipe.id} className="grid grid-cols-[1fr_120px_140px_90px] items-center gap-4 border-b border-border px-6 py-5 last:border-b-0">
             <div className="min-w-0">
-              <p className="truncate font-semibold text-gray-950">{recipe.title}</p>
-              <p className="mt-1 truncate text-xs text-gray-500">/recipes/{recipe.slug}</p>
+              <p className="truncate font-semibold text-foreground">{recipe.title}</p>
+              <p className="mt-1 truncate text-xs text-muted-foreground">/recipes/{recipe.slug}</p>
             </div>
-            <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${recipe.published ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"}`}>
+            <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${recipe.published ? "bg-secondary text-brand-green" : "bg-secondary text-muted-foreground"}`}>
               {recipe.published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}{recipe.published ? "Published" : "Draft"}
             </span>
-            <span className="text-sm text-gray-600">{recipe.content?.ingredients?.length || 0} products</span>
+            <span className="text-sm text-muted-foreground">{recipe.content?.ingredients?.length || 0} products</span>
             <div className="flex justify-end gap-1">
-              <button onClick={() => openEdit(recipe)} className="rounded-lg p-2 text-gray-500 hover:bg-emerald-50 hover:text-emerald-700" aria-label={`Edit ${recipe.title}`}><Pencil className="h-4 w-4" /></button>
-              <button onClick={() => void deleteRecipe(recipe)} className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600" aria-label={`Delete ${recipe.title}`}><Trash2 className="h-4 w-4" /></button>
+              <button onClick={() => openEdit(recipe)} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-brand-green" aria-label={`Edit ${recipe.title}`}><Pencil className="h-4 w-4" /></button>
+              <button onClick={() => void deleteRecipe(recipe)} className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600" aria-label={`Delete ${recipe.title}`}><Trash2 className="h-4 w-4" /></button>
             </div>
           </div>
-        )) : <div className="px-6 py-16 text-center text-sm text-gray-500">No recipes yet. Create the first shoppable food story.</div>}
+        )) : <div className="px-6 py-16 text-center text-sm text-muted-foreground">No recipes yet. Create the first shoppable food story.</div>}
       </div>
 
       {isEditorOpen && (
-        <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/50 p-4 backdrop-blur-sm md:p-8">
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/95 px-6 py-5 backdrop-blur-xl md:px-8">
-              <div><h2 className="text-xl font-bold text-gray-950">{editingId ? "Edit recipe" : "New recipe"}</h2><p className="mt-1 text-xs text-gray-500">Editorial story + live FreshPick products</p></div>
-              <button onClick={() => setIsEditorOpen(false)} className="rounded-full p-2 text-gray-500 hover:bg-gray-100"><X className="h-5 w-5" /></button>
+        <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/50 p-4  md:p-8">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-lg bg-background shadow-sm">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white/95 px-6 py-5  md:px-8">
+              <div><h2 className="text-xl font-normal text-foreground">{editingId ? "Edit recipe" : "New recipe"}</h2><p className="mt-1 text-xs text-muted-foreground">Editorial story + live FreshPick products</p></div>
+              <button onClick={() => setIsEditorOpen(false)} className="rounded-full p-2 text-muted-foreground hover:bg-secondary"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="space-y-10 p-6 md:p-8">
               <section className="grid gap-5 md:grid-cols-2">
-                <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold text-gray-700">Title</span><input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Sunday roast chicken with market greens" /></label>
-                <label><span className="mb-2 block text-sm font-semibold text-gray-700">Slug</span><input value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Generated automatically if empty" /></label>
-                <label><span className="mb-2 block text-sm font-semibold text-gray-700">Cuisine</span><input value={draft.cuisine} onChange={(e) => setDraft({ ...draft, cuisine: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Sri Lankan, Italian, Japanese…" /></label>
-                <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold text-gray-700">Short summary</span><textarea value={draft.excerpt} onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })} className="min-h-24 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" /></label>
-                <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold text-gray-700">Editorial story</span><textarea value={draft.story} onChange={(e) => setDraft({ ...draft, story: e.target.value })} className="min-h-36 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder="Why this dish belongs on the table…" /></label>
-                <label><span className="mb-2 block text-sm font-semibold text-gray-700">Hero image URL</span><input value={draft.imageUrl} onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" /></label>
-                <label><span className="mb-2 block text-sm font-semibold text-gray-700">Image alt text</span><input value={draft.imageAlt} onChange={(e) => setDraft({ ...draft, imageAlt: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" /></label>
-                <label><span className="mb-2 block text-sm font-semibold text-gray-700">Tags</span><input value={draft.tags} onChange={(e) => setDraft({ ...draft, tags: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder="weeknight, seasonal, premium" /></label>
-                <label><span className="mb-2 block text-sm font-semibold text-gray-700">Dietary tags</span><input value={draft.dietaryTags} onChange={(e) => setDraft({ ...draft, dietaryTags: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder="high-protein, vegetarian" /></label>
+                <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold text-foreground">Title</span><input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder="Sunday roast chicken with market greens" /></label>
+                <label><span className="mb-2 block text-sm font-semibold text-foreground">Slug</span><input value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder="Generated automatically if empty" /></label>
+                <label><span className="mb-2 block text-sm font-semibold text-foreground">Cuisine</span><input value={draft.cuisine} onChange={(e) => setDraft({ ...draft, cuisine: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder="Sri Lankan, Italian, Japanese…" /></label>
+                <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold text-foreground">Short summary</span><textarea value={draft.excerpt} onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })} className="min-h-24 w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" /></label>
+                <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold text-foreground">Editorial story</span><textarea value={draft.story} onChange={(e) => setDraft({ ...draft, story: e.target.value })} className="min-h-36 w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder="Why this dish belongs on the table…" /></label>
+                <label><span className="mb-2 block text-sm font-semibold text-foreground">Hero image URL</span><input value={draft.imageUrl} onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" /></label>
+                <label><span className="mb-2 block text-sm font-semibold text-foreground">Image alt text</span><input value={draft.imageAlt} onChange={(e) => setDraft({ ...draft, imageAlt: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" /></label>
+                <label><span className="mb-2 block text-sm font-semibold text-foreground">Tags</span><input value={draft.tags} onChange={(e) => setDraft({ ...draft, tags: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder="weeknight, seasonal, premium" /></label>
+                <label><span className="mb-2 block text-sm font-semibold text-foreground">Dietary tags</span><input value={draft.dietaryTags} onChange={(e) => setDraft({ ...draft, dietaryTags: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder="high-protein, vegetarian" /></label>
                 <div className="grid grid-cols-3 gap-3 md:col-span-2">
-                  <label><span className="mb-2 block text-xs font-semibold text-gray-600">Prep min</span><input type="number" min={0} value={draft.prepTimeMinutes} onChange={(e) => setDraft({ ...draft, prepTimeMinutes: Number(e.target.value) })} className="w-full rounded-xl border border-gray-200 px-3 py-3" /></label>
-                  <label><span className="mb-2 block text-xs font-semibold text-gray-600">Cook min</span><input type="number" min={0} value={draft.cookTimeMinutes} onChange={(e) => setDraft({ ...draft, cookTimeMinutes: Number(e.target.value) })} className="w-full rounded-xl border border-gray-200 px-3 py-3" /></label>
-                  <label><span className="mb-2 block text-xs font-semibold text-gray-600">Servings</span><input type="number" min={1} value={draft.servings} onChange={(e) => setDraft({ ...draft, servings: Number(e.target.value) })} className="w-full rounded-xl border border-gray-200 px-3 py-3" /></label>
+                  <label><span className="mb-2 block text-xs font-semibold text-muted-foreground">Prep min</span><input type="number" min={0} value={draft.prepTimeMinutes} onChange={(e) => setDraft({ ...draft, prepTimeMinutes: Number(e.target.value) })} className="w-full rounded-lg border border-border px-3 py-3" /></label>
+                  <label><span className="mb-2 block text-xs font-semibold text-muted-foreground">Cook min</span><input type="number" min={0} value={draft.cookTimeMinutes} onChange={(e) => setDraft({ ...draft, cookTimeMinutes: Number(e.target.value) })} className="w-full rounded-lg border border-border px-3 py-3" /></label>
+                  <label><span className="mb-2 block text-xs font-semibold text-muted-foreground">Servings</span><input type="number" min={1} value={draft.servings} onChange={(e) => setDraft({ ...draft, servings: Number(e.target.value) })} className="w-full rounded-lg border border-border px-3 py-3" /></label>
                 </div>
               </section>
 
               <section>
-                <div className="mb-5 flex items-center justify-between"><div><h3 className="font-bold text-gray-950">Shoppable ingredients</h3><p className="mt-1 text-xs text-gray-500">Attach real catalogue items. Stock and price remain live.</p></div><button onClick={() => setDraft((current) => ({ ...current, ingredients: [...current.ingredients, { productId: "", quantity: 1, note: "", optional: false }] }))} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold hover:border-emerald-300 hover:text-emerald-700"><Plus className="h-3.5 w-3.5" /> Ingredient</button></div>
+                <div className="mb-5 flex items-center justify-between"><div><h3 className="font-bold text-foreground">Shoppable ingredients</h3><p className="mt-1 text-xs text-muted-foreground">Attach real catalogue items. Stock and price remain live.</p></div><button onClick={() => setDraft((current) => ({ ...current, ingredients: [...current.ingredients, { productId: "", quantity: 1, note: "", optional: false }] }))} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:border-border hover:text-brand-green"><Plus className="h-3.5 w-3.5" /> Ingredient</button></div>
                 <div className="space-y-3">
                   {draft.ingredients.map((ingredient, index) => (
-                    <div key={index} className="grid gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-4 md:grid-cols-[minmax(0,1fr)_90px_minmax(0,.7fr)_90px_40px] md:items-center">
-                      <select value={ingredient.productId} onChange={(e) => updateIngredient(index, { productId: e.target.value })} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm"><option value="">Select a FreshPick product</option>{products.map((product) => <option key={product.id || product._id} value={product.id || product._id}>{product.name} · {product.sku} · stock {product.stockQty}</option>)}</select>
-                      <input type="number" min={1} value={ingredient.quantity} onChange={(e) => updateIngredient(index, { quantity: Math.max(Number(e.target.value) || 1, 1) })} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm" aria-label="Quantity" />
-                      <input value={ingredient.note} onChange={(e) => updateIngredient(index, { note: e.target.value })} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm" placeholder="e.g. finely sliced" />
-                      <label className="flex items-center gap-2 text-xs text-gray-600"><input type="checkbox" checked={ingredient.optional} onChange={(e) => updateIngredient(index, { optional: e.target.checked })} /> Optional</label>
-                      <button onClick={() => removeIngredient(index)} disabled={draft.ingredients.length === 1} className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
+                    <div key={index} className="grid gap-3 rounded-lg border border-border bg-secondary p-4 md:grid-cols-[minmax(0,1fr)_90px_minmax(0,.7fr)_90px_40px] md:items-center">
+                      <select value={ingredient.productId} onChange={(e) => updateIngredient(index, { productId: e.target.value })} className="w-full rounded-lg border border-border bg-background px-3 py-3 text-sm"><option value="">Select a FreshPick product</option>{products.map((product) => <option key={product.id || product._id} value={product.id || product._id}>{product.name} · {product.sku} · stock {product.stockQty}</option>)}</select>
+                      <input type="number" min={1} value={ingredient.quantity} onChange={(e) => updateIngredient(index, { quantity: Math.max(Number(e.target.value) || 1, 1) })} className="w-full rounded-lg border border-border bg-background px-3 py-3 text-sm" aria-label="Quantity" />
+                      <input value={ingredient.note} onChange={(e) => updateIngredient(index, { note: e.target.value })} className="w-full rounded-lg border border-border bg-background px-3 py-3 text-sm" placeholder="e.g. finely sliced" />
+                      <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={ingredient.optional} onChange={(e) => updateIngredient(index, { optional: e.target.checked })} /> Optional</label>
+                      <button onClick={() => removeIngredient(index)} disabled={draft.ingredients.length === 1} className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600 disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section><label><span className="mb-2 block text-sm font-semibold text-gray-700">Cooking steps — one step per line</span><textarea value={draft.steps} onChange={(e) => setDraft({ ...draft, steps: e.target.value })} className="min-h-48 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-emerald-500" placeholder={"Heat the pan over medium heat.\nSeason the chicken generously.\nCook until golden and finish with herbs."} /></label></section>
+              <section><label><span className="mb-2 block text-sm font-semibold text-foreground">Cooking steps — one step per line</span><textarea value={draft.steps} onChange={(e) => setDraft({ ...draft, steps: e.target.value })} className="min-h-48 w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-primary" placeholder={"Heat the pan over medium heat.\nSeason the chicken generously.\nCook until golden and finish with herbs."} /></label></section>
 
-              <section className="grid gap-5 md:grid-cols-2"><label><span className="mb-2 block text-sm font-semibold text-gray-700">SEO title</span><input value={draft.metaTitle} onChange={(e) => setDraft({ ...draft, metaTitle: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3" /></label><label><span className="mb-2 block text-sm font-semibold text-gray-700">SEO description</span><input value={draft.metaDescription} onChange={(e) => setDraft({ ...draft, metaDescription: e.target.value })} className="w-full rounded-xl border border-gray-200 px-4 py-3" /></label></section>
+              <section className="grid gap-5 md:grid-cols-2"><label><span className="mb-2 block text-sm font-semibold text-foreground">SEO title</span><input value={draft.metaTitle} onChange={(e) => setDraft({ ...draft, metaTitle: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3" /></label><label><span className="mb-2 block text-sm font-semibold text-foreground">SEO description</span><input value={draft.metaDescription} onChange={(e) => setDraft({ ...draft, metaDescription: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3" /></label></section>
 
-              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-6">
-                <label className="inline-flex items-center gap-3 text-sm font-semibold text-gray-700"><input type="checkbox" checked={draft.published} onChange={(e) => setDraft({ ...draft, published: e.target.checked })} className="h-4 w-4" /> Publish immediately</label>
-                <div className="flex gap-3"><button onClick={() => setIsEditorOpen(false)} className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700">Cancel</button><button onClick={() => void saveRecipe()} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"><Save className="h-4 w-4" /> {saving ? "Saving…" : "Save recipe"}</button></div>
+              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+                <label className="inline-flex items-center gap-3 text-sm font-semibold text-foreground"><input type="checkbox" checked={draft.published} onChange={(e) => setDraft({ ...draft, published: e.target.checked })} className="h-4 w-4" /> Publish immediately</label>
+                <div className="flex gap-3"><button onClick={() => setIsEditorOpen(false)} className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground">Cancel</button><button onClick={() => void saveRecipe()} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary disabled:opacity-50"><Save className="h-4 w-4" /> {saving ? "Saving…" : "Save recipe"}</button></div>
               </div>
             </div>
           </div>

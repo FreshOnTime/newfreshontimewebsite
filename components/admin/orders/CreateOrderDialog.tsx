@@ -174,7 +174,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
           <div className="border rounded p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-medium">Customer</div>
-              <div className="text-xs text-gray-500">Search and pick a customer</div>
+              <div className="text-xs text-muted-foreground">Search and pick a customer</div>
             </div>
             <div className="flex gap-2">
               <Input placeholder="Search customers..." value={searchCustomer} onChange={(e)=>setSearchCustomer(e.target.value)} />
@@ -191,7 +191,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
           <div className="border rounded p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-medium">Products</div>
-              <div className="text-xs text-gray-500">Search and add products</div>
+              <div className="text-xs text-muted-foreground">Search and add products</div>
             </div>
             <div className="flex gap-2 mb-3">
               <Input placeholder="Search products..." value={searchProducts} onChange={(e)=>setSearchProducts(e.target.value)} />
@@ -218,7 +218,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
                     </TableRow>
                   ))}
                   {productResults.length === 0 && (
-                    <TableRow><TableCell colSpan={4} className="text-center text-sm text-gray-500">No products</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No products</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -258,7 +258,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
                   </TableRow>
                 ))}
                 {items.length === 0 && (
-                  <TableRow><TableCell colSpan={5} className="text-center text-sm text-gray-500">No items added</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center text-sm text-muted-foreground">No items added</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
@@ -269,26 +269,26 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
             <div className="border rounded p-3">
               <div className="text-sm font-medium mb-2">Charges</div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Subtotal</span><span className="font-medium">{currency(subtotal)}</span></div>
-                <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Shipping</span><Input type="number" className="w-28" value={shippingFee} onChange={(e)=>setShippingFee(Number(e.target.value||0))} /></div>
-                <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Tax</span><Input type="number" className="w-28" value={tax} onChange={(e)=>setTax(Number(e.target.value||0))} /></div>
-                <div className="flex items-center justify-between"><span className="text-sm text-gray-600">Discount</span><Input type="number" className="w-28" value={discount} onChange={(e)=>setDiscount(Number(e.target.value||0))} /></div>
+                <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Subtotal</span><span className="font-medium">{currency(subtotal)}</span></div>
+                <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Shipping</span><Input type="number" className="w-28" value={shippingFee} onChange={(e)=>setShippingFee(Number(e.target.value||0))} /></div>
+                <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Tax</span><Input type="number" className="w-28" value={tax} onChange={(e)=>setTax(Number(e.target.value||0))} /></div>
+                <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Discount</span><Input type="number" className="w-28" value={discount} onChange={(e)=>setDiscount(Number(e.target.value||0))} /></div>
                 <div className="flex items-center justify-between pt-2 border-t"><span className="text-sm">Total</span><span className="font-semibold">{currency(total)}</span></div>
               </div>
             </div>
             <div className="border rounded p-3 md:col-span-2">
               <div className="text-sm font-medium mb-2">Shipping address</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div><label className="block text-xs text-gray-600 mb-1">Recipient name</label><Input value={shipName} onChange={(e)=>setShipName(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">Phone</label><Input value={shipPhone} onChange={(e)=>setShipPhone(e.target.value)} /></div>
-                <div className="md:col-span-2"><label className="block text-xs text-gray-600 mb-1">Street</label><Input value={shipStreet} onChange={(e)=>setShipStreet(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">City</label><Input value={shipCity} onChange={(e)=>setShipCity(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">State</label><Input value={shipState} onChange={(e)=>setShipState(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">Postal Code</label><Input value={shipZip} onChange={(e)=>setShipZip(e.target.value)} /></div>
-                <div><label className="block text-xs text-gray-600 mb-1">Country</label><Input value={shipCountry} onChange={(e)=>setShipCountry(e.target.value)} /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">Recipient name</label><Input value={shipName} onChange={(e)=>setShipName(e.target.value)} /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">Phone</label><Input value={shipPhone} onChange={(e)=>setShipPhone(e.target.value)} /></div>
+                <div className="md:col-span-2"><label className="block text-xs text-muted-foreground mb-1">Street</label><Input value={shipStreet} onChange={(e)=>setShipStreet(e.target.value)} /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">City</label><Input value={shipCity} onChange={(e)=>setShipCity(e.target.value)} /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">State</label><Input value={shipState} onChange={(e)=>setShipState(e.target.value)} /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">Postal Code</label><Input value={shipZip} onChange={(e)=>setShipZip(e.target.value)} /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">Country</label><Input value={shipCountry} onChange={(e)=>setShipCountry(e.target.value)} /></div>
               </div>
               <div className="mt-3">
-                <label className="block text-xs text-gray-600 mb-1">Payment method</label>
+                <label className="block text-xs text-muted-foreground mb-1">Payment method</label>
                 <select className="border rounded px-2 py-1" value={paymentMethod} onChange={(e)=>setPaymentMethod(e.target.value as 'cash'|'card'|'bank_transfer'|'digital_wallet')}>
                   <option value="cash">Cash</option>
                   <option value="card">Card</option>

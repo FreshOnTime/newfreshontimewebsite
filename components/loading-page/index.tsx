@@ -3,12 +3,12 @@ import Spinner from "@/components/spinner";
 export default function LoadingPage() {
   return (
     <div className="fixed inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
-      <div className="flex flex-col items-center space-y-6 p-8 rounded-xl">
+      <div className="flex flex-col items-center space-y-6 p-8 rounded-lg">
         <div className="relative">
-          <Spinner color="#22C55E" />
+          <Spinner color="#173F2A" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Preparing your fresh groceries
           </p>
         </div>

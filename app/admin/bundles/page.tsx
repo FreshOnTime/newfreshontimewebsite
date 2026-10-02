@@ -194,10 +194,10 @@ export default function BundlesPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Bundles</h1>
-                    <p className="text-gray-600 mt-2">Manage product bundles and packages</p>
+                    <h1 className="text-3xl font-normal text-foreground">Bundles</h1>
+                    <p className="text-muted-foreground mt-2">Manage product bundles and packages</p>
                 </div>
-                <Button onClick={() => setIsDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
+                <Button onClick={() => setIsDialogOpen(true)} className="bg-primary hover:bg-primary">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Bundle
                 </Button>
@@ -207,7 +207,7 @@ export default function BundlesPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-green-600" />
+                        <Package className="w-5 h-5 text-brand-green" />
                         Bundle List
                     </CardTitle>
                     <CardDescription>View and manage product bundles</CardDescription>
@@ -215,7 +215,7 @@ export default function BundlesPage() {
                 <CardContent>
                     <div className="flex items-center space-x-2 mb-6">
                         <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                             <Input
                                 placeholder="Search bundles..."
                                 value={search}
@@ -227,7 +227,7 @@ export default function BundlesPage() {
 
                     {loading ? (
                         <div className="flex items-center justify-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                         </div>
                     ) : (
                         <>
@@ -251,14 +251,14 @@ export default function BundlesPage() {
                                                     <img
                                                         src={bundle.image || '/placeholder.svg'}
                                                         alt={bundle.name}
-                                                        className="w-10 h-10 rounded-lg object-cover bg-gray-100"
+                                                        className="w-10 h-10 rounded-lg object-cover bg-secondary"
                                                     />
                                                     {bundle.name}
                                                 </div>
                                             </TableCell>
                                             <TableCell>{bundle.sku}</TableCell>
-                                            <TableCell className="text-green-600 font-semibold">{currency(bundle.price)}</TableCell>
-                                            <TableCell className="text-gray-500">{currency(bundle.costPrice)}</TableCell>
+                                            <TableCell className="text-brand-green font-semibold">{currency(bundle.price)}</TableCell>
+                                            <TableCell className="text-muted-foreground">{currency(bundle.costPrice)}</TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">{bundle.bundleItems?.length || 0} items</Badge>
                                             </TableCell>
@@ -293,7 +293,7 @@ export default function BundlesPage() {
                             </Table>
 
                             {filteredBundles.length === 0 && (
-                                <div className="text-center py-8 text-gray-500">
+                                <div className="text-center py-8 text-muted-foreground">
                                     No bundles found. Create your first bundle!
                                 </div>
                             )}
@@ -375,7 +375,7 @@ export default function BundlesPage() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Add Products to Bundle</label>
                             <div className="relative">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search products to add..."
                                     className="pl-9"
@@ -383,20 +383,20 @@ export default function BundlesPage() {
                                     onChange={(e) => setProductSearch(e.target.value)}
                                 />
                                 {searchResults.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-lg shadow-sm max-h-60 overflow-y-auto">
                                         {searchResults.map(p => {
                                             const price = (p as any).price || (p as any).pricePerBaseQuantity || 0;
                                             const imageUrl = typeof p.image === 'string' ? p.image : p.image?.url || '/placeholder.svg';
                                             return (
                                                 <div
                                                     key={p._id}
-                                                    className="p-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 text-sm border-b border-gray-50 last:border-0"
+                                                    className="p-3 hover:bg-secondary cursor-pointer flex items-center gap-3 text-sm border-b border-border last:border-0"
                                                     onClick={() => addProductToBundle(p)}
                                                 >
-                                                    <img src={imageUrl} className="w-10 h-10 rounded-lg object-cover bg-gray-100" alt={p.name} />
+                                                    <img src={imageUrl} className="w-10 h-10 rounded-lg object-cover bg-secondary" alt={p.name} />
                                                     <div className="flex-1 min-w-0">
                                                         <div className="font-medium truncate">{p.name}</div>
-                                                        <div className="text-green-600 font-semibold">Rs. {price.toFixed(2)}</div>
+                                                        <div className="text-brand-green font-semibold">Rs. {price.toFixed(2)}</div>
                                                     </div>
                                                 </div>
                                             );
@@ -411,10 +411,10 @@ export default function BundlesPage() {
                             <label className="text-sm font-medium">Bundle Items ({fields.length})</label>
                             <div className="space-y-2 max-h-40 overflow-y-auto">
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                                    <div key={field.id} className="flex items-center gap-2 bg-secondary p-2 rounded-lg">
                                         <div className="flex-1 min-w-0">
                                             <div className="text-sm font-medium truncate">{field.name}</div>
-                                            <div className="text-xs text-green-600">Rs. {(field as any).price?.toFixed(2) || '0.00'}</div>
+                                            <div className="text-xs text-brand-green">Rs. {(field as any).price?.toFixed(2) || '0.00'}</div>
                                         </div>
                                         <Input
                                             type="number"
@@ -427,7 +427,7 @@ export default function BundlesPage() {
                                     </div>
                                 ))}
                                 {fields.length === 0 && (
-                                    <div className="text-center py-4 text-gray-400 text-sm">
+                                    <div className="text-center py-4 text-muted-foreground text-sm">
                                         Search and add products above
                                     </div>
                                 )}
@@ -435,14 +435,14 @@ export default function BundlesPage() {
                         </div>
 
                         {/* Cost Price Display */}
-                        <div className="bg-green-50 p-4 rounded-lg">
+                        <div className="bg-secondary p-4 rounded-lg">
                             <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-700">Total Cost Price:</span>
-                                <span className="text-lg font-bold text-green-600">
+                                <span className="text-sm font-medium text-foreground">Total Cost Price:</span>
+                                <span className="text-lg font-bold text-brand-green">
                                     Rs. {fields.reduce((sum, field) => sum + ((field as any).costPrice || 0) * ((field as any).quantity || 1), 0).toFixed(2)}
                                 </span>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">Auto-calculated from products</p>
+                            <p className="text-xs text-muted-foreground mt-1">Auto-calculated from products</p>
                         </div>
 
                         <div className="flex justify-end gap-3">
@@ -451,7 +451,7 @@ export default function BundlesPage() {
                             </Button>
                             <Button
                                 type="submit"
-                                className="bg-green-600 hover:bg-green-700"
+                                className="bg-primary hover:bg-primary"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? "Creating..." : (

@@ -39,14 +39,14 @@ export class ProductErrorBoundary extends Component<Props, State> {
             }
 
             return (
-                <div className="flex flex-col items-center justify-center p-8 bg-background rounded-xl text-center">
+                <div className="flex flex-col items-center justify-center p-8 bg-background rounded-lg text-center">
                     <div className="bg-amber-100 rounded-full p-3 mb-4">
                         <AlertTriangle className="w-6 h-6 text-amber-600" />
                     </div>
-                    <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                         Something went wrong
                     </h3>
-                    <p className="text-sm text-zinc-500 mb-4 max-w-sm">
+                    <p className="text-sm text-muted-foreground mb-4 max-w-sm">
                         We couldn&apos;t load this section. Please try again.
                     </p>
                     <Button

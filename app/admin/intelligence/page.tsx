@@ -45,8 +45,8 @@ type Intelligence = {
 const riskClass: Record<Forecast["risk"], string> = {
   stockout: "bg-rose-50 text-rose-700 border-rose-200",
   low: "bg-amber-50 text-amber-700 border-amber-200",
-  healthy: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "no-demand": "bg-zinc-50 text-zinc-500 border-zinc-200",
+  healthy: "bg-secondary text-brand-green border-border",
+  "no-demand": "bg-secondary text-muted-foreground border-border",
 };
 
 export default function AdminIntelligencePage() {
@@ -80,14 +80,14 @@ export default function AdminIntelligencePage() {
   }, [data, riskFilter]);
 
   if (loading) {
-    return <div className="flex min-h-[50vh] items-center justify-center gap-3 text-sm text-zinc-500"><Loader2 className="h-5 w-5 animate-spin" /> Computing demand and availability…</div>;
+    return <div className="flex min-h-[50vh] items-center justify-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /> Computing demand and availability…</div>;
   }
 
   if (error || !data) {
     return (
-      <div className="border border-rose-200 bg-white p-6">
+      <div className="border border-rose-200 bg-background p-6">
         <p className="text-sm text-rose-700">{error || "Unable to load intelligence."}</p>
-        <button onClick={() => void load()} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-zinc-800"><RefreshCw className="h-4 w-4" /> Retry</button>
+        <button onClick={() => void load()} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-foreground"><RefreshCw className="h-4 w-4" /> Retry</button>
       </div>
     );
   }
@@ -102,36 +102,36 @@ export default function AdminIntelligencePage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-5 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">FreshPick Operations Intelligence</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">Demand, stock and supplier health</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">Forecasts are calculated from actual order-item velocity over the last eight weeks. No placeholder demand numbers are rendered.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-green">FreshPick Operations Intelligence</p>
+          <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">Demand, stock and supplier health</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Forecasts are calculated from actual order-item velocity over the last eight weeks. No placeholder demand numbers are rendered.</p>
         </div>
-        <button onClick={() => void load()} className="inline-flex h-10 items-center gap-2 border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"><RefreshCw className="h-4 w-4" /> Recompute</button>
+        <button onClick={() => void load()} className="inline-flex h-10 items-center gap-2 border border-border bg-background px-4 text-sm font-semibold text-foreground hover:bg-secondary"><RefreshCw className="h-4 w-4" /> Recompute</button>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {metrics.map(({ label, value, icon: Icon }) => (
-          <div key={label} className="border border-zinc-200 bg-white p-5">
-            <div className="flex items-center justify-between text-zinc-400"><span className="text-xs font-medium uppercase tracking-wide">{label}</span><Icon className="h-4 w-4" /></div>
-            <div className="mt-4 text-3xl font-semibold tabular-nums text-zinc-950">{value.toLocaleString()}</div>
+          <div key={label} className="border border-border bg-background p-5">
+            <div className="flex items-center justify-between text-muted-foreground"><span className="text-xs font-medium uppercase tracking-wide">{label}</span><Icon className="h-4 w-4" /></div>
+            <div className="mt-4 text-3xl font-semibold tabular-nums text-foreground">{value.toLocaleString()}</div>
           </div>
         ))}
       </section>
 
-      <section className="border border-zinc-200 bg-white">
-        <div className="flex flex-col gap-4 border-b border-zinc-200 p-5 lg:flex-row lg:items-center lg:justify-between">
+      <section className="border border-border bg-background">
+        <div className="flex flex-col gap-4 border-b border-border p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-950">SKU forecast queue</h2>
-            <p className="mt-1 text-sm text-zinc-500">Prioritized by stockout risk, recommended reorder quantity and recent demand.</p>
+            <h2 className="text-lg font-normal text-foreground">SKU forecast queue</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Prioritized by stockout risk, recommended reorder quantity and recent demand.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {(["all", "stockout", "low", "healthy", "no-demand"] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setRiskFilter(filter)}
-                className={`border px-3 py-2 text-xs font-semibold capitalize ${riskFilter === filter ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-600"}`}
+                className={`border px-3 py-2 text-xs font-semibold capitalize ${riskFilter === filter ? "border-border bg-primary text-white" : "border-border bg-background text-muted-foreground"}`}
               >
                 {filter.replace("-", " ")}
               </button>
@@ -141,7 +141,7 @@ export default function AdminIntelligencePage() {
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
+            <thead className="bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-5 py-3 font-semibold">Product</th>
                 <th className="px-5 py-3 font-semibold">Supplier</th>
@@ -154,17 +154,17 @@ export default function AdminIntelligencePage() {
                 <th className="px-5 py-3 font-semibold">Risk</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-border">
               {rows.slice(0, 250).map((row) => (
-                <tr key={row.productId} className="hover:bg-zinc-50/70">
-                  <td className="px-5 py-4"><div className="font-medium text-zinc-900">{row.name}</div><div className="mt-1 text-xs text-zinc-400">{row.sku}</div></td>
-                  <td className="px-5 py-4 text-zinc-600">{row.supplier || "Unassigned"}</td>
-                  <td className="px-5 py-4 text-right tabular-nums text-zinc-700">{row.stockQty}</td>
-                  <td className="px-5 py-4 text-right tabular-nums text-zinc-700">{row.units7d}</td>
-                  <td className="px-5 py-4 text-right tabular-nums text-zinc-700">{row.units30d}</td>
-                  <td className="px-5 py-4 text-right font-medium tabular-nums text-zinc-900">{row.forecastNext7d}</td>
-                  <td className="px-5 py-4 text-right tabular-nums text-zinc-600">{row.stockCoverDays == null ? "—" : `${row.stockCoverDays}d`}</td>
-                  <td className="px-5 py-4 text-right font-semibold tabular-nums text-zinc-950">{row.recommendedReorder}</td>
+                <tr key={row.productId} className="hover:bg-secondary/70">
+                  <td className="px-5 py-4"><div className="font-medium text-foreground">{row.name}</div><div className="mt-1 text-xs text-muted-foreground">{row.sku}</div></td>
+                  <td className="px-5 py-4 text-muted-foreground">{row.supplier || "Unassigned"}</td>
+                  <td className="px-5 py-4 text-right tabular-nums text-foreground">{row.stockQty}</td>
+                  <td className="px-5 py-4 text-right tabular-nums text-foreground">{row.units7d}</td>
+                  <td className="px-5 py-4 text-right tabular-nums text-foreground">{row.units30d}</td>
+                  <td className="px-5 py-4 text-right font-medium tabular-nums text-foreground">{row.forecastNext7d}</td>
+                  <td className="px-5 py-4 text-right tabular-nums text-muted-foreground">{row.stockCoverDays == null ? "—" : `${row.stockCoverDays}d`}</td>
+                  <td className="px-5 py-4 text-right font-semibold tabular-nums text-foreground">{row.recommendedReorder}</td>
                   <td className="px-5 py-4"><span className={`inline-flex border px-2.5 py-1 text-xs font-semibold capitalize ${riskClass[row.risk]}`}>{row.risk.replace("-", " ")}</span></td>
                 </tr>
               ))}
@@ -173,22 +173,22 @@ export default function AdminIntelligencePage() {
         </div>
       </section>
 
-      <section className="border border-zinc-200 bg-white">
-        <div className="border-b border-zinc-200 p-5">
-          <h2 className="text-lg font-semibold text-zinc-950">Supplier availability</h2>
-          <p className="mt-1 text-sm text-zinc-500">Health is derived from the live catalogue and 30-day customer demand, not manual scorecards.</p>
+      <section className="border border-border bg-background">
+        <div className="border-b border-border p-5">
+          <h2 className="text-lg font-normal text-foreground">Supplier availability</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Health is derived from the live catalogue and 30-day customer demand, not manual scorecards.</p>
         </div>
-        <div className="grid gap-px bg-zinc-200 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-px bg-secondary sm:grid-cols-2 xl:grid-cols-3">
           {data.suppliers.slice(0, 18).map((supplier) => (
-            <article key={supplier.supplierId} className="bg-white p-5">
+            <article key={supplier.supplierId} className="bg-background p-5">
               <div className="flex items-start justify-between gap-4">
-                <div><h3 className="font-semibold text-zinc-950">{supplier.supplier}</h3><p className="mt-1 text-xs text-zinc-500">{supplier.activeSkus} active SKUs</p></div>
-                <div className="text-right"><div className="text-2xl font-semibold tabular-nums text-zinc-950">{supplier.availabilityRate}%</div><div className="text-xs text-zinc-400">available</div></div>
+                <div><h3 className="font-semibold text-foreground">{supplier.supplier}</h3><p className="mt-1 text-xs text-muted-foreground">{supplier.activeSkus} active SKUs</p></div>
+                <div className="text-right"><div className="text-2xl font-semibold tabular-nums text-foreground">{supplier.availabilityRate}%</div><div className="text-xs text-muted-foreground">available</div></div>
               </div>
-              <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-zinc-100 pt-4 text-xs">
-                <div><dt className="text-zinc-400">Out</dt><dd className="mt-1 font-semibold text-zinc-800">{supplier.outOfStockSkus}</dd></div>
-                <div><dt className="text-zinc-400">Low</dt><dd className="mt-1 font-semibold text-zinc-800">{supplier.lowStockSkus}</dd></div>
-                <div><dt className="text-zinc-400">30d units</dt><dd className="mt-1 font-semibold text-zinc-800">{supplier.unitsSold30d}</dd></div>
+              <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-border pt-4 text-xs">
+                <div><dt className="text-muted-foreground">Out</dt><dd className="mt-1 font-semibold text-foreground">{supplier.outOfStockSkus}</dd></div>
+                <div><dt className="text-muted-foreground">Low</dt><dd className="mt-1 font-semibold text-foreground">{supplier.lowStockSkus}</dd></div>
+                <div><dt className="text-muted-foreground">30d units</dt><dd className="mt-1 font-semibold text-foreground">{supplier.unitsSold30d}</dd></div>
               </dl>
             </article>
           ))}

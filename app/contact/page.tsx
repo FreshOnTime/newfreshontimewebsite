@@ -59,10 +59,10 @@ export default function ContactPage() {
     }
   }
 
-  const fieldClass = "h-12 rounded-none border-0 border-b border-zinc-300 bg-transparent px-0 shadow-none focus-visible:border-emerald-800 focus-visible:ring-0";
+  const fieldClass = "h-12 rounded-none border-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0";
 
   return (
-    <main className="min-h-screen bg-background text-zinc-950">
+    <div className="min-h-screen bg-background text-foreground">
       <PremiumPageHeader
         title="Speak with FreshPick."
         subtitle="For orders, recurring plans, partnerships, and general support, our Colombo team is here to help."
@@ -72,67 +72,67 @@ export default function ContactPage() {
       <section className="px-4 py-10 md:py-12">
         <div className="container mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.65fr_1.35fr]">
           <aside>
-            <span className="text-xs font-bold normal-case text-emerald-700">Client care</span>
-            <h2 className="mt-7 font-sans text-2xl font-semibold leading-tight md:text-2xl">
-              A human answer,<br /><span className="not-italic text-emerald-800">when you need one.</span>
+            <span className="text-xs font-bold normal-case text-brand-green">Client care</span>
+            <h2 className="mt-7 font-serif text-2xl font-normal leading-tight md:text-2xl">
+              A human answer,<br /><span className="not-italic text-brand-green">when you need one.</span>
             </h2>
-            <div className="mt-6 space-y-6 border-t border-zinc-300 pt-8 text-sm font-normal text-zinc-600">
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="flex gap-3 transition-colors hover:text-emerald-800">
-                <Mail className="h-5 w-5 stroke-1 text-emerald-700" /> {SUPPORT_EMAIL}
+            <div className="mt-6 space-y-6 border-t border-border pt-8 text-sm font-normal text-muted-foreground">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="flex gap-3 transition-colors hover:text-brand-green">
+                <Mail className="h-5 w-5 stroke-1 text-brand-green" /> {SUPPORT_EMAIL}
               </a>
-              <p className="flex gap-3"><MapPin className="h-5 w-5 stroke-1 text-emerald-700" /> Greater Colombo, Sri Lanka</p>
+              <p className="flex gap-3"><MapPin className="h-5 w-5 stroke-1 text-brand-green" /> Greater Colombo, Sri Lanka</p>
             </div>
           </aside>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-x-8 gap-y-7 rounded-xl bg-background p-7 md:grid-cols-2 md:p-12">
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-x-8 gap-y-7 rounded-lg bg-background p-7 md:grid-cols-2 md:p-12">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Name
               <Input className={` ${fieldClass} mt-2`} value={name} onChange={(event) => setName(event.target.value)} required />
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Email
               <Input className={` ${fieldClass} mt-2`} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Enquiry
-              <select value={type} onChange={(event) => setType(event.target.value as "issue" | "suggestion" | "other")} className="mt-2 h-12 w-full border-0 border-b border-zinc-300 bg-transparent px-0 text-sm font-normal normal-case tracking-normal outline-none focus:border-emerald-800">
+              <select value={type} onChange={(event) => setType(event.target.value as "issue" | "suggestion" | "other")} className="mt-2 h-12 w-full border-0 border-b border-border bg-transparent px-0 text-sm font-normal normal-case tracking-normal outline-none focus:border-primary">
                 <option value="issue">Issue</option>
                 <option value="suggestion">Suggestion</option>
                 <option value="other">Other</option>
               </select>
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Priority
-              <select value={priority} onChange={(event) => setPriority(event.target.value as "low" | "normal" | "high")} className="mt-2 h-12 w-full border-0 border-b border-zinc-300 bg-transparent px-0 text-sm font-normal normal-case tracking-normal outline-none focus:border-emerald-800">
+              <select value={priority} onChange={(event) => setPriority(event.target.value as "low" | "normal" | "high")} className="mt-2 h-12 w-full border-0 border-b border-border bg-transparent px-0 text-sm font-normal normal-case tracking-normal outline-none focus:border-primary">
                 <option value="low">Low</option>
                 <option value="normal">Normal</option>
                 <option value="high">High</option>
               </select>
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Order ID <span className="font-normal normal-case tracking-normal text-muted-foreground">(optional)</span>
               <Input className={` ${fieldClass} mt-2`} value={orderId} onChange={(event) => setOrderId(event.target.value)} />
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Subject
               <Input className={` ${fieldClass} mt-2`} value={subject} onChange={(event) => setSubject(event.target.value)} />
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-zinc-500 md:col-span-2">
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground md:col-span-2">
               Message
-              <Textarea className="mt-2 rounded-xl border-zinc-300 bg-background p-4 font-normal normal-case tracking-normal focus-visible:ring-1 focus-visible:ring-emerald-800" value={message} onChange={(event) => setMessage(event.target.value)} rows={6} required />
+              <Textarea className="mt-2 rounded-lg border-border bg-background p-4 font-normal normal-case tracking-normal focus-visible:ring-1 focus-visible:ring-primary" value={message} onChange={(event) => setMessage(event.target.value)} rows={6} required />
             </label>
 
             <div className="col-span-1 flex flex-wrap items-center gap-4 md:col-span-2">
-              <Button type="submit" className="h-14 rounded-full bg-brand-amber px-8 text-xs font-bold normal-case text-accent-foreground hover:bg-brand-amber/85" disabled={status === "sending"}>
+              <Button type="submit" className="h-14 rounded-md bg-primary px-8 text-xs font-bold normal-case text-accent-foreground hover:bg-primary/85" disabled={status === "sending"}>
                 {status === "sending" ? "Sending…" : "Send enquiry"}
               </Button>
-              <p aria-live="polite" className={`text-sm ${status === "error" ? "text-red-600" : "text-emerald-700"} `}>
+              <p aria-live="polite" className={`text-sm ${status === "error" ? "text-red-600" : "text-brand-green"} `}>
                 {status === "sent" ? "Message sent — thank you." : status === "error" ? "Unable to send right now. Please try again." : ""}
               </p>
             </div>
           </form>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

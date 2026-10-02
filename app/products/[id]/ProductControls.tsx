@@ -42,7 +42,7 @@ export const ProductControls = ({ product }: { product: Product }) => {
                 }}
                 className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${idx === selectedOptionIndex
                   ? "bg-brand-green text-white"
-                  : "border border-zinc-200 bg-background text-zinc-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
+                  : "border border-border bg-background text-muted-foreground hover:border-border hover:bg-secondary hover:text-brand-green"
                   } `}
                 aria-pressed={idx === selectedOptionIndex}
               >
@@ -55,22 +55,22 @@ export const ProductControls = ({ product }: { product: Product }) => {
 
       <div className="border-b border-border pb-5">
         {!derivedProduct.isSoldAsUnit && (
-          <div className="flex items-center justify-between gap-4 border-b border-zinc-200 pb-4">
-            <span className="text-xs font-bold normal-case text-zinc-500">
+          <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+            <span className="text-xs font-bold normal-case text-muted-foreground">
               Est. {getMeasurementType(derivedProduct.measurementUnit)}
             </span>
-            <span className="font-sans text-lg text-zinc-950">
+            <span className="font-sans text-lg text-foreground">
               {formatMeasurement(validQuantity, derivedProduct.measurementUnit)}
             </span>
           </div>
         )}
 
         <div className={` ${!derivedProduct.isSoldAsUnit ? "pt-4" : ""} flex items-end justify-between gap-4`}>
-          <span className="text-xs font-bold normal-case text-zinc-500">Item total</span>
+          <span className="text-xs font-bold normal-case text-muted-foreground">Item total</span>
           <div className="text-right">
-            <span className="font-sans text-2xl text-zinc-950">Rs. {total.toFixed(2)}</span>
+            <span className="font-sans text-2xl text-foreground">Rs. {total.toFixed(2)}</span>
             {savings > 0 && (
-              <div className="mt-1 text-xs font-medium text-emerald-700">
+              <div className="mt-1 text-xs font-medium text-brand-green">
                 Save Rs. {savings.toFixed(2)}
               </div>
             )}

@@ -306,7 +306,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
 
             {/* Recurring Section */}
             {(isRecurringOrder) && (
-              <div className="mt-4 border rounded p-3 bg-slate-50">
+              <div className="mt-4 border rounded p-3 bg-secondary">
                 <h3 className="text-sm font-medium mb-2">Recurring Schedule Details</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -361,7 +361,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                         return (
                           <div
                             key={day}
-                            className={`px-3 py-1 rounded text-sm cursor-pointer border ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                            className={`px-3 py-1 rounded text-sm cursor-pointer border ${isSelected ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border'}`}
                             onClick={() => {
                               const current = field.value || [];
                               const newDays = isSelected
@@ -388,7 +388,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
             <div className="mt-2 border rounded p-3">
               <h3 className="text-sm font-medium">Items</h3>
               {(order?.bagName || order?.bagId) && (
-                <div className="text-xs text-gray-600 mt-1 mb-2">
+                <div className="text-xs text-muted-foreground mt-1 mb-2">
                   Bag: <span className="font-medium">{order?.bagName || order?.bagId}</span>
                 </div>
               )}
@@ -419,7 +419,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                       </TableRow>
                     ))}
                     {productResults.length === 0 && (
-                      <TableRow><TableCell colSpan={4} className="text-center text-sm text-gray-500">No products</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No products</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -456,7 +456,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                     </TableRow>
                   ))}
                   {items.length === 0 && (
-                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-gray-500">No items</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-muted-foreground">No items</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -465,10 +465,10 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                 <div className="border rounded p-3">
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Subtotal</span><span className="font-medium">Rs. {subtotal.toFixed(2)}</span></div>
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Shipping</span><Input type="number" className="w-28" value={shippingFee} onChange={(e) => setShippingFee(Number(e.target.value || 0))} /></div>
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Tax</span><Input type="number" className="w-28" value={tax} onChange={(e) => setTax(Number(e.target.value || 0))} /></div>
-                    <div className="flex items-center justify-between"><span className="text-gray-600">Discount</span><Input type="number" className="w-28" value={discount} onChange={(e) => setDiscount(Number(e.target.value || 0))} /></div>
+                    <div className="flex items-center justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">Rs. {subtotal.toFixed(2)}</span></div>
+                    <div className="flex items-center justify-between"><span className="text-muted-foreground">Shipping</span><Input type="number" className="w-28" value={shippingFee} onChange={(e) => setShippingFee(Number(e.target.value || 0))} /></div>
+                    <div className="flex items-center justify-between"><span className="text-muted-foreground">Tax</span><Input type="number" className="w-28" value={tax} onChange={(e) => setTax(Number(e.target.value || 0))} /></div>
+                    <div className="flex items-center justify-between"><span className="text-muted-foreground">Discount</span><Input type="number" className="w-28" value={discount} onChange={(e) => setDiscount(Number(e.target.value || 0))} /></div>
                     <div className="flex items-center justify-between pt-2 border-t font-semibold"><span>Total</span><span>Rs. {computedTotal.toFixed(2)}</span></div>
                   </div>
                 </div>
@@ -488,7 +488,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                 <FormField name="shippingAddress.country" control={form.control} render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
               <div className="mt-3">
-                <div className="text-xs text-gray-600 mb-1">Billing address (optional)</div>
+                <div className="text-xs text-muted-foreground mb-1">Billing address (optional)</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <FormField name="billingAddress.name" control={form.control} render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField name="billingAddress.street" control={form.control} render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Street</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />

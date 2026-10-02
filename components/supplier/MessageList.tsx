@@ -76,14 +76,14 @@ export default function MessageList() {
             </CardHeader>
             <CardContent>
                 {messages.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">No messages</div>
+                    <div className="text-center text-muted-foreground py-8">No messages</div>
                 ) : (
                     <ScrollArea className="h-64 pr-4">
                         <div className="space-y-4">
                             {messages.map((msg) => (
                                 <div
                                     key={msg._id}
-                                    className={`border rounded-lg p-4 transition-colors cursor-pointer ${msg.isRead ? 'bg-background' : 'bg-blue-50 border-blue-100'
+                                    className={`border rounded-lg p-4 transition-colors cursor-pointer ${msg.isRead ? 'bg-background' : 'bg-secondary border-border'
                                         } `}
                                     onClick={() => handleRead(msg._id, msg.isRead)}
                                 >
@@ -92,11 +92,11 @@ export default function MessageList() {
                                             {msg.isRead ? (
                                                 <MailOpen className="h-4 w-4 text-muted-foreground" />
                                             ) : (
-                                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                                <div className="h-2 w-2 rounded-full bg-primary" />
                                             )}
                                             {msg.subject}
                                         </div>
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-xs text-muted-foreground">
                                             {new Date(msg.createdAt).toLocaleDateString('en-US', {
                                                 month: 'short',
                                                 day: 'numeric',
@@ -106,7 +106,7 @@ export default function MessageList() {
                                     </div>
 
                                     {expandedId === msg._id && (
-                                        <div className="mt-3 text-sm text-gray-700 border-t pt-3">
+                                        <div className="mt-3 text-sm text-foreground border-t pt-3">
                                             <p className="whitespace-pre-wrap">{msg.content}</p>
                                             <div className="mt-4 text-xs text-muted-foreground">
                                                 From: {msg.sender.firstName} {msg.sender.lastName}
@@ -115,7 +115,7 @@ export default function MessageList() {
                                     )}
 
                                     {expandedId !== msg._id && (
-                                        <p className="text-sm text-gray-500 line-clamp-1">
+                                        <p className="text-sm text-muted-foreground line-clamp-1">
                                             {msg.content}
                                         </p>
                                     )}

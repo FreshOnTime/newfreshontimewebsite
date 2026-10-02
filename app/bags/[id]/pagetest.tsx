@@ -98,7 +98,7 @@
 //             </div>
 //           ) : (
 //             <div>
-//               <h1 className="text-2xl font-bold mb-2">{bag.name}</h1>
+//               <h1 className="text-2xl font-normal mb-2">{bag.name}</h1>
 //               <p className="text-muted-foreground mb-4">{bag.description}</p>
 //               <div className="flex flex-wrap gap-2">
 //                 {bag.tags.map((tag, index) => (
@@ -131,7 +131,7 @@
 
 //       {/* Items List */}
 //       <div className="space-y-4 mb-8">
-//         <h2 className="text-lg font-semibold">Items</h2>
+//         <h2 className="text-lg font-normal">Items</h2>
 //         <div className="divide-y">
 //           {bag.items.map((item) => (
 //             <div
@@ -168,7 +168,7 @@
 //                   )}
 //                 </p>
 //                 {(item.product.discountPercentage ?? 0) > 0 && (
-//                   <p className="text-sm text-green-600">
+//                   <p className="text-sm text-brand-green">
 //                     -{item.product.discountPercentage}%
 //                   </p>
 //                 )}
@@ -184,7 +184,7 @@
 //       <span>Subtotal</span>
 //       <span>Rs. {originalTotal.toFixed(2)}</span>
 //     </div>
-//     <div className="flex justify-between text-sm text-green-600">
+//     <div className="flex justify-between text-sm text-brand-green">
 //       <span>Savings</span>
 //       <span>-Rs. {savings.toFixed(2)}</span>
 //     </div>

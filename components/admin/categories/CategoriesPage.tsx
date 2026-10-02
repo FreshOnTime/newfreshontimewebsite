@@ -47,8 +47,8 @@ export function CategoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-2">Manage product categories</p>
+          <h1 className="text-3xl font-normal text-foreground">Categories</h1>
+          <p className="text-muted-foreground mt-2">Manage product categories</p>
         </div>
   <Button onClick={() => { setEditing(null); setOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" /> Add Category
@@ -63,13 +63,13 @@ export function CategoriesPage() {
         <CardContent>
           <div className="flex items-center space-x-2 mb-6">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input placeholder="Search categories..." value={search} onChange={(e)=>{ setSearch(e.target.value); setPage(1); }} className="pl-10" />
             </div>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
           ) : (
             <>
               <Table>
@@ -110,11 +110,11 @@ export function CategoriesPage() {
                 </TableBody>
               </Table>
 
-              {items.length === 0 && <div className="text-center py-8 text-gray-500">No categories yet</div>}
+              {items.length === 0 && <div className="text-center py-8 text-muted-foreground">No categories yet</div>}
 
               {pagination.pages > 1 && (
                 <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-gray-700">Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} categories</div>
+                  <div className="text-sm text-foreground">Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} categories</div>
                   <div className="flex space-x-2">
                     <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page <= 1}>Previous</Button>
                     <Button variant="outline" onClick={() => setPage(page + 1)} disabled={page >= pagination.pages}>Next</Button>

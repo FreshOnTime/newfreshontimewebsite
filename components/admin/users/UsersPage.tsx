@@ -103,8 +103,8 @@ export function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-          <p className="text-gray-600 mt-2">Manage application users and roles</p>
+          <h1 className="text-3xl font-normal text-foreground">Users</h1>
+          <p className="text-muted-foreground mt-2">Manage application users and roles</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -120,7 +120,7 @@ export function UsersPage() {
         <CardContent>
           <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search users..."
                 value={search}
@@ -145,7 +145,7 @@ export function UsersPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
             <>
@@ -204,12 +204,12 @@ export function UsersPage() {
               </Table>
 
               {users.length === 0 && (
-                <div className="text-center py-8 text-gray-500">No users found</div>
+                <div className="text-center py-8 text-muted-foreground">No users found</div>
               )}
 
               {pagination.pages > 1 && (
                 <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-foreground">
                     Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
                   </div>
                   <div className="flex gap-2">

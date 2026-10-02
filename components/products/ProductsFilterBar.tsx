@@ -108,7 +108,7 @@ export default function ProductsFilterBar() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-[auto_auto_minmax(0,1fr)] xl:flex">
           <Popover>
             <PopoverTrigger asChild><Button variant="outline" className={FILTER + (priceActive ? SELECTED : "")}>Price <ChevronDown strokeWidth={1.75} aria-hidden="true" className="ml-2 h-3.5 w-3.5" /></Button></PopoverTrigger>
-            <PopoverContent className="w-[min(320px,calc(100vw-32px))] rounded-xl p-5" align="start">
+            <PopoverContent className="w-[min(320px,calc(100vw-32px))] rounded-lg p-5" align="start">
               <p className="text-sm font-medium">Price range</p>
               <p className="mb-6 mt-2 text-sm text-muted-foreground">Rs. {prices[0].toLocaleString("en-LK")} – {prices[1].toLocaleString("en-LK")}{prices[1] === sliderMaximum ? "+" : ""}</p>
               <Slider value={prices} min={0} max={sliderMaximum} step={100} minStepsBetweenThumbs={0} thumbLabels={["Minimum price", "Maximum price"]} onValueChange={(values) => setPrices([values[0], values[1]])} />
@@ -118,7 +118,7 @@ export default function ProductsFilterBar() {
           </Popover>
           <Popover>
             <PopoverTrigger asChild><Button variant="outline" className={FILTER + (refinementCount ? SELECTED : "")}><SlidersHorizontal strokeWidth={1.75} aria-hidden="true" className="mr-2 h-4 w-4" />Filters{refinementCount > 0 && <span className="ml-1.5 rounded-full bg-brand-green px-1.5 py-0.5 text-xs text-primary-foreground">{refinementCount}</span>}</Button></PopoverTrigger>
-            <PopoverContent className="w-[min(280px,calc(100vw-32px))] rounded-xl p-4" align="center">
+            <PopoverContent className="w-[min(280px,calc(100vw-32px))] rounded-lg p-4" align="center">
               <p className="mb-2 px-2 text-sm font-medium">Your preferences</p>
               <label className="flex min-h-11 cursor-pointer items-center gap-3 px-2"><Checkbox disabled={pending} checked={inStock} onCheckedChange={(checked) => { setInStock(checked === true); apply({ inStock: checked === true ? "true" : null }); }} /><span className="text-sm">In stock only</span></label>
               <div className="my-2 border-t border-border" />

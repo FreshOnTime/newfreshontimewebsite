@@ -25,11 +25,11 @@ type OrderSummary = {
 
 function statusStyle(status: string) {
   const value = (status || '').toLowerCase();
-  if (value === 'delivered') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+  if (value === 'delivered') return 'border-border bg-secondary text-brand-green';
   if (value === 'shipped') return 'border-sky-200 bg-sky-50 text-sky-800';
   if (value === 'cancelled' || value === 'canceled' || value === 'refunded') return 'border-rose-200 bg-rose-50 text-rose-700';
   if (value === 'confirmed' || value === 'processing') return 'border-amber-200 bg-amber-50 text-amber-800';
-  return 'border-zinc-200 bg-zinc-50 text-zinc-600';
+  return 'border-border bg-secondary text-muted-foreground';
 }
 
 function StatusIcon({ status }: { status: string }) {
@@ -123,13 +123,13 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <AccountState title={page === 1 ? 'No orders yet' : 'No orders on this page'} description={page === 1 ? 'Your purchases and delivery updates will appear here.' : 'Return to your latest orders.'} action={page === 1 ? <Link href="/products" className={accountButton}>Shop the market</Link> : <button type="button" className={accountSecondaryButton} onClick={() => setPage(1)}>Latest orders</button>} />
         ) : (
-          <section className="overflow-hidden rounded-lg border border-zinc-200 bg-background">
+          <section className="overflow-hidden rounded-lg border border-border bg-background">
             <div className="flex items-end justify-between gap-5 border-b border-border px-6 py-5 md:px-6">
               <div>
-                <h2 className="text-base font-medium text-brand-green">Recent orders</h2>
+                <h2 className="text-base font-normal text-brand-green">Recent orders</h2>
                 <p className="mt-1 text-sm font-normal text-muted-foreground">{pagination.total} order{pagination.total === 1 ? '' : 's'} · Page {page} of {Math.max(1, pagination.pages)}</p>
               </div>
-              <Link href="/bags" className="text-xs font-semibold text-emerald-800">Saved bags</Link>
+              <Link href="/bags" className="text-xs font-semibold text-brand-green">Saved bags</Link>
             </div>
 
             <div className="divide-y divide-border">
@@ -142,7 +142,7 @@ export default function OrdersPage() {
                         <div className="flex flex-wrap items-center gap-3">
                           <span className="text-lg font-medium text-brand-green">#{order.orderNumber}</span>
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusStyle(order.status)} `}><StatusIcon status={order.status} /> {order.status}</span>
-                          {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus) && <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800"><RefreshCw className="h-3 w-3" /> Recurring</span>}
+                          {(order.isRecurring || order.nextDeliveryAt || order.scheduleStatus) && <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-semibold text-brand-green"><RefreshCw className="h-3 w-3" /> Recurring</span>}
                         </div>
 
                         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-normal text-muted-foreground">
@@ -155,19 +155,19 @@ export default function OrdersPage() {
                       <div className="flex items-center justify-between gap-6 lg:justify-end">
                         <div className="text-right">
                           <p className="text-xs font-semibold normal-case text-muted-foreground">Total</p>
-                          <p className="mt-1 text-lg font-semibold tabular-nums text-zinc-950">Rs. {Number(order.total ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                          <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">Rs. {Number(order.total ?? 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         </div>
                         {cancellable && (
                           <button
                             type="button"
                             disabled={cancellingId !== null}
                             onClick={() => { setCancelError(null); setCancelTarget(order); }}
-                            className="min-h-11 rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                            className="min-h-11 rounded-lg border border-border px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
                           >
                             {cancellingId === order._id ? 'Cancelling…' : 'Cancel'}
                           </button>
                         )}
-                        <Link href={`/orders/${order._id}`} aria-label={`Open order ${order.orderNumber}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-background text-zinc-500 transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-800"><ArrowRight className="h-4 w-4" /></Link>
+                        <Link href={`/orders/${order._id}`} aria-label={`Open order ${order.orderNumber}`} className="flex h-10 w-10 items-center justify-center rounded-md bg-background text-muted-foreground transition-colors group-hover:bg-secondary group-hover:text-brand-green"><ArrowRight className="h-4 w-4" /></Link>
                       </div>
                     </div>
                   </article>

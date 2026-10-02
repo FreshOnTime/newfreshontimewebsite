@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 export default function SubscriptionPromo() {
     return (
-        <section className="py-12 md:py-16 bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 relative overflow-hidden">
+        <section className="py-12 md:py-16     relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
                 <div
@@ -19,20 +19,20 @@ export default function SubscriptionPromo() {
 
             {/* Floating Elements */}
             <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute bottom-10 right-10 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl animate-pulse" />
+            <div className="absolute bottom-10 right-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-pulse" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
                     {/* Content */}
                     <div className="flex-1 text-center lg:text-left text-white">
-                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                            <Star className="w-4 h-4 text-emerald-400 fill-emerald-400" />
+                        <div className="inline-flex items-center gap-2 bg-white/10  px-4 py-2 rounded-full mb-4">
+                            <Star className="w-4 h-4 text-brand-green fill-emerald-400" />
                             <span className="text-sm font-medium">New! Subscription Boxes</span>
                         </div>
 
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                        <h2 className="text-3xl md:text-4xl font-normal mb-4 leading-tight">
                             Fresh Groceries,
-                            <span className="block text-emerald-400">Delivered Weekly</span>
+                            <span className="block text-brand-green">Delivered Weekly</span>
                         </h2>
 
                         <p className="text-emerald-100 mb-6 max-w-lg mx-auto lg:mx-0">
@@ -43,21 +43,21 @@ export default function SubscriptionPromo() {
                         {/* Features */}
                         <div className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8">
                             <div className="flex items-center gap-2 text-sm text-emerald-100">
-                                <Package className="w-4 h-4 text-emerald-400" />
+                                <Package className="w-4 h-4 text-brand-green" />
                                 <span>Curated Boxes</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-emerald-100">
-                                <Truck className="w-4 h-4 text-emerald-400" />
+                                <Truck className="w-4 h-4 text-brand-green" />
                                 <span>Free Delivery</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-emerald-100">
-                                <Clock className="w-4 h-4 text-emerald-400" />
+                                <Clock className="w-4 h-4 text-brand-green" />
                                 <span>Cancel Anytime</span>
                             </div>
                         </div>
 
                         <Link href="/subscriptions">
-                            <Button className="bg-white text-emerald-700 hover:bg-emerald-50 font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
+                            <Button className="bg-background text-brand-green hover:bg-secondary font-semibold px-8 py-3 rounded-md shadow-sm hover:shadow-sm transition-all">
                                 View Subscription Plans
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
@@ -75,11 +75,11 @@ export default function SubscriptionPromo() {
                             ].map((box, index) => (
                                 <div
                                     key={index}
-                                    className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-colors"
+                                    className="bg-white/10  rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors"
                                 >
                                     <span className="text-3xl mb-2 block">{box.icon}</span>
                                     <h3 className="font-semibold text-white text-sm mb-1">{box.name}</h3>
-                                    <p className="text-emerald-400 text-xs font-medium">Rs. {box.price}/week</p>
+                                    <p className="text-brand-green text-xs font-medium">Rs. {box.price}/week</p>
                                 </div>
                             ))}
                         </div>

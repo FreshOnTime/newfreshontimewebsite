@@ -101,8 +101,8 @@ export function OrdersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600 mt-2">Review and manage orders</p>
+          <h1 className="text-3xl font-normal text-foreground">Orders</h1>
+          <p className="text-muted-foreground mt-2">Review and manage orders</p>
         </div>
   <Button onClick={create}>
           <Plus className="h-4 w-4 mr-1" /> New Order
@@ -116,7 +116,7 @@ export function OrdersPage() {
         </CardHeader>
         <CardContent>
           {customerId && (
-            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-800 rounded-md px-3 py-2 mb-3 text-sm">
+            <div className="flex items-center justify-between bg-secondary border border-border text-brand-green rounded-md px-3 py-2 mb-3 text-sm">
               <div>
                 Filtering by customer ID: <span className="font-mono">{customerId}</span>
               </div>
@@ -125,7 +125,7 @@ export function OrdersPage() {
           )}
           <div className="flex flex-wrap items-center gap-2 mb-6">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input placeholder="Search by order number..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10" />
             </div>
             <select className="border rounded px-2 py-1" value={isRecurring} onChange={(e) => { setIsRecurring(e.target.value as 'all'|'true'|'false'); setPage(1); }}>
@@ -148,7 +148,7 @@ export function OrdersPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
           ) : (
             <>
               <Table>
@@ -173,10 +173,10 @@ export function OrdersPage() {
                       <TableCell>{o.customerName || o.customerId}</TableCell>
                       <TableCell className="max-w-[260px]">
                         {o.shippingAddress ? (
-                          <div className="text-sm text-gray-700 truncate">
+                          <div className="text-sm text-foreground truncate">
                             {o.shippingAddress.name || '—'}
                             { (o.shippingAddress.city || o.shippingAddress.street) && (
-                              <span className="text-gray-500"> • {(o.shippingAddress.city || o.shippingAddress.street) as string}</span>
+                              <span className="text-muted-foreground"> • {(o.shippingAddress.city || o.shippingAddress.street) as string}</span>
                             )}
                           </div>
                         ) : '—'}
@@ -185,7 +185,7 @@ export function OrdersPage() {
                       <TableCell><Badge variant="secondary">{o.status}</Badge></TableCell>
                       <TableCell><Badge variant={o.paymentStatus === 'paid' ? 'secondary' : 'outline'}>{o.paymentStatus}</Badge></TableCell>
                       <TableCell>
-                        {o.isRecurring ? <Badge variant="secondary">{o.scheduleStatus || 'active'}</Badge> : <span className="text-xs text-gray-500">—</span>}
+                        {o.isRecurring ? <Badge variant="secondary">{o.scheduleStatus || 'active'}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell>{o.nextDeliveryAt ? new Date(o.nextDeliveryAt).toLocaleDateString() : '—'}</TableCell>
                       <TableCell>{new Date(o.createdAt).toLocaleDateString()}</TableCell>
@@ -209,11 +209,11 @@ export function OrdersPage() {
                 </TableBody>
               </Table>
 
-              {items.length === 0 && <div className="text-center py-8 text-gray-500">No orders found</div>}
+              {items.length === 0 && <div className="text-center py-8 text-muted-foreground">No orders found</div>}
 
               {pagination.pages > 1 && (
                 <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-gray-700">Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} orders</div>
+                  <div className="text-sm text-foreground">Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} orders</div>
                   <div className="flex space-x-2">
                     <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page <= 1}>Previous</Button>
                     <Button variant="outline" onClick={() => setPage(page + 1)} disabled={page >= pagination.pages}>Next</Button>

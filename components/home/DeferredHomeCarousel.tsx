@@ -24,7 +24,7 @@ export default function DeferredHomeCarousel({ images }: DeferredHomeCarouselPro
   }, []);
 
   if (!isReady) {
-    return <div aria-hidden="true" className="h-8 bg-gray-50/50 md:h-12" />;
+    return <div aria-hidden="true" className="h-8 bg-secondary/50 md:h-12" />;
   }
 
   return <HomeCarousel images={images} />;

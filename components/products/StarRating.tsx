@@ -55,7 +55,7 @@ export default function StarRating({
                 <Star
                     className={cn(
                         sizeClasses[size],
-                        'text-gray-300'
+                        'text-muted-foreground'
                     )}
                 />
                 {/* Filled star (overlay) */}
@@ -80,12 +80,12 @@ export default function StarRating({
         <div className={cn('flex items-center gap-1', className)}>
             <div className="flex items-center">{stars}</div>
             {showValue && (
-                <span className="text-sm font-medium text-gray-700 ml-1">
+                <span className="text-sm font-medium text-foreground ml-1">
                     {rating.toFixed(1)}
                 </span>
             )}
             {reviewCount !== undefined && (
-                <span className="text-xs text-gray-500 ml-1">
+                <span className="text-xs text-muted-foreground ml-1">
                     ({reviewCount.toLocaleString()})
                 </span>
             )}

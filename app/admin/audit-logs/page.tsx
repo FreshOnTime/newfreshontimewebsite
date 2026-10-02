@@ -103,17 +103,17 @@ export default function AuditLogsPage() {
   };
 
   const badgeFor = (t: string) => {
-    if (t.includes('customer')) return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{t}</Badge>;
-    if (t.includes('order')) return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{t}</Badge>;
-    if (t.includes('product')) return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">{t}</Badge>;
+    if (t.includes('customer')) return <Badge className="bg-secondary text-brand-green hover:bg-secondary">{t}</Badge>;
+    if (t.includes('order')) return <Badge className="bg-secondary text-brand-green hover:bg-secondary">{t}</Badge>;
+    if (t.includes('product')) return <Badge className="bg-secondary text-brand-green hover:bg-secondary">{t}</Badge>;
     return <Badge variant="secondary">{t}</Badge>;
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Audit Logs</h1>
-        <p className="text-gray-600">Track changes and actions performed by admins.</p>
+        <h1 className="text-2xl font-normal">Audit Logs</h1>
+        <p className="text-muted-foreground">Track changes and actions performed by admins.</p>
       </div>
 
       <Card>
@@ -124,7 +124,7 @@ export default function AuditLogsPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <div className="md:col-span-1">
-              <label className="text-xs text-gray-600">Resource Type</label>
+              <label className="text-xs text-muted-foreground">Resource Type</label>
         <Select value={resourceTypeSelectValue} onValueChange={(v) => setResourceType(v === 'all' ? '' : v)}>
                 <SelectTrigger><SelectValue placeholder="All"/></SelectTrigger>
                 <SelectContent>
@@ -140,15 +140,15 @@ export default function AuditLogsPage() {
               </Select>
             </div>
             <div className="md:col-span-1">
-              <label className="text-xs text-gray-600">Action</label>
+              <label className="text-xs text-muted-foreground">Action</label>
               <Input value={action} onChange={(e) => setAction(e.target.value)} placeholder="create, update, delete..."/>
             </div>
             <div className="md:col-span-1">
-              <label className="text-xs text-gray-600">User ID</label>
+              <label className="text-xs text-muted-foreground">User ID</label>
               <Input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="Mongo ObjectId"/>
             </div>
             <div className="md:col-span-2">
-              <label className="text-xs text-gray-600">Search</label>
+              <label className="text-xs text-muted-foreground">Search</label>
               <div className="flex gap-2">
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search action, resource, IP..."/>
                 <Button onClick={applyFilters} variant="default"><Search className="h-4 w-4"/></Button>
@@ -182,13 +182,13 @@ export default function AuditLogsPage() {
         {loading ? (
                   <TableRow>
                     <TableCell colSpan={6}>
-          <div className="flex items-center gap-2 text-sm text-gray-600"><Spinner /> Loading...</div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground"><Spinner /> Loading...</div>
                     </TableCell>
                   </TableRow>
                 ) : activities.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6}>
-                      <div className="text-sm text-gray-600">No activities found.</div>
+                      <div className="text-sm text-muted-foreground">No activities found.</div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -208,7 +208,7 @@ export default function AuditLogsPage() {
           </div>
 
           <div className="flex items-center justify-between mt-4">
-            <div className="text-xs text-gray-600">Page {pagination.page} of {pagination.pages} • {pagination.total} total</div>
+            <div className="text-xs text-muted-foreground">Page {pagination.page} of {pagination.pages} • {pagination.total} total</div>
             <div className="flex gap-2">
               <Button variant="outline" disabled={pagination.page <= 1} onClick={() => onPageChange(pagination.page - 1)}>Prev</Button>
               <Button variant="outline" disabled={pagination.page >= pagination.pages} onClick={() => onPageChange(pagination.page + 1)}>Next</Button>

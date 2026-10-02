@@ -19,17 +19,17 @@ export function DashboardHeader({ title }: { title: string }) {
   };
 
   return (
-    <header className="hidden h-16 items-center justify-between border-b border-zinc-200 bg-background px-6 lg:flex lg:px-8">
+    <header className="hidden h-16 items-center justify-between border-b border-border bg-background px-6 lg:flex lg:px-8">
       <div>
-        <p className="text-xs font-bold normal-case text-emerald-700">FreshPick workspace</p>
-        <h1 className="mt-1 text-sm font-semibold text-zinc-900">{title}</h1>
+        <p className="text-xs font-bold normal-case text-brand-green">FreshPick workspace</p>
+        <p className="mt-1 text-sm font-normal text-foreground">{title}</p>
       </div>
 
       <div className="flex items-center gap-2">
-        <Link href="/profile" className="inline-flex h-10 items-center gap-2 rounded-full border border-zinc-200 bg-background px-4 text-xs font-medium text-zinc-600 transition-colors hover:border-emerald-300 hover:text-emerald-800">
+        <Link href="/profile" className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-4 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:text-brand-green">
           <UserRound className="h-3.5 w-3.5" /> {user?.firstName || 'Profile'}
         </Link>
-        <button onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-xs font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-700">
+        <button onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-md px-4 text-xs font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-700">
           <LogOut className="h-3.5 w-3.5" /> Sign out
         </button>
       </div>

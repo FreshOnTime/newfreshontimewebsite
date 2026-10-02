@@ -38,7 +38,7 @@ export default function BottomNav() {
     return (
         <nav
             aria-label="Mobile navigation"
-            className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/80 bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
+            className="fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
         >
             <div className={`mx-auto grid h-[4.5rem] max-w-lg items-center px-2 ${hasDashboard ? "grid-cols-6" : "grid-cols-5"} `}>
                 {navItems.map(({ href, icon: Icon, label, showBadge }) => {
@@ -51,22 +51,22 @@ export default function BottomNav() {
                             href={href}
                             aria-current={isActive ? "page" : undefined}
                             className={`group relative flex h-full min-w-0 flex-col items-center justify-center gap-1 px-1 transition-colors ${isActive
-                                ? "text-emerald-800"
+                                ? "text-brand-green"
                                 : "text-muted-foreground hover:text-brand-green"
                                 } `}
                         >
                             <div
-                                className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 ${isActive
-                                    ? "bg-emerald-50 shadow-sm ring-1 ring-emerald-100"
+                                className={`relative flex h-10 w-10 items-center justify-center transition-colors duration-200 ${isActive
+                                    ? "border-t-2 border-primary"
                                     : "group-hover:bg-background"
                                     } `}
                             >
                                 <Icon
                                     className="h-5 w-5 transition-transform duration-200 group-active:scale-90"
-                                    strokeWidth={isActive ? 2.2 : 1.8}
+                                    strokeWidth={1.5}
                                 />
                                 {showBadge && itemCount > 0 && (
-                                    <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-brand-amber px-1 text-xs font-bold text-accent-foreground shadow-sm">
+                                    <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-primary px-1 text-xs font-bold text-accent-foreground shadow-sm">
                                         {itemCount > 99 ? "99+" : itemCount}
                                     </span>
                                 )}

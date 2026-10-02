@@ -155,9 +155,9 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
           <div className="mt-6">
             <h4 className="text-sm font-medium mb-2">Supplier Uploads</h4>
             {uploads === null ? (
-              <div className="text-sm text-gray-500">Loading uploads...</div>
+              <div className="text-sm text-muted-foreground">Loading uploads...</div>
             ) : uploads.length === 0 ? (
-              <div className="text-sm text-gray-500">No uploads found for this supplier.</div>
+              <div className="text-sm text-muted-foreground">No uploads found for this supplier.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -173,7 +173,7 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
                       <tr key={u._id} className="border-t">
                         <td className="py-2">{u.originalName || u.filename}</td>
                         <td className="py-2">{new Date(u.createdAt).toLocaleString()}</td>
-                        <td className="py-2"><a className="text-blue-600" href={u.path} download>Download</a></td>
+                        <td className="py-2"><a className="text-brand-green" href={u.path} download>Download</a></td>
                       </tr>
                     ))}
                   </tbody>

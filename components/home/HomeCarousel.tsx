@@ -65,10 +65,10 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
     };
 
     return (
-        <section className="py-12 md:py-16 bg-gray-50/50">
+        <section className="py-12 md:py-16 bg-secondary/50">
             <div className="container mx-auto px-4 md:px-8">
                 <div
-                    className="relative rounded-2xl overflow-hidden shadow-lg"
+                    className="relative rounded-lg overflow-hidden shadow-sm"
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                     onTouchStart={handleTouchStart}
@@ -94,16 +94,16 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
                         <button
                             onClick={prevPromo}
                             aria-label="Previous"
-                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all"
+                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90  rounded-md shadow-sm hover:bg-background hover:scale-105 transition-all"
                         >
-                            <ArrowRight className="w-5 h-5 rotate-180 text-gray-700" />
+                            <ArrowRight className="w-5 h-5 rotate-180 text-foreground" />
                         </button>
                         <button
                             onClick={nextPromo}
                             aria-label="Next"
-                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:scale-105 transition-all"
+                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/90  rounded-md shadow-sm hover:bg-background hover:scale-105 transition-all"
                         >
-                            <ArrowRight className="w-5 h-5 text-gray-700" />
+                            <ArrowRight className="w-5 h-5 text-foreground" />
                         </button>
                     </div>
 
@@ -115,7 +115,7 @@ export default function HomeCarousel({ images }: HomeCarouselProps) {
                                 onClick={() => setCurrentIndex(i)}
                                 aria-label={`Show promo ${i + 1}`}
                                 className={`h-2 rounded-full transition-all duration-300  ${i === currentIndex
-                                        ? "bg-white w-6"
+                                        ? "bg-background w-6"
                                         : "bg-white/50 w-2 hover:bg-white/70"
                                     } `}
                             />

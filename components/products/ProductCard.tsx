@@ -1,127 +1,29 @@
 import { discountedUnitPrice } from '@/lib/commercePricing';
-import Link from "next/link";
-import ProductImage from "./ProductImage";
-import DeferredProductCardActions from "./DeferredProductCardActions";
-import { cn } from "@/lib/utils";
+import Link from 'next/link';
+import ProductImage from './ProductImage';
+import DeferredProductCardActions from './DeferredProductCardActions';
 
 interface ProductCardProps {
-  id: string;
-  sku: string;
-  name: string;
-  image: string;
-  discountPercentage: number;
-  baseMeasurementQuantity: number;
-  pricePerBaseQuantity: number;
-  measurementType: "g" | "kg" | "ml" | "l" | "ea" | "lb";
-  isDiscreteItem: boolean;
-  priority?: boolean;
-  variant?: "default" | "market";
-  isOutOfStock?: boolean;
-  isBundle?: boolean;
+  id: string; sku: string; name: string; image: string; discountPercentage: number;
+  baseMeasurementQuantity: number; pricePerBaseQuantity: number;
+  measurementType: 'g' | 'kg' | 'ml' | 'l' | 'ea' | 'lb'; isDiscreteItem: boolean;
+  priority?: boolean; variant?: 'default' | 'market'; isOutOfStock?: boolean; isBundle?: boolean;
 }
-
-const DISCOUNT_THRESHOLD = 0.01;
-
-export function ProductCard({
-  id,
-  sku,
-  name,
-  image: imageUrl,
-  discountPercentage = 0,
-  baseMeasurementQuantity,
-  pricePerBaseQuantity,
-  measurementType,
-  isDiscreteItem,
-  priority = false,
-  variant = "default",
-  isOutOfStock = false,
-  isBundle = false,
-}: ProductCardProps) {
-  const pricePerBaseQuantityWithDiscount = discountedUnitPrice(
-    pricePerBaseQuantity,
-    discountPercentage
-  );
-
-  const showDiscountBadge = discountPercentage > DISCOUNT_THRESHOLD;
-  const unitLabel = isDiscreteItem
-    ? "Each"
-    : `${baseMeasurementQuantity !== 1 ? baseMeasurementQuantity : ""}${(measurementType || "g").toLowerCase()}`;
-
+export function ProductCard({ id, sku, name, image, discountPercentage = 0, baseMeasurementQuantity, pricePerBaseQuantity, measurementType, isDiscreteItem, priority = false, isOutOfStock = false, isBundle = false }: ProductCardProps) {
+  const price = discountedUnitPrice(pricePerBaseQuantity, discountPercentage);
+  const discounted = discountPercentage > 0.01;
+  const unit = isDiscreteItem ? 'Each' : `${baseMeasurementQuantity !== 1 ? baseMeasurementQuantity : ''}${(measurementType || 'g').toLowerCase()}`;
+  const path = `/products/${encodeURIComponent(sku)}`;
   return (
-    <article className={cn("group relative h-full", variant === "market" ? "flex flex-col" : "overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green")}>
-      <div className={cn("relative aspect-square overflow-hidden bg-background", variant === "market" && "rounded-xl border border-border/70 [&_img]:mix-blend-multiply")}>
-        <Link href={`/products/${encodeURIComponent(sku)}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
-          <div className="relative h-full w-full transition-transform duration-700 ease-out">
-            <ProductImage src={imageUrl} alt={name} priority={priority} />
-          </div>
-        </Link>
-
-        <div className="absolute right-3 top-3 pointer-events-none">
-          {showDiscountBadge && (
-            <span className="rounded-md bg-brand-amber px-2.5 py-1.5 text-xs font-semibold text-accent-foreground">
-              {discountPercentage}% off
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className={cn(variant === "market" ? "flex flex-1 flex-col pt-4" : "p-3 sm:p-4")}>
-        <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span className="sr-only">Unit</span>
-          <span>{isBundle ? "Bundle" : unitLabel}</span>
-          {isOutOfStock && <span>Unavailable</span>}
-        </div>
-
-        <Link href={`/products/${encodeURIComponent(sku)}`} prefetch={false} className="block">
-          <h3 className={cn("line-clamp-2 min-h-[2.5rem] font-sans text-sm leading-snug text-foreground transition-colors group-hover:text-brand-green md:text-base", variant === "market" ? "font-medium" : "font-semibold")}>
-            {name}
-          </h3>
-        </Link>
-
-        <div className={cn("flex items-end justify-between gap-3", variant === "market" ? "mt-2" : "mt-4 border-t border-zinc-100 pt-3.5")}>
-          <PriceDisplay
-            price={pricePerBaseQuantityWithDiscount}
-            originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
-          />
-        </div>
-
-        <div className={cn("w-full", variant === "market" ? "mt-auto pt-4" : "mt-4")}>
-          <DeferredProductCardActions
-            id={id}
-            sku={sku}
-            name={name}
-            image={imageUrl}
-            price={pricePerBaseQuantityWithDiscount}
-            isOutOfStock={isOutOfStock}
-          />
-        </div>
+    <article className="group flex h-full min-w-0 flex-col">
+      <Link href={path} prefetch={false} aria-label={`View ${name}`} className="relative block aspect-[4/5] overflow-hidden bg-secondary/60"><ProductImage src={image} alt={name} priority={priority} /></Link>
+      <div className="flex flex-1 flex-col pt-4">
+        <div className="mb-2 flex flex-wrap justify-between gap-2 text-[11px] text-muted-foreground"><span>{isBundle ? 'Produce box' : unit}</span>{isOutOfStock ? <span>Unavailable</span> : discounted ? <span className="text-brand-green">{discountPercentage}% off</span> : null}</div>
+        <Link href={path} prefetch={false}><h3 className="line-clamp-2 min-h-[2.75rem] font-sans text-sm font-medium leading-6 text-foreground group-hover:underline underline-offset-4 md:text-base">{name}</h3></Link>
+        <div className="mt-3 flex flex-wrap items-baseline gap-2 text-sm tabular-nums"><span className="font-medium">Rs. {formatPrice(price)}</span>{discounted && <span className="text-xs text-muted-foreground line-through">Rs. {formatPrice(pricePerBaseQuantity)}</span>}</div>
+        <div className="mt-auto pt-5"><DeferredProductCardActions id={id} sku={sku} name={name} image={image} price={price} isOutOfStock={isOutOfStock} /></div>
       </div>
     </article>
   );
 }
-
-function PriceDisplay({
-  price,
-  originalPrice,
-}: {
-  price: number;
-  originalPrice?: number;
-}) {
-  return (
-    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="font-sans text-sm font-semibold text-foreground sm:text-base">
-        Rs. {formatPrice(price)}
-      </span>
-      {originalPrice && (
-        <span className="text-xs text-muted-foreground line-through decoration-zinc-300">
-          Rs. {formatPrice(originalPrice)}
-        </span>
-      )}
-    </div>
-  );
-}
-
-
-function formatPrice(price: number): string {
-  return price.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+function formatPrice(price: number) { return price.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }

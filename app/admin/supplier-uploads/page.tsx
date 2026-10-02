@@ -7,8 +7,8 @@ export default function SupplierUploadsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Supplier Product Uploads</h1>
-        <p className="text-gray-600">View and manage supplier file uploads awaiting review or import.</p>
+        <h1 className="text-3xl font-normal">Supplier Product Uploads</h1>
+        <p className="text-muted-foreground">View and manage supplier file uploads awaiting review or import.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">

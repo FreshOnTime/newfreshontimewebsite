@@ -79,8 +79,8 @@ export function SuppliersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Suppliers</h1>
-          <p className="text-gray-600 mt-2">Manage supplier records</p>
+          <h1 className="text-3xl font-normal text-foreground">Suppliers</h1>
+          <p className="text-muted-foreground mt-2">Manage supplier records</p>
         </div>
         <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />
@@ -96,13 +96,13 @@ export function SuppliersPage() {
         <CardContent>
           <div className="flex items-center space-x-2 mb-6">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input placeholder="Search suppliers..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10" />
             </div>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
           ) : (
             <>
               <Table>
@@ -154,11 +154,11 @@ export function SuppliersPage() {
                 </TableBody>
               </Table>
 
-              {items.length === 0 && <div className="text-center py-8 text-gray-500">No suppliers found</div>}
+              {items.length === 0 && <div className="text-center py-8 text-muted-foreground">No suppliers found</div>}
 
               {pagination.pages > 1 && (
                 <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-foreground">
                     Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} suppliers
                   </div>
                   <div className="flex space-x-2">

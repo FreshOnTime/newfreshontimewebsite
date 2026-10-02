@@ -1,31 +1,12 @@
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
 
 export default function LandingPage() {
-  return (
-    <main className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="w-full max-w-4xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Welcome to Fresh Pick</CardTitle>
-            <CardDescription>Sell or buy fresh produce and goods from local suppliers.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 border rounded-md text-center">
-                <h3 className="text-2xl font-semibold mb-2">Register as a Customer</h3>
-                <p className="text-sm text-gray-600 mb-4">Create an account to start shopping and manage your orders.</p>
-                <Link href="/auth/signup" className="inline-block bg-brand-amber text-accent-foreground px-4 py-2 rounded">Sign up as Customer</Link>
-              </div>
-              <div className="p-6 border rounded-md text-center">
-                <h3 className="text-2xl font-semibold mb-2">Register as a Supplier</h3>
-                <p className="text-sm text-gray-600 mb-4">Join as a supplier to list your products and manage inventory.</p>
-                <Link href="/auth/supplier-signup" className="inline-block bg-brand-amber text-accent-foreground px-4 py-2 rounded">Sign up as Supplier</Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
-  );
+  return <div>
+    <PremiumPageHeader eyebrow="Welcome to FreshPick" title="A place for good food." subtitle="Shop the everyday market or join us as a supplier. There is room at the table for both." backgroundImage="/images/home/produce-basket.webp" />
+    <section className="editorial-wrap editorial-section grid gap-10 md:grid-cols-2 md:gap-20">
+      <article className="border-t border-border pt-6"><h2 className="font-serif text-3xl text-brand-green">For your kitchen</h2><p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground">Create an account to save groceries, manage your orders and build your regular shopping bag.</p><Link href="/auth/signup/customer" className="editorial-button mt-7">Create a customer account</Link></article>
+      <article className="border-t border-border pt-6"><h2 className="font-serif text-3xl text-brand-green">For growers & makers</h2><p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground">Tell us about your business and the products you would like to share through FreshPick.</p><Link href="/auth/supplier-signup" className="editorial-link mt-7">Apply as a supplier</Link></article>
+    </section>
+  </div>;
 }

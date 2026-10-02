@@ -12,14 +12,14 @@ export default function ProductGrid({
 }) {
   if (!products?.length) {
     return (
-      <div className="text-center text-gray-600 py-8">No products found.</div>
+      <div className="text-center text-muted-foreground py-8">No products found.</div>
     );
   }
   return (
     <div
       className={
         className ??
-        "grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-6 md:gap-y-10 lg:grid-cols-4"
+        "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:grid-cols-4"
       }
     >
       {products.map((p, index) => (

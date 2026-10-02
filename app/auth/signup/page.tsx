@@ -2,8 +2,8 @@ import { SignupForm } from '@/components/auth/SignupForm';
 
 export default function SignupPage() {
   return (
-    <main>
+    <div>
       <SignupForm />
-    </main>
+    </div>
   );
 }

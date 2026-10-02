@@ -12,12 +12,12 @@ export default function FoodDiscovery() {
   return (
     <section className="border-t border-border bg-background py-6 md:py-8">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
-        <h2 className="text-2xl font-semibold text-foreground">More ways to shop</h2>
+        <h2 className="text-2xl font-normal text-foreground">More ways to shop</h2>
 
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {journeys.map(({ title, description, href, action, icon: Icon }) => (
-            <Link key={href} href={href} className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-brand-green">
-              <Icon className="h-6 w-6 text-brand-green" aria-hidden="true" />
+          {journeys.map(({ title, description, href, action }) => (
+            <Link key={href} href={href} className="group flex flex-col border-t border-border py-6 transition-colors hover:border-brand-green">
+
               <h3 className="mt-4 text-lg font-semibold text-brand-green">{title}</h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
               <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-brand-green">{action} <ArrowRight className="h-4 w-4" aria-hidden="true" /></span>

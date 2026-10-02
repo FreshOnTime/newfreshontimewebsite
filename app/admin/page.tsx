@@ -34,7 +34,7 @@ export default function AdminPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`Successfully made ${data.data?.firstName || userId} an admin!`);
         setMessageType('success');
@@ -58,23 +58,23 @@ export default function AdminPage() {
     <div className="space-y-6">
       {/* Dashboard Overview */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-normal mb-2">Dashboard</h1>
           {/* Make User Admin Card */}
         <AdminOverview />
       </div>
 
       {/* Admin Tools Section */}
       <div className="border-t pt-6">
-        <h2 className="text-2xl font-bold mb-4">Admin Tools</h2>
-        
+        <h2 className="text-2xl font-normal mb-4">Admin Tools</h2>
+
         {message && (
-          <Alert className={`mb-6 ${messageType === 'success' ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+          <Alert className={`mb-6 ${messageType === 'success' ? 'border-primary bg-secondary' : 'border-red-500 bg-red-50'}`}>
             {messageType === 'success' ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-brand-green" />
             ) : (
               <AlertCircle className="h-4 w-4 text-red-500" />
             )}
-            <AlertDescription className={messageType === 'success' ? 'text-green-700' : 'text-red-700'}>
+            <AlertDescription className={messageType === 'success' ? 'text-brand-green' : 'text-red-700'}>
               {message}
             </AlertDescription>
           </Alert>
@@ -100,8 +100,8 @@ export default function AdminPage() {
                   disabled={loading}
                 />
               </div>
-              <Button 
-                onClick={handleMakeAdmin} 
+              <Button
+                onClick={handleMakeAdmin}
                 disabled={loading}
                 className="w-full"
               >

@@ -36,9 +36,9 @@ export function MultiDateSelector({
 
   return (
     <div>
-      <label className="block text-xs text-gray-600 mb-1">{label}</label>
+      <label className="block text-xs text-muted-foreground mb-1">{label}</label>
       {helperText && (
-        <p className="text-xs text-gray-500 mb-2">{helperText}</p>
+        <p className="text-xs text-muted-foreground mb-2">{helperText}</p>
       )}
       <div className="flex gap-2">
         <input

@@ -256,7 +256,7 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
                   </Button>
                 )}
               </div>
-              {fields.length === 0 && <div className="text-sm text-gray-500">No unit options added.</div>}
+              {fields.length === 0 && <div className="text-sm text-muted-foreground">No unit options added.</div>}
               <div className="space-y-2">
                 {fields.map((f, index) => (
                   <div key={f.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
@@ -299,21 +299,21 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
               <h4 className="font-semibold">Product Image (optional)</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Upload image file</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Upload image file</label>
                   <ImageUpload value={imageFile} onChange={setImageFile} disabled={readOnly} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">or Image URL</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">or Image URL</label>
                   <Input
                     placeholder="https://..."
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     disabled={readOnly}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Provide a direct image URL if not uploading a file.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Provide a direct image URL if not uploading a file.</p>
                 </div>
               </div>
-              <p className="text-xs text-gray-500">You can leave both empty. One image is optional for creating a product.</p>
+              <p className="text-xs text-muted-foreground">You can leave both empty. One image is optional for creating a product.</p>
             </div>
 
             <DialogFooter>

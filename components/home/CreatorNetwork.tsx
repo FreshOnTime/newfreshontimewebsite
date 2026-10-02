@@ -11,7 +11,7 @@ export default function CreatorNetwork({ creators }: { creators: CreatorSummary[
       <div className="border-t border-border pt-8 md:grid md:grid-cols-[1fr_2fr] md:gap-12 md:pt-10">
         <div>
           <p className="text-xs font-medium text-muted-foreground">People behind the food</p>
-          <h2 id="creators-title" className="mt-3 text-2xl font-semibold leading-tight text-brand-green md:text-[1.75rem]">From local kitchens</h2>
+          <h2 id="creators-title" className="mt-3 editorial-title">From local kitchens</h2>
           <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground">Meet the people sharing their favourite recipes.</p>
           <Link href="/creators" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Meet the cooks <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>

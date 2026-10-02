@@ -2,82 +2,83 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Menu, Search, ShoppingBag, UserRound, X, LockKeyhole, ArrowLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBag } from "@/contexts/BagContext";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const links = [
-  { label: "Shop all", href: "/products" },
+  { label: "Shop", href: "/products" },
   { label: "Categories", href: "/categories" },
-  { label: "Recipes", href: "/recipes" },
-  { label: "Ready meals", href: "/meals" },
-  { label: "Local makers", href: "/homemade" },
-  { label: "Weekly baskets", href: "/subscriptions" },
-  { label: "For you", href: "/for-you" },
+  { label: "Our producers", href: "/farm-to-table" },
+  { label: "For business", href: "/b2b" },
+  { label: "Our story", href: "/about" },
+];
+const moreLinks = [
+  { label: "Recipes", href: "/recipes" }, { label: "Journal", href: "/blog" },
+  { label: "Local makers", href: "/homemade" }, { label: "Ready meals", href: "/meals" },
+  { label: "Weekly baskets", href: "/subscriptions" }, { label: "For you", href: "/for-you" },
 ];
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
   const { bags } = useBag();
+  const checkout = pathname === "/checkout";
   const itemCount = bags.reduce((total, bag) => total + bag.items.reduce((sum, item) => sum + item.quantity, 0), 0);
 
-  useEffect(() => { setMenuOpen(false); setAccountOpen(false); }, [pathname]);
+  useEffect(() => { setMenuOpen(false); setSearchOpen(false); }, [pathname]);
   useEffect(() => {
-    if (!menuOpen && !accountOpen) return;
-    const close = (event: KeyboardEvent) => { if (event.key === "Escape") { setMenuOpen(false); setAccountOpen(false); } };
+    if (!menuOpen && !searchOpen) return;
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") { setMenuOpen(false); setSearchOpen(false); } };
     document.addEventListener("keydown", close);
     return () => document.removeEventListener("keydown", close);
-  }, [menuOpen, accountOpen]);
+  }, [menuOpen, searchOpen]);
 
   function search(event: FormEvent) {
     event.preventDefault();
     if (query.trim()) router.push(`/search?q=${encodeURIComponent(query.trim())}`);
   }
-
   async function signOut() {
-    try { await logout(); setAccountOpen(false); router.push("/"); }
+    try { await logout(); router.push("/"); }
     catch (error) { console.error("Sign out failed:", error); }
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border">
-      <div className="bg-brand-green text-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-5 md:h-[72px] md:px-8">
-          <Link href="/" aria-label="FreshPick home" className="shrink-0 text-2xl font-bold tracking-tight">FreshPick<span className="text-brand-amber">.</span></Link>
-          <form onSubmit={search} role="search" className="hidden h-11 w-full max-w-xl items-center rounded-lg bg-background px-3 text-foreground md:flex">
-            <label htmlFor="nav-search" className="sr-only">Search FreshPick</label>
-            <input id="nav-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the market" className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none focus:ring-0" />
-            <button type="submit" aria-label="Submit search" className="flex h-9 w-9 items-center justify-center rounded-md text-brand-green hover:bg-secondary"><Search strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></button>
-          </form>
-          <div className="flex shrink-0 items-center gap-2 md:gap-4">
-            <div className="relative">
-              <button type="button" aria-label="Open account menu" aria-expanded={accountOpen} aria-controls="account-navigation" onClick={() => { setAccountOpen((open) => !open); setMenuOpen(false); }} className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm hover:bg-white/10"><UserRound strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" /><span className="hidden max-w-24 truncate sm:block">{user?.firstName || "Account"}</span></button>
-              {accountOpen && <nav id="account-navigation" aria-label="Account navigation" className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-background p-2 text-foreground shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
+      <div className="editorial-wrap flex h-20 items-center justify-between gap-2 sm:gap-5 lg:h-24">
+        <Link href="/" aria-label="FreshPick home" className="shrink-0 font-serif text-[26px] font-normal sm:text-[31px] tracking-[-0.07em] text-brand-green lg:text-4xl">FreshPick</Link>
+        {checkout ? <>
+          <span className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><LockKeyhole strokeWidth={1.5} className="h-4 w-4" aria-hidden="true" />Secure checkout</span>
+          <Link href="/bags" className="inline-flex min-h-11 items-center gap-2 text-xs text-brand-green"><ArrowLeft strokeWidth={1.5} className="h-4 w-4" aria-hidden="true" />Back to bag</Link>
+        </> : <>
+          <nav aria-label="Shop navigation" className="hidden h-full items-center gap-6 xl:flex">
+            {links.map((link) => { const active = pathname === link.href || pathname.startsWith(`${link.href}/`); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b text-[13px] transition-colors ${active ? "border-brand-green text-brand-green" : "border-transparent text-foreground hover:border-brand-green"}`}>{link.label}</Link>; })}
+          </nav>
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+            <button type="button" aria-label={searchOpen ? "Close search" : "Open search"} aria-expanded={searchOpen} aria-controls="header-search" onClick={() => { setSearchOpen((open) => !open); setMenuOpen(false); }} className="flex h-11 w-10 sm:w-11 items-center justify-center text-brand-green"><Search strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /></button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild><button type="button" aria-label="Open account menu" className="flex h-11 w-10 sm:w-11 items-center justify-center text-brand-green"><UserRound strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /></button></DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 border-border bg-background p-2 shadow-sm">
                 {user ? <>
-                  {[['Your account','/dashboard'],['Profile','/profile'],['Orders','/orders'],['Saved bags','/bags'],['Saved products','/wishlist']].map(([label,href]) => <Link key={href} href={href} className="block rounded-lg px-3 py-2.5 text-sm hover:bg-secondary">{label}</Link>)}
-                  <button type="button" onClick={() => void signOut()} className="mt-1 w-full border-t border-border px-3 py-3 text-left text-sm text-destructive">Sign out</button>
-                </> : <><Link href="/auth/login" className="block rounded-lg px-3 py-2.5 text-sm hover:bg-secondary">Sign in</Link><Link href="/auth/signup" className="block rounded-lg px-3 py-2.5 text-sm hover:bg-secondary">Create account</Link></>}
-              </nav>}
-            </div>
-            <Link href="/bags" aria-label={`Shopping bags, ${itemCount} items`} className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm hover:bg-white/10"><ShoppingBag strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" /><span className="hidden sm:block">Bag</span>{itemCount > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-amber px-1 text-xs font-semibold text-accent-foreground">{itemCount > 99 ? "99+" : itemCount}</span>}</Link>
-            <button type="button" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => { setMenuOpen((open) => !open); setAccountOpen(false); }} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10 md:hidden">{menuOpen ? <X strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" /> : <Menu strokeWidth={1.75} aria-hidden="true" className="h-5 w-5" />}</button>
+                  {[['Your account','/dashboard'],['Profile & addresses','/profile'],['Orders','/orders'],['Saved bags','/bags'],['Saved products','/wishlist']].map(([label,href]) => <DropdownMenuItem key={href} asChild><Link href={href} className="min-h-11">{label}</Link></DropdownMenuItem>)}
+                  <DropdownMenuSeparator /><DropdownMenuItem onSelect={() => void signOut()} className="min-h-11 text-destructive">Sign out</DropdownMenuItem>
+                </> : <><DropdownMenuItem asChild><Link href="/auth/login" className="min-h-11">Sign in</Link></DropdownMenuItem><DropdownMenuItem asChild><Link href="/auth/signup" className="min-h-11">Create account</Link></DropdownMenuItem></>}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Link href="/bags" aria-label={`Shopping bags, ${itemCount} items`} className="flex min-h-11 items-center gap-1 px-0 text-brand-green sm:gap-2 sm:px-2"><ShoppingBag strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /><span className="text-xs tabular-nums">({itemCount > 99 ? "99+" : itemCount})</span></Link>
+            <button type="button" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => { setMenuOpen((open) => !open); setSearchOpen(false); }} className="flex h-11 w-10 sm:w-11 items-center justify-center text-brand-green xl:hidden">{menuOpen ? <X strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /> : <Menu strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" />}</button>
           </div>
-        </div>
+        </>}
       </div>
-      <nav aria-label="Shop navigation" className="hidden bg-background md:block">
-        <div className="mx-auto flex h-12 max-w-7xl items-center gap-7 overflow-x-auto px-8">
-          {links.map((link) => { const active = pathname === link.href || pathname.startsWith(`${link.href}/`); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`flex h-full shrink-0 items-center border-b-2 text-sm transition-colors ${active ? "border-brand-green font-semibold text-brand-green" : "border-transparent text-muted-foreground hover:text-brand-green"} `}>{link.label}</Link>; })}
-        </div>
-      </nav>
-      {menuOpen && <div id="mobile-navigation" className="max-h-[70svh] overflow-y-auto border-t border-border bg-background p-5 md:hidden">
-        <form onSubmit={search} role="search" className="mb-4 flex h-12 items-center gap-3 rounded-lg border border-border px-3"><label htmlFor="mobile-search" className="sr-only">Search FreshPick on mobile</label><input id="mobile-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the market" className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none focus:ring-0" /><button type="submit" aria-label="Submit mobile search" className="flex h-10 w-10 items-center justify-center text-brand-green"><Search strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></button></form>
-        <nav aria-label="Mobile shop navigation" className="grid grid-cols-2 gap-1">{[...links,{label:'Our story',href:'/about'},{label:'Partner with us',href:'/b2b'},{label:'Help',href:'/contact'}].map((link) => <Link key={link.href} href={link.href} className="rounded-lg px-3 py-3 text-sm text-brand-green hover:bg-secondary">{link.label}</Link>)}</nav>
+      {searchOpen && !checkout && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search produce, ingredients and recipes" className="h-12 min-w-0 flex-1 border-0 border-b border-border bg-transparent text-base outline-none focus:border-primary" /><button type="submit" className="editorial-button">Search</button></form></div>}
+      {menuOpen && !checkout && <div id="mobile-navigation" className="max-h-[75svh] overflow-y-auto border-t border-border bg-background xl:hidden">
+        <nav aria-label="Mobile shop navigation" className="editorial-wrap grid gap-x-5 py-5 sm:grid-cols-2">{[...links,...moreLinks,{label:'Help & contact',href:'/contact'}].map((link) => <Link key={link.href} href={link.href} className="flex min-h-12 items-center border-b border-border py-3 text-sm text-brand-green">{link.label}</Link>)}</nav>
       </div>}
     </header>
   );

@@ -4,23 +4,18 @@ import { ArrowRight } from 'lucide-react';
 import { getCategoryImage } from '@/lib/categoryImage';
 
 interface Category { name: string; slug: string; imageUrl?: string; description?: string; }
-
+const marketEdits = [
+  { name: 'Vegetables for the week', href: '/products?search=vegetables', image: '/images/home/produce-basket.webp' },
+  { name: 'Something green', href: '/products?search=greens', image: '/images/home/market-bag.webp' },
+  { name: 'Everyday favourites', href: '/products', image: '/images/home/tomatoes.webp' },
+];
 export default function CategoryBento({ categories }: { categories: Category[] }) {
-  if (!categories.length) return null;
+  const tiles = categories.length ? categories.slice(0, 3).map(category => ({ name: category.name, href: `/categories/${encodeURIComponent(category.slug)}`, image: getCategoryImage(category.slug, category.imageUrl) })) : marketEdits;
   return (
-    <section aria-labelledby="categories-title" className="mx-auto max-w-7xl px-4 pt-9 md:px-8 md:pt-12">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <h2 id="categories-title" className="text-2xl font-semibold text-brand-green md:text-[1.75rem]">Shop by category</h2>
-        <Link href="/categories" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green hover:underline">View all <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
-      </div>
-      <nav aria-label="Featured categories" className="grid grid-cols-3 gap-x-3 gap-y-6 border-b border-border pb-9 md:grid-cols-6 md:gap-x-5 md:pb-12">
-        {categories.slice(0, 6).map((category) => {
-          const image = getCategoryImage(category.slug, category.imageUrl);
-          return <Link key={category.slug} href={`/categories/${encodeURIComponent(category.slug)}`} className="group flex min-w-0 flex-col items-center rounded-lg px-1 py-2 text-center">
-          <div className="relative mb-3 h-20 w-20 overflow-hidden rounded-full bg-secondary/70 transition-colors group-hover:bg-secondary md:h-24 md:w-24"><Image src={image} alt="" fill sizes="(min-width: 768px) 96px, 80px" className={!image.split('?')[0].endsWith('.svg') ? 'object-cover' : 'object-contain p-5 md:p-6'} /></div>
-          <span className="text-sm font-medium leading-5 text-foreground group-hover:text-brand-green group-hover:underline underline-offset-4">{category.name}</span>
-        </Link>;
-        })}
+    <section aria-labelledby="categories-title" className="editorial-wrap editorial-section">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5"><div><p className="editorial-label mb-3">A little inspiration</p><h2 id="categories-title" className="editorial-title">Find your next good ingredient.</h2></div><Link href="/categories" className="editorial-link">Explore the market <ArrowRight strokeWidth={1.5} className="h-4 w-4" aria-hidden="true" /></Link></div>
+      <nav aria-label="Featured categories" className="grid gap-x-5 gap-y-8 sm:grid-cols-3 md:gap-x-8">
+        {tiles.map((tile, index) => <Link key={tile.href} href={tile.href} className="group min-w-0"><div className="relative aspect-[4/3] overflow-hidden bg-secondary"><Image src={tile.image} alt="" fill sizes="(max-width: 639px) calc(100vw - 40px), 33vw" className={tile.image.split('?')[0].endsWith('.svg') ? 'object-contain p-12' : 'object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.025]'} /></div><div className="mt-4 flex items-center justify-between gap-3"><h3 className="font-serif text-xl font-normal text-brand-green md:text-2xl">{tile.name}</h3><ArrowRight strokeWidth={1.5} className="h-4 w-4 shrink-0 text-brand-green" aria-hidden="true" /></div><p className="mt-2 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Market selection / 0{index + 1}</p></Link>)}
       </nav>
     </section>
   );

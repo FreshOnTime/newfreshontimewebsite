@@ -22,9 +22,9 @@ interface Subscription {
 }
 
 function statusClass(status: Subscription['status']) {
-  if (status === 'active') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+  if (status === 'active') return 'border-border bg-secondary text-brand-green';
   if (status === 'paused') return 'border-amber-200 bg-amber-50 text-amber-800';
-  return 'border-zinc-200 bg-zinc-100 text-zinc-500';
+  return 'border-border bg-secondary text-muted-foreground';
 }
 
 export default function MySubscriptionsPage() {
@@ -109,13 +109,13 @@ export default function MySubscriptionsPage() {
         ) : (
           <div className="space-y-4">
             {subscriptions.map((sub) => (
-              <article key={sub._id} className="overflow-hidden rounded-lg border border-zinc-200 bg-background">
+              <article key={sub._id} className="overflow-hidden rounded-lg border border-border bg-background">
                 <div className="flex flex-wrap items-start justify-between gap-5 border-b border-border px-6 py-6 md:px-8">
                   <div className="flex min-w-0 items-start gap-4">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary text-brand-green"><ShoppingBag aria-hidden="true" strokeWidth={1.75} className="h-5 w-5" /></span>
                     <div className="min-w-0">
-                      <h2 className="break-words text-xl font-medium text-brand-green">{sub.plan.name}</h2>
-                      <p className="mt-1 text-sm font-normal text-zinc-500">Rs. {sub.plan.price.toLocaleString('en-LK')} · {sub.plan.frequency}</p>
+                      <h2 className="break-words text-xl font-normal text-brand-green">{sub.plan.name}</h2>
+                      <p className="mt-1 text-sm font-normal text-muted-foreground">Rs. {sub.plan.price.toLocaleString('en-LK')} · {sub.plan.frequency}</p>
                     </div>
                   </div>
                   <span className={`rounded-full border px-3 py-1.5 text-xs font-semibold capitalize ${statusClass(sub.status)} `}>{sub.status}</span>
@@ -150,9 +150,9 @@ export default function MySubscriptionsPage() {
 }
 
 function Info({ icon: Icon, label, value }: { icon: typeof CalendarDays; label: string; value: string }) {
-  return <div className="bg-background px-6 py-5 md:px-8"><div className="flex items-center gap-2 text-xs font-bold normal-case text-muted-foreground"><Icon aria-hidden="true" strokeWidth={1.75} className="h-3.5 w-3.5 text-emerald-700" /> {label}</div><p className="mt-2 break-words text-sm font-medium text-zinc-800">{value}</p></div>;
+  return <div className="bg-background px-6 py-5 md:px-8"><div className="flex items-center gap-2 text-xs font-bold normal-case text-muted-foreground"><Icon aria-hidden="true" strokeWidth={1.75} className="h-3.5 w-3.5 text-brand-green" /> {label}</div><p className="mt-2 break-words text-sm font-medium text-foreground">{value}</p></div>;
 }
 
 function Action({ children, onClick, disabled, icon: Icon }: { children: React.ReactNode; onClick: () => void; disabled: boolean; icon?: typeof Pause }) {
-  return <button type="button" disabled={disabled} onClick={onClick} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-50">{Icon ? <Icon aria-hidden="true" strokeWidth={1.75} className="h-3.5 w-3.5" /> : null}{children}</button>;
+  return <button type="button" disabled={disabled} onClick={onClick} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-secondary hover:text-brand-green disabled:opacity-50">{Icon ? <Icon aria-hidden="true" strokeWidth={1.75} className="h-3.5 w-3.5" /> : null}{children}</button>;
 }

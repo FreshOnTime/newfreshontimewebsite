@@ -219,16 +219,16 @@ export default function ProductCarousel({
   }, [draggable]);
 
   return (
-    <section className="bg-white">
+    <section className="bg-background">
       <div className="container mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-2xl tracking-tight text-gray-900">{title}</h3>
+          <h3 className="font-bold text-2xl tracking-tight text-foreground">{title}</h3>
           <div className="hidden sm:flex gap-2">
             <button
               aria-label="Previous"
               onClick={() => scroll(-1)}
               disabled={atStart}
-              className={`p-2 rounded-full border backdrop-blur bg-white/70 shadow-sm hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed`}
+              className={`p-2 rounded-full border  bg-white/70 shadow-sm hover:bg-background disabled:opacity-40 disabled:cursor-not-allowed`}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -236,7 +236,7 @@ export default function ProductCarousel({
               aria-label="Next"
               onClick={() => scroll(1)}
               disabled={atEnd}
-              className={`p-2 rounded-full border backdrop-blur bg-white/70 shadow-sm hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed`}
+              className={`p-2 rounded-full border  bg-white/70 shadow-sm hover:bg-background disabled:opacity-40 disabled:cursor-not-allowed`}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -252,8 +252,8 @@ export default function ProductCarousel({
           tabIndex={0}
         >
           {/* Edge fade gradients */}
-          <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent" />
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent" />
+          <div className="pointer-events-none absolute left-0 top-0 h-full w-8   to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-8   to-transparent" />
 
           <div
             ref={ref}
@@ -285,7 +285,7 @@ export default function ProductCarousel({
               aria-label="Previous"
               onClick={() => scroll(-1)}
               disabled={atStart}
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full border bg-white/80 backdrop-blur shadow disabled:opacity-40"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full border bg-white/80  shadow disabled:opacity-40"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -293,7 +293,7 @@ export default function ProductCarousel({
               aria-label="Next"
               onClick={() => scroll(1)}
               disabled={atEnd}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full border bg-white/80 backdrop-blur shadow disabled:opacity-40"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full border bg-white/80  shadow disabled:opacity-40"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -306,7 +306,7 @@ export default function ProductCarousel({
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
-                  className={`h-2.5 rounded-full transition-all  ${i === activePage ? "w-6 bg-green-600" : "w-2.5 bg-gray-300 hover:bg-gray-400"
+                  className={`h-2.5 rounded-md transition-all  ${i === activePage ? "w-6 bg-primary" : "w-2.5 bg-muted hover:bg-muted"
                     } `}
                   onClick={() => {
                     const el = ref.current;
