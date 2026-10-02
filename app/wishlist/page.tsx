@@ -1,70 +1,31 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Heart, Loader2 } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ProductGrid from '@/components/products/ProductGrid';
+import { AccountPage, AccountState, AccountLoading, accountButton, accountSecondaryButton } from '@/components/account/AccountPage';
 
 export default function WishlistPage() {
-  const { wishlistItems, loading } = useWishlist();
+  const { wishlistItems, loading, error, retry } = useWishlist();
   const { user, loading: authLoading } = useAuth();
-
-  if (authLoading || loading) {
-    return <main className="min-h-0 bg-background px-5 py-12"><div className="mx-auto flex max-w-6xl items-center gap-3 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading saved food…</div></main>;
-  }
-
-  if (!user) {
-    return (
-      <main className="min-h-0 bg-background px-5 py-12 text-zinc-950">
-        <section className="mx-auto max-w-3xl rounded-xl border border-zinc-200 bg-background p-10 text-center md:p-14">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-900"><Heart className="h-5 w-5" /></div>
-          <span className="mt-6 block text-xs font-bold normal-case text-emerald-700">Saved for later</span>
-          <h1 className="mt-3 font-sans text-4xl font-semibold leading-tight">Keep your favourites connected.</h1>
-          <p className="mx-auto mt-5 max-w-lg text-sm font-normal leading-7 text-zinc-500">Sign in to keep products you want to revisit and let those saves become part of your FreshPick recommendations.</p>
-          <Link href="/auth/login?redirect=/wishlist" className="mt-7 inline-flex rounded-full bg-brand-amber px-6 py-3 text-xs font-semibold text-accent-foreground hover:bg-brand-amber/85">Sign in</Link>
-        </section>
-      </main>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-background pb-10 text-zinc-950">
-      <section className="border-b border-zinc-200 bg-background px-5 pb-6 pt-10 md:px-8 md:pb-14 md:pt-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <span className="inline-flex items-center gap-2 text-xs font-bold normal-case text-emerald-700"><Heart className="h-3.5 w-3.5" /> Saved</span>
-            <h1 className="mt-4 font-sans text-4xl font-semibold leading-tight md:text-4xl">Things worth coming back to.</h1>
-            <p className="mt-5 max-w-xl text-sm font-normal leading-7 text-zinc-500">Your saved products stay here until you are ready for them—and help FreshPick understand what catches your attention.</p>
-          </div>
-          <Link href="/discover" className="inline-flex h-11 w-fit items-center gap-2 rounded-full border border-zinc-300 bg-background px-5 text-xs font-semibold text-zinc-700 hover:border-emerald-300 hover:text-emerald-800">Discover more <ArrowRight className="h-4 w-4" /></Link>
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-6xl px-5 pt-10 md:px-8 md:pt-14">
-        {wishlistItems.length === 0 ? (
-          <section className="rounded-xl border border-zinc-200 bg-background p-10 text-center md:p-14">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-background text-muted-foreground"><Heart className="h-5 w-5" /></div>
-            <h2 className="mt-6 font-sans text-2xl font-semibold">Nothing saved yet.</h2>
-            <p className="mx-auto mt-4 max-w-lg text-sm font-normal leading-7 text-zinc-500">Save something from the market when it looks worth another look, or start from a recipe and discover ingredients that way.</p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link href="/discover" className="rounded-full bg-brand-amber px-6 py-3 text-xs font-semibold text-accent-foreground hover:bg-brand-amber/85">Open Discover</Link>
-              <Link href="/products" className="rounded-full border border-zinc-300 px-6 py-3 text-xs font-semibold text-zinc-700">Browse Market</Link>
-            </div>
-          </section>
-        ) : (
-          <section>
-            <div className="mb-7 flex items-end justify-between gap-5 border-b border-zinc-300 pb-5">
-              <div>
-                <p className="text-xs font-bold normal-case text-emerald-700">Your edit</p>
-                <h2 className="mt-2 font-sans text-3xl font-semibold">{wishlistItems.length} saved item{wishlistItems.length === 1 ? '' : 's'}</h2>
-              </div>
-              <Link href="/for-you" className="text-xs font-semibold text-emerald-800">See For You</Link>
-            </div>
-            <ProductGrid products={wishlistItems} />
-          </section>
-        )}
-      </div>
-    </main>
+    <AccountPage title="Wishlist" description="Your saved products, ready when you are." action={<Link href="/products" className={accountSecondaryButton}>Shop the market</Link>}>
+      {authLoading || loading ? <AccountLoading label="Loading your wishlist…" /> : !user ? (
+        <AccountState title="Save your favourites" description="Sign in to keep your wishlist across visits." action={<Link href="/auth/login?redirect=/wishlist" className={accountButton}>Sign in</Link>} />
+      ) : error ? (
+        <>
+          <AccountState error title="Couldn’t load your wishlist" description={error} action={<button type="button" onClick={() => void retry()} className={accountSecondaryButton}>Try again</button>} />
+          {wishlistItems.length > 0 && <div className="mt-8"><ProductGrid products={wishlistItems} /></div>}
+        </>
+      ) : wishlistItems.length === 0 ? (
+        <AccountState title="No saved products yet" description="Tap the heart on a product to save it here." action={<Link href="/products" className={accountButton}>Shop the market</Link>} />
+      ) : (
+        <section aria-label="Saved products">
+          <p className="mb-6 text-sm text-muted-foreground">{wishlistItems.length} saved {wishlistItems.length === 1 ? 'product' : 'products'}</p>
+          <ProductGrid products={wishlistItems} />
+        </section>
+      )}
+    </AccountPage>
   );
 }
