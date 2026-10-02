@@ -1,34 +1,28 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight, Clock3 } from 'lucide-react';
+import type { RecipeSummary } from '@/models/recipe';
 
-const destinations = [
-  { number: "01", title: "Something to cook", description: "Recipes with ingredients you can shop.", action: "Find a recipe", href: "/recipes" },
-  { number: "02", title: "Something ready", description: "Meals for when someone else does the cooking.", action: "Explore ready meals", href: "/meals" },
-  { number: "03", title: "A regular favourite", description: "Recurring baskets for your everyday essentials.", action: "Explore weekly baskets", href: "/subscriptions" },
-];
-
-export default function MarketDiscovery() {
+export default function MarketDiscovery({ recipes }: { recipes: RecipeSummary[] }) {
   return (
-    <section aria-labelledby="discovery-title" className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
-      <div className="border-t border-border pt-8 md:grid md:grid-cols-[1fr_2fr] md:gap-16 md:pt-10">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Beyond the grocery list</p>
-          <h2 id="discovery-title" className="mt-3 max-w-xs text-3xl font-medium leading-tight tracking-tight text-brand-green">What’s on<br className="hidden md:block" /> your table?</h2>
-        </div>
-        <div className="mt-6 divide-y divide-border md:mt-0">
-          {destinations.map(({ number, title, description, action, href }) => (
-            <Link key={href} href={href} className="group grid grid-cols-[1.5rem_1fr_auto] items-start gap-4 py-5 first:pt-0 md:gap-6">
-              <span aria-hidden="true" className="pt-1 text-xs text-muted-foreground">{number}</span>
-              <div>
-                <h3 className="text-xl font-medium text-brand-green group-hover:underline">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-                <span className="mt-3 block text-xs font-semibold text-brand-green">{action}</span>
-              </div>
-              <ArrowUpRight className="mt-1 h-5 w-5 text-brand-green" aria-hidden="true" />
-            </Link>
-          ))}
-        </div>
+    <section aria-labelledby="discovery-title" className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div><h2 id="discovery-title" className="text-2xl font-semibold text-brand-green md:text-[1.75rem]">What’s cooking?</h2><p className="mt-2 text-sm text-muted-foreground">Recipes to try. Ingredients to shop.</p></div>
+        <Link href="/recipes" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green hover:underline">All recipes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
       </div>
+      {recipes.length > 0 ? <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+        {recipes.slice(0, 3).map((recipe) => <Link key={recipe.id} href={`/recipes/${recipe.slug}`} className="group w-[85%] min-w-0 shrink-0 snap-start overflow-hidden rounded-lg border border-border md:w-auto">
+          <div className="relative aspect-[3/2] overflow-hidden bg-secondary"><Image src={recipe.featuredImage?.url || '/placeholder.svg'} alt={recipe.featuredImage?.alt || recipe.title} fill sizes="(max-width: 767px) 85vw, (max-width: 1280px) 33vw, 390px" className={recipe.featuredImage?.url ? 'object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transform-none' : 'object-contain p-16 opacity-50'} /></div>
+          <div className="p-5">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">{recipe.cuisine ? <span>{recipe.cuisine}</span> : <span>From the kitchen</span>}{recipe.prepTimeMinutes + recipe.cookTimeMinutes > 0 && <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" aria-hidden="true" />{recipe.prepTimeMinutes + recipe.cookTimeMinutes} min</span>}</div>
+            <h3 className="text-lg font-semibold leading-snug text-brand-green group-hover:underline underline-offset-4">{recipe.title}</h3>
+            {recipe.authorName && <p className="mt-2 text-sm text-muted-foreground">By {recipe.authorName}</p>}
+          </div>
+        </Link>)}
+      </div> : <div className="grid overflow-hidden rounded-lg border border-border md:grid-cols-[1fr_0.8fr]">
+        <div className="flex flex-col items-start justify-center px-6 py-8 md:px-8"><p className="max-w-lg text-base leading-7 text-muted-foreground">Find inspiration for your next meal in our recipe collection.</p><Link href="/recipes" className="mt-5 inline-flex min-h-12 items-center gap-3 rounded-md bg-brand-green px-5 text-sm font-semibold text-background">Explore recipes <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+        <div className="relative aspect-[2/1] md:aspect-auto md:min-h-56"><Image src="/images/home/tomatoes.webp" alt="Fresh tomatoes on the vine" fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
+      </div>}
     </section>
   );
 }
