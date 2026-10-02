@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ShoppingBasket } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
+import { getCategoryImage } from "@/lib/categoryImage";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 
 export const revalidate = 300;
@@ -40,7 +41,7 @@ async function getCategories(): Promise<Category[]> {
 export default async function CategoriesIndex() {
   const categories = await getCategories();
   return (
-    <main className="bg-background pb-10">
+    <div className="bg-background pb-10">
       <PremiumPageHeader title="Shop by category" subtitle="Fresh produce, pantry staples, ready meals and more. Find your everyday favourites." />
       <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-6">
         {categories.length === 0 ? (
@@ -51,10 +52,12 @@ export default async function CategoriesIndex() {
           </section>
         ) : (
           <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-3">
-            {categories.map((category, index) => (
+            {categories.map((category, index) => {
+              const image = getCategoryImage(category.slug, category.imageUrl);
+              return (
               <Link key={category.slug} href={`/categories/${encodeURIComponent(category.slug)}`} className="group flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-start">
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                  {category.imageUrl ? <Image src={category.imageUrl} alt={category.name} fill priority={index < 2} sizes="96px" className={category.imageUrl.split("?")[0].endsWith(".svg") ? "object-contain p-5" : "object-cover"} /> : <div className="flex h-full items-center justify-center"><ShoppingBasket className="h-10 w-10 text-brand-green" aria-hidden="true" /></div>}
+                  <Image src={image} alt="" fill priority={index < 2} sizes="96px" className={image.split("?")[0].endsWith(".svg") ? "object-contain p-5" : "object-cover"} />
                 </div>
                 <div className="min-w-0">
                   <h2 className="text-base font-medium text-brand-green group-hover:underline">{category.name}</h2>
@@ -62,10 +65,11 @@ export default async function CategoriesIndex() {
                   <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-green">Browse <ArrowRight className="h-4 w-4" aria-hidden="true" /></span>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

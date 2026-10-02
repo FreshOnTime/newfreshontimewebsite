@@ -86,11 +86,11 @@ export function Footer() {
               <h4 className="mb-7 text-base font-semibold text-white">Need a hand?</h4>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm font-normal text-white/85">
-                  <MapPin className="mt-1 h-4 w-4 shrink-0 text-white/85" />
+                  <MapPin strokeWidth={1.75} aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-white/85" />
                   <span>Current coverage includes {SERVICE_AREAS.slice(0, 4).join(", ")} and nearby Colombo areas.</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm font-normal text-white/85">
-                  <Mail className="h-4 w-4 shrink-0 text-white/85" />
+                  <Mail strokeWidth={1.75} aria-hidden="true" className="h-4 w-4 shrink-0 text-white/85" />
                   <a href={`mailto:${SUPPORT_EMAIL}`} className="break-all transition-colors hover:text-white">{SUPPORT_EMAIL}</a>
                 </li>
               </ul>
