@@ -16,13 +16,13 @@ const accountLinks = [
 export function AccountPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <main className="bg-background pb-12 text-foreground">
+    <div className="bg-background pb-12 text-foreground">
       <header className="border-b border-border">
         <div className="mx-auto max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
           <div className="flex flex-wrap items-end justify-between gap-5 pb-7 md:pb-8">
-            <div>
+            <div className="min-w-0 max-w-full">
               <p className="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Your account</p>
-              <h1 className="text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">{title}</h1>
+              <h1 className="break-words text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">{title}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
             </div>
             {action}
@@ -36,7 +36,7 @@ export function AccountPage({ title, description, action, children }: { title: s
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-5 pt-8 md:px-8 md:pt-10">{children}</div>
-    </main>
+    </div>
   );
 }
 

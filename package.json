@@ -20,7 +20,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test:unit": "jest --testPathIgnorePatterns=__tests__/smoke"
   },
   "prisma": {
     "seed": "node -r esbuild-register prisma/seed.ts"

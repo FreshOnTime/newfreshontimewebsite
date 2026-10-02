@@ -32,6 +32,7 @@ const ORDER_SUMMARY_SELECT = {
 function serializeOrder(o: any) {
   return {
     ...o,
+    _id: o.id,
     subtotal: Number(o.subtotal),
     tax: Number(o.tax),
     shipping: Number(o.shipping),
@@ -58,8 +59,10 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     const queryUserId = searchParams.get('userId');
     const authUser = request.user;
     const userId = authUser?.mongoId || authUser?.userId;
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const pageValue = Number(searchParams.get('page') || 1);
+    const limitValue = Number(searchParams.get('limit') || 10);
+    const page = Number.isSafeInteger(pageValue) && pageValue > 0 ? Math.min(pageValue, 1000000) : 1;
+    const limit = Number.isSafeInteger(limitValue) && limitValue > 0 ? Math.min(limitValue, 50) : 10;
     const summaryOnly = searchParams.get('summary') === '1';
 
     if (!userId) {
@@ -73,14 +76,14 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
         ? prisma.order.findMany({
           where: { customerId: effectiveUserId },
           select: ORDER_SUMMARY_SELECT,
-          orderBy: { createdAt: 'desc' },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           skip: (page - 1) * limit,
           take: limit,
         })
         : prisma.order.findMany({
           where: { customerId: effectiveUserId },
           include: ORDER_INCLUDE,
-          orderBy: { createdAt: 'desc' },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           skip: (page - 1) * limit,
           take: limit,
         }),
@@ -104,7 +107,7 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
           },
         },
       },
-      summaryOnly ? { headers: { 'Cache-Control': 'private, max-age=30' } } : undefined
+      { headers: { 'Cache-Control': 'private, no-store' } }
     );
   } catch (error) {
     console.error('Error fetching orders:', error);

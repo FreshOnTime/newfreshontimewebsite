@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,9 @@ import Link from "next/link";
 import { toast } from 'sonner';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { AccountPage, AccountState, AccountLoading, accountSecondaryButton } from '@/components/account/AccountPage';
+import { ConfirmAction } from '@/components/account/ConfirmAction';
+import { ReorderButton } from '@/components/account/ReorderButton';
+import { orderAddressSchema } from '@/lib/orderAddress';
 import { CheckCircle2, Clock, Package, Truck, ArrowLeft, MapPin, CreditCard, XCircle, RotateCcw } from "lucide-react";
 
 type ApiOrderItem = {
@@ -32,7 +35,12 @@ type ApiOrder = {
   tax?: number;
   shipping?: number;
   total?: number;
-  shippingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string };
+  discount?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  trackingNumber?: string;
+  estimatedDelivery?: string;
+  shippingAddress?: { name?: string; street?: string; city?: string; state?: string; zipCode?: string; country?: string; phone?: string };
   isRecurring?: boolean;
   scheduleStatus?: 'active' | 'paused' | 'ended';
   nextDeliveryAt?: string;
@@ -61,6 +69,8 @@ export default function OrderDetailPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const actionLock = useRef(false);
 
   useEffect(() => {
     if (!id || authLoading) return;
@@ -91,7 +101,8 @@ export default function OrderDetailPage() {
   }, [id, user?._id, authLoading, router, retryCount]);
 
   const doRecurringAction = async (action: 'pause' | 'resume' | 'end') => {
-    if (!order?._id || saving) return;
+    if (!order?._id || actionLock.current) return;
+    actionLock.current = true;
     setSaving(true);
     setActionError(null);
     try {
@@ -106,13 +117,14 @@ export default function OrderDetailPage() {
     } catch {
       setActionError('Couldn’t save your changes. Please try again.');
     } finally {
+      actionLock.current = false;
       setSaving(false);
     }
   };
 
   const cancelOrder = async () => {
-    if (!order?._id || saving) return;
-    if (!confirm('Cancel this order?')) return;
+    if (!order?._id || actionLock.current) return;
+    actionLock.current = true;
     setSaving(true);
     setActionError(null);
     try {
@@ -120,13 +132,14 @@ export default function OrderDetailPage() {
       const data = await res.json();
       if (res.ok && data?.success) {
         setOrder(data.data);
+        setConfirmingCancel(false);
       } else {
         const msg = (data && (data.error || data.message)) || 'Failed to cancel order';
         setActionError(msg);
       }
     } catch {
       setActionError('Couldn’t save your changes. Please try again.');
-    } finally { setSaving(false); }
+    } finally { actionLock.current = false; setSaving(false); }
   };
 
   const formatDateInput = (iso?: string) => {
@@ -141,7 +154,7 @@ export default function OrderDetailPage() {
 
   const saveRecurrence = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!order?._id || saving) return;
+    if (!order?._id || actionLock.current) return;
     const fd = new FormData(e.currentTarget);
     const startDate = String(fd.get('recurrence_start') || '');
     const endDate = String(fd.get('recurrence_end') || '');
@@ -164,6 +177,7 @@ export default function OrderDetailPage() {
       },
     };
 
+    actionLock.current = true;
     setSaving(true);
     setActionError(null);
     try {
@@ -183,24 +197,28 @@ export default function OrderDetailPage() {
     } catch {
       setActionError('Couldn’t save your changes. Please try again.');
     } finally {
+      actionLock.current = false;
       setSaving(false);
     }
   };
 
   const saveAddress = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!order?._id || saving) return;
+    if (!order?._id || actionLock.current) return;
     const form = e.currentTarget as HTMLFormElement;
     const fd = new FormData(form);
     const shippingAddress = {
-      name: String(fd.get('name') || ''),
-      street: String(fd.get('street') || ''),
-      city: String(fd.get('city') || ''),
-      state: String(fd.get('state') || ''),
-      zipCode: String(fd.get('zip') || ''),
+      name: String(fd.get('name') || '').trim(),
+      street: String(fd.get('street') || '').trim(),
+      city: String(fd.get('city') || '').trim(),
+      state: String(fd.get('state') || '').trim(),
+      zipCode: String(fd.get('zip') || '').trim(),
       country: String(fd.get('country') || 'LK'),
-      phone: String(fd.get('phone') || ''),
+      phone: String(fd.get('phone') || '').trim(),
     };
+    const parsed = orderAddressSchema.safeParse(shippingAddress);
+    if (!parsed.success) { setActionError(parsed.error.issues[0].message); return; }
+    actionLock.current = true;
     setSaving(true);
     setActionError(null);
     try {
@@ -216,7 +234,7 @@ export default function OrderDetailPage() {
       }
     } catch {
       setActionError('Couldn’t save your changes. Please try again.');
-    } finally { setSaving(false); }
+    } finally { actionLock.current = false; setSaving(false); }
   };
 
   const getStatusBadge = (status: string) => {
@@ -241,7 +259,8 @@ export default function OrderDetailPage() {
 
   return (
     <AccountPage title={`Order #${order.orderNumber}`} description={`${new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}${order.bagName ? ` · ${order.bagName}` : ''}`} action={<Link href="/orders" className={accountSecondaryButton}><ArrowLeft className="h-4 w-4" />All orders</Link>}>
-        {actionError && <p role="alert" className="mb-6 rounded-lg border border-rose-200 px-4 py-3 text-sm text-rose-700">{actionError}</p>}
+        <ConfirmAction open={confirmingCancel} onOpenChange={setConfirmingCancel} title={`Cancel order #${order.orderNumber}?`} description="This stops this delivery. You can buy these items again afterward." label="Cancel order" busy={saving} error={actionError} onConfirm={() => void cancelOrder()} />
+        {actionError && !confirmingCancel && <p role="alert" className="mb-6 rounded-lg border border-rose-200 px-4 py-3 text-sm text-rose-700">{actionError}</p>}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-medium text-brand-green">Delivery status</h2>
           <span className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${getStatusBadge(order.status)}`}>{order.status}</span>
@@ -256,6 +275,7 @@ export default function OrderDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-2 space-y-6">
+            {(order.trackingNumber || order.estimatedDelivery) && <div className="rounded-lg border border-border p-6 text-sm">{order.estimatedDelivery && <p>Estimated delivery: {new Date(order.estimatedDelivery).toLocaleDateString('en-LK', { dateStyle: 'medium' })}</p>}{order.trackingNumber && <p className="mt-2 break-all">Tracking reference: {order.trackingNumber}</p>}</div>}
             {/* Items */}
             <Card className="shadow-none border-border bg-background overflow-hidden">
               <div className="bg-background px-6 py-4 border-b border-border">
@@ -411,7 +431,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div>
                         <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-phone">Phone</Label>
-                        <Input id="order-phone" name="phone" disabled={saving} defaultValue={(order.shippingAddress as unknown as { phone?: string })?.phone || ''} placeholder="+94 77 123 4567" className="h-11" />
+                        <Input id="order-phone" name="phone" disabled={saving} defaultValue={order.shippingAddress.phone || ''} placeholder="+94 77 123 4567" className="h-11" />
                       </div>
                     </div>
                     <div>
@@ -433,7 +453,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div>
                         <Label className="text-sm text-gray-600 mb-2 block" htmlFor="order-country">Country</Label>
-                        <Input id="order-country" name="country" disabled={saving} defaultValue={(order.shippingAddress as unknown as { country?: string })?.country || 'LK'} className="h-11" />
+                        <Input id="order-country" name="country" disabled={saving} defaultValue={order.shippingAddress.country || 'LK'} className="h-11" />
                       </div>
                     </div>
                     <div className="pt-2">
@@ -487,6 +507,8 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
 
+                  {Number(order.discount || 0) > 0 && <div className="mb-4 flex justify-between text-sm"><span>Discount</span><span>−Rs. {Number(order.discount).toFixed(2)}</span></div>}
+                  <p className="mb-4 text-sm capitalize text-muted-foreground">Payment: {order.paymentMethod === 'cash' ? 'Cash on delivery' : order.paymentMethod?.replaceAll('_', ' ') || 'Not recorded'} · {order.paymentStatus || 'Pending'}</p>
                   <div className="flex justify-between items-center border-t border-dashed pt-4 mb-6">
                     <span className="text-gray-600">Total</span>
                     <span className="text-2xl font-medium text-foreground">Rs. {Number(order.total ?? 0).toFixed(2)}</span>
@@ -495,7 +517,7 @@ export default function OrderDetailPage() {
                   {user && ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase()) && (
                     <Button
                       variant="ghost"
-                      onClick={cancelOrder}
+                      onClick={() => { setActionError(null); setConfirmingCancel(true); }}
                       disabled={saving}
                       className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
@@ -505,6 +527,8 @@ export default function OrderDetailPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {!order.isRecurring && <Card className="shadow-none border-border bg-background"><CardContent className="p-6"><ReorderButton orderId={order._id} /></CardContent></Card>}
 
               {/* Need Help Card */}
               <Card className="shadow-none border-border bg-background overflow-hidden">

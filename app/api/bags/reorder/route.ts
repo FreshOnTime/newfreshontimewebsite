@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
     }
     const userId = user.mongoId;
 
-    const { orderId } = await request.json();
-    if (!orderId) {
+    const { orderId } = await request.json().catch(() => ({}));
+    if (typeof orderId !== 'string' || !orderId.trim()) {
       return NextResponse.json({ success: false, message: 'Order ID is required' }, { status: 400 });
     }
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       const requestedQty = item.qty;
       const availableQty = product.stockQty;
       if (availableQty < requestedQty) {
-        if (availableQty === 0) {
+        if (availableQty <= 0) {
           unavailableItems.push({ name: item.name, reason: 'Out of stock' });
           continue;
         }

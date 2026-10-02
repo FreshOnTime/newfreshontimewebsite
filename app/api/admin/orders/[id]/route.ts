@@ -4,6 +4,9 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
+class OrderConflict extends Error {}
+class StockConflict extends Error {}
+
 const ORDER_INCLUDE = {
   items: true,
   customer: { select: { firstName: true, lastName: true, email: true } },
@@ -79,7 +82,17 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
     const before = await prisma.order.findUnique({ where: { id }, include: ORDER_INCLUDE });
     if (!before) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
-    const update: Prisma.OrderUpdateInput = {
+    if (data.isRecurring !== undefined && data.isRecurring !== before.isRecurring) {
+      return NextResponse.json({ error: 'An existing order cannot be converted to or from a recurring template' }, { status: 400 });
+    }
+    if (['cancelled', 'refunded'].includes(before.status) && data.status && !['cancelled', 'refunded'].includes(data.status)) {
+      return NextResponse.json({ error: 'Create a new order to reserve stock again' }, { status: 400 });
+    }
+    if (data.items && ['shipped', 'delivered', 'cancelled', 'refunded'].includes(before.status)) {
+      return NextResponse.json({ error: 'Items cannot be changed after shipment or cancellation' }, { status: 400 });
+    }
+
+    const update: Prisma.OrderUpdateManyMutationInput = {
       ...(data.status !== undefined ? { status: data.status } : {}),
       ...(data.paymentStatus !== undefined ? { paymentStatus: data.paymentStatus } : {}),
       ...(data.trackingNumber !== undefined ? { trackingNumber: data.trackingNumber } : {}),
@@ -97,12 +110,40 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
       ...(data.recurrence !== undefined ? { recurrence: data.recurrence as Prisma.InputJsonValue } : {}),
     };
 
-    if (before.isRecurring && data.status === 'cancelled') {
+    if (before.isRecurring && data.status && ['cancelled', 'refunded'].includes(data.status)) {
       update.scheduleStatus = 'ended';
       update.nextDeliveryAt = null;
     }
 
     const updated = await prisma.$transaction(async (tx) => {
+      const changed = await tx.order.updateMany({
+        where: { id, status: before.status, updatedAt: before.updatedAt }, data: update,
+      });
+      if (changed.count !== 1) throw new OrderConflict();
+      // Templates never hold stock. For real orders, reconcile only the net
+      // change, or release the original reservation on cancellation/refund.
+      if (!before.isRecurring) {
+        const release = data.status && ['cancelled', 'refunded'].includes(data.status)
+          && !['cancelled', 'refunded'].includes(before.status);
+        const quantities = new Map<string, number>();
+        if (release || data.items) {
+          for (const item of before.items) quantities.set(item.productId, (quantities.get(item.productId) || 0) - item.qty);
+          if (!release && data.items) {
+            for (const item of data.items) quantities.set(item.productId, (quantities.get(item.productId) || 0) + item.qty);
+          }
+          for (const [productId, delta] of quantities) {
+            if (delta > 0) {
+              const reserved = await tx.product.updateMany({
+                where: { id: productId, archived: false, stockQty: { gte: delta } },
+                data: { stockQty: { decrement: delta } },
+              });
+              if (reserved.count !== 1) throw new StockConflict();
+            } else if (delta < 0) {
+              await tx.product.updateMany({ where: { id: productId }, data: { stockQty: { increment: -delta } } });
+            }
+          }
+        }
+      }
       if (data.items) {
         await tx.orderItem.deleteMany({ where: { orderId: id } });
         await tx.orderItem.createMany({
@@ -118,7 +159,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
         });
       }
 
-      return tx.order.update({ where: { id }, data: update, include: ORDER_INCLUDE });
+      return tx.order.findUniqueOrThrow({ where: { id }, include: ORDER_INCLUDE });
     });
 
     const beforeSerialized = serializeOrder(before);
@@ -129,6 +170,8 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
+    if (error instanceof OrderConflict) return NextResponse.json({ error: 'This order changed. Refresh it before trying again.' }, { status: 409 });
+    if (error instanceof StockConflict) return NextResponse.json({ error: 'Insufficient stock for the updated items' }, { status: 400 });
     console.error('Update order error:', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
@@ -140,11 +183,20 @@ export const DELETE = requireAdmin(async (request, { params }: { params: Promise
     const before = await prisma.order.findUnique({ where: { id }, include: ORDER_INCLUDE });
     if (!before) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
-    await prisma.order.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      const removed = await tx.order.deleteMany({ where: { id, status: before.status, updatedAt: before.updatedAt } });
+      if (removed.count !== 1) throw new OrderConflict();
+      if (!before.isRecurring && !['shipped', 'delivered', 'cancelled', 'refunded'].includes(before.status)) {
+        for (const item of before.items) {
+          await tx.product.updateMany({ where: { id: item.productId }, data: { stockQty: { increment: item.qty } } });
+        }
+      }
+    });
     await logAuditAction(request.user!.userId, 'delete', 'order', id, serializeOrder(before), undefined, request);
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof OrderConflict) return NextResponse.json({ error: 'This order changed. Refresh it before trying again.' }, { status: 409 });
     console.error('Delete order error:', error);
     return NextResponse.json({ error: 'Failed to delete order' }, { status: 500 });
   }

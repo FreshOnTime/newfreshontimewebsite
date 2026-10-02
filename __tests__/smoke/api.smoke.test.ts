@@ -14,26 +14,11 @@ describe('Smoke Tests - Critical API Endpoints', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          userId: `smoke-test-${Date.now()}`,
-          firstName: 'Test',
-          phoneNumber: '+1234567890',
-          registrationAddress: {
-            recipientName: 'Test User',
-            streetAddress: '123 Test St',
-            city: 'Test City',
-            state: 'Test State',
-            postalCode: '12345',
-            countryCode: 'US',
-            phoneNumber: '+1234567890',
-            type: 'Home'
-          }
-        }),
+        // Intentionally invalid input: smoke checks must never create accounts
+        // when BASE_URL points at a deployed site.
+        body: JSON.stringify({}),
       });
-
-      // Should either succeed (201) or fail with validation error (400)
-      // But should not return 500 (server error)
-      expect([200, 201, 400, 409]).toContain(response.status);
+      expect(response.status).toBe(400);
     }, timeout);
   });
 
@@ -58,12 +43,11 @@ describe('Smoke Tests - Critical API Endpoints', () => {
     }, timeout);
   });
 
-  describe('Health Check', () => {
-    it('should respond to basic health check', async () => {
-      const response = await fetch(`${BASE_URL}/api/health`);
+  describe('Order authentication', () => {
+    it('should reject anonymous order history', async () => {
+      const response = await fetch(`${BASE_URL}/api/orders`);
       
-      // Health endpoint might not exist yet, but should not return 500
-      expect([200, 404]).toContain(response.status);
+      expect(response.status).toBe(401);
     }, timeout);
   });
 
