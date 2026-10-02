@@ -49,7 +49,7 @@ export function ProductCard({
   return (
     <article className={cn("group relative h-full", variant === "market" ? "flex flex-col" : "overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green")}>
       <div className={cn("relative aspect-square overflow-hidden bg-background", variant === "market" && "rounded-xl border border-border/70 [&_img]:mix-blend-multiply")}>
-        <Link href={`/products/${sku}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
+        <Link href={`/products/${encodeURIComponent(sku)}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
           <div className="relative h-full w-full transition-transform duration-700 ease-out">
             <ProductImage src={imageUrl} alt={name} priority={priority} />
           </div>
@@ -71,7 +71,7 @@ export function ProductCard({
           {isOutOfStock && <span>Unavailable</span>}
         </div>
 
-        <Link href={`/products/${sku}`} prefetch={false} className="block">
+        <Link href={`/products/${encodeURIComponent(sku)}`} prefetch={false} className="block">
           <h3 className={cn("line-clamp-2 min-h-[2.5rem] font-sans text-sm leading-snug text-foreground transition-colors group-hover:text-brand-green md:text-base", variant === "market" ? "font-medium" : "font-semibold")}>
             {name}
           </h3>

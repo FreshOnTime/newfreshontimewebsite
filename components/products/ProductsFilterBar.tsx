@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,297 +10,132 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
+import { getPriceRange, updateProductFilters } from "@/lib/productFilters";
 
-type FilterCategory = { _id: string; name: string };
-const FILTER_CATEGORIES_CACHE_KEY = "freshpick_filter_categories_v2";
-const FILTER_CATEGORIES_CACHE_TTL = 60 * 60 * 1000;
+type Category = { _id: string; name: string };
+const CACHE_KEY = "freshpick_filter_categories_v2";
+const TAGS = ["Organic", "Gluten-Free", "Vegan", "Keto", "Halal", "Local", "Imported"];
+const CONTROL = "h-11 rounded-lg border-border bg-background shadow-none focus:ring-brand-green";
+const FILTER = CONTROL + " shrink-0 border px-3 text-sm font-medium hover:bg-secondary hover:text-brand-green";
+const SELECTED = " border-brand-green bg-brand-green/5 text-brand-green";
 
-function readCachedFilterCategories(): FilterCategory[] | null {
-  try {
-    const raw = localStorage.getItem(FILTER_CATEGORIES_CACHE_KEY);
-    if (!raw) return null;
-    const cached = JSON.parse(raw) as { timestamp?: unknown; categories?: unknown };
-    if (
-      typeof cached.timestamp !== "number" ||
-      Date.now() - cached.timestamp > FILTER_CATEGORIES_CACHE_TTL ||
-      !Array.isArray(cached.categories)
-    ) {
-      localStorage.removeItem(FILTER_CATEGORIES_CACHE_KEY);
-      return null;
-    }
-    return cached.categories.filter(
-      (category): category is FilterCategory =>
-        Boolean(category) &&
-        typeof category._id === "string" &&
-        typeof category.name === "string"
-    );
-  } catch {
-    return null;
-  }
+function parseCategories(source: unknown): Category[] {
+  if (!Array.isArray(source)) return [];
+  return source.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const id = typeof item._id === "string" ? item._id : item.id;
+    const name = typeof item.name === "string" ? item.name : item.description;
+    return typeof id === "string" && typeof name === "string" ? [{ _id: id, name }] : [];
+  });
 }
 
 export default function ProductsFilterBar() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-
+  const query = params.toString();
   const [search, setSearch] = useState(params.get("search") || "");
-  const [categoryId, setCategoryId] = useState(params.get("categoryId") || "");
-  const [minPrice, setMinPrice] = useState(Number(params.get("minPrice")) || 0);
-  const [maxPrice, setMaxPrice] = useState(Number(params.get("maxPrice")) || 5000);
+  const [prices, setPrices] = useState<[number, number]>(() => getPriceRange(new URLSearchParams(query)));
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [pending, startTransition] = useTransition();
+  const categoryId = params.get("categoryId") || "";
+  const [tags, setTags] = useState<string[]>(() => params.get("tags")?.split(",").filter(Boolean) || []);
   const [inStock, setInStock] = useState(params.get("inStock") === "true");
-  const [sort, setSort] = useState(params.get("sort") || "");
-  const [selectedTags, setSelectedTags] = useState<string[]>(params.get("tags")?.split(",").filter(Boolean) || []);
-  const [categories, setCategories] = useState<FilterCategory[]>([]);
-
-  const filterTags = ["Organic", "Gluten-Free", "Vegan", "Keto", "Halal", "Local", "Imported"];
+  const priceActive = params.has("minPrice") || params.has("maxPrice");
+  const refinementCount = tags.length + Number(inStock);
+  const appliedRange = getPriceRange(new URLSearchParams(query));
+  const sliderMaximum = Math.max(5000, ...appliedRange) + (params.has("maxPrice") && appliedRange[1] >= 5000 ? 100 : 0);
 
   useEffect(() => {
     setSearch(params.get("search") || "");
-    setCategoryId(params.get("categoryId") || "");
-    setMinPrice(Number(params.get("minPrice")) || 0);
-    setMaxPrice(Number(params.get("maxPrice")) || 5000);
+    setPrices(getPriceRange(new URLSearchParams(query)));
+    setTags(params.get("tags")?.split(",").filter(Boolean) || []);
     setInStock(params.get("inStock") === "true");
-    setSort(params.get("sort") || "");
-    setSelectedTags(params.get("tags")?.split(",").filter(Boolean) || []);
-  }, [params]);
+  }, [params, query]);
 
   useEffect(() => {
-    const cached = readCachedFilterCategories();
-    if (cached) {
-      setCategories(cached);
-      return;
+    const controller = new AbortController();
+    let cached = false;
+    try {
+      const data = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+      if (data && typeof data.timestamp === "number" && Date.now() - data.timestamp < 3600000 && Array.isArray(data.categories)) {
+        setCategories(parseCategories(data.categories));
+        cached = true;
+      }
+    } catch { /* Storage is optional. */ }
+    if (!cached) {
+      apiFetch("/api/categories", { signal: controller.signal })
+        .then((response) => response.ok ? response.json() : Promise.reject())
+        .then((payload) => {
+          if (controller.signal.aborted) return;
+          const next = parseCategories(payload?.data ?? payload?.categories ?? payload);
+          setCategories(next);
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), categories: next })); }
+          catch { /* Filtering works without persistent storage. */ }
+        })
+        .catch(() => undefined);
     }
-
-    apiFetch("/api/categories")
-      .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((payload) => {
-        const source: unknown = payload?.data ?? payload;
-        if (!Array.isArray(source)) return;
-
-        const nextCategories = source
-          .map((item): FilterCategory | null => {
-            if (!item || typeof item !== "object") return null;
-            const category = item as { _id?: unknown; id?: unknown; name?: unknown; description?: unknown };
-            const id = typeof category._id === "string" ? category._id : typeof category.id === "string" ? category.id : "";
-            const name = typeof category.name === "string"
-              ? category.name
-              : typeof category.description === "string"
-                ? category.description
-                : "";
-            return id && name ? { _id: id, name } : null;
-          })
-          .filter((category): category is FilterCategory => category !== null);
-
-        setCategories(nextCategories);
-        localStorage.setItem(
-          FILTER_CATEGORIES_CACHE_KEY,
-          JSON.stringify({ timestamp: Date.now(), categories: nextCategories })
-        );
-      })
-      .catch(() => undefined);
+    return () => controller.abort();
   }, []);
 
-  const apply = useMemo(
-    () => (overrides?: Partial<Record<string, string | null>>) => {
-      const sp = new URLSearchParams(params.toString());
-      const update = (key: string, value: string | null | undefined) => {
-        if (value === null || value === "" || value === undefined) sp.delete(key);
-        else sp.set(key, value);
-      };
-
-      update("search", overrides?.search !== undefined ? overrides.search : search);
-      update("categoryId", overrides?.categoryId !== undefined ? overrides.categoryId : categoryId);
-      update("minPrice", overrides?.minPrice !== undefined ? overrides.minPrice : (minPrice > 0 ? String(minPrice) : null));
-      update("maxPrice", overrides?.maxPrice !== undefined ? overrides.maxPrice : (maxPrice < 5000 ? String(maxPrice) : null));
-      update("inStock", overrides?.inStock !== undefined ? overrides.inStock : (inStock ? "true" : null));
-      update("sort", overrides?.sort !== undefined ? overrides.sort : sort);
-      update("tags", overrides?.tags !== undefined ? overrides.tags : (selectedTags.length ? selectedTags.join(",") : null));
-
-      sp.delete("page");
-      const next = sp.toString();
-      router.push(next ? `${pathname}?${next}` : pathname);
-    },
-    [params, pathname, router, search, categoryId, minPrice, maxPrice, inStock, sort, selectedTags]
-  );
-
-  const toggleTag = (tag: string) => {
-    const nextTags = selectedTags.includes(tag)
-      ? selectedTags.filter((item) => item !== tag)
-      : [...selectedTags, tag];
-    setSelectedTags(nextTags);
-    apply({ tags: nextTags.length ? nextTags.join(",") : null });
+  const apply = (changes: Record<string, string | null>) => {
+    const next = updateProductFilters(query, changes);
+    startTransition(() => router.push(next ? pathname + "?" + next : pathname, { scroll: false }));
   };
-
-  const clearAll = () => {
-    setSearch("");
-    setCategoryId("");
-    setMinPrice(0);
-    setMaxPrice(5000);
-    setInStock(false);
-    setSort("");
-    setSelectedTags([]);
-    router.push(pathname);
-  };
-
-  const hasActiveFilters = Boolean(
-    search || categoryId || minPrice > 0 || maxPrice < 5000 || inStock || selectedTags.length || sort
-  );
+  const chips: { label: string; changes: Record<string, string | null> }[] = [
+    ...(params.get("search") ? [{ label: "Search: " + params.get("search"), changes: { search: null } }] : []),
+    ...(categoryId ? [{ label: categories.find((c) => c._id === categoryId)?.name || "Selected category", changes: { categoryId: null } }] : []),
+    ...(priceActive ? [{ label: "Price: Rs. " + (params.get("minPrice") || "0") + " – " + (params.get("maxPrice") || "Any"), changes: { minPrice: null, maxPrice: null } }] : []),
+    ...(inStock ? [{ label: "In stock", changes: { inStock: null } }] : []),
+    ...tags.map((tag) => ({ label: tag, changes: { tags: tags.filter((value) => value !== tag).join(",") || null } })),
+    ...(params.get("supplierId") ? [{ label: "Selected producer", changes: { supplierId: null } }] : []),
+  ];
 
   return (
-    <div className="sticky top-[64px] md:top-[120px] z-30 rounded-xl border border-border bg-background p-3 md:p-4">
+    <section aria-label="Product filters" aria-busy={pending} className="border-y border-border py-5">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row">
-          <form
-            className="relative min-w-0 flex-1"
-            onSubmit={(event) => {
-              event.preventDefault();
-              apply({ search });
-            }}
-          >
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              className="h-12 rounded-lg border-zinc-200 bg-background pl-11 pr-11 text-sm shadow-none placeholder:text-muted-foreground focus-visible:border-emerald-500 focus-visible:ring-1 focus-visible:ring-emerald-500"
-              aria-label="Search products"
-              placeholder="Search products..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-            {search && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => {
-                  setSearch("");
-                  apply({ search: null });
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-zinc-900"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+        <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row">
+          <form className="relative flex min-w-0 flex-1 items-center" onSubmit={(event) => { event.preventDefault(); apply({ search: search.trim() || null }); }}>
+            <Search strokeWidth={1.75} aria-hidden="true" className="pointer-events-none absolute left-3.5 h-4 w-4 text-muted-foreground" />
+            <Input className={CONTROL + " pl-10 pr-24 text-sm focus-visible:ring-brand-green"} aria-label="Search products" placeholder="Find something fresh" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <button type="submit" disabled={pending} className="absolute right-1 h-9 rounded-md px-3 text-sm font-medium text-brand-green hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green disabled:opacity-50">Search</button>
           </form>
-
-          <Select
-            value={categoryId || "all"}
-            onValueChange={(value) => {
-              const nextCategory = value === "all" ? "" : value;
-              setCategoryId(nextCategory);
-              apply({ categoryId: nextCategory || null });
-            }}
-          >
-            <SelectTrigger className="h-12 w-full rounded-lg border-zinc-200 bg-background px-5 shadow-none md:w-[190px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category._id} value={category._id}>{category.name}</SelectItem>
-              ))}
-            </SelectContent>
+          <Select disabled={pending} value={categoryId || "all"} onValueChange={(value) => apply({ categoryId: value === "all" ? null : value })}>
+            <SelectTrigger aria-label="Category" className={CONTROL + " w-full sm:w-[190px]"}><SelectValue placeholder="All categories" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All categories</SelectItem>{categories.map((category) => <SelectItem key={category._id} value={category._id}>{category.name}</SelectItem>)}</SelectContent>
           </Select>
         </div>
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:justify-end xl:pb-0">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[auto_auto_minmax(0,1fr)] xl:flex">
           <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${minPrice > 0 || maxPrice < 5000 ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""} `}
-              >
-                Price <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 rounded-xl p-6" align="end">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between gap-4">
-                  <h4 className="text-sm font-medium text-zinc-900">Price range</h4>
-                  <span className="text-xs text-zinc-500">Rs. {minPrice} – {maxPrice === 5000 ? "5000+" : maxPrice}</span>
-                </div>
-                <Slider
-                  value={[minPrice, maxPrice]}
-                  max={5000}
-                  step={100}
-                  minStepsBetweenThumbs={1}
-                  onValueChange={(values) => {
-                    setMinPrice(values[0]);
-                    setMaxPrice(values[1]);
-                  }}
-                  onValueCommit={(values) => apply({ minPrice: values[0] > 0 ? String(values[0]) : null, maxPrice: values[1] < 5000 ? String(values[1]) : null })}
-                />
-              </div>
+            <PopoverTrigger asChild><Button variant="outline" className={FILTER + (priceActive ? SELECTED : "")}>Price <ChevronDown strokeWidth={1.75} aria-hidden="true" className="ml-2 h-3.5 w-3.5" /></Button></PopoverTrigger>
+            <PopoverContent className="w-[min(320px,calc(100vw-32px))] rounded-xl p-5" align="start">
+              <p className="text-sm font-medium">Price range</p>
+              <p className="mb-6 mt-2 text-sm text-muted-foreground">Rs. {prices[0].toLocaleString("en-LK")} – {prices[1].toLocaleString("en-LK")}{prices[1] === sliderMaximum ? "+" : ""}</p>
+              <Slider value={prices} min={0} max={sliderMaximum} step={100} minStepsBetweenThumbs={0} thumbLabels={["Minimum price", "Maximum price"]} onValueChange={(values) => setPrices([values[0], values[1]])} />
+              <Button disabled={pending} className="mt-6 w-full bg-brand-green text-primary-foreground hover:bg-brand-green/90" onClick={() => apply({ minPrice: prices[0] > 0 ? String(prices[0]) : null, maxPrice: prices[1] < sliderMaximum ? String(prices[1]) : null })}>Apply price</Button>
+              {priceActive && <button type="button" disabled={pending} className="mt-3 min-h-11 w-full text-sm text-brand-green hover:underline" onClick={() => apply({ minPrice: null, maxPrice: null })}>Remove price limit</button>}
             </PopoverContent>
           </Popover>
-
           <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={`h-11 shrink-0 rounded-lg border-zinc-200 px-4 shadow-none hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 ${selectedTags.length > 0 || inStock ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""} `}
-              >
-                <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
-                {(selectedTags.length > 0 || inStock) && (
-                  <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-lg bg-emerald-800 px-1 text-xs text-white">
-                    {selectedTags.length + (inStock ? 1 : 0)}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 rounded-xl p-4" align="end">
-              <div className="space-y-2">
-                <p className="px-2 pb-2 text-xs font-bold normal-case text-muted-foreground">Refine collection</p>
-                <label className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-background">
-                  <Checkbox
-                    checked={inStock}
-                    onCheckedChange={(checked) => {
-                      const value = checked === true;
-                      setInStock(value);
-                      apply({ inStock: value ? "true" : null });
-                    }}
-                  />
-                  <span className="text-sm text-zinc-700">In stock only</span>
-                </label>
-                <div className="my-2 border-t border-zinc-100" />
-                {filterTags.map((tag) => (
-                  <label key={tag} className="flex cursor-pointer items-center gap-3 rounded-xl p-2 hover:bg-background">
-                    <Checkbox checked={selectedTags.includes(tag)} onCheckedChange={() => toggleTag(tag)} />
-                    <span className="text-sm text-zinc-600">{tag}</span>
-                  </label>
-                ))}
-              </div>
+            <PopoverTrigger asChild><Button variant="outline" className={FILTER + (refinementCount ? SELECTED : "")}><SlidersHorizontal strokeWidth={1.75} aria-hidden="true" className="mr-2 h-4 w-4" />Filters{refinementCount > 0 && <span className="ml-1.5 rounded-full bg-brand-green px-1.5 py-0.5 text-xs text-primary-foreground">{refinementCount}</span>}</Button></PopoverTrigger>
+            <PopoverContent className="w-[min(280px,calc(100vw-32px))] rounded-xl p-4" align="center">
+              <p className="mb-2 px-2 text-sm font-medium">Your preferences</p>
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 px-2"><Checkbox disabled={pending} checked={inStock} onCheckedChange={(checked) => { setInStock(checked === true); apply({ inStock: checked === true ? "true" : null }); }} /><span className="text-sm">In stock only</span></label>
+              <div className="my-2 border-t border-border" />
+              {TAGS.map((tag) => <label key={tag} className="flex min-h-11 cursor-pointer items-center gap-3 px-2"><Checkbox disabled={pending} checked={tags.includes(tag)} onCheckedChange={(checked) => { const next = checked === true ? [...tags, tag] : tags.filter((value) => value !== tag); setTags(next); apply({ tags: next.length ? next.join(",") : null }); }} /><span className="text-sm">{tag}</span></label>)}
             </PopoverContent>
           </Popover>
-
-          <Select
-            value={sort || "newest"}
-            onValueChange={(value) => {
-              const nextSort = value === "newest" ? "" : value;
-              setSort(nextSort);
-              apply({ sort: nextSort || null });
-            }}
-          >
-            <SelectTrigger className="h-11 w-[150px] shrink-0 rounded-lg border-zinc-200 bg-background px-4 shadow-none">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="newest">Fresh arrivals</SelectItem>
-              <SelectItem value="price-asc">Price: low to high</SelectItem>
-              <SelectItem value="price-desc">Price: high to low</SelectItem>
-              <SelectItem value="oldest">Oldest first</SelectItem>
-            </SelectContent>
+          <Select disabled={pending} value={params.get("sort") || "newest"} onValueChange={(value) => apply({ sort: value === "newest" ? null : value })}>
+            <SelectTrigger aria-label="Sort products" className={CONTROL + " col-span-2 min-w-0 sm:col-span-1 xl:w-[175px]"}><SelectValue /></SelectTrigger>
+            <SelectContent align="end"><SelectItem value="newest">Latest arrivals</SelectItem><SelectItem value="price-asc">Price: low to high</SelectItem><SelectItem value="price-desc">Price: high to low</SelectItem><SelectItem value="oldest">Oldest first</SelectItem></SelectContent>
           </Select>
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              className="h-11 shrink-0 rounded-lg px-4 text-xs text-zinc-500 hover:bg-red-50 hover:text-red-600"
-              onClick={clearAll}
-            >
-              Reset
-            </Button>
-          )}
         </div>
       </div>
-    </div>
+      {chips.length > 0 && <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Applied filters">
+        {chips.map((chip) => <button key={chip.label} type="button" disabled={pending} aria-label={"Remove " + chip.label} onClick={() => apply(chip.changes)} className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full border border-brand-green/20 bg-brand-green/5 px-3 py-2 text-xs text-brand-green hover:bg-brand-green/10 disabled:opacity-50"><span className="truncate">{chip.label}</span><X strokeWidth={1.75} aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /></button>)}
+        <button type="button" disabled={pending} onClick={() => { setSearch(""); setPrices([0, 5000]); startTransition(() => router.push(pathname, { scroll: false })); }} className="min-h-11 px-2 text-xs font-medium text-brand-green underline underline-offset-4 disabled:opacity-50">Clear all</button>
+      </div>}
+      <p role="status" aria-live="polite" className="sr-only">{pending ? "Updating products" : ""}</p>
+    </section>
   );
 }

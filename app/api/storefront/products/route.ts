@@ -57,13 +57,16 @@ export async function GET(request: NextRequest) {
     else if (sortParam === "price-desc") orderBy = { price: "desc" };
     else if (sortParam === "oldest") orderBy = { createdAt: "asc" };
 
-    const rawProducts = await prisma.product.findMany({
-      where,
-      orderBy,
-      skip: Math.max(0, (page - 1) * limit),
-      take: limit + 1,
-      select: productCardSelect,
-    });
+    const [rawProducts, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: [orderBy, { id: "asc" }],
+        skip: Math.max(0, (page - 1) * limit),
+        take: limit + 1,
+        select: productCardSelect,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
     const hasNext = rawProducts.length > limit;
     const products = rawProducts.slice(0, limit).map(serializeProductCardForUi);
@@ -75,6 +78,7 @@ export async function GET(request: NextRequest) {
           page,
           limit,
           count: products.length,
+          total,
           hasNext,
           hasPrev: page > 1,
         },
