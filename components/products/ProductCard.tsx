@@ -14,7 +14,7 @@ interface ProductCardProps {
   measurementType: "g" | "kg" | "ml" | "l" | "ea" | "lb";
   isDiscreteItem: boolean;
   priority?: boolean;
-  variant?: "default" | "market" | "editorial";
+  variant?: "default" | "market";
   isOutOfStock?: boolean;
   isBundle?: boolean;
 }
@@ -36,8 +36,6 @@ export function ProductCard({
   isOutOfStock = false,
   isBundle = false,
 }: ProductCardProps) {
-  const isOpenCard = variant !== "default";
-  const isEditorial = variant === "editorial";
   const pricePerBaseQuantityWithDiscount = calculateDiscountedPrice(
     pricePerBaseQuantity,
     discountPercentage
@@ -49,8 +47,8 @@ export function ProductCard({
     : `${baseMeasurementQuantity !== 1 ? baseMeasurementQuantity : ""}${(measurementType || "g").toLowerCase()}`;
 
   return (
-    <article className={cn("group relative h-full", isOpenCard ? "flex flex-col" : "overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green")}>
-      <div className={cn("relative aspect-square overflow-hidden bg-background", variant === "market" && "rounded-xl border border-border/70 [&_img]:mix-blend-multiply", isEditorial && "rounded-sm bg-secondary/50 [&_img]:mix-blend-multiply")}>
+    <article className={cn("group relative h-full", variant === "market" ? "flex flex-col" : "overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-brand-green")}>
+      <div className={cn("relative aspect-square overflow-hidden bg-background", variant === "market" && "rounded-xl border border-border/70 [&_img]:mix-blend-multiply")}>
         <Link href={`/products/${sku}`} prefetch={false} className="block h-full" aria-label={`View ${name}`}>
           <div className="relative h-full w-full transition-transform duration-700 ease-out">
             <ProductImage src={imageUrl} alt={name} priority={priority} />
@@ -66,7 +64,7 @@ export function ProductCard({
         </div>
       </div>
 
-      <div className={cn(isOpenCard ? "flex flex-1 flex-col pt-4" : "p-3 sm:p-4")}>
+      <div className={cn(variant === "market" ? "flex flex-1 flex-col pt-4" : "p-3 sm:p-4")}>
         <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <span className="sr-only">Unit</span>
           <span>{isBundle ? "Bundle" : unitLabel}</span>
@@ -74,19 +72,19 @@ export function ProductCard({
         </div>
 
         <Link href={`/products/${sku}`} prefetch={false} className="block">
-          <h3 className={cn("line-clamp-2 min-h-[2.5rem] font-sans text-sm leading-snug text-foreground transition-colors group-hover:text-brand-green md:text-base", isOpenCard ? "font-medium" : "font-semibold")}>
+          <h3 className={cn("line-clamp-2 min-h-[2.5rem] font-sans text-sm leading-snug text-foreground transition-colors group-hover:text-brand-green md:text-base", variant === "market" ? "font-medium" : "font-semibold")}>
             {name}
           </h3>
         </Link>
 
-        <div className={cn("flex items-end justify-between gap-3", isOpenCard ? "mt-2" : "mt-4 border-t border-zinc-100 pt-3.5")}>
+        <div className={cn("flex items-end justify-between gap-3", variant === "market" ? "mt-2" : "mt-4 border-t border-zinc-100 pt-3.5")}>
           <PriceDisplay
             price={pricePerBaseQuantityWithDiscount}
             originalPrice={showDiscountBadge ? pricePerBaseQuantity : undefined}
           />
         </div>
 
-        <div className={cn("w-full", isOpenCard ? "mt-auto pt-4" : "mt-4")}>
+        <div className={cn("w-full", variant === "market" ? "mt-auto pt-4" : "mt-4")}>
           <DeferredProductCardActions
             id={id}
             sku={sku}
@@ -94,7 +92,6 @@ export function ProductCard({
             image={imageUrl}
             price={pricePerBaseQuantityWithDiscount}
             isOutOfStock={isOutOfStock}
-            subtle={isEditorial}
           />
         </div>
       </div>

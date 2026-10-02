@@ -9,6 +9,7 @@ import HeroSection from "@/components/home/HeroSection";
 import CategoryBento from "@/components/home/CategoryBento";
 import MarketDiscovery from "@/components/home/MarketDiscovery";
 import CreatorNetwork from "@/components/home/CreatorNetwork";
+import ShopFeatures from "@/components/home/ShopFeatures";
 import { serverApiFetch } from "@/lib/api/server";
 import { listPublishedRecipes } from "@/lib/recipeService";
 import { listCreators } from "@/lib/creatorService";
@@ -81,23 +82,23 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="bg-background">
+    <div className="bg-background">
       <HeroSection />
       <CategoryBento categories={categories} />
 
       <section aria-labelledby="market-title" className="bg-background pt-10 md:pt-12">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
-          <div className="mb-7 flex items-end justify-between gap-4 md:mb-8">
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">At the market</p>
-              <h2 id="market-title" className="home-display mt-3 text-3xl leading-tight text-brand-green md:text-[2.5rem]">Fresh from the market</h2>
+              <h2 id="market-title" className="text-2xl font-semibold text-brand-green md:text-[1.75rem]">Fresh from the market</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Fresh food and everyday essentials, ready for your bag.</p>
             </div>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </div>
 
           <ProductErrorBoundary>
             {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-6 md:gap-y-10 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 {products.slice(0, 8).map((product) => (
                   <div key={product.sku}>
                     <ProductCard
@@ -110,7 +111,7 @@ export default async function Home() {
                       pricePerBaseQuantity={product.pricePerBaseQuantity}
                       measurementType={product.measurementUnit as "g" | "kg" | "ml" | "l" | "ea" | "lb"}
                       isDiscreteItem={product.isSoldAsUnit}
-                      variant="editorial"
+                      variant="default"
                       isOutOfStock={product.isOutOfStock}
                       isBundle={product.isBundle}
                     />
@@ -119,16 +120,17 @@ export default async function Home() {
               </div>
             ) : (
               <div className="rounded-xl border border-border bg-card px-6 py-6 text-center">
-                <p className="font-sans text-2xl text-zinc-900">The market is being refreshed.</p>
-                <Link href="/products" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
+                <p className="text-xl font-semibold text-brand-green">The market is being refreshed.</p>
+                <Link href="/products" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
               </div>
             )}
           </ProductErrorBoundary>
         </div>
       </section>
 
+      <ShopFeatures />
       <MarketDiscovery recipes={recipes} />
       <CreatorNetwork creators={creators} />
-    </main>
+    </div>
   );
 }

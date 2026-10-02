@@ -1,19 +1,23 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface Category { name: string; slug: string; imageUrl?: string; description?: string; }
 
 export default function CategoryBento({ categories }: { categories: Category[] }) {
   if (!categories.length) return null;
   return (
-    <section aria-label="Shop by category" className="mx-auto max-w-7xl px-5 md:px-8">
-      <div className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 border-y border-border py-4 md:flex md:flex-wrap md:gap-x-8 md:py-5">
-        <p className="shrink-0 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">The market</p>
-        <nav aria-label="Featured categories" className="col-span-2 row-start-2 flex min-w-0 items-center gap-x-6 overflow-x-auto pb-1 md:flex-1 md:flex-wrap md:gap-x-8 md:gap-y-1 md:overflow-visible md:pb-0">
-          {categories.slice(0, 6).map((category) => <Link key={category.slug} href={`/categories/${category.slug}`} className="inline-flex min-h-10 shrink-0 items-center text-sm font-medium text-brand-green underline-offset-4 hover:underline">{category.name}</Link>)}
-        </nav>
-        <Link href="/categories" className="col-start-2 row-start-1 inline-flex min-h-10 items-center gap-2 text-xs text-muted-foreground hover:text-brand-green">All categories <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
+    <section aria-labelledby="categories-title" className="mx-auto max-w-7xl px-4 pt-9 md:px-8 md:pt-12">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+        <h2 id="categories-title" className="text-2xl font-semibold text-brand-green md:text-[1.75rem]">Shop by category</h2>
+        <Link href="/categories" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green hover:underline">View all <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
       </div>
+      <nav aria-label="Featured categories" className="grid grid-cols-3 gap-3 md:grid-cols-6 md:gap-4">
+        {categories.slice(0, 6).map((category) => <Link key={category.slug} href={`/categories/${category.slug}`} className="group flex min-w-0 flex-col items-center rounded-lg border border-border bg-background px-2 pb-4 pt-4 text-center transition-colors hover:border-brand-green hover:bg-secondary/40 md:px-3">
+          <div className="relative mb-3 h-16 w-16 md:h-20 md:w-20"><Image src={category.imageUrl || '/category-icons/placeholder.svg'} alt="" fill sizes="80px" className="object-contain" /></div>
+          <span className="text-sm font-medium leading-5 text-brand-green">{category.name}</span>
+        </Link>)}
+      </nav>
     </section>
   );
 }

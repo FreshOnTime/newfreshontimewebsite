@@ -246,18 +246,3 @@ select:focus {
     outline-offset: 3px;
   }
 }
-
-@font-face {
-  font-family: "Lora";
-  src: url("/fonts/lora-latin-400-normal.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-/* A restrained editorial accent, scoped to the homepage. */
-.home-display {
-  font-family: "Lora", Georgia, "Times New Roman", serif;
-  font-weight: 400;
-  letter-spacing: -0.045em;
-}

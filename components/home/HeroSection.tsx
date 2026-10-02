@@ -1,27 +1,28 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function HeroSection() {
   return (
-    <section aria-labelledby="home-title" className="mx-auto max-w-7xl px-5 md:px-8">
-      <div className="grid gap-8 py-8 md:grid-cols-[1fr_1.1fr] md:items-center md:gap-12 md:py-12 lg:gap-20">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">FreshPick · Colombo</p>
-          <h1 id="home-title" className="home-display mt-5 text-[2.8rem] leading-[1.02] text-brand-green sm:text-6xl lg:text-[4.5rem]">The everyday<br />market.</h1>
-          <p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground md:text-base">Fresh groceries, pantry staples and local food, all in one place.</p>
-          <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6">
-            <Link href="/products" className="inline-flex min-h-12 items-center gap-5 rounded-md bg-brand-amber px-5 text-sm font-medium text-accent-foreground transition-colors hover:bg-brand-amber/85">Shop the market <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
-            <Link href="/homemade" className="inline-flex min-h-12 items-center gap-2 text-sm font-medium text-brand-green hover:underline underline-offset-4">Local makers <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
-          </div>
+    <section aria-labelledby="home-title" className="mx-auto max-w-7xl px-4 pt-5 md:px-8 md:pt-7">
+      <div className="grid overflow-hidden rounded-lg bg-brand-green md:grid-cols-[0.9fr_1.1fr]">
+        <div className="flex flex-col items-start justify-center px-6 py-8 text-background md:px-10 md:py-12 lg:px-12 lg:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em]">FreshPick market</p>
+          <h1 id="home-title" className="mt-4 max-w-lg text-[2.5rem] font-semibold leading-[1.08] tracking-[-0.045em] sm:text-5xl lg:text-[3.75rem]">Fresh food.<br />Every day.</h1>
+          <p className="mt-5 max-w-sm text-base leading-7 text-background/90">Fruit, vegetables and pantry essentials for whatever you’re cooking.</p>
+          <Link href="/products" className="mt-7 inline-flex min-h-12 items-center gap-6 rounded-md bg-brand-amber px-5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/90">Shop groceries <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
-        <figure className="min-w-0">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-sm bg-secondary md:aspect-[8/5]">
-            <Image src="/images/home/tomatoes.webp" alt="Ripe tomatoes on the vine, ready for the kitchen" fill priority sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1280px) 50vw, 580px" className="object-cover" />
-          </div>
-          <figcaption className="flex items-center justify-between gap-4 border-b border-border py-3 text-xs text-muted-foreground"><span>Good ingredients. Everyday cooking.</span><Link href="/recipes" className="inline-flex min-h-8 shrink-0 items-center gap-2 text-brand-green hover:underline">Find a recipe <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></Link></figcaption>
-        </figure>
+        <div className="relative min-w-0 aspect-[2/1] md:aspect-auto md:min-h-[400px] lg:min-h-[438px]">
+          <Image src="/images/home/produce-basket.webp" alt="A basket of fresh vegetables in natural sunlight" fill priority sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1280px) 55vw, 670px" className="object-cover" />
+        </div>
       </div>
+      <nav aria-label="More ways to shop" className="grid grid-cols-3 border-b border-border py-2 md:py-3">
+        {[
+          ['Groceries & essentials', '/products'],
+          ['Food from local makers', '/homemade'],
+          ['Your weekly basket', '/subscriptions'],
+        ].map(([label, href], index) => <Link key={href} href={href} className={`flex min-h-11 items-center justify-center px-2 text-center text-xs font-medium text-brand-green hover:underline underline-offset-4 sm:text-sm ${index > 0 ? 'border-l border-border' : ''}`}>{label}</Link>)}
+      </nav>
     </section>
   );
 }
