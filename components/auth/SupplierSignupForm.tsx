@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Truck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ServerError } from '@/contexts/AuthContext';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { signupSchema, validateInput } from '@/lib/utils/validation';
+import { apiFetch } from '@/lib/api/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -30,12 +33,22 @@ export function SupplierSignupForm() {
     }
   });
 
+  const [accountCreated, setAccountCreated] = useState(false);
   const [productList, setProductList] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
   const router = useRouter();
-  const { signup, refreshAuth } = useAuth();
+  const { user, signup, refreshAuth } = useAuth();
+
+  useEffect(() => {
+    if (!user || accountCreated) return;
+    setAccountCreated(true);
+    setFormData(previous => ({
+      ...previous, contactName: [user.firstName, user.lastName].filter(Boolean).join(' '),
+      email: user.email || '', phoneNumber: user.phoneNumber || '',
+    }));
+  }, [user, accountCreated]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -61,37 +74,27 @@ export function SupplierSignupForm() {
       setServerError(null);
       setFieldErrors(null);
 
-      await signup({
-        firstName: formData.contactName,
-        lastName: undefined,
-        email: formData.email || undefined,
-        phoneNumber: formData.phoneNumber,
-        password: formData.password,
-        registrationAddress: formData.registrationAddress
-      });
-
-      try {
-        await fetch('/api/suppliers/register', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            companyName: formData.companyName,
-            contactName: formData.contactName,
-            address: formData.registrationAddress,
-            email: formData.email,
-            phone: formData.phoneNumber,
-            productList: productList || undefined
-          })
+      if (!accountCreated) {
+        const validation = validateInput(signupSchema, {
+          firstName: formData.contactName, email: formData.email || undefined,
+          phoneNumber: formData.phoneNumber, password: formData.password,
+          registrationAddress: formData.registrationAddress,
         });
-        try {
-          await refreshAuth();
-        } catch (refreshErr) {
-          console.warn('Failed to refresh auth after supplier register', refreshErr);
-        }
-      } catch (profileError) {
-        console.error('Supplier profile creation failed', profileError);
+        if (!validation.isValid) { setFieldErrors(validation.errors || null); return; }
+        await signup(validation.data!);
+        setAccountCreated(true);
       }
+      const response = await apiFetch('/api/suppliers/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          companyName: formData.companyName, contactName: formData.contactName,
+          address: formData.registrationAddress, email: formData.email,
+          phone: formData.phoneNumber, productListCsv: productList || undefined,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to save your supplier application. Please retry.');
+      await refreshAuth();
 
       router.push('/dashboard');
     } catch (e) {
@@ -109,7 +112,7 @@ export function SupplierSignupForm() {
   return (
     <div className="bg-background">
 
-      <section className="px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
+      <section className="px-0 py-4 sm:px-4 lg:px-2 xl:py-8">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between gap-4">
             <Link href="/auth/signup" className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Account type</Link>
@@ -120,6 +123,7 @@ export function SupplierSignupForm() {
             <span className="text-xs font-bold normal-case text-brand-green">Partner application</span>
             <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Create a supplier account</h1>
             <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">This creates your account and sends the supplier details needed for onboarding. Product catalogue work can continue from the supplier dashboard.</p>
+            {accountCreated && <p role="status" className="mt-4 rounded-lg bg-secondary px-4 py-3 text-sm text-brand-green">Your login account is connected. Complete the business details below to save your supplier application.</p>}
           </div>
 
           <form onSubmit={handleSubmit} className="mt-9 space-y-10">
@@ -130,14 +134,16 @@ export function SupplierSignupForm() {
               </div>
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="md:col-span-2"><Field label="Company name *" htmlFor="companyName"><Input id="companyName" value={formData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)} required className={inputClass} /></Field></div>
-                <Field label="Contact person *" htmlFor="contactName"><Input id="contactName" value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} required className={inputClass} /></Field>
-                <Field label="Phone *" htmlFor="phone"><Input id="phone" value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className={inputClass} /></Field>
-                <Field label="Email" htmlFor="email"><Input id="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} /></Field>
+                <Field label="Contact person *" htmlFor="contactName"><Input id="contactName" disabled={accountCreated} value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} required className={inputClass} /></Field>
+                <Field label="Phone *" htmlFor="phone"><Input id="phone" type="tel" autoComplete="tel" disabled={accountCreated && Boolean(user?.phoneNumber)} value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className={inputClass} /></Field>
+                <Field label="Email" htmlFor="email"><Input id="email" disabled={accountCreated} type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} /></Field>
                 <div />
-                <Field label="Password *" htmlFor="password"><Input id="password" type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required className={inputClass} /></Field>
-                <Field label="Confirm password *" htmlFor="confirmPassword"><Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required className={inputClass} /></Field>
+                <Field label="Password *" htmlFor="password"><PasswordInput id="password" disabled={accountCreated} autoComplete="new-password" minLength={8} aria-describedby="supplier-password-guidance" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required className={inputClass} /></Field>
+                <Field label="Confirm password *" htmlFor="confirmPassword"><PasswordInput id="confirmPassword" disabled={accountCreated} autoComplete="new-password" minLength={8} value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required className={inputClass} /></Field>
               </div>
             </section>
+
+            <p id="supplier-password-guidance" className="text-xs leading-6 text-muted-foreground">Use at least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
 
             <section className="border-t border-border pt-9">
               <div className="mb-5">
@@ -168,16 +174,16 @@ export function SupplierSignupForm() {
             </section>
 
             {(serverError || fieldErrors) && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-                {serverError && <p>{serverError}</p>}
+              <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                {accountCreated && <p className="mb-2 font-semibold">Your login account is ready. Retry below to finish the supplier application.</p>}{serverError && <p>{serverError}</p>}
                 {fieldErrors && Object.keys(fieldErrors).map((key) => <p key={key} className="mt-1">{key}: {fieldErrors[key]?.join(', ')}</p>)}
               </div>
             )}
 
             <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">Submitting does not imply automatic public listing. FreshPick reviews and manages supplier relationships as a curated network.</p>
-              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-md bg-primary px-7 text-xs font-bold normal-case text-accent-foreground shadow-none hover:bg-primary/85">
-                {isLoading ? 'Submitting…' : <span className="inline-flex items-center gap-2">Submit application <ArrowRight className="h-4 w-4" /></span>}
+              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-md bg-brand-amber px-7 text-sm font-semibold normal-case text-foreground shadow-none hover:bg-brand-amber/85">
+                {isLoading ? 'Submitting…' : <span className="inline-flex items-center gap-2">{accountCreated ? 'Finish application' : 'Submit application'} <ArrowRight className="h-4 w-4" /></span>}
               </Button>
             </div>
           </form>

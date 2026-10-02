@@ -31,6 +31,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
+  clearError: () => void;
   login: (identifier: string, password: string) => Promise<User>;
   loginWithGoogle: () => Promise<User>;
   signup: (data: SignupData) => Promise<void>;
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null);
   const pathname = usePathname();
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
   const refreshAuth = useCallback(async () => {
     try {
@@ -90,6 +91,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (userResponse.ok) {
           const data = await userResponse.json();
           setUser(data.user);
+        } else {
+          setUser(null);
         }
       } else {
         setUser(null);
@@ -151,7 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => deferredTask.cancel();
   }, [pathname, refreshAuth, user]);
 
-  const login = async (identifier: string, password: string) => {
+  const login = useCallback(async (identifier: string, password: string) => {
     try {
       clearError();
       setLoading(true);
@@ -175,9 +178,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clearError]);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = useCallback(async () => {
     try {
       clearError();
       setLoading(true);
@@ -202,9 +205,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clearError]);
 
-  const signup = async (data: SignupData) => {
+  const signup = useCallback(async (data: SignupData) => {
     try {
       clearError();
       setLoading(true);
@@ -231,9 +234,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clearError]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setLoading(true);
       await apiFetch('/api/auth/logout', { method: 'POST' });
@@ -245,18 +248,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setLoading(false);
     }
-  };
+  }, []);
 
   const value = React.useMemo(() => ({
     user,
     loading,
     error,
+    clearError,
     login,
     loginWithGoogle,
     signup,
     logout,
     refreshAuth,
-  }), [user, loading, error, refreshAuth]);
+  }), [user, loading, error, clearError, refreshAuth, login, loginWithGoogle, signup, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

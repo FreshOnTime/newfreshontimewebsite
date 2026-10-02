@@ -15,7 +15,7 @@ interface BagContextType {
   loading: boolean;
   updating: boolean;
   error: string | null;
-  createBag: (name: string, description?: string) => Promise<void>;
+  createBag: (name: string, description?: string, initialItem?: { product: Product; quantity: number }) => Promise<Bag>;
   addToBag: (bagId: string, product: Product, quantity: number) => Promise<void>;
   removeFromBag: (bagId: string, productId: string) => Promise<void>;
   updateBagItem: (bagId: string, productId: string, quantity: number) => Promise<void>;
@@ -84,7 +84,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
     }
   }, [userId]);
 
-  const createBag = useCallback(async (name: string, description?: string) => {
+  const createBag = useCallback(async (name: string, description?: string, initialItem?: { product: Product; quantity: number }) => {
     setLoading(true);
     setError(null);
     try {
@@ -94,9 +94,11 @@ export function BagProvider({ children }: { children: ReactNode }) {
         throw new Error('Please sign in to create a bag');
       }
 
+      const productId = initialItem ? getProductId(initialItem.product) : null;
+      if (initialItem && (!productId || !Number.isFinite(initialItem.quantity) || initialItem.quantity <= 0)) throw new Error('Choose a valid product quantity');
       const response = await apiFetch('/api/bags', {
         method: 'POST',
-        body: JSON.stringify({ name, description, items: [], tags: [] }),
+        body: JSON.stringify({ name: name.trim(), description, items: initialItem ? [{ productId, quantity: initialItem.quantity }] : [], tags: [] }),
       });
       const data = await response.json();
 
@@ -107,6 +109,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
       const mappedBag = normalizeBag(data.data as ApiBag);
       setBags((previous) => [mappedBag, ...previous]);
       setCurrentBag(mappedBag);
+      return mappedBag;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error while creating bag');
       console.error('Error creating bag:', err);

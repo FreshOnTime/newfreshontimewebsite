@@ -2,16 +2,16 @@ import { z } from 'zod';
 
 // Signup validation schema
 export const signupSchema = z.object({
-  firstName: z.string()
+  firstName: z.string().trim()
     .min(1, 'First name is required')
     .max(30, 'First name cannot exceed 30 characters'),
-  lastName: z.string()
+  lastName: z.string().trim()
     .max(30, 'Last name cannot exceed 30 characters')
     .optional(),
-  email: z.string()
+  email: z.string().trim()
     .email('Invalid email format')
     .optional(),
-  phoneNumber: z.string()
+  phoneNumber: z.string().trim()
     .min(10, 'Phone number must be at least 10 digits')
     .regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format'),
   password: z.string()
@@ -29,7 +29,7 @@ export const signupSchema = z.object({
 
 // Login validation schema
 export const loginSchema = z.object({
-  identifier: z.string().min(1, 'Email or phone number is required'),
+  identifier: z.string().trim().min(1, 'Email or phone number is required'),
   password: z.string().min(1, 'Password is required')
 });
 

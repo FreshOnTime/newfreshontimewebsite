@@ -11,7 +11,6 @@ import { withRateLimit } from '@/lib/utils/rateLimit';
 async function handleSignup(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('Signup request body:', JSON.stringify(body, null, 2));
 
     // Validate input
     const validation = validateInput(signupSchema, body);
@@ -66,6 +65,9 @@ async function handleSignup(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Signup error:', error);
+
+    if (error instanceof SyntaxError) return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') return NextResponse.json({ error: 'An account with these details already exists' }, { status: 409 });
 
     if (error instanceof Error) {
       if (error.message.includes('already exists')) {

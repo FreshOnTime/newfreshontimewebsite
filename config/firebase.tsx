@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCdAHSAMh5fq8N8CzAF7IqYPAxULwzDaPU",
-  authDomain: "fresh-on-time.firebaseapp.com",
-  projectId: "fresh-on-time",
-  storageBucket: "fresh-on-time.firebasestorage.app",
-  messagingSenderId: "722952706056",
-  appId: "1:722952706056:web:f704b7149f1153dd9959bd",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCdAHSAMh5fq8N8CzAF7IqYPAxULwzDaPU",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "fresh-on-time.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "fresh-on-time",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "fresh-on-time.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "722952706056",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:722952706056:web:f704b7149f1153dd9959bd",
   measurementId: "G-XDJR7RJCB2",
 };
 

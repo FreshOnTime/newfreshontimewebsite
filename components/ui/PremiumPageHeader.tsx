@@ -24,9 +24,9 @@ export default function PremiumPageHeader({ title, subtitle, backgroundImage, co
                 </div>}
               </div>
             </div>
-            {backgroundImage && compact && <div className="relative aspect-[16/9] max-h-48 overflow-hidden bg-secondary"><Image src={backgroundImage} alt="" fill sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 30vw, 395px" className="object-cover" /></div>}
+            {backgroundImage && compact && <div className="relative aspect-[16/9] max-h-48 overflow-hidden rounded-xl bg-secondary"><Image src={backgroundImage} alt="" fill sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 30vw, 395px" className="object-cover" /></div>}
           </div>
-          {backgroundImage && !compact && <div className="relative mt-9 aspect-[4/3] overflow-hidden bg-secondary md:aspect-[2.4/1]"><Image src={backgroundImage} alt="" fill sizes="(max-width: 1440px) 100vw, 1360px" className="object-cover" /></div>}
+          {backgroundImage && !compact && <div className="relative mt-9 aspect-[4/3] overflow-hidden rounded-xl bg-secondary md:aspect-[2.4/1]"><Image src={backgroundImage} alt="" fill sizes="(max-width: 1440px) 100vw, 1360px" className="object-cover" /></div>}
         </>}
       </div>
     </section>
