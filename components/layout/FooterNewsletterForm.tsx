@@ -44,12 +44,12 @@ export function FooterNewsletterForm() {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email Address"
           disabled={status === "submitting"}
-          className="w-full border border-white/50 bg-transparent px-4 py-3 text-white placeholder:text-white/80 transition-colors focus:border-white focus:outline-none md:w-full disabled:opacity-60"
+          className="w-full rounded-lg border border-white/50 bg-transparent px-4 py-3 text-white placeholder:text-white/80 transition-colors focus:border-white focus:outline-none md:w-full disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="border border-white bg-white px-5 py-3 text-xs font-bold uppercase text-brand-green transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-white bg-white px-5 py-3 text-xs font-bold uppercase text-brand-green transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === "submitting" ? "Joining…" : "Subscribe"}
         </button>

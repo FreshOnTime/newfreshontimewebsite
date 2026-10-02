@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-green)](https://www.postgresql.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://typescriptlang.org/)
 
-The current implementation and launch gaps are tracked in [platform readiness](docs/PLATFORM_READINESS.md).
+The current implementation and launch gaps are tracked in [platform readiness](docs/PLATFORM_READINESS.md). See [account design and flow fixes](docs/ACCOUNT_DESIGN_AND_FLOW_FIXES.md) and [public discovery improvements](docs/DISCOVERY_IMPROVEMENTS.md) for the latest verified changes.
 
 Checkout deployment requires `npm run db:migrate` before the updated app is promoted.
 The `20261002090000_checkout_requests` migration stores retry receipts atomically
@@ -23,34 +23,23 @@ Getting fresh, quality groceries in Sri Lanka is inconvenient and unreliable. We
 
 | Market Segment | Description | Status |
 |----------------|-------------|--------|
-| **B2C Subscriptions** | Weekly/monthly grocery boxes for families | ✅ Live |
+| **B2C Subscriptions** | Weekly/monthly grocery boxes for families | Implemented; staging acceptance required |
 
 
 ---
 
 ## 🚀 Platform Features
 
-### Customer Acquisition
-- ✅ **Referral System** — Rs. 200 reward per successful referral
-- ✅ **First Order Discount** — Popup with newsletter signup
-- ✅ **Social Proof** — Live order counter, "X just purchased" notifications
+Implemented application flows include:
 
-### Shopping Experience
-- ✅ **Curated Bags** — Pre-built grocery bundles
-- ✅ **Subscriptions** — Weekly, bi-weekly, monthly plans
-- ✅ **Quick Reorder** — One-click repeat from previous orders
-- ✅ **Smart Search** — Autocomplete with recent searches
-- ✅ **Wishlist** — Save items for later
+- Grocery catalogue, categories, discounted prices, search and saved products.
+- Shopping bags, quoted customer checkout, order history and reorder.
+- Recurring baskets and subscription management.
+- Password signup/sign-in, Google sign-in, password reset and supplier applications.
+- Published recipes, collections and the journal, with page metadata and sitemaps.
+- Responsive customer pages and separate customer, supplier and admin workspaces.
 
-### Reviews & Trust
-- ✅ **Product Reviews** — Star ratings with verified purchase badges
-- ✅ **Low Stock Alerts** — "Only 3 left!" urgency indicators
-- ✅ **Trust Badges** — Freshness guarantee, secure checkout
-
-### Technical Excellence
-- ✅ **PWA Support** — Offline-ready, installable
-- ✅ **SEO Optimized** — Schema markup, sitemaps
-- ✅ **Mobile-First** — Responsive design with bottom navigation
+Production readiness is tracked in the linked document. These are repository capabilities, not a claim that every integration is configured or deployed.
 
 ---
 
@@ -60,7 +49,7 @@ Getting fresh, quality groceries in Sri Lanka is inconvenient and unreliable. We
 Frontend:     Next.js 16, React 18, TypeScript, Tailwind CSS
 Backend:      Next.js API Routes, PostgreSQL, Prisma
 Auth:         JWT with HTTP-only cookies, role-based access
-Payments:     Integration-ready (Stripe/PayHere)
+Payments:     Cash on delivery in customer checkout
 Storage:      Azure Blob Storage
 Analytics:    Google Analytics 4
 ```
@@ -94,13 +83,16 @@ Analytics:    Google Analytics 4
 
 ```bash
 # Clone and install
-git clone <repo-url>
+git clone https://github.com/FreshOnTime/newfreshontimewebsite.git
 cd newfreshontimewebsite
 npm install
 
 # Configure environment
 cp .env.example .env.local
 # Edit .env.local with your values
+
+# Apply the PostgreSQL migrations
+npm run db:migrate
 
 # Run development server
 npm run dev
@@ -114,7 +106,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```bash
 # Database
-MONGODB_URI=mongodb+srv://...
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
 
 # Authentication
 JWT_SECRET=your_32_char_secret_key
@@ -144,32 +136,25 @@ SENDGRID_FROM_EMAIL=hello@freshpick.lk
 3. Add the Firebase Admin credentials above to the deployment environment. They are server-only; never expose them with a `NEXT_PUBLIC_` prefix.
 4. Apply the Prisma migration before deployment: `npm run db:migrate`.
 
+Firebase client settings read the `NEXT_PUBLIC_FIREBASE_*` variables in `.env.example`; the existing FreshPick project remains the default. Set the complete public client configuration when using another Firebase project, and rebuild the app after changing it.
+
 Google accounts are linked using their immutable Google provider ID. A verified Google email that already belongs to a password account will use that same Fresh Pick account; new Google users are created without a phone number and can add it before delivery.
 
 ---
 
 ## 🏗️ Architecture
 
-```
-app/
-├── api/           # API routes
-│   ├── auth/      # Authentication
-│   ├── products/  # Product CRUD
-│   ├── bags/      # Shopping bags & reorder
-│   ├── reviews/   # Product reviews
-│   ├── referrals/ # Referral system
-│   └── subscriptions/
-├── (pages)/       # Frontend routes
-components/
-├── home/          # Homepage sections
-├── products/      # Product cards, ratings
-├── subscriptions/ # Subscription cards
-└── layout/        # Navbar, Footer
-lib/
-├── models/        # Mongoose schemas
-├── auth.ts        # JWT verification
-└── database.ts    # MongoDB connection
-```
+| Area | Location | Responsibility |
+| --- | --- | --- |
+| Customer and workspace pages | `app/` | Next.js routes and page metadata |
+| Application API | `app/api/` | Authentication, catalogue, bags, orders and integrations |
+| UI components | `components/` | Market pages, account forms, shared controls and workspaces |
+| Client state | `contexts/` | Account session, selected bag and wishlist state |
+| Business services | `lib/services/` | Account and operational services |
+| Data access | `lib/prisma.ts`, `prisma/schema.prisma` | PostgreSQL client and data model |
+| Schema changes | `prisma/migrations/` | Versioned database migrations |
+| Scheduled operations | `netlify/functions/` | Deployed recurring operational functions |
+
 
 ---
 

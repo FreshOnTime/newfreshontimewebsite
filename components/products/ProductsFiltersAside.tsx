@@ -18,7 +18,7 @@ export default function ProductsFiltersAside() {
               <Filter className="h-4 w-4" /> Filters
             </Button>
           </DialogTrigger>
-          <DialogContent className="left-0 top-0 right-auto h-dvh w-[85vw] sm:w-[400px] max-w-none translate-x-0 translate-y-0 rounded-none p-0 md:hidden">
+          <DialogContent className="left-0 top-0 right-auto h-dvh w-[85vw] sm:w-[400px] max-w-none translate-x-0 translate-y-0 rounded-r-2xl p-0 md:hidden">
             <div className="h-full overflow-y-auto p-4">
               <DialogTitle className="mb-2">Filters</DialogTitle>
               <ProductsFilterBar />

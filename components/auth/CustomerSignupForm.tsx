@@ -7,12 +7,15 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ServerError } from '@/contexts/AuthContext';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { signupSchema, validateInput } from '@/lib/utils/validation';
+import { accountDestination, accountLink } from '@/lib/authNavigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 const inputClass = 'h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20';
 
-export function CustomerSignupForm() {
+export function CustomerSignupForm({ requestedDestination }: { requestedDestination?: string }) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -60,7 +63,7 @@ export function CustomerSignupForm() {
       setServerError(null);
       setFieldErrors(null);
 
-      await signup({
+      const validation = validateInput(signupSchema, {
         firstName: formData.firstName,
         lastName: formData.lastName || undefined,
         email: formData.email || undefined,
@@ -68,8 +71,9 @@ export function CustomerSignupForm() {
         password: formData.password,
         registrationAddress: formData.registrationAddress
       });
-
-      router.push('/');
+      if (!validation.isValid) { setFieldErrors(validation.errors || null); return; }
+      await signup(validation.data!);
+      router.push(accountDestination('customer', requestedDestination));
     } catch (e) {
       console.error('Customer signup failed', e);
       if (e && typeof e === 'object') {
@@ -85,10 +89,10 @@ export function CustomerSignupForm() {
   return (
     <div className="bg-background">
 
-      <section className="px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
+      <section className="px-0 py-4 sm:px-4 lg:px-2 xl:py-8">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between gap-4">
-            <Link href="/auth/signup" className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
+            <Link href={accountLink('/auth/signup', requestedDestination)} className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Account type
             </Link>
 
@@ -112,25 +116,27 @@ export function CustomerSignupForm() {
 
               <div className="grid gap-5 md:grid-cols-2">
                 <Field label="First name *" htmlFor="firstName">
-                  <Input id="firstName" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} required className={inputClass} />
+                  <Input id="firstName" autoComplete="given-name" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} required className={inputClass} />
                 </Field>
                 <Field label="Last name" htmlFor="lastName">
-                  <Input id="lastName" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} className={inputClass} />
+                  <Input id="lastName" autoComplete="family-name" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} className={inputClass} />
                 </Field>
                 <Field label="Email" htmlFor="email">
-                  <Input id="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} />
+                  <Input id="email" autoComplete="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} />
                 </Field>
                 <Field label="Phone number *" htmlFor="phone">
-                  <Input id="phone" value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className={inputClass} />
+                  <Input id="phone" type="tel" autoComplete="tel" value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className={inputClass} />
                 </Field>
                 <Field label="Password *" htmlFor="password">
-                  <Input id="password" type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required className={inputClass} />
+                  <PasswordInput id="password" autoComplete="new-password" minLength={8} aria-describedby="password-guidance" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required className={inputClass} />
                 </Field>
                 <Field label="Confirm password *" htmlFor="confirmPassword">
-                  <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required className={inputClass} />
+                  <PasswordInput id="confirmPassword" autoComplete="new-password" minLength={8} value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} required className={inputClass} />
                 </Field>
               </div>
             </section>
+
+            <p id="password-guidance" className="text-xs leading-6 text-muted-foreground">Use at least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
 
             <section className="border-t border-border pt-9">
               <div className="mb-5">
@@ -141,22 +147,22 @@ export function CustomerSignupForm() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <Field label="Address line 1 *" htmlFor="addressLine1">
-                    <Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className={inputClass} />
+                    <Input id="addressLine1" autoComplete="address-line1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className={inputClass} />
                   </Field>
                 </div>
                 <div className="md:col-span-2">
                   <Field label="Address line 2" htmlFor="addressLine2">
-                    <Input id="addressLine2" value={formData.registrationAddress.addressLine2} onChange={(e) => handleAddressChange('addressLine2', e.target.value)} className={inputClass} />
+                    <Input id="addressLine2" autoComplete="address-line2" value={formData.registrationAddress.addressLine2} onChange={(e) => handleAddressChange('addressLine2', e.target.value)} className={inputClass} />
                   </Field>
                 </div>
                 <Field label="City *" htmlFor="city">
-                  <Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required className={inputClass} />
+                  <Input id="city" autoComplete="address-level2" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required className={inputClass} />
                 </Field>
                 <Field label="Province *" htmlFor="province">
-                  <Input id="province" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required className={inputClass} />
+                  <Input id="province" autoComplete="address-level1" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required className={inputClass} />
                 </Field>
                 <Field label="Postal code *" htmlFor="postalCode">
-                  <Input id="postalCode" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required className={inputClass} />
+                  <Input id="postalCode" autoComplete="postal-code" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required className={inputClass} />
                 </Field>
                 <Field label="Country" htmlFor="country">
                   <Input id="country" value={formData.registrationAddress.country} disabled className={` ${inputClass} text-muted-foreground`} />
@@ -165,7 +171,7 @@ export function CustomerSignupForm() {
             </section>
 
             {(serverError || fieldErrors) && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+              <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
                 {serverError && <p>{serverError}</p>}
                 {fieldErrors && Object.keys(fieldErrors).map((key) => <p key={key} className="mt-1">{key}: {fieldErrors[key].join(', ')}</p>)}
               </div>
@@ -173,11 +179,12 @@ export function CustomerSignupForm() {
 
             <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">By creating an account, your order and bag history can be used to make FreshPick more relevant to you.</p>
-              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-lg bg-primary px-7 text-xs font-bold normal-case text-accent-foreground shadow-none hover:bg-primary/85">
+              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-lg bg-brand-amber px-7 text-sm font-semibold normal-case text-foreground shadow-none hover:bg-brand-amber/85">
                 {isLoading ? 'Creating account…' : <span className="inline-flex items-center gap-2">Create account <ArrowRight className="h-4 w-4" /></span>}
               </Button>
             </div>
           </form>
+          <p className="mt-6 text-sm text-muted-foreground">Already have an account? <Link href={accountLink('/auth/login', requestedDestination)} className="font-semibold text-brand-green underline underline-offset-4">Sign in</Link></p>
         </div>
       </section>
     </div>

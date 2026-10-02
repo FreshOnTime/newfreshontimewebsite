@@ -39,6 +39,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
   const { user, loading: authLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const [addAfterCreate, setAddAfterCreate] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newBagName, setNewBagName] = useState("");
   const [newBagDescription, setNewBagDescription] = useState("");
@@ -52,6 +53,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
       return;
     }
     if (!selectedBagId) {
+      setAddAfterCreate(true);
       setShowCreateDialog(true);
       return;
     }
@@ -72,13 +74,13 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
     }
 
     try {
-      await createBag(newBagName, newBagDescription);
-      toast.success(`Created new bag: ${newBagName}`);
+      await createBag(newBagName, newBagDescription, addAfterCreate ? { product, quantity } : undefined);
+      toast.success(addAfterCreate ? `Added ${product.name} to ${newBagName.trim()}` : `Created new bag: ${newBagName.trim()}`);
       setShowCreateDialog(false);
       setNewBagName("");
       setNewBagDescription("");
     } catch (error) {
-      toast.error("Failed to create bag");
+      toast.error(error instanceof Error ? error.message : "Failed to create bag");
       console.error("Error creating bag:", error);
     }
   };
@@ -124,7 +126,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
               size="sm"
               className="w-full text-primary px-2 justify-start"
               variant={"ghost"}
-              onClick={() => setShowCreateDialog(true)}
+              onClick={() => { setAddAfterCreate(false); setShowCreateDialog(true); }}
             >
               <Plus className="mr-2 h-4 w-4" />
               Create New Bag
@@ -180,7 +182,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
               onClick={handleCreateBag}
               disabled={loading || !newBagName.trim()}
             >
-              Create Bag
+              {addAfterCreate ? 'Create bag & add item' : 'Create bag'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -8,21 +8,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/auth/PasswordInput';
+import { accountDestination, accountLink } from '@/lib/authNavigation';
 
 export function LoginForm() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, loginWithGoogle, error } = useAuth();
+  const { login, loginWithGoogle, error, clearError } = useAuth();
   const searchParams = useSearchParams();
 
-  const getDestination = (role: string) => {
-    if (role === 'admin') return '/admin';
-    const requestedDestination = searchParams.get('redirect') || searchParams.get('callbackUrl');
-    return requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//')
-      ? requestedDestination
-      : '/dashboard';
-  };
+  const requestedDestination = searchParams.get('redirect') || searchParams.get('callbackUrl');
+  useEffect(() => clearError(), [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +27,8 @@ export function LoginForm() {
 
     try {
       setIsLoading(true);
-      const loggedInUser = await login(identifier, password);
-      window.location.href = getDestination(loggedInUser?.role);
+      const loggedInUser = await login(identifier.trim(), password);
+      window.location.href = accountDestination(loggedInUser.role, requestedDestination);
     } catch (loginError) {
       console.error('Login error:', loginError);
     } finally {
@@ -43,7 +40,7 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       const loggedInUser = await loginWithGoogle();
-      window.location.href = getDestination(loggedInUser.role);
+      window.location.href = accountDestination(loggedInUser.role, requestedDestination);
     } catch (googleError) {
       console.error('Google sign-in error:', googleError);
     } finally {
@@ -54,7 +51,7 @@ export function LoginForm() {
   return (
     <div className="bg-background">
 
-      <section className="flex items-start justify-center px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
+      <section className="flex items-start justify-center px-0 py-4 sm:px-4 lg:px-2 xl:py-8">
         <div className="w-full max-w-[460px]">
 
           <div className="mt-0">
@@ -66,7 +63,7 @@ export function LoginForm() {
           <form onSubmit={handleSubmit} className="mt-9 space-y-5">
             <div className="space-y-2">
               <Label htmlFor="identifier" className="text-sm font-medium text-foreground">Email or phone</Label>
-              <Input id="identifier" type="text" placeholder="name@example.com" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20" />
+              <Input id="identifier" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} type="text" placeholder="name@example.com" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20" />
             </div>
 
             <div className="space-y-2">
@@ -74,12 +71,12 @@ export function LoginForm() {
                 <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
                 <Link href="/auth/forgot" className="text-xs font-medium text-brand-green transition-colors hover:text-brand-green">Forgot password?</Link>
               </div>
-              <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20" />
+              <PasswordInput id="password" name="password" autoComplete="current-password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20" />
             </div>
 
-            {error && <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+            {error && <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
-            <Button type="submit" className="h-12 w-full rounded-lg bg-primary text-xs font-bold normal-case text-accent-foreground shadow-none transition-colors hover:bg-primary/85" disabled={isLoading || !identifier || !password}>
+            <Button type="submit" className="h-12 w-full rounded-lg bg-brand-amber text-sm font-semibold normal-case text-foreground shadow-none transition-colors hover:bg-brand-amber/85" disabled={isLoading || !identifier || !password}>
               {isLoading ? 'Signing in…' : <span className="inline-flex items-center gap-2">Continue <ArrowRight className="h-4 w-4" /></span>}
             </Button>
 
@@ -96,7 +93,7 @@ export function LoginForm() {
             </Button>
           </form>
 
-          <p className="mt-8 text-sm text-muted-foreground">New to FreshPick? <Link href="/auth/signup" className="font-semibold text-brand-green hover:text-brand-green">Create an account</Link></p>
+          <p className="mt-8 text-sm text-muted-foreground">New to FreshPick? <Link href={accountLink('/auth/signup', requestedDestination)} className="font-semibold text-brand-green hover:text-brand-green">Create an account</Link></p>
         </div>
       </section>
     </div>

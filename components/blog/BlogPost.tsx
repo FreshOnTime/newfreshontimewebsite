@@ -149,7 +149,7 @@ export function BlogPost({ blog }: BlogPostProps) {
             Explore more insights from our collection of curated articles.
           </p>
           <Link href="/blog">
-            <Button size="lg" className="bg-background text-foreground hover:bg-secondary rounded-none px-12 py-6 normal-case text-xs font-bold transition-all">
+            <Button size="lg" className="bg-background text-foreground hover:bg-secondary rounded-lg px-12 py-6 normal-case text-xs font-bold transition-all">
               View All Articles
             </Button>
           </Link>

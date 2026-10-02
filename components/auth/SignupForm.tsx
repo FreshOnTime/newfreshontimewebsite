@@ -1,11 +1,12 @@
+import { accountLink } from '@/lib/authNavigation';
 import Link from "next/link";
 import { ArrowUpRight, ShoppingBag, Store, UserRound } from "lucide-react";
 
-export function SignupForm() {
+export function SignupForm({ requestedDestination }: { requestedDestination?: string }) {
   return (
     <div className="bg-background">
 
-      <section className="flex items-start justify-center px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
+      <section className="flex items-start justify-center px-0 py-4 sm:px-4 lg:px-2 xl:py-8">
         <div className="w-full max-w-[560px]">
 
           <div className="mt-0">
@@ -15,7 +16,7 @@ export function SignupForm() {
           </div>
 
           <div className="mt-9 space-y-4">
-            <Link href="/auth/signup/customer" className="group block overflow-hidden rounded-lg border border-border bg-background p-6 transition-all hover:border-border">
+            <Link href={accountLink('/auth/signup/customer', requestedDestination)} className="group block overflow-hidden rounded-xl border border-border bg-background p-6 transition-all hover:border-border">
               <div className="flex items-start justify-between gap-5">
                 <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-brand-green">
                   <UserRound className="h-5 w-5" />
@@ -29,14 +30,14 @@ export function SignupForm() {
               </div>
             </Link>
 
-            <Link href="/auth/signup/supplier" className="group block overflow-hidden rounded-lg border border-border bg-background p-6 text-foreground transition-all hover:border-primary/50">
+            <Link href={accountLink('/auth/signup/supplier', requestedDestination)} className="group block overflow-hidden rounded-xl border border-border bg-background p-6 text-foreground transition-all hover:border-primary/50">
               <div className="flex items-start justify-between gap-5">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-brand-green ring-1 ring-white/10">
                   <Store className="h-5 w-5" />
                 </span>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-brand-green" />
               </div>
-              <h2 className="mt-7 font-serif text-3xl font-normal text-foreground">Supplier account</h2>
+              <h2 className="mt-7 font-serif text-xl font-normal text-foreground">Supplier account</h2>
               <p className="mt-3 text-sm font-normal leading-6 text-muted-foreground">Apply to join the curated partner network. Supplier onboarding is reviewed rather than opened as a public marketplace.</p>
               <div className="mt-6 border-t border-border pt-4 text-xs font-medium text-brand-green">Partner application</div>
             </Link>
@@ -44,7 +45,7 @@ export function SignupForm() {
 
           <p className="mt-8 text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/auth/login" className="font-semibold text-brand-green hover:text-brand-green">Sign in</Link>
+            <Link href={accountLink('/auth/login', requestedDestination)} className="font-semibold text-brand-green hover:text-brand-green">Sign in</Link>
           </p>
         </div>
       </section>

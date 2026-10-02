@@ -70,6 +70,10 @@ DATABASE_URL="$CHECKOUT_TEST_DATABASE_URL" npx prisma migrate deploy
 npm run test:checkout-db
 ```
 
+## Account and design continuation
+
+The [account design and flow fixes](ACCOUNT_DESIGN_AND_FLOW_FIXES.md) add softer shared surfaces, separate account photographs, safe return destinations, supplier save retries and ownership enforcement, first-bag item creation, password-reset validation and atomic token consumption. [Public discovery improvements](DISCOVERY_IMPROVEMENTS.md) cover canonical URLs, sitemap entries, journal HTML and help answers. These locally verified changes retain the staging and operational acceptance criteria below.
+
 ## Remaining work before calling the platform complete
 
 | Area | Source evidence / remaining acceptance criterion |

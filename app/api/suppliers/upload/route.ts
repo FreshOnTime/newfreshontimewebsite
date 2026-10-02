@@ -24,41 +24,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     const uid = authUser.mongoId || authUser.userId;
     const userDoc = uid ? await prisma.user.findUnique({ where: { id: uid } }) : null;
 
-    let resolvedSupplierId = userDoc?.supplierId || null;
-
-    // Fallback: if the User record doesn't have supplierId, try to auto-link by email or phone
-    if (!resolvedSupplierId && userDoc) {
-      try {
-        const maybeEmail = userDoc.email || undefined;
-        const maybePhone = userDoc.phoneNumber || undefined;
-        const orConds: Prisma.SupplierWhereInput[] = [];
-        if (maybeEmail) orConds.push({ email: maybeEmail });
-        if (maybePhone) orConds.push({ phone: maybePhone });
-
-        const foundSupplier = orConds.length
-          ? await prisma.supplier.findFirst({ where: { OR: orConds } })
-          : null;
-
-        if (foundSupplier) {
-          resolvedSupplierId = foundSupplier.id;
-          // Persist the link on the user record for future requests. Only promote a
-          // plain customer to 'supplier' — never downgrade an elevated role.
-          try {
-            await prisma.user.update({
-              where: { id: userDoc.id },
-              data: {
-                supplierId: foundSupplier.id,
-                ...(userDoc.role === 'customer' ? { role: 'supplier' as const } : {}),
-              },
-            });
-          } catch (linkErr) {
-            console.warn('[WARN] /api/suppliers/upload - failed to persist auto-link on user:', linkErr);
-          }
-        }
-      } catch (e) {
-        console.warn('[WARN] /api/suppliers/upload - fallback link attempt failed', e);
-      }
-    }
+    const resolvedSupplierId = userDoc?.supplierId || null;
 
     if (!resolvedSupplierId) {
       return NextResponse.json({ error: 'User is not linked to a supplier account' }, { status: 403 });

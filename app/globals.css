@@ -35,7 +35,7 @@
     --border: 65.4545 13.2530% 83.7255%;
     --input: 78.4615 11.7117% 78.2353%;
     --ring: 142.0000 38.9610% 30.1961%;
-    --radius: 0rem;
+    --radius: 0.75rem;
     --chart-1: 148 46% 17%;
     --chart-2: 99 13% 54%;
     --chart-3: 32 35% 52%;
@@ -78,7 +78,7 @@
   .editorial-label { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground; }
   .editorial-title { @apply font-sans text-3xl font-bold uppercase leading-[1.02] tracking-[-0.045em] text-foreground md:text-5xl; }
   .editorial-link { @apply inline-flex min-h-11 items-center gap-3 border-b border-current text-xs font-semibold uppercase tracking-[0.03em] text-brand-green; }
-  .editorial-button { @apply inline-flex min-h-12 items-center justify-center gap-4 bg-brand-amber px-6 py-3 text-xs font-bold uppercase tracking-[0.03em] text-foreground transition-colors hover:bg-brand-amber/85 disabled:opacity-50; }
+  .editorial-button { @apply rounded-lg inline-flex min-h-12 items-center justify-center gap-4 bg-brand-amber px-6 py-3 text-xs font-bold uppercase tracking-[0.03em] text-foreground transition-colors hover:bg-brand-amber/85 disabled:opacity-50; }
   .freshpick-market h1, .freshpick-market h2 {
     font-family: var(--font-sans);
     font-weight: 700;
@@ -86,6 +86,7 @@
     letter-spacing: -0.045em;
   }
   .freshpick-market h1 { text-wrap: balance; overflow-wrap: anywhere; }
+  .account-form h1, .account-form h2 { text-transform: none; letter-spacing: -0.035em; }
   .market-story-title { @apply font-sans font-bold uppercase tracking-[-0.025em] text-foreground; }
 }
 

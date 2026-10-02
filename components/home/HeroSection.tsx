@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 export default function HeroSection() {
   return (
     <section aria-labelledby="home-title" className="editorial-wrap pt-5 md:pt-6">
-      <div className="relative isolate overflow-hidden bg-background text-brand-green lg:flex lg:min-h-[520px] lg:items-center xl:min-h-[640px]">
+      <div className="relative isolate overflow-hidden rounded-2xl bg-background text-brand-green lg:flex lg:min-h-[520px] lg:items-center xl:min-h-[640px]">
         <div className="relative z-10 px-6 py-10 sm:px-10 sm:py-12 lg:w-[52%] lg:py-14 xl:px-12">
           <p className="max-w-xs text-[10px] font-bold uppercase leading-5 tracking-[0.08em] sm:max-w-none sm:text-xs">The FreshPick market · Colombo</p>
           <h1 id="home-title" className="mt-5 font-sans text-[clamp(2rem,9vw,4.5rem)] font-bold uppercase leading-[0.96] tracking-[-0.055em] text-brand-green lg:text-[clamp(3rem,5.5vw,5.25rem)]">
