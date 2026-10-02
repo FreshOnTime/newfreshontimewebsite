@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { productUnitPrice } from '@/lib/commercePricing';
 import { verifyToken } from '@/lib/auth';
 import { BAG_INCLUDE, serializeBag, bagTotal } from '@/lib/bagSerializer';
 
@@ -44,10 +45,10 @@ export async function POST(request: NextRequest) {
           unavailableItems.push({ name: item.name, reason: 'Out of stock' });
           continue;
         }
-        validItems.push({ productId: product.id, quantity: availableQty, price: Number(product.price) });
+        validItems.push({ productId: product.id, quantity: availableQty, price: productUnitPrice(product) });
         unavailableItems.push({ name: item.name, reason: `Only ${availableQty} available (requested ${requestedQty})` });
       } else {
-        validItems.push({ productId: product.id, quantity: requestedQty, price: Number(product.price) });
+        validItems.push({ productId: product.id, quantity: requestedQty, price: productUnitPrice(product) });
       }
     }
 

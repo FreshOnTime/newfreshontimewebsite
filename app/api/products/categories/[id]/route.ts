@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth";
 import { NextRequest } from "next/server";
 import { productCategoryService } from "@/lib/services/productCategoryService";
 import { sendSuccess, sendInternalError, sendNotFound, sendBadRequest } from "@/lib/utils/apiResponses";
@@ -23,10 +24,10 @@ export async function GET(
 }
 
 // PUT - Update a category
-export async function PUT(
+export const PUT = requireAdmin(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const id = (await params).id;
     const updateData = await request.json();
@@ -45,13 +46,13 @@ export async function PUT(
     }
     return sendInternalError("Failed to update category");
   }
-}
+});
 
 // DELETE - Delete a category
-export async function DELETE(
+export const DELETE = requireAdmin(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const id = (await params).id;
     await productCategoryService.deleteCategory(id);
@@ -64,4 +65,4 @@ export async function DELETE(
     }
     return sendInternalError("Failed to delete category");
   }
-}
+});

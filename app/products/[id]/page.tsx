@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { discountedUnitPrice } from '@/lib/commercePricing';
 import { Metadata } from "next";
 import Link from "next/link";
 import Markdown from "react-markdown";
@@ -99,9 +100,7 @@ export default async function ProductPage({
 
   if (!product) notFound();
 
-  const discountedPrice = product.discountPercentage
-    ? product.pricePerBaseQuantity - (product.pricePerBaseQuantity * product.discountPercentage) / 100
-    : product.pricePerBaseQuantity;
+  const discountedPrice = discountedUnitPrice(product.pricePerBaseQuantity, product.discountPercentage || 0);
   const showDiscount = Boolean(product.discountPercentage && product.discountPercentage > 0);
 
   const breadcrumbItems = [

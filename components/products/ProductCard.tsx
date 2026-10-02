@@ -1,3 +1,4 @@
+import { discountedUnitPrice } from '@/lib/commercePricing';
 import Link from "next/link";
 import ProductImage from "./ProductImage";
 import DeferredProductCardActions from "./DeferredProductCardActions";
@@ -36,7 +37,7 @@ export function ProductCard({
   isOutOfStock = false,
   isBundle = false,
 }: ProductCardProps) {
-  const pricePerBaseQuantityWithDiscount = calculateDiscountedPrice(
+  const pricePerBaseQuantityWithDiscount = discountedUnitPrice(
     pricePerBaseQuantity,
     discountPercentage
   );
@@ -120,12 +121,6 @@ function PriceDisplay({
   );
 }
 
-function calculateDiscountedPrice(
-  basePrice: number,
-  discountPercentage: number
-): number {
-  return basePrice - (basePrice * discountPercentage) / 100;
-}
 
 function formatPrice(price: number): string {
   return price.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

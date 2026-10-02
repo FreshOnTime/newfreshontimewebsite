@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { productUnitPrice } from '@/lib/commercePricing';
 import { requireAuth } from '@/lib/auth';
 import { BAG_INCLUDE, serializeBag, bagTotal } from '@/lib/bagSerializer';
 
@@ -16,13 +17,13 @@ async function recomputeAndReturn(bagId: string) {
   return bag ? serializeBag(bag) : null;
 }
 
-async function getOwnedBagAndProduct(userId: string | undefined, bagId: string, productId: string) {
+async function getOwnedBagAndProduct(userId: string | undefined, bagId: string, productId: string, allowArchived = false) {
   if (!userId) return { bag: null, product: null };
 
   const [bag, product] = await Promise.all([
     prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } }),
     prisma.product.findFirst({
-      where: { OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
+      where: { ...(allowArchived ? {} : { archived: false }), OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
     }),
   ]);
 
@@ -37,7 +38,7 @@ export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
     const { productId, quantity } = await request.json();
     const qty = Number(quantity);
 
-    if (!productId || !Number.isFinite(qty) || qty <= 0) {
+    if (!productId || !Number.isSafeInteger(qty) || qty > 10000 || qty <= 0) {
       return NextResponse.json({ error: 'Product ID and valid quantity are required' }, { status: 400 });
     }
 
@@ -55,8 +56,8 @@ export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
 
     await prisma.bagItem.upsert({
       where: { bagId_productId: { bagId, productId: product.id } },
-      update: { quantity: newQuantity, price: Number(product.price) },
-      create: { bagId, productId: product.id, quantity: qty, price: Number(product.price) },
+      update: { quantity: newQuantity, price: productUnitPrice(product) },
+      create: { bagId, productId: product.id, quantity: qty, price: productUnitPrice(product) },
     });
 
     return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
@@ -74,11 +75,11 @@ export const PATCH = requireAuth(async (request: AuthedReq, context: Ctx) => {
     const { productId, quantity } = await request.json();
     const qty = Number(quantity);
 
-    if (!productId || !Number.isFinite(qty) || qty < 0) {
+    if (!productId || !Number.isSafeInteger(qty) || qty > 10000 || qty < 0) {
       return NextResponse.json({ error: 'Product ID and a non-negative quantity are required' }, { status: 400 });
     }
 
-    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId);
+    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId, qty === 0);
     if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
@@ -91,8 +92,8 @@ export const PATCH = requireAuth(async (request: AuthedReq, context: Ctx) => {
 
       await prisma.bagItem.upsert({
         where: { bagId_productId: { bagId, productId: product.id } },
-        update: { quantity: qty, price: Number(product.price) },
-        create: { bagId, productId: product.id, quantity: qty, price: Number(product.price) },
+        update: { quantity: qty, price: productUnitPrice(product) },
+        create: { bagId, productId: product.id, quantity: qty, price: productUnitPrice(product) },
       });
     }
 
@@ -113,7 +114,7 @@ export const DELETE = requireAuth(async (request: AuthedReq, context: Ctx) => {
 
     if (!productId) return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
 
-    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId);
+    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId, true);
     if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
 
     if (product) {

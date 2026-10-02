@@ -56,6 +56,14 @@ jobs:
         FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
         FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
 
+    - name: Verify checkout transactions against isolated PostgreSQL
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/freshpick_test?schema=checkout_test_ci
+        CHECKOUT_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/freshpick_test?schema=checkout_test_ci
+      run: |
+        npx prisma migrate deploy
+        npm run test:checkout-db
+
     - name: Build application
       run: npm run build
       env:

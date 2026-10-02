@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth";
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST - Create a new category
-export async function POST(request: NextRequest) {
+export const POST = requireAdmin(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { name, description, imageUrl, slug, parentCategoryId, isActive = true, sortOrder = 0 } = body;
@@ -96,4 +97,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

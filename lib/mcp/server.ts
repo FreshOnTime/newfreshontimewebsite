@@ -1,3 +1,4 @@
+import { discountedUnitPrice } from '@/lib/commercePricing';
 import 'server-only';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
@@ -23,7 +24,7 @@ function productResult(row: PublicProductRow) {
     category: row.category,
     currency: 'LKR',
     basePrice,
-    price: Math.round((basePrice * (1 - product.discountPercentage / 100) + Number.EPSILON) * 100) / 100,
+    price: discountedUnitPrice(basePrice, product.discountPercentage),
     discountPercentage: product.discountPercentage,
     inStock: !product.isOutOfStock,
     isBundle: product.isBundle,

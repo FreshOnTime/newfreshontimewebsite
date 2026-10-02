@@ -161,6 +161,7 @@ model User {
   refreshTokens    RefreshToken[]
   oauthIdentities  OAuthIdentity[]
   orders           Order[]
+  checkoutRequests CheckoutRequest[]
   bags             Bag[]
   subscriptions    Subscription[]
   wishlist         WishlistItem[]
@@ -808,4 +809,17 @@ model SupplierUpload {
 
   @@index([supplierId])
   @@map("supplier_uploads")
+}
+
+// A request claim and its receipt are committed with stock and order creation.
+model CheckoutRequest {
+  customerId  String
+  customer    User @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  key         String @db.VarChar(128)
+  fingerprint String @db.VarChar(64)
+  response    Json?
+  createdAt   DateTime @default(now())
+
+  @@id([customerId, key])
+  @@map("checkout_requests")
 }

@@ -21,7 +21,8 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "test:unit": "jest --testPathIgnorePatterns=__tests__/smoke"
+    "test:unit": "jest --testPathIgnorePatterns=__tests__/smoke",
+    "test:checkout-db": "node scripts/verify-checkout-integrity.cjs"
   },
   "prisma": {
     "seed": "node -r esbuild-register prisma/seed.ts"

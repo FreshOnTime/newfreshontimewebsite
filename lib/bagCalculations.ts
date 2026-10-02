@@ -1,17 +1,12 @@
+import { discountedUnitPrice, roundMoney } from "@/lib/commercePricing";
 import { BagItem } from "@/models/BagItem";
 import { Product } from "@/models/product";
 
 export const calculateItemTotal = (product: Product, quantity: number) => {
-  const originalTotal = product.isSoldAsUnit
-    ? product.pricePerBaseQuantity * quantity
-    : (product.pricePerBaseQuantity / product.baseMeasurementQuantity) *
-      quantity;
-
-  const discountedPrice = product.discountPercentage
-    ? (originalTotal * product.discountPercentage) / 100
-    : 0;
-
-  const total = originalTotal - discountedPrice;
+  const units = product.isSoldAsUnit ? quantity : quantity / product.baseMeasurementQuantity;
+  const originalTotal = roundMoney(product.pricePerBaseQuantity * units);
+  const total = roundMoney(discountedUnitPrice(product.pricePerBaseQuantity, product.discountPercentage) * units);
+  const discountedPrice = roundMoney(originalTotal - total);
 
   const actualQuantity = product.isSoldAsUnit
     ? product.baseMeasurementQuantity * quantity
@@ -20,7 +15,7 @@ export const calculateItemTotal = (product: Product, quantity: number) => {
   return {
     discountedPrice: 0,
     total: total,
-    originalTotal: product.pricePerBaseQuantity * quantity,
+    originalTotal,
     savings: discountedPrice,
     actualQuantity: actualQuantity,
   };

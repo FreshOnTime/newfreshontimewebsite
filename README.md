@@ -2,9 +2,16 @@
 
 **Pick Fresh, Live Easy** — Sri Lanka's premium online grocery delivery service with subscriptions, B2B supply, and diaspora gifting.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://mongodb.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-green)](https://www.postgresql.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://typescriptlang.org/)
+
+The current implementation and launch gaps are tracked in [platform readiness](docs/PLATFORM_READINESS.md).
+
+Checkout deployment requires `npm run db:migrate` before the updated app is promoted.
+The `20261002090000_checkout_requests` migration stores retry receipts atomically
+with order creation. Customer checkout uses cash on delivery; catalogue promotions
+are applied on the server, and arbitrary order-level discounts are rejected.
 
 ---
 
@@ -50,8 +57,8 @@ Getting fresh, quality groceries in Sri Lanka is inconvenient and unreliable. We
 ## 🛠️ Tech Stack
 
 ```
-Frontend:     Next.js 15, React 18, TypeScript, Tailwind CSS
-Backend:      Next.js API Routes, MongoDB, Mongoose
+Frontend:     Next.js 16, React 18, TypeScript, Tailwind CSS
+Backend:      Next.js API Routes, PostgreSQL, Prisma
 Auth:         JWT with HTTP-only cookies, role-based access
 Payments:     Integration-ready (Stripe/PayHere)
 Storage:      Azure Blob Storage
