@@ -14,9 +14,10 @@ const links = [
   { label: "Our producers", href: "/farm-to-table" },
   { label: "For business", href: "/b2b" },
   { label: "Our story", href: "/about" },
+  { label: "Journal", href: "/blog" },
 ];
 const moreLinks = [
-  { label: "Recipes", href: "/recipes" }, { label: "Journal", href: "/blog" },
+  { label: "Recipes", href: "/recipes" },
   { label: "Local makers", href: "/homemade" }, { label: "Ready meals", href: "/meals" },
   { label: "Weekly baskets", href: "/subscriptions" }, { label: "For you", href: "/for-you" },
 ];

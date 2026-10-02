@@ -1,136 +1,74 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ChefHat, ArrowUpRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  Users,
-  Package,
-  ShoppingCart,
-  BarChart3,
-  Settings,
-  FileText,
-  Building2,
-  Tags,
-  Menu,
-  X,
-  BookOpen,
-  Bell,
-  Layers,
-  Handshake,
-  ChefHat,
-  BrainCircuit,
-} from 'lucide-react';
 
-const navigation = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Intelligence', href: '/admin/intelligence', icon: BrainCircuit },
-  { name: 'Customers', href: '/admin/customers', icon: Users },
-  { name: 'Users', href: '/admin/users', icon: Users },
-  { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
-  { name: 'Supplier Uploads', href: '/admin/supplier-uploads', icon: FileText },
-  { name: 'Products', href: '/admin/products', icon: Package },
-  { name: 'Recipe Studio', href: '/admin/recipes', icon: ChefHat },
-  { name: 'Collection Studio', href: '/admin/collections', icon: Layers },
-  { name: 'Categories', href: '/admin/categories', icon: Tags },
-  { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
-  { name: 'Partnerships', href: '/admin/business-leads', icon: Handshake },
-  { name: 'Notifications', href: '/admin/notifications', icon: Bell },
-  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-  { name: 'Blog Posts', href: '/admin/blogs', icon: BookOpen },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Audit Logs', href: '/admin/audit-logs', icon: FileText },
-  { name: 'Account settings', href: '/profile', icon: Settings },
+const groups = [
+  { name: 'Store', items: [
+    { name: 'Overview', href: '/admin', icon: LayoutDashboard },
+    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+    { name: 'Products', href: '/admin/products', icon: Package },
+    { name: 'Categories', href: '/admin/categories', icon: Tags },
+    { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
+    { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
+  ] },
+  { name: 'Publishing', items: [
+    { name: 'Journal', href: '/admin/blogs', icon: BookOpen },
+    { name: 'Recipes', href: '/admin/recipes', icon: ChefHat },
+    { name: 'Collections', href: '/admin/collections', icon: Layers },
+  ] },
+  { name: 'Business', items: [
+    { name: 'Business enquiries', href: '/admin/business-leads', icon: Handshake },
+    { name: 'Reports', href: '/admin/analytics', icon: BarChart3 },
+  ] },
 ];
 
 export function AdminSidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = () => { if (desktop.matches) setOpen(false); };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
 
-  return (
-    <>
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
-          <div className="relative flex h-[100svh] w-full max-w-xs flex-1 flex-col overflow-y-auto bg-background">
-            <div className="absolute top-0 right-0 -mr-12 pt-2">
-              <button
-                type="button"
-                className="ml-1 flex h-10 w-10 items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <X className="h-6 w-6 text-white" />
-              </button>
-            </div>
-            <SidebarContent pathname={pathname} />
-          </div>
-        </div>
-      )}
-
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-border bg-background px-6">
-          <SidebarContent pathname={pathname} />
-        </div>
-      </div>
-
-      <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-background px-4 py-4 shadow-sm sm:px-6 lg:hidden">
-        <button
-          type="button"
-          className="-m-2.5 p-2.5 text-foreground lg:hidden"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <div className="flex-1 text-sm font-semibold leading-6 text-foreground">
-          Admin Dashboard
-        </div>
-      </div>
-    </>
-  );
+  return <>
+    <aside aria-label="Administration" className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col border-r border-border bg-background px-6 overflow-y-auto">
+      <SidebarContent pathname={pathname} />
+    </aside>
+    <div className="sticky top-0 z-40 flex items-center gap-4 border-b border-border bg-background px-4 py-3 sm:px-6 lg:hidden">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild><button type="button" aria-label="Open admin navigation" className="flex h-11 w-11 items-center justify-center text-foreground"><Menu className="h-5 w-5" aria-hidden="true" /></button></DialogTrigger>
+        <DialogContent className="left-0 top-0 block h-[100svh] max-h-none w-[min(320px,100vw)] max-w-none translate-x-0 translate-y-0 rounded-none border-0 px-6 py-0 sm:max-h-none sm:rounded-none [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:items-center [&>button]:justify-center [&>button]:right-2 [&>button]:top-2">
+          <DialogTitle className="sr-only">Admin navigation</DialogTitle>
+          <DialogDescription className="sr-only">Store operations, publishing and business tools.</DialogDescription>
+          <SidebarContent pathname={pathname} onNavigate={() => setOpen(false)} />
+        </DialogContent>
+      </Dialog>
+      <span className="text-sm font-semibold">FreshPick admin</span>
+    </div>
+  </>;
 }
 
-function SidebarContent({ pathname }: { pathname: string }) {
-  return (
-    <>
-      <div className="flex h-16 shrink-0 items-center">
-        <Link href="/admin" className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">FP</span>
-          </div>
-          <span className="font-bold text-xl text-foreground">Fresh Pick</span>
-        </Link>
-      </div>
-      <nav className="flex flex-1 flex-col">
-        <ul role="list" className="flex flex-1 flex-col gap-y-7">
-          <li>
-            <ul role="list" className="-mx-2 space-y-1">
-              {navigation.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      pathname?.startsWith(item.href)
-                        ? 'bg-secondary text-brand-green'
-                        : 'text-foreground hover:text-brand-green hover:bg-secondary',
-                      'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                    )}
-                  >
-                    <item.icon
-                      className={cn(
-                        pathname?.startsWith(item.href) ? 'text-brand-green' : 'text-muted-foreground group-hover:text-brand-green',
-                        'h-6 w-6 shrink-0'
-                      )}
-                    />
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </li>
-        </ul>
-      </nav>
-    </>
-  );
+function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  return <>
+    <Link href="/admin" onClick={onNavigate} className="flex h-20 shrink-0 items-center text-xl font-bold uppercase tracking-tight text-brand-green">FreshPick</Link>
+    <nav aria-label="Admin navigation" className="space-y-7 pb-8">
+      {groups.map(group => <div key={group.name}>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{group.name}</p>
+        <ul className="-mx-2 space-y-1">{group.items.map(item => {
+          const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/suppliers' && pathname === '/admin/supplier-uploads');
+          return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 px-2 py-2 text-sm font-medium transition-colors', active ? 'bg-secondary text-brand-green' : 'text-foreground hover:bg-secondary hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
+        })}</ul>
+      </div>)}
+      <Link href="/" onClick={onNavigate} className="flex min-h-11 items-center justify-between border-t border-border pt-4 text-xs font-semibold uppercase text-brand-green">View store <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+    </nav>
+  </>;
 }

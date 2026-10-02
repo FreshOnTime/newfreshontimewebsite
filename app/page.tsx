@@ -14,6 +14,8 @@ import BrandStory, { BusinessStory } from "@/components/home/BrandStory";
 import { serverApiFetch } from "@/lib/api/server";
 import { listPublishedRecipes } from "@/lib/recipeService";
 import { listCreators } from "@/lib/creatorService";
+import { listPublishedJournalEntries } from "@/lib/journalService";
+import HomeJournal from "@/components/home/HomeJournal";
 
 export const dynamic = "force-static";
 export const revalidate = 300;
@@ -76,10 +78,11 @@ async function getHomeData(): Promise<HomeData> {
 }
 
 export default async function Home() {
-  const [{ products, categories }, recipes, creators] = await Promise.all([
+  const [{ products, categories }, recipes, creators, journal] = await Promise.all([
     getHomeData(),
     listPublishedRecipes(3).catch(() => []),
     listCreators(4).catch(() => []),
+    listPublishedJournalEntries().catch((error) => { console.error('[Homepage] Failed to load journal:', error); return []; }),
   ]);
 
   return (
@@ -133,6 +136,7 @@ export default async function Home() {
       <ShopFeatures />
       <MarketDiscovery recipes={recipes} />
       <CreatorNetwork creators={creators} />
+      <HomeJournal posts={journal} />
       <BusinessStory />
     </div>
   );

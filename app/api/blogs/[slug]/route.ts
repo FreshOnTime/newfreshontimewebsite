@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { publishedJournalWhere } from '@/lib/journalService';
 
 export async function GET(
   request: NextRequest,
@@ -11,9 +12,7 @@ export async function GET(
     const blog = await prisma.blog.findFirst({
       where: {
         slug,
-        isDeleted: false,
-        published: true,
-        category: { notIn: ['recipe', 'collection'] },
+        ...publishedJournalWhere,
       },
       include: {
         author: {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { revalidateJournal, journalCategoryWhere, COMMERCE_BLOG_CATEGORIES } from '@/lib/journalService';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const imageSchema = z.object({
@@ -17,7 +18,7 @@ const createBlogSchema = z.object({
   excerpt: z.string().min(10).max(500),
   content: z.string().min(50),
   featuredImage: imageSchema.optional(),
-  category: z.string().max(100).optional(),
+  category: z.string().max(100).optional().refine(value => !value || !COMMERCE_BLOG_CATEGORIES.includes(value), 'Use the recipe or collection editor for this content'),
   tags: z.array(z.string()).max(20).default([]),
   published: z.boolean().default(false),
   publishedAt: z.string().datetime().optional(),
@@ -57,7 +58,7 @@ export const GET = requireAdminSimple(async (request) => {
     const { searchParams } = new URL(request.url);
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
-    const where: Prisma.BlogWhereInput = { isDeleted: false };
+    const where: Prisma.BlogWhereInput = { ...journalCategoryWhere, isDeleted: false };
 
     if (query.search) {
       where.OR = [
@@ -165,6 +166,7 @@ export const POST = requireAdminSimple(async (request) => {
       request
     );
 
+    revalidateJournal(blog.slug);
     return NextResponse.json({ blog: serializeBlog(blog) }, { status: 201 });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {

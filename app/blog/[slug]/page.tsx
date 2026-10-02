@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { BlogPost } from '@/components/blog/BlogPost';
 import prisma from '@/lib/prisma';
+import { publishedJournalWhere } from '@/lib/journalService';
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -20,8 +21,7 @@ async function getBlogData(slug: string) {
   const blog = await prisma.blog.findFirst({
     where: {
       slug,
-      isDeleted: false,
-      published: true,
+      ...publishedJournalWhere,
     },
     select: {
       id: true,

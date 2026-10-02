@@ -116,10 +116,10 @@ export function BlogsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-normal text-foreground">Blog Posts</h1>
-          <p className="text-muted-foreground mt-2">Create and manage blog content</p>
+          <h1 className="text-3xl font-normal text-foreground">Journal</h1>
+          <p className="text-muted-foreground mt-2">Publish stories for the homepage and journal</p>
         </div>
         <Button onClick={() => {
           setEditing(null);
@@ -127,21 +127,21 @@ export function BlogsPage() {
           setIsDialogOpen(true);
         }}>
           <Plus className="h-4 w-4 mr-2" />
-          New Blog Post
+          New story
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Blog Posts</CardTitle>
-          <CardDescription>View and manage all blog posts</CardDescription>
+          <CardTitle>Journal</CardTitle>
+          <CardDescription>Manage published stories and drafts</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2 mb-6">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search blogs..."
+                placeholder="Search stories..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -241,7 +241,7 @@ export function BlogsPage() {
               )}
 
               {pagination.pages > 1 && (
-                <div className="flex items-center justify-between mt-6">
+                <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
                   <div className="text-sm text-foreground">
                     Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
                     {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
