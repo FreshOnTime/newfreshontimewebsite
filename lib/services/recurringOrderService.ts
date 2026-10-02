@@ -1,3 +1,4 @@
+import { basketTotals, productUnitPrice, roundMoney } from "@/lib/commercePricing";
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { sendOrderEmail } from '@/lib/services/mailService';
@@ -143,21 +144,30 @@ export class RecurringOrderService {
       if (claimed.count !== 1) return null;
 
       const productIds = recurringOrder.items.map((i) => i.productId);
-      const products = await tx.product.findMany({ where: { id: { in: productIds } }, select: { id: true, stockQty: true } });
-      const productMap = new Map(products.map((p) => [p.id, p]));
-      const outOfStock = recurringOrder.items.filter((it) => (productMap.get(it.productId)?.stockQty || 0) < it.qty);
-
-      if (!outOfStock.length) {
-        for (const item of recurringOrder.items) {
-          const reserved = await tx.product.updateMany({
-            where: { id: item.productId, stockQty: { gte: item.qty } },
-            data: { stockQty: { decrement: item.qty } },
-          });
-          // A concurrent order consumed stock after the initial check. Throwing
-          // rolls back both the reservation attempts and the schedule claim.
-          if (reserved.count !== 1) throw new Error(`INSUFFICIENT_STOCK:${item.productId}`);
-        }
+      const products = await tx.product.findMany({
+        where: { id: { in: productIds }, archived: false },
+        select: { id: true, sku: true, name: true, price: true, discountPercentage: true, stockQty: true },
+      });
+      const productMap = new Map(products.map((product) => [product.id, product]));
+      const items = recurringOrder.items.map((item) => {
+        const product = productMap.get(item.productId);
+        if (!product || product.stockQty < item.qty) throw new Error(`INSUFFICIENT_STOCK:${item.productId}`);
+        const price = productUnitPrice(product);
+        return { productId: product.id, sku: product.sku, name: product.name, qty: item.qty,
+          price, total: roundMoney(price * item.qty) };
+      });
+      for (const item of items) {
+        const product = productMap.get(item.productId)!;
+        const reserved = await tx.product.updateMany({
+          where: { id: item.productId, archived: false, price: product.price,
+            discountPercentage: product.discountPercentage, stockQty: { gte: item.qty } },
+          data: { stockQty: { decrement: item.qty } },
+        });
+        // Failure rolls back every reservation and the due-date claim. Never
+        // create a cancellable order for stock that was not reserved.
+        if (reserved.count !== 1) throw new Error(`INSUFFICIENT_STOCK:${item.productId}`);
       }
+      const totals = basketTotals(items.map((item) => ({ price: item.price, quantity: item.qty })));
 
       return tx.order.create({
         data: {
@@ -165,32 +175,17 @@ export class RecurringOrderService {
           customerId: recurringOrder.customerId,
           bagId: recurringOrder.bagId,
           bagName: recurringOrder.bagName,
-          subtotal: recurringOrder.subtotal,
-          tax: recurringOrder.tax,
-          shipping: recurringOrder.shipping,
-          discount: recurringOrder.discount,
-          total: recurringOrder.total,
-          status: outOfStock.length ? 'pending' : 'confirmed',
+          ...totals,
+          status: 'confirmed',
           paymentMethod: recurringOrder.paymentMethod,
-          paymentStatus: recurringOrder.paymentStatus,
+          paymentStatus: 'pending',
           shippingAddress: recurringOrder.shippingAddress as Prisma.InputJsonValue,
           billingAddress: recurringOrder.billingAddress as Prisma.InputJsonValue,
-          notes: outOfStock.length
-            ? `Auto-generated from recurring order. Some items may be out of stock: ${outOfStock.map((i) => i.productId).join(', ')}`
-            : 'Auto-generated from recurring order',
+          notes: 'Auto-generated from recurring order',
           estimatedDelivery: dueDelivery,
           isRecurring: false,
           recurringSourceOrderId: recurringOrder.id,
-          items: {
-            create: recurringOrder.items.map((it) => ({
-              productId: it.productId,
-              sku: it.sku,
-              name: it.name,
-              qty: it.qty,
-              price: it.price,
-              total: it.total,
-            })),
-          },
+          items: { create: items },
         },
       });
     });

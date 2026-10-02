@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!id) return sendBadRequest('Product ID is required');
 
     const p = await prisma.product.findFirst({
-      where: resolveWhere(id),
+      where: { ...resolveWhere(id), archived: false },
       include: { category: { select: { name: true, slug: true } } },
     });
 

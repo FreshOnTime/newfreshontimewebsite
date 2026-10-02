@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { productUnitPrice } from '@/lib/commercePricing';
 import { requireAuth } from '@/lib/auth';
 import { BAG_INCLUDE, serializeBag, bagTotal } from '@/lib/bagSerializer';
 
@@ -36,11 +37,11 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     const validatedItems: Array<{ productId: string; quantity: number; price: number }> = [];
     for (const item of items) {
       const qty = Number(item.quantity);
-      if (!Number.isFinite(qty) || qty <= 0) {
+      if (!Number.isSafeInteger(qty) || qty > 10000 || qty <= 0) {
         return NextResponse.json({ error: 'Invalid item quantity' }, { status: 400 });
       }
       const product = await prisma.product.findFirst({
-        where: { OR: [{ id: item.productId }, { sku: item.productId }, { slug: item.productId }] },
+        where: { archived: false, OR: [{ id: item.productId }, { sku: item.productId }, { slug: item.productId }] },
       });
       if (!product) {
         return NextResponse.json({ error: `Product with ID ${item.productId} not found` }, { status: 400 });
@@ -48,7 +49,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       if (product.stockQty < qty) {
         return NextResponse.json({ error: `Insufficient stock for product ${product.name}` }, { status: 400 });
       }
-      validatedItems.push({ productId: product.id, quantity: qty, price: Number(product.price) });
+      validatedItems.push({ productId: product.id, quantity: qty, price: productUnitPrice(product) });
     }
 
     const bag = await prisma.bag.create({

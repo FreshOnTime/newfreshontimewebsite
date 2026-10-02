@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth";
 import { NextRequest } from "next/server";
 import { productCategoryService } from "@/lib/services/productCategoryService";
 import { sendSuccess, sendInternalError, sendCreated, sendBadRequest } from "@/lib/utils/apiResponses";
@@ -14,7 +15,7 @@ export async function GET() {
 }
 
 // POST - Create a new category
-export async function POST(req: NextRequest) {
+export const POST = requireAdmin(async (req: NextRequest) => {
   try {
     const categoryData = await req.json();
     
@@ -32,4 +33,4 @@ export async function POST(req: NextRequest) {
     }
     return sendInternalError("Failed to create category");
   }
-}
+});

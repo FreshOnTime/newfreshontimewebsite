@@ -15,6 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api/client";
+import { authenticatedApiFetch } from "@/lib/api/authenticated-fetch";
+import { discountedUnitPrice, type CheckoutQuote } from "@/lib/commercePricing";
+import { checkoutRetryForIntent, hashCheckoutIntent, readCheckoutRetry, type CheckoutRetry } from "@/lib/checkoutRetry";
 import { WHATSAPP_NUMBER } from "@/lib/config/site";
 
 type CheckoutItem = {
@@ -89,6 +92,13 @@ export default function CheckoutPage() {
   const [previewLoading, setPreviewLoading] = useState(Boolean(planSlug || quickSku));
   const [submitting, setSubmitting] = useState(false);
   const submissionLock = useRef(false);
+  const retryRef = useRef<CheckoutRetry | null>(null);
+  const [quoteState, setQuoteState] = useState<{ itemsKey: string; quote: CheckoutQuote } | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteVersion, setQuoteVersion] = useState(0);
+  const [recovering, setRecovering] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [recoveryVersion, setRecoveryVersion] = useState(0);
   const [orderingViaWhatsapp, setOrderingViaWhatsapp] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -221,14 +231,14 @@ export default function CheckoutPage() {
             product: {
               id: productId,
               name: product.name || "Product",
-              price: Number(product.pricePerBaseQuantity || 0),
+              price: discountedUnitPrice(Number(product.pricePerBaseQuantity || 0), product.discountPercentage),
               stock: product.isOutOfStock ? 0 : product.stockQuantity,
               unit: product.measurementUnit || "ea",
               images: image?.url || image?.path
                 ? [{ url: image.url || image.path || "", alt: image.alt || product.name }]
                 : [],
             },
-            quantity: Number.isFinite(quickQty) && quickQty > 0 ? quickQty : 1,
+            quantity: Number.isSafeInteger(quickQty) && quickQty > 0 ? quickQty : 1,
           }],
         });
       })
@@ -273,18 +283,64 @@ export default function CheckoutPage() {
     [effectiveItems],
   );
 
+  const itemsKey = JSON.stringify(effectiveItems.map((item) => ({ productId: item.product.id, quantity: item.quantity })));
+  const retryScope = `freshpick-checkout:${user?._id || ""}:${effectiveBagId || quickSku || "default"}`;
+  const quote = quoteState?.itemsKey === itemsKey ? quoteState.quote : null;
+
+  useEffect(() => {
+    if (!user || planSlug || bagsLoading || previewLoading) return;
+    let cancelled = false;
+    let previous: CheckoutRetry | null = null;
+    try { previous = readCheckoutRetry(sessionStorage, retryScope); } catch { /* Storage may be disabled. */ }
+    retryRef.current = previous?.completed ? null : previous;
+    setRecoveryError(null);
+    if (!previous || previous.completed) { setRecovering(false); return; }
+    setRecovering(true);
+    authenticatedApiFetch(`/api/orders/receipt?key=${encodeURIComponent(previous.key)}`)
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unable to check your previous checkout.");
+        if (cancelled) return;
+        const orderId = data.receipt?.data?._id || data.receipt?.data?.id;
+        if (orderId) {
+          try { sessionStorage.setItem(retryScope, JSON.stringify({ ...previous, completed: true })); } catch { /* Optional persistence. */ }
+          router.replace(`/orders/${orderId}`);
+        } else setRecovering(false);
+      })
+      .catch((failure) => { if (!cancelled) { setRecovering(false); setRecoveryError(failure.message); } });
+    return () => { cancelled = true; };
+  }, [user, planSlug, bagsLoading, previewLoading, retryScope, recoveryVersion, router]);
+
+  useEffect(() => {
+    if (!user || planSlug || bagsLoading || bagUpdating || previewLoading || itemsKey === "[]") return;
+    let cancelled = false;
+    setQuoteState(null);
+    setQuoteError(null);
+    authenticatedApiFetch("/api/orders/quote", { method: "POST", body: JSON.stringify({ items: JSON.parse(itemsKey) }) })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data.quote) throw new Error(data.error || "Unable to confirm the order total.");
+        if (!cancelled) setQuoteState({ itemsKey, quote: data.quote });
+      })
+      .catch((failure) => { if (!cancelled) setQuoteError(failure.message); });
+    return () => { cancelled = true; };
+  }, [user, planSlug, bagsLoading, bagUpdating, previewLoading, itemsKey, quoteVersion]);
+
+  const quotedUnitPrice = (item: CheckoutItem) => quote?.items.find((line) => line.productId === item.product.id)?.price
+    ?? (quickSku && quote?.items.length === 1 ? quote.items[0].price : item.product.price);
+
   const customAddressComplete = [shipName, shipPhone, shipStreet, shipCity, shipZip].every((value) => value.trim().length > 0);
   const stockAvailable = effectiveItems.every((item) => item.product.stock === undefined || item.quantity <= item.product.stock);
-  const canPlaceOrder = effectiveItems.length > 0 && stockAvailable && !bagsLoading && !bagUpdating && (useAccountAddress ? Boolean(user?.registrationAddress) : customAddressComplete);
+  const canPlaceOrder = !recovering && !recoveryError && (Boolean(planSlug) || Boolean(quote)) && effectiveItems.length > 0 && stockAvailable && !bagsLoading && !bagUpdating && (useAccountAddress ? Boolean(user?.registrationAddress) : customAddressComplete);
 
-  const buildRecurrence = () => {
+  const buildRecurrence = (startedAt: string) => {
     if (!isRecurring) return undefined;
 
     const rule = new RRule({
       freq: recurrenceFreq,
       interval: Math.max(1, recurrenceInterval),
       byweekday: recurrenceFreq === RRule.WEEKLY ? recurrenceByWeekday : undefined,
-      dtstart: startDate ? new Date(startDate) : new Date(),
+      dtstart: startDate ? new Date(startDate) : new Date(startedAt),
       until: endDate ? new Date(endDate) : undefined,
     });
 
@@ -370,30 +426,43 @@ export default function CheckoutPage() {
         return;
       }
 
-      const response = await apiFetch("/api/orders", {
+      if (!quote) throw new Error("Please confirm the current order total.");
+      const intent = {
+        items: effectiveItems.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
+        paymentMethod: "cash_on_delivery",
+        bagId: effectiveBagId || undefined,
+        bagName: effectiveBagName || undefined,
+        useRegisteredAddress: useAccountAddress,
+        shippingAddress: !useAccountAddress ? {
+          name: shipName || undefined,
+          street: shipStreet || undefined,
+          city: shipCity || undefined,
+          state: shipState || undefined,
+          zipCode: shipZip || undefined,
+          country: shipCountry || undefined,
+          phone: shipPhone || undefined,
+        } : undefined,
+        isRecurring,
+        recurrence: isRecurring ? { recurrenceFreq, recurrenceInterval, recurrenceByWeekday,
+          startDate, endDate, includeDates, excludeDates, recurrenceNotes } : undefined,
+      };
+      const intentHash = await hashCheckoutIntent(intent);
+      let previous = retryRef.current;
+      if (!previous) { try { previous = readCheckoutRetry(sessionStorage, retryScope); } catch { /* Optional persistence. */ } }
+      const retry = checkoutRetryForIntent(previous, intentHash);
+      retryRef.current = retry;
+      try { sessionStorage.setItem(retryScope, JSON.stringify(retry)); } catch { /* Same-page retries retain their key in memory. */ }
+      const response = await authenticatedApiFetch("/api/orders", {
         method: "POST",
-        body: JSON.stringify({
-          userId: user._id,
-          items: effectiveItems.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
-          paymentMethod: "cash_on_delivery",
-          bagId: effectiveBagId || undefined,
-          bagName: effectiveBagName || undefined,
-          useRegisteredAddress: useAccountAddress,
-          shippingAddress: !useAccountAddress ? {
-            name: shipName || undefined,
-            street: shipStreet || undefined,
-            city: shipCity || undefined,
-            state: shipState || undefined,
-            zipCode: shipZip || undefined,
-            country: shipCountry || undefined,
-            phone: shipPhone || undefined,
-          } : undefined,
-          isRecurring,
-          recurrence: buildRecurrence(),
-        }),
+        headers: { "Idempotency-Key": retry.key },
+        body: JSON.stringify({ ...intent, recurrence: buildRecurrence(retry.startedAt), quoteFingerprint: quote.fingerprint }),
       });
       const data = await response.json();
-      if (!response.ok || !data.success) throw new Error(data.error || "Order failed");
+      if (!response.ok || !data.success) {
+        if (response.status === 409) { setQuoteState(null); setQuoteVersion((version) => version + 1); }
+        throw new Error(data.error || "Order failed");
+      }
+      try { sessionStorage.setItem(retryScope, JSON.stringify({ ...retry, completed: true })); } catch { /* Optional persistence. */ }
       completed = true;
 
       const orderId = data.data?._id || data.data?.id;
@@ -406,7 +475,7 @@ export default function CheckoutPage() {
         const deliveryTo = useAccountAddress
           ? `${user.registrationAddress?.recipientName || user.firstName}\n${user.registrationAddress?.phoneNumber || user.phoneNumber}\n${user.registrationAddress?.streetAddress || ""}\n${user.registrationAddress?.city || ""}`
           : `${shipName}\n${shipPhone}\n${shipStreet}\n${shipCity}, ${shipState} ${shipZip}`;
-        const message = `Hi FreshPick! I'd like to confirm order #${orderNo}.\n\nItems:\n${itemsList}\n\nItems total: Rs. ${total.toFixed(2)}\n\nDeliver to:\n${deliveryTo}`;
+        const message = `Hi FreshPick! I'd like to confirm order #${orderNo}.\n\nItems:\n${itemsList}\n\nOrder total: Rs. ${Number(data.data?.total || quote.total).toFixed(2)}\n\nDeliver to:\n${deliveryTo}`;
         window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
         return;
       }
@@ -489,7 +558,7 @@ export default function CheckoutPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <h3 className="font-medium text-zinc-950">{item.product.name}</h3>
-                          <p className="mt-1 text-sm text-zinc-500">Rs. {Number(item.product.price).toFixed(2)} {item.product.unit ? `/ ${item.product.unit}` : ""}</p>
+                          <p className="mt-1 text-sm text-zinc-500">Rs. {quotedUnitPrice(item).toFixed(2)} {item.product.unit ? `/ ${item.product.unit}` : ""}</p>
                         </div>
                         {!planSlug && (
                           <button
@@ -546,7 +615,7 @@ export default function CheckoutPage() {
                             <Plus strokeWidth={1.75} aria-hidden="true" className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        <strong className="text-zinc-950">Rs. {(item.product.price * item.quantity).toFixed(2)}</strong>
+                        <strong className="text-zinc-950">Rs. {(quotedUnitPrice(item) * item.quantity).toFixed(2)}</strong>
                       </div>
                     </div>
                   </div>
@@ -714,25 +783,31 @@ export default function CheckoutPage() {
                 <CardContent className="p-6 md:p-8">
                   <span className="text-xs font-medium text-brand-green">Order summary</span>
                   <div className="mt-6 space-y-3">
-                    {effectiveItems.map((item) => (
-                      <div key={`summary-${item.product.id}`} className="flex justify-between gap-4 text-sm">
-                        <span className="min-w-0 truncate text-zinc-500">{item.quantity} × {item.product.name}</span>
-                        <span className="shrink-0 font-medium text-zinc-900">Rs. {(item.product.price * item.quantity).toFixed(2)}</span>
+                    {(quote?.items || effectiveItems.map((item) => ({ productId: item.product.id, name: item.product.name, quantity: item.quantity, total: item.product.price * item.quantity }))).map((item) => (
+                      <div key={`summary-${item.productId}`} className="flex justify-between gap-4 text-sm">
+                        <span className="min-w-0 truncate text-zinc-500">{item.quantity} × {item.name}</span>
+                        <span className="shrink-0 font-medium text-zinc-900">Rs. {item.total.toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-6 border-t border-border pt-5">
+                  <div className="mt-6 space-y-3 border-t border-border pt-5" aria-live="polite">
+                    {quote && <>
+                      <div className="flex justify-between text-sm text-zinc-500"><span>Items subtotal</span><span>Rs. {quote.subtotal.toFixed(2)}</span></div>
+                      <div className="flex justify-between text-sm text-zinc-500"><span>Delivery</span><span>{quote.shipping ? `Rs. ${quote.shipping.toFixed(2)}` : "Free"}</span></div>
+                    </>}
                     <div className="flex items-end justify-between gap-4">
-                      <div>
-                        <p className="text-sm text-zinc-500">Items total</p>
-                        <p className="mt-1 font-sans text-3xl text-zinc-950">Rs. {total.toFixed(2)}</p>
-                      </div>
-                      <p className="max-w-[150px] text-right text-xs leading-5 text-muted-foreground">Delivery details are confirmed as part of order fulfilment.</p>
+                      <p className="text-sm text-zinc-500">{planSlug ? "Plan price" : "Order total"}</p>
+                      <p className="font-sans text-3xl text-zinc-950">{planSlug || quote ? `Rs. ${(quote?.total ?? total).toFixed(2)}` : "—"}</p>
                     </div>
+                    {!planSlug && !quote && !quoteError && <p className="text-sm text-zinc-500">Confirming prices and availability…</p>}
+                    {quoteError && <div role="alert" className="text-sm text-destructive"><p>{quoteError}</p><button type="button" disabled={submitting} onClick={() => setQuoteVersion((version) => version + 1)} className="mt-2 underline">Check total again</button></div>}
+                    {recovering && <p className="text-sm text-zinc-500">Checking your previous checkout…</p>}
+                    {recoveryError && <div role="alert" className="text-sm text-destructive"><p>{recoveryError}</p><button type="button" onClick={() => setRecoveryVersion((version) => version + 1)} className="mt-2 underline">Check previous order again</button></div>}
                   </div>
 
                   <p className="mt-5 text-sm text-muted-foreground">Payment: cash on delivery</p>
+                  {isRecurring && !planSlug && <p className="mt-2 text-xs leading-5 text-muted-foreground">Future deliveries use the catalogue prices and delivery charges current when each order is created.</p>}
                   {!stockAvailable && <p className="mt-3 text-sm leading-6 text-destructive">Update unavailable items before placing your order.</p>}
                   <Button
                     size="lg"

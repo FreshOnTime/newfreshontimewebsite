@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { CheckoutError, checkoutSchema, checkoutRequestHash, prepareCheckout } from '@/lib/checkoutService';
+import { orderAddressSchema } from '@/lib/orderAddress';
 import { sendOrderEmail } from '@/lib/services/mailService';
 import { RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
@@ -117,11 +119,29 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
 
 // POST - Create a new order (transactional stock reservation)
 export const POST = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
+  let retryIdentity: { customerId: string; key: string; fingerprint: string } | undefined;
   try {
-    const body = await request.json();
-    const { items, shippingAddress, paymentMethod, notes, discount = 0, bagId, bagName, useRegisteredAddress } = body;
+    const parsed = checkoutSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    const body = parsed.data;
+    const { items, shippingAddress, paymentMethod, notes, bagId, bagName, useRegisteredAddress } = body;
     const authUser = request.user;
     const customerId = authUser?.mongoId || authUser?.userId;
+    if (!customerId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    const key = request.headers.get('Idempotency-Key');
+    if (key && !/^[A-Za-z0-9_-]{8,128}$/.test(key)) return NextResponse.json({ error: 'Invalid checkout retry key' }, { status: 400 });
+    if (key) {
+      retryIdentity = { customerId, key, fingerprint: checkoutRequestHash(body) };
+      const previous = await prisma.checkoutRequest.findUnique({ where: { customerId_key: { customerId, key } } });
+      if (previous) {
+        if (previous.fingerprint !== retryIdentity.fingerprint) return NextResponse.json({ error: 'This retry key belongs to a different checkout.' }, { status: 409 });
+        if (!previous.response) return NextResponse.json({ error: 'This checkout is still processing. Please retry shortly.' }, { status: 409 });
+        return NextResponse.json(previous.response, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
+      }
+    }
+    if (bagId && !await prisma.bag.findFirst({ where: { id: bagId, userId: customerId, isActive: true }, select: { id: true } })) {
+      return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
+    }
 
     const recurrence = body.recurrence as {
       startDate?: string;
@@ -135,7 +155,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     } | undefined;
     const hasRecurrenceSignals = Boolean(
       recurrence && (
-        recurrence.startDate || recurrence.endDate || recurrence.notes ||
+        recurrence.startDate || recurrence.endDate || recurrence.rruleString || recurrence.notes ||
         (Array.isArray(recurrence.daysOfWeek) && recurrence.daysOfWeek.length > 0) ||
         (Array.isArray(recurrence.includeDates) && recurrence.includeDates.length > 0) ||
         (Array.isArray(recurrence.excludeDates) && recurrence.excludeDates.length > 0) ||
@@ -153,39 +173,13 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       include: { addresses: true },
     });
 
-    // Resolve each requested product (by id, sku, or slug) and compute totals.
-    const validatedItems: Array<{ productId: string; sku: string; name: string; qty: number; price: number; total: number }> = [];
-    let subtotal = 0;
-
-    for (const item of items) {
-      const qty = Number(item.quantity);
-      if (!Number.isFinite(qty) || qty <= 0) {
-        return NextResponse.json({ error: 'Invalid item quantity' }, { status: 400 });
-      }
-      const product = await prisma.product.findFirst({
-        where: { OR: [{ id: item.productId }, { sku: item.productId }, { slug: item.productId }] },
-      });
-      if (!product) {
-        return NextResponse.json({ error: `Product with ID ${item.productId} not found` }, { status: 400 });
-      }
-      if (product.stockQty < qty) {
-        return NextResponse.json({ error: `Insufficient stock for product ${product.name}` }, { status: 400 });
-      }
-      const unitPrice = Number(product.price);
-      const itemTotal = unitPrice * qty;
-      subtotal += itemTotal;
-      validatedItems.push({ productId: product.id, sku: product.sku, name: product.name, qty, price: unitPrice, total: itemTotal });
+    const { validatedItems, quote } = await prepareCheckout(items);
+    if (body.quoteFingerprint && body.quoteFingerprint !== quote.fingerprint) {
+      return NextResponse.json({ error: 'Prices changed. Review the updated total before placing your order.' }, { status: 409 });
     }
-
-    const tax = 0;
-    const shipping = subtotal > 50 ? 0 : 5;
-    // Clamp discount to a valid, non-negative amount that can't exceed the order value.
-    const requestedDiscount = Number(discount || 0);
-    const discountAmount = Math.min(
-      Math.max(0, Number.isFinite(requestedDiscount) ? requestedDiscount : 0),
-      subtotal + shipping + tax
-    );
-    const total = subtotal + tax + shipping - discountAmount;
+    const { subtotal, shipping, tax, discount: discountAmount, total } = quote;
+    const orderItems = validatedItems.map((item) => ({ productId: item.productId, sku: item.sku, name: item.name,
+      qty: item.qty, price: item.price, total: item.total }));
 
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 11).toUpperCase()}`;
     const pm = paymentMethod === 'cash_on_delivery' ? 'cash' : (paymentMethod || 'cash');
@@ -242,17 +236,18 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         };
       }
     }
-    if (!resolvedShipping) {
-      return NextResponse.json({ error: 'Shipping address is required' }, { status: 400 });
-    }
+    const address = orderAddressSchema.safeParse(resolvedShipping);
+    if (!address.success) return NextResponse.json({ error: address.error.issues[0].message }, { status: 400 });
+    resolvedShipping = address.data;
 
     // Atomically reserve stock and create the order. Conditional decrements
     // (stockQty >= qty) prevent overselling under concurrency; any failure rolls
     // back every decrement AND the order together.
     const created = await prisma.$transaction(async (tx) => {
+      if (retryIdentity) await tx.checkoutRequest.create({ data: retryIdentity });
       for (const it of validatedItems) {
         const res = await tx.product.updateMany({
-          where: { id: it.productId, stockQty: { gte: it.qty } },
+          where: { id: it.productId, archived: false, price: it.basePrice, discountPercentage: it.discountPercentage, stockQty: { gte: it.qty } },
           data: { stockQty: { decrement: it.qty } },
         });
         if (res.count !== 1) {
@@ -279,34 +274,40 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
           recurrence: Prisma.JsonNull,
           nextDeliveryAt: null,
           scheduleStatus: null,
-          items: { create: validatedItems },
+          items: { create: orderItems },
         },
         include: ORDER_INCLUDE,
       });
 
-      if (!isRecurring || !recurrence || !nextDeliveryAt) return { initialOrder, recurringSchedule: null };
-
-      const recurringSchedule = await tx.order.create({
-        data: {
-          orderNumber: `REC-${Date.now()}-${Math.random().toString(36).slice(2, 11).toUpperCase()}`,
-          customerId,
-          bagId: bagId || null,
-          bagName: bagName || null,
-          subtotal,
-          tax,
-          shipping,
-          discount: discountAmount,
-          total,
-          status: 'confirmed',
-          paymentMethod: pm,
-          shippingAddress: resolvedShipping as Prisma.InputJsonValue,
-          notes: notes || null,
-          isRecurring: true,
-          recurrence: recurrence as unknown as Prisma.InputJsonValue,
-          nextDeliveryAt,
-          scheduleStatus: 'active',
-          items: { create: validatedItems },
-        },
+      let recurringSchedule: { id: string } | null = null;
+      if (isRecurring && recurrence && nextDeliveryAt) {
+        recurringSchedule = await tx.order.create({
+          data: {
+            orderNumber: `REC-${Date.now()}-${Math.random().toString(36).slice(2, 11).toUpperCase()}`,
+            customerId,
+            bagId: bagId || null,
+            bagName: bagName || null,
+            subtotal,
+            tax,
+            shipping,
+            discount: discountAmount,
+            total,
+            status: 'confirmed',
+            paymentMethod: pm,
+            shippingAddress: resolvedShipping as Prisma.InputJsonValue,
+            notes: notes || null,
+            isRecurring: true,
+            recurrence: recurrence as unknown as Prisma.InputJsonValue,
+            nextDeliveryAt,
+            scheduleStatus: 'active',
+            items: { create: orderItems },
+          },
+        });
+      }
+      const receipt = { success: true, data: serializeOrder(initialOrder), recurringScheduleId: recurringSchedule?.id };
+      if (retryIdentity) await tx.checkoutRequest.update({
+        where: { customerId_key: { customerId, key: retryIdentity.key } },
+        data: { response: JSON.parse(JSON.stringify(receipt)) as Prisma.InputJsonValue },
       });
       return { initialOrder, recurringSchedule };
     });
@@ -327,12 +328,22 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       success: true,
       data: serializeOrder(created.initialOrder),
       recurringScheduleId: created.recurringSchedule?.id,
-    }, { status: 201 });
+    }, { status: 201, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
+    if (retryIdentity && error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      try {
+        const previous = await prisma.checkoutRequest.findUnique({ where: { customerId_key: { customerId: retryIdentity.customerId, key: retryIdentity.key } } });
+        if (previous?.fingerprint === retryIdentity.fingerprint && previous.response) {
+          return NextResponse.json(previous.response, { headers: { 'Cache-Control': 'private, no-store' } });
+        }
+        if (previous) return NextResponse.json({ error: 'This retry key belongs to a different checkout.' }, { status: 409 });
+      } catch (recoveryError) { console.error("Checkout recovery error:", recoveryError); }
+    }
+    if (error instanceof CheckoutError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof Error && error.message.startsWith('INSUFFICIENT_STOCK:')) {
       return NextResponse.json(
-        { error: `Insufficient stock for product ${error.message.split(':')[1]}` },
-        { status: 400 }
+        { error: 'Availability or prices changed. Review your order before trying again.' },
+        { status: 409 }
       );
     }
     console.error('Error creating order:', error);
