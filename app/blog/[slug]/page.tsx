@@ -1,3 +1,4 @@
+import { pageMetadata } from '@/lib/seo';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -55,26 +56,18 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
 
     if (!blogData) {
       return {
-        title: 'Blog Post Not Found',
+        title: 'Blog Post Not Found', robots: { index: false, follow: false },
       };
     }
 
     return {
-      title: blogData.metaTitle || blogData.title,
-      description: blogData.metaDescription || blogData.excerpt,
+      ...pageMetadata({ title: blogData.metaTitle || blogData.title, description: blogData.metaDescription || blogData.excerpt, path: `/blog/${encodeURIComponent(blogData.slug)}`, image: blogData.featuredImage?.url, type: 'article' }),
       keywords: blogData.metaKeywords,
-      openGraph: {
-        title: blogData.title,
-        description: blogData.excerpt,
-        type: 'article',
-        publishedTime: blogData.publishedAt?.toISOString?.() || blogData.publishedAt,
-        images: blogData.featuredImage ? [blogData.featuredImage.url] : [],
-      },
     };
   } catch (error) {
     console.error('Error fetching blog metadata:', error);
     return {
-      title: 'Blog Post',
+      title: 'Blog Post', robots: { index: false, follow: false },
     };
   }
 }

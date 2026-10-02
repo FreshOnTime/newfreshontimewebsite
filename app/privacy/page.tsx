@@ -1,11 +1,9 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import type { Metadata } from "next";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { SUPPORT_EMAIL } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "How Fresh Pick handles personal information used for accounts, orders, delivery, and customer support.",
-};
+export const metadata: Metadata = publicPageMetadata('/privacy');
 
 export default function PrivacyPage() {
   return (

@@ -1,3 +1,4 @@
+import { pageMetadata } from '@/lib/seo';
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -12,11 +13,8 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const creator = await getCreatorById(id);
-  if (!creator) return { title: "Creator not found | FreshPick" };
-  return {
-    title: `${creator.name} | FreshPick Creator`,
-    description: `Discover shoppable recipes published by ${creator.name} on FreshPick.`,
-  };
+  if (!creator) return { title: "Creator not found | FreshPick", robots: { index: false, follow: false } };
+  return pageMetadata({ title: `${creator.name} recipes`, description: `Explore published recipes and food ideas by ${creator.name} on FreshPick.`, path: `/creators/${encodeURIComponent(creator.id)}` });
 }
 
 export default async function CreatorPage({ params }: Props) {

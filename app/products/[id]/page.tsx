@@ -1,3 +1,5 @@
+import { pageMetadata } from '@/lib/seo';
+import { SITE_URL, absoluteUrl } from '@/lib/config/site';
 import { notFound } from "next/navigation";
 import { discountedUnitPrice } from '@/lib/commercePricing';
 import { Metadata } from "next";
@@ -16,7 +18,6 @@ import { serverApiFetch } from "@/lib/api/server";
 
 export const revalidate = 300;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://freshpick.lk";
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -55,6 +56,7 @@ export async function generateMetadata({
   if (!product) {
     return {
       title: "Product Not Found | FreshPick",
+      robots: { index: false, follow: false },
       description: "The FreshPick product you are looking for could not be found.",
     };
   }
@@ -63,43 +65,9 @@ export async function generateMetadata({
     ? product.description.slice(0, 160).replace(/\s+/g, " ").trim() + (product.description.length > 160 ? "..." : "")
     : `Shop ${product.name} from FreshPick, with fresh grocery delivery across Colombo.`;
 
-  const productUrl = `${SITE_URL}/products/${product.sku}`;
-  const imageUrl = product.image?.url?.startsWith("http")
-    ? product.image.url
-    : `${SITE_URL}${product.image?.url || "/og-image.jpg"}`;
   const title = `${product.name} | FreshPick Colombo`;
 
-  return {
-    title,
-    description,
-    alternates: { canonical: productUrl },
-    openGraph: {
-      title,
-      description,
-      url: productUrl,
-      siteName: "FreshPick",
-      images: [{ url: imageUrl, width: 800, height: 600, alt: product.name }],
-      locale: "en_LK",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [imageUrl],
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
-  };
+  return pageMetadata({ title, description, path: `/products/${encodeURIComponent(product.sku)}`, image: product.image?.url });
 }
 
 export default async function ProductPage({
@@ -118,13 +86,13 @@ export default async function ProductPage({
 
   const breadcrumbItems = [
     { name: "Home", url: SITE_URL },
-    ...(product.category?.slug ? [{ name: product.category.name, url: `${SITE_URL}/categories/${product.category.slug}` }] : []),
-    { name: product.name, url: `${SITE_URL}/products/${product.sku}` },
+    ...(product.category?.slug ? [{ name: product.category.name, url: absoluteUrl(`/categories/${encodeURIComponent(product.category.slug)}`) }] : []),
+    { name: product.name, url: absoluteUrl(`/products/${encodeURIComponent(product.sku)}`) },
   ];
 
   return (
     <div className="bg-background">
-      <ProductJsonLd product={{ name: product.name, description: product.description, sku: product.sku, image: product.image?.url, price: discountedPrice, currency: "LKR", inStock: !product.isOutOfStock, category: product.category?.name, url: `${SITE_URL}/products/${product.sku}` }} />
+      <ProductJsonLd product={{ name: product.name, description: product.description, sku: product.sku, image: product.image?.url, price: discountedPrice, currency: "LKR", inStock: !product.isOutOfStock, category: product.category?.name, url: absoluteUrl(`/products/${encodeURIComponent(product.sku)}`) }} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
       <div className="mx-auto max-w-7xl px-5 pb-12 pt-6 md:px-8 md:pb-16 md:pt-8">
         <nav aria-label="Product navigation" className="mb-7 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

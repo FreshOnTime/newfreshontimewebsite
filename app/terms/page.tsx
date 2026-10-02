@@ -1,11 +1,9 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import type { Metadata } from "next";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { SUPPORT_EMAIL } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-    title: "Terms of Service",
-    description: "Terms that apply when using Fresh Pick accounts, ordering, delivery, and related services.",
-};
+export const metadata: Metadata = publicPageMetadata('/terms');
 
 export default function TermsPage() {
     return (

@@ -1,13 +1,11 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import type { Metadata } from "next";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 
 export const revalidate = 300;
-export const metadata: Metadata = {
-  title: "Site Map",
-  description: "Find your way around FreshPick: groceries, recipes, local makers, account pages and support.",
-};
+export const metadata: Metadata = publicPageMetadata('/site-map');
 
 const sections = [
   { title: "Shop", links: [["Home", "/"], ["All products", "/products"], ["Categories", "/categories"], ["Offers", "/deals"], ["Weekly baskets", "/subscriptions"], ["Ready meals", "/meals"], ["Local makers", "/homemade"]] },

@@ -7,6 +7,9 @@ import { normalizeFeaturedImage } from "@/lib/recipeContent";
 import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Product } from "@/models/product";
+import { privateMetadata } from '@/lib/seo';
+
+export const metadata = { ...privateMetadata, title: { absolute: 'Search FreshPick' } };
 
 const searchProducts = unstable_cache(async (query: string) => {
   if (!query.trim()) return [];

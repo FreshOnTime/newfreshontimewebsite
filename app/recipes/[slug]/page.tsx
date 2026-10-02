@@ -1,3 +1,6 @@
+import { discountedUnitPrice } from '@/lib/commercePricing';
+import { pageMetadata } from '@/lib/seo';
+import { serializeJsonLd } from '@/lib/seo';
 import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -23,22 +26,11 @@ function purchasableChoice(ingredient: RecipeIngredient) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const recipe = await getPublishedRecipeBySlug(slug);
-  if (!recipe) return { title: "Recipe not found | FreshPick" };
+  if (!recipe) return { title: "Recipe not found | FreshPick", robots: { index: false, follow: false } };
 
   const title = recipe.metaTitle || `${recipe.title} | FreshPick Recipes`;
   const description = recipe.metaDescription || recipe.excerpt;
-  return {
-    title,
-    description,
-    alternates: { canonical: `https://freshpick.lk/recipes/${recipe.slug}` },
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      url: `https://freshpick.lk/recipes/${recipe.slug}`,
-      images: recipe.featuredImage?.url ? [recipe.featuredImage.url] : [],
-    },
-  };
+  return pageMetadata({ title, description, path: `/recipes/${encodeURIComponent(recipe.slug)}`, image: recipe.featuredImage?.url, type: 'article' });
 }
 
 export default async function RecipePage({ params }: PageProps) {
@@ -50,7 +42,7 @@ export default async function RecipePage({ params }: PageProps) {
   const availableIngredientCount = choices.filter(Boolean).length;
   const estimatedBasket = recipe.ingredients.reduce((sum, ingredient, index) => {
     const product = choices[index];
-    return product ? sum + product.pricePerBaseQuantity * ingredient.quantity : sum;
+    return product ? sum + discountedUnitPrice(product.pricePerBaseQuantity, product.discountPercentage || 0) * ingredient.quantity : sum;
   }, 0);
   const totalMinutes = recipe.prepTimeMinutes + recipe.cookTimeMinutes;
 
@@ -66,7 +58,7 @@ export default async function RecipePage({ params }: PageProps) {
     totalTime: `PT${totalMinutes}M`,
     recipeYield: `${recipe.servings} servings`,
     recipeCuisine: recipe.cuisine || undefined,
-    recipeCategory: "Dinner",
+
     keywords: [...recipe.tags, ...recipe.dietaryTags].join(", "),
     recipeIngredient: recipe.ingredients.map((ingredient) => {
       const name = ingredient.product?.name || "FreshPick ingredient";
@@ -79,7 +71,7 @@ export default async function RecipePage({ params }: PageProps) {
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(recipeJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(recipeJsonLd) }}
       />
 
       <section className="border-b border-border">
@@ -143,7 +135,7 @@ export default async function RecipePage({ params }: PageProps) {
                       <div className="sm:text-right">
                         {chosen ? (
                           <>
-                            <p className="font-sans text-xl text-foreground">LKR {(chosen.pricePerBaseQuantity * ingredient.quantity).toLocaleString("en-LK", { maximumFractionDigits: 0 })}</p>
+                            <p className="font-sans text-xl text-foreground">LKR {(discountedUnitPrice(chosen.pricePerBaseQuantity, chosen.discountPercentage || 0) * ingredient.quantity).toLocaleString("en-LK", { maximumFractionDigits: 0 })}</p>
                             <p className="mt-1 inline-flex items-center gap-1 text-xs font-bold normal-case text-brand-green"><Check className="h-3.5 w-3.5" /> Available</p>
                           </>
                         ) : <span className="text-xs text-muted-foreground">Not charged</span>}

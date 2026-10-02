@@ -1,3 +1,5 @@
+import { publicPageMetadata } from '@/lib/publicPages';
+export const metadata = publicPageMetadata('/landing');
 import Link from 'next/link';
 import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
 

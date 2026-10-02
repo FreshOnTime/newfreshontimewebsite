@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 
 import { Search } from 'lucide-react';
 import { useDebounce } from '@/lib/hooks/useDebounce';
+import type { JournalPage } from '@/models/journal';
 
 interface Blog {
   _id: string;
@@ -30,19 +31,20 @@ interface BlogsResponse {
   pagination: { page: number; limit: number; total: number; pages: number };
 }
 
-export function BlogList() {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
+export function BlogList({ initialData }: { initialData?: JournalPage | null }) {
+  const [blogs, setBlogs] = useState<JournalPage['blogs']>(initialData?.blogs || []);
+  const [loading, setLoading] = useState(!initialData);
   const [search, setSearch] = useState('');
   const [error, setError] = useState(false);
   const [retry, setRetry] = useState(0);
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 0 });
+  const [pagination, setPagination] = useState(initialData?.pagination || { page: 1, limit: 12, total: 0, pages: 0 });
 
   // Debounce search to reduce API calls
   const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
+    if (initialData && page === 1 && !debouncedSearch && retry === 0) { setBlogs(initialData.blogs); setPagination(initialData.pagination); setLoading(false); setError(false); return; }
     const controller = new AbortController();
     async function load() {
       setLoading(true);
@@ -61,7 +63,7 @@ export function BlogList() {
     }
     void load();
     return () => controller.abort();
-  }, [page, debouncedSearch, retry]);
+  }, [page, debouncedSearch, retry, initialData]);
 
   return (
     <div className="space-y-16">

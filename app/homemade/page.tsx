@@ -1,3 +1,5 @@
+import { serializeJsonLd } from '@/lib/seo';
+import { publicPageMetadata } from '@/lib/publicPages';
 import { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import HomemadeContent from "@/app/homemade/HomemadeContent";
@@ -10,45 +12,7 @@ import { productCardSelect, serializeProductCardForUi } from '@/lib/productSeria
 export const revalidate = 300;
 
 // --- Super Best SEO Configuration ---
-export const metadata: Metadata = {
-    title: "Premium Homemade Products in Sri Lanka | Domestic Produce | Fresh Pick",
-    description: "Discover exclusive homemade products and small-batch domestic produce in Colombo. Curated selections from Sri Lanka's finest local artisans. Delivered fresh to your door.",
-    keywords: [
-        "homemade products sri lanka",
-        "domestic produce colombo",
-        "small business sri lanka",
-        "artisan food colombo",
-        "premium groceries sri lanka",
-        "fresh pick homemade",
-        "local entrepreneurs sri lanka",
-        "handcrafted food colombo",
-        "organic homemade sri lanka",
-        "luxury food delivery colombo"
-    ].join(", "),
-    openGraph: {
-        title: "Homemade & Handcrafted | The Private Collection by Fresh Pick",
-        description: "A tribute to the artisans. Discover a curated collection of premium domestic produce from small entrepreneurs in Sri Lanka.",
-        url: 'https://freshpick.lk/homemade',
-        siteName: 'Fresh Pick',
-        locale: 'en_LK',
-        type: 'website',
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: "Fresh Pick | Homemade Collection",
-        description: "Curated domestic excellence. Sourced from the finest home kitchens in Colombo.",
-    },
-    alternates: {
-        canonical: 'https://freshpick.lk/homemade',
-    },
-    // Geo-Targeting for Colombo, Sri Lanka
-    other: {
-        "geo.region": "LK-11", // Colombo
-        "geo.placename": "Colombo",
-        "geo.position": "6.9271;79.8612",
-        "ICBM": "6.9271, 79.8612"
-    }
-};
+export const metadata: Metadata = publicPageMetadata('/homemade');
 
 // Reusing logic to fetch products
 const getDomesticProducts = unstable_cache(async (): Promise<Product[]> => {
@@ -87,7 +51,7 @@ export default async function HomemadePage() {
             "name": "Fresh Pick",
             "logo": {
                 "@type": "ImageObject",
-                "url": "https://freshpick.lk/logo.png"
+                "url": "https://freshpick.lk/brand/freshpick-wordmark.svg"
             }
         },
         "areaServed": {
@@ -105,7 +69,7 @@ export default async function HomemadePage() {
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
             />
             <HomemadeContent products={products} />
         </>

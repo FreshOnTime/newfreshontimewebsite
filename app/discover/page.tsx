@@ -1,3 +1,4 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,11 +9,7 @@ import { listPublishedRecipes } from "@/lib/recipeService";
 import { getTrendingProducts } from "@/lib/intelligence/tasteGraph";
 
 export const revalidate = 60;
-export const metadata: Metadata = {
-  title: "Discover Food | FreshPick Sri Lanka",
-  description: "Discover recipes, ready meals, local makers and food picks with FreshPick.",
-  alternates: { canonical: "https://freshpick.lk/discover" },
-};
+export const metadata: Metadata = publicPageMetadata('/discover');
 
 export default async function DiscoverPage() {
   const [recipes, trending] = await Promise.all([

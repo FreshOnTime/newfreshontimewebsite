@@ -1,39 +1,9 @@
 import type { MetadataRoute } from 'next';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freshpick.lk';
+import { SITE_URL, absoluteUrl } from '@/lib/config/site';
 
 export default function robots(): MetadataRoute.Robots {
-    return {
-        rules: [
-            {
-                userAgent: '*',
-                allow: '/',
-                disallow: [
-                    '/admin/',
-                    '/dashboard/',
-                    '/api/',
-                    '/auth/',
-                    '/checkout/',
-                    '/profile/',
-                    '/orders/',
-                    '/_next/',
-                ],
-            },
-            {
-                userAgent: 'Googlebot',
-                allow: '/',
-                disallow: [
-                    '/admin/',
-                    '/dashboard/',
-                    '/api/',
-                    '/auth/',
-                    '/checkout/',
-                    '/profile/',
-                    '/orders/',
-                ],
-            },
-        ],
-        sitemap: `${SITE_URL}/sitemap.xml`,
-        host: SITE_URL,
-    };
+  return {
+    rules: { userAgent: '*', allow: '/', disallow: ['/api/', '/admin', '/dashboard', '/auth/', '/checkout', '/profile', '/orders', '/wishlist', '/bags', '/for-you'] },
+    sitemap: absoluteUrl('/sitemap.xml'), host: SITE_URL,
+  };
 }

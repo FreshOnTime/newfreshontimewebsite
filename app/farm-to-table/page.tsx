@@ -1,12 +1,10 @@
+import { publicPageMetadata } from '@/lib/publicPages';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
 
-export const metadata: Metadata = {
-  title: 'Our producers & sourcing | FreshPick',
-  description: 'Explore fresh produce, local makers and the people supplying the FreshPick market in Sri Lanka.',
-};
+export const metadata: Metadata = publicPageMetadata('/farm-to-table');
 
 export default function FarmToTablePage() {
   return <div>

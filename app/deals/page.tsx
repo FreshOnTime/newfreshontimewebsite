@@ -1,3 +1,5 @@
+import { publicPageMetadata } from '@/lib/publicPages';
+export const metadata = publicPageMetadata('/deals');
 import Link from "next/link";
 import { ArrowRight, Tag } from "lucide-react";
 import { unstable_cache } from "next/cache";

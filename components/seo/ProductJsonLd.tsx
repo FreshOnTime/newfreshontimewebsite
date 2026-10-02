@@ -1,3 +1,4 @@
+import { serializeJsonLd } from '@/lib/seo';
 import { absoluteUrl, SITE_NAME_LONG } from '@/lib/config/site';
 
 interface ProductJsonLdProps {
@@ -21,13 +22,14 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
     const hasVerifiedRating =
         typeof product.ratingValue === 'number' &&
         Number.isFinite(product.ratingValue) &&
+        product.ratingValue >= 1 && product.ratingValue <= 5 &&
         typeof product.reviewCount === 'number' &&
         Number.isInteger(product.reviewCount) &&
         product.reviewCount > 0;
 
     const image = product.image
         ? (product.image.startsWith('http') ? product.image : absoluteUrl(product.image))
-        : absoluteUrl('/og-image.jpg');
+        : absoluteUrl('/opengraph-image');
 
     const schema = {
         "@context": "https://schema.org",
@@ -43,7 +45,7 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
         category: product.category || "Groceries",
         offers: {
             "@type": "Offer",
-            url: product.url || absoluteUrl(`/products/${product.sku}`),
+            url: product.url || absoluteUrl(`/products/${encodeURIComponent(product.sku)}`),
             priceCurrency: product.currency || "LKR",
             price: product.price.toFixed(2),
             itemCondition: "https://schema.org/NewCondition",
@@ -70,7 +72,7 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
     return (
         <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
     );
 }

@@ -1,3 +1,5 @@
+import { serializeJsonLd } from '@/lib/seo';
+import { publicPageMetadata } from '@/lib/publicPages';
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import Link from 'next/link';
@@ -7,10 +9,7 @@ import { CalendarClock, ChevronDown, Handshake, SlidersHorizontal } from 'lucide
 import SubscriptionPlanCard, { type SubscriptionPlan } from '@/components/subscriptions/SubscriptionPlanCard';
 import { serverApiFetch } from '@/lib/api/server';
 
-export const metadata: Metadata = {
-    title: 'Smart Basket | Recurring Grocery Delivery | FreshPick',
-    description: 'FreshPick Smart Basket turns repeat household shopping into a flexible recurring rhythm with live subscription plans and delivery scheduling.',
-};
+export const metadata: Metadata = publicPageMetadata('/subscriptions');
 
 export const revalidate = 300;
 
@@ -156,7 +155,7 @@ export default async function SubscriptionsPage() {
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
+                    __html: serializeJsonLd({
                         "@context": "https://schema.org",
                         "@type": "FAQPage",
                         "mainEntity": faqs.map((item) => ({
