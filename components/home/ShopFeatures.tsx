@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 const features = [
-  { title: 'Dinner, taken care of.', description: 'Discover ready meals for the days you’d rather skip the cooking.', label: 'Explore ready meals', href: '/meals', image: '/images/home/kitchen.webp', alt: 'Fresh ingredients laid out for a meal', eyebrow: 'Ready when you are' },
-  { title: 'Make it a weekly thing.', description: 'Explore recurring grocery baskets for your regular essentials.', label: 'Find your basket', href: '/subscriptions', image: '/images/home/market-bag.webp', alt: 'A reusable shopping bag filled with green vegetables', eyebrow: 'Stock up regularly' },
+  { title: 'Dinner, taken care of.', description: 'Discover ready meals for the days you’d rather skip the cooking.', label: 'Explore ready meals', href: '/meals', image: '/images/categories/cooked-food.webp', alt: 'Rice and curry served with vegetables and sliced onions', eyebrow: 'Ready when you are' },
+  { title: 'Make it a weekly thing.', description: 'Explore recurring grocery baskets for your regular essentials.', label: 'Find your basket', href: '/subscriptions', image: '/images/editorial/kitchen-basket.webp', alt: 'A woven basket with vegetables, limes and lemongrass', eyebrow: 'Stock up regularly' },
 ];
 
 export default function ShopFeatures() {

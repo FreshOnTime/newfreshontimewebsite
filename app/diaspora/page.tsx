@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function DiasporaPage() {
   return (
     <div className="min-h-screen bg-background pb-10 text-foreground">
-      <PremiumPageHeader title="Send a little home" subtitle="Order groceries for family and friends in Colombo." />
+      <PremiumPageHeader title="Send a little home" subtitle="Order groceries for family and friends in Colombo." backgroundImage="/images/editorial/kitchen-basket.webp" />
 
       <div className="mx-auto max-w-6xl px-5 pt-14 md:px-8 md:pt-8">
         <section className="grid gap-4 md:grid-cols-3">

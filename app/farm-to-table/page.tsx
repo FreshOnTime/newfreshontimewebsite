@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function FarmToTablePage() {
   return <div>
-    <PremiumPageHeader eyebrow="Our producers & sourcing" title="Good food has a human side." subtitle="Behind the ingredients we bring home are growers, suppliers and independent makers. Explore their food through the FreshPick market." backgroundImage="/images/home/market-bag.webp" />
+    <PremiumPageHeader eyebrow="Our producers & sourcing" title="Good food has a human side." subtitle="Behind the ingredients we bring home are growers, suppliers and independent makers. Explore their food through the FreshPick market." backgroundImage="/images/editorial/sri-lankan-fields.webp" />
     <section className="editorial-wrap editorial-section grid gap-10 md:grid-cols-[1fr_1.3fr] md:gap-20">
       <h2 className="editorial-title">Closer to the food on your table.</h2>
       <div className="space-y-6 text-base leading-8 text-muted-foreground">
@@ -21,7 +21,7 @@ export default function FarmToTablePage() {
     </section>
     <section className="bg-secondary">
       <div className="editorial-wrap editorial-section grid items-center gap-10 md:grid-cols-2 md:gap-20">
-        <div className="relative aspect-[4/3] bg-background"><Image src="/images/home/tomatoes.webp" alt="Ripe tomatoes with their green stems" fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
+        <div className="relative aspect-[4/3] bg-background"><Image src="/images/editorial/hands-at-work.webp" alt="Hands kneading dough on a kitchen work surface" fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
         <div><p className="editorial-label mb-5">Independent makers</p><h2 className="editorial-title">Small kitchens. Plenty of character.</h2><p className="mt-6 max-w-lg text-base leading-8 text-muted-foreground">From homemade food to handcrafted goods, discover what local businesses are making. Browse their available products and bring a little of their craft into your everyday life.</p><Link href="/homemade" className="editorial-link mt-7">Meet the market’s makers</Link></div>
       </div>
     </section>

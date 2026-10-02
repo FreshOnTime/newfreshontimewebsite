@@ -56,7 +56,7 @@ export default async function SubscriptionsPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <PremiumPageHeader title="Make it a regular thing." eyebrow="Your weekly basket" subtitle="Choose a grocery plan that suits your household and set up a recurring delivery." backgroundImage="/images/home/market-bag.webp" />
+            <PremiumPageHeader title="Make it a regular thing." eyebrow="Your weekly basket" subtitle="Choose a grocery plan that suits your household and set up a recurring delivery." backgroundImage="/images/editorial/kitchen-basket.webp" />
 
             <section className="relative py-8 md:py-8">
                 <div className="container mx-auto px-4">

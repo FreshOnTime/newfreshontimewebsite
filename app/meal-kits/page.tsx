@@ -18,7 +18,7 @@ export default async function MealKitsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-10 text-foreground">
-      <PremiumPageHeader title="Meal ideas" subtitle="Choose a recipe and find the ingredients you need." />
+      <PremiumPageHeader title="Meal ideas" subtitle="Choose a recipe and find the ingredients you need." backgroundImage="/images/editorial/kitchen-basket.webp" imageLayout="compact" />
 
       <div className="mx-auto max-w-6xl px-5 pt-14 md:px-8 md:pt-8">
         <section>

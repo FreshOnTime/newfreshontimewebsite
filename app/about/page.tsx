@@ -14,7 +14,7 @@ export default function AboutPage() {
         title="About FreshPick"
         subtitle="Fresh groceries, everyday essentials and local food in Colombo."
         eyebrow="Our story"
-        backgroundImage="/images/home/produce-basket.webp"
+        backgroundImage="/images/editorial/market-crates.webp"
       />
 
       <section className="px-5 py-12 md:px-8 md:py-20">
