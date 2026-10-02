@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 export const BAG_INCLUDE = {
   items: {
     include: {
-      product: { select: { id: true, name: true, images: true, price: true, stockQty: true, slug: true } },
+      product: { select: { id: true, name: true, sku: true, image: true, images: true, price: true, stockQty: true, slug: true } },
     },
   },
 } satisfies Prisma.BagInclude;
@@ -28,6 +28,8 @@ export function serializeBag(bag: BagWithItems) {
       product: {
         _id: it.product.id,
         name: it.product.name,
+        sku: it.product.sku,
+        image: it.product.image,
         images: it.product.images,
         price: Number(it.product.price),
         stockQty: it.product.stockQty,

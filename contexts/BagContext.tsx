@@ -7,29 +7,7 @@ import { Product } from '@/models/product';
 import { apiFetch } from '@/lib/api/client';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 import { useAuth } from './AuthContext';
-
-interface ApiProduct {
-  _id?: string;
-  id?: string;
-  name?: string;
-  image?: { url: string; alt: string };
-  measurementType?: string;
-  stockQuantity?: number;
-}
-
-interface ApiBagItem {
-  product: ApiProduct | null;
-  quantity: number;
-  price: number;
-}
-
-interface ApiBag {
-  _id: string;
-  name: string;
-  description?: string;
-  tags: string[];
-  items: ApiBagItem[];
-}
+import { normalizeBag, type ApiBag } from '@/lib/normalizeBag';
 
 interface BagContextType {
   bags: Bag[];
@@ -49,31 +27,6 @@ interface BagContextType {
 }
 
 const BagContext = createContext<BagContextType | undefined>(undefined);
-
-function normalizeBag(bag: ApiBag): Bag {
-  return {
-    id: bag._id,
-    name: bag.name,
-    description: bag.description,
-    tags: bag.tags ?? [],
-    items: (bag.items || [])
-      .filter((item) => item?.product && (item.product._id || item.product.id))
-      .map((item) => {
-        const product = item.product as ApiProduct;
-        return {
-          quantity: item.quantity,
-          product: {
-            id: String(product._id || product.id || ''),
-            name: product.name || 'Unknown Product',
-            price: item.price,
-            unit: product.measurementType || 'unit',
-            stock: product.stockQuantity || 0,
-            images: product.image ? [{ url: product.image.url, alt: product.image.alt }] : [],
-          },
-        } as unknown as Bag['items'][number];
-      }),
-  };
-}
 
 function getProductId(product: Product) {
   return (product as unknown as { _id?: string; id?: string })._id
@@ -215,6 +168,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
   }, [replaceBag]);
 
   const updateBagItem = useCallback(async (bagId: string, productId: string, quantity: number) => {
+    if (!Number.isFinite(quantity) || quantity < 0) throw new Error('Please choose a valid quantity');
     const bag = bags.find((candidate) => candidate.id === bagId);
     const item = bag?.items.find((candidate) => candidate.product.id === productId);
     if (!bag || !item) return;

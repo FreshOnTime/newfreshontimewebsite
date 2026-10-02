@@ -1,325 +1,121 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Minus, PackageOpen, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { ArrowRight, ChevronRight, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useBag } from '@/contexts/BagContext';
+import { useAuth } from '@/contexts/AuthContext';
+import BagItemRow from '@/components/cart/BagItemRow';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
+const money = (value: number) => value.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export default function BagsPage() {
-  const {
-    bags,
-    loading,
-    updating,
-    error,
-    createBag,
-    updateBagItem,
-    removeFromBag,
-    deleteBag,
-  } = useBag();
+  const { bags, loading, updating, error, createBag, deleteBag, fetchBags } = useBag();
+  const { user, loading: authLoading } = useAuth();
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newBagName, setNewBagName] = useState('');
-  const [newBagDescription, setNewBagDescription] = useState('');
-
-  const handleCreateBag = async () => {
-    if (!newBagName.trim()) {
-      toast.error('Please enter a bag name');
-      return;
-    }
-
+  const create = async () => {
+    if (creating || !name.trim()) return;
+    setCreating(true);
     try {
-      await createBag(newBagName, newBagDescription);
-      toast.success(`Created new bag: ${newBagName}`);
-      setShowCreateDialog(false);
-      setNewBagName('');
-      setNewBagDescription('');
-    } catch (createError) {
-      toast.error('Failed to create bag');
-      console.error('Error creating bag:', createError);
-    }
+      await createBag(name.trim(), description.trim());
+      toast.success('Your new bag is ready');
+      setShowCreate(false);
+      setName('');
+      setDescription('');
+    } catch { toast.error('Could not create your bag. Please try again.'); }
+    finally { setCreating(false); }
+  };
+  const removeBag = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteBag(deleteTarget.id);
+      setDeleteTarget(null);
+      toast.success('Bag deleted');
+    } catch { toast.error('Could not delete this bag. Please try again.'); }
+    finally { setDeleting(false); }
   };
 
-  const updateQuantity = async (bagId: string, productId: string, newQuantity: number) => {
-    try {
-      await updateBagItem(bagId, productId, newQuantity);
-    } catch (updateError) {
-      toast.error('Failed to update quantity');
-      console.error('Error updating quantity:', updateError);
-    }
-  };
-
-  const removeItem = async (bagId: string, productId: string) => {
-    try {
-      await removeFromBag(bagId, productId);
-      toast.success('Item removed from bag');
-    } catch (removeError) {
-      toast.error('Failed to remove item');
-      console.error('Error removing item:', removeError);
-    }
-  };
-
-  const handleDeleteBag = async (bagId: string, bagName: string) => {
-    if (!confirm(`Delete “${bagName}”?`)) return;
-
-    try {
-      await deleteBag(bagId);
-      toast.success('Bag deleted successfully');
-    } catch (deleteError) {
-      toast.error('Failed to delete bag');
-      console.error('Error deleting bag:', deleteError);
-    }
-  };
-
-  if (loading && bags.length === 0) {
-    return (
-      <main className="flex min-h-0 items-center justify-center bg-background px-4">
-        <div className="text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-lg border-2 border-zinc-200 border-t-emerald-700" />
-          <p className="mt-4 text-sm font-normal text-zinc-500">Preparing your bags…</p>
-        </div>
-      </main>
-    );
+  if (authLoading || (loading && bags.length === 0 && !creating)) {
+    return <div role="status" className="mx-auto max-w-7xl px-5 py-14 md:px-8"><h1 className="text-3xl font-medium text-brand-green">Your shopping bags</h1><p className="mt-4 text-sm text-muted-foreground">Loading your bags…</p><div aria-hidden="true" className="mt-8 grid gap-6 md:grid-cols-2">{[0, 1].map((key) => <div key={key} className="h-64 animate-pulse rounded-xl bg-secondary motion-reduce:animate-none" />)}</div></div>;
   }
 
-  if (error && bags.length === 0 && !showCreateDialog) {
-    return (
-      <main className="flex min-h-0 items-center justify-center bg-background px-4">
-        <div className="max-w-md rounded-xl border border-zinc-200 bg-background p-8 text-center shadow-sm">
-          <PackageOpen className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h1 className="mt-5 font-sans text-2xl text-zinc-950">We couldn&apos;t load your bags.</h1>
-          <p className="mt-2 text-sm font-normal leading-6 text-zinc-500">{error}</p>
-          <Button onClick={() => window.location.reload()} className="mt-6 rounded-lg bg-brand-amber px-6 hover:bg-brand-amber/85">
-            Try again
-          </Button>
-        </div>
-      </main>
-    );
+  if (!user) {
+    return <section className="mx-auto max-w-lg px-5 py-16 text-center"><ShoppingBag strokeWidth={1.5} aria-hidden="true" className="mx-auto h-9 w-9 text-brand-green" /><h1 className="mt-6 text-3xl font-medium tracking-tight text-brand-green">Your groceries, organised.</h1><p className="mt-4 text-sm leading-7 text-muted-foreground">Sign in to save shopping bags and pick up where you left off.</p><Link href="/auth/login?redirect=%2Fbags" className="mt-7 inline-flex min-h-11 items-center rounded-lg bg-brand-amber px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">Sign in to view your bags</Link><Link href="/products" className="mt-4 flex min-h-11 items-center justify-center text-sm text-brand-green hover:underline">Continue shopping</Link></section>;
   }
 
   return (
     <>
-      <main className="bg-background">
-        <section className="border-b border-zinc-200 bg-background">
-          <div className="container mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
-            <div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
-              <div>
-                <span className="text-xs font-bold normal-case text-emerald-700">Your FreshPick</span>
-                <h1 className="mt-4 font-sans text-3xl font-medium leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">Shopping bags.</h1>
-                <p className="mt-5 max-w-xl text-base font-normal leading-7 text-zinc-600">
-                  Organise groceries and meals into bags, then checkout when you’re ready.
-                </p>
-              </div>
-              <Button
-                onClick={() => setShowCreateDialog(true)}
-                className="h-12 rounded-lg bg-brand-amber px-6 text-xs font-bold normal-case hover:bg-brand-amber/85"
-              >
-                <Plus className="mr-2 h-4 w-4" /> New bag
-              </Button>
-            </div>
+      <div className="bg-background">
+        <div className="mx-auto max-w-7xl px-5 py-6 md:px-8">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground"><Link href="/" className="inline-flex min-h-9 items-center hover:text-brand-green">Home</Link><ChevronRight aria-hidden="true" className="h-3 w-3" /><span aria-current="page">Shopping bags</span></nav>
+          <div className="mt-5 flex flex-col justify-between gap-5 border-b border-border pb-8 sm:flex-row sm:items-end">
+            <div><h1 className="text-3xl font-medium tracking-tight text-brand-green md:text-4xl">Your shopping bags</h1><p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">A place for this week’s groceries, everyday essentials, and your next meal.</p></div>
+            <Button disabled={loading || updating} onClick={() => setShowCreate(true)} className="h-11 rounded-lg bg-brand-amber px-5 text-sm font-semibold hover:bg-brand-amber/85"><Plus strokeWidth={1.75} aria-hidden="true" /> New bag</Button>
           </div>
-        </section>
-
-        <div className="container mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14">
-          {error && <p role="alert" className="mb-5 rounded-lg border border-destructive/30 px-4 py-3 text-sm text-destructive">{error}</p>}
+        </div>
+        <div className="mx-auto max-w-7xl px-5 pb-12 pt-2 md:px-8 md:pb-16">
+          {error && <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/20 px-4 py-3 text-sm"><p className="text-destructive">We couldn’t complete that request. Please try again.</p><button type="button" disabled={loading || updating} onClick={() => fetchBags()} className="min-h-11 font-medium text-brand-green underline underline-offset-4 disabled:opacity-50">Reload bags</button></div>}
           {bags.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-zinc-300 bg-background px-6 py-8 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
-                <ShoppingBag className="h-7 w-7 stroke-[1.5]" />
-              </div>
-              <h2 className="mt-6 font-sans text-3xl font-semibold text-zinc-950">Start your first bag.</h2>
-              <p className="mx-auto mt-3 max-w-md text-sm font-normal leading-6 text-zinc-500">
-                Create a bag for this week&apos;s groceries, tonight&apos;s meal, or a basket you want to build over time.
-              </p>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Button onClick={() => setShowCreateDialog(true)} className="rounded-lg bg-brand-amber px-6 hover:bg-brand-amber/85">
-                  Create a bag
-                </Button>
-                <Button asChild variant="outline" className="rounded-lg border-zinc-200 px-6">
-                  <Link href="/products">Browse products</Link>
-                </Button>
-              </div>
-            </div>
+            <section className="py-12 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-brand-green"><ShoppingBag strokeWidth={1.5} aria-hidden="true" className="h-7 w-7" /></div>
+              <h2 className="mt-6 text-2xl font-medium tracking-tight text-brand-green">{error ? 'Your bags are temporarily unavailable.' : 'Start with a fresh bag.'}</h2>
+              <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">{error ? 'Reload your bags to continue shopping.' : 'Give your bag a name, then fill it with your favourites from the market.'}</p>
+              <Button disabled={loading} onClick={() => error ? fetchBags() : setShowCreate(true)} className="mt-6 h-11 rounded-lg bg-brand-amber px-6 text-sm hover:bg-brand-amber/85">{error ? 'Try again' : 'Create your first bag'}</Button>
+            </section>
           ) : (
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="grid items-start gap-6 lg:grid-cols-2">
               {bags.map((bag) => {
-                const total = bag.items?.reduce((sum, item) => sum + item.product.price * item.quantity, 0) || 0;
-                const itemCount = bag.items?.length || 0;
-
-                return (
-                  <article key={bag.id} className="overflow-hidden rounded-xl border border-zinc-200 bg-background">
-                    <div className="flex items-start justify-between gap-5 border-b border-zinc-100 p-6 md:p-7">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-3">
-                          <Link href={`/bags/${bag.id}`} className="truncate font-sans text-3xl font-normal text-zinc-950 transition-colors hover:text-emerald-800">
-                            {bag.name}
-                          </Link>
-                          <span className="rounded-lg bg-background px-3 py-1 text-xs font-bold normal-case text-zinc-500">
-                            {itemCount} {itemCount === 1 ? 'item' : 'items'}
-                          </span>
-                        </div>
-                        {bag.description && <p className="mt-2 line-clamp-2 text-sm font-normal leading-6 text-zinc-500">{bag.description}</p>}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteBag(bag.id, bag.name)}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600"
-                        disabled={loading || updating}
-                        title="Delete bag"
-                        aria-label={`Delete ${bag.name}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="p-4 md:p-5">
-                      {itemCount > 0 ? (
-                        <div className="space-y-2">
-                          {bag.items?.map((item, idx) => {
-                            type Img = { url?: string; alt?: string } | string;
-                            const firstImg = (item.product.images?.[0] as Img) ?? undefined;
-                            const imgUrl = typeof firstImg === 'string' ? firstImg : firstImg?.url;
-                            const key = item.product.id ? `${bag.id}-${item.product.id}` : `${bag.id}-${idx}`;
-
-                            return (
-                              <div key={key} className="grid grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-xl bg-background p-3 sm:grid-cols-[56px_minmax(0,1fr)_auto] sm:items-center">
-                                <div className="relative h-14 w-14 overflow-hidden rounded-xl bg-zinc-200">
-                                  {imgUrl ? (
-                                    <Image
-                                      src={imgUrl}
-                                      alt={(typeof firstImg !== 'string' ? firstImg?.alt : '') || item.product.name}
-                                      fill
-                                      className="object-cover"
-                                    />
-                                  ) : (
-                                    <div className="h-full w-full bg-zinc-200" />
-                                  )}
-                                </div>
-
-                                <div className="min-w-0">
-                                  <h3 className="truncate text-sm font-medium text-zinc-900">{item.product.name}</h3>
-                                  <p className="mt-1 text-xs font-normal text-zinc-500">Rs. {item.product.price.toFixed(2)} / {item.product.unit || 'unit'}</p>
-                                </div>
-
-                                <div className="col-span-2 flex items-center justify-between gap-3 border-t border-zinc-200 pt-3 sm:col-span-1 sm:border-0 sm:pt-0">
-                                  <div className="flex items-center rounded-lg border border-zinc-200 bg-background p-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => updateQuantity(bag.id, item.product.id, item.quantity - 1)}
-                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 hover:bg-background disabled:opacity-30"
-                                      disabled={updating || loading || item.quantity <= 1}
-                                      aria-label={`Decrease ${item.product.name}`}
-                                    >
-                                      <Minus className="h-3.5 w-3.5" />
-                                    </button>
-                                    <span className="min-w-8 text-center text-sm font-medium text-zinc-900">{item.quantity}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => updateQuantity(bag.id, item.product.id, item.quantity + 1)}
-                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 hover:bg-background disabled:opacity-30"
-                                      disabled={updating || loading || item.quantity >= (item.product.stock || 999)}
-                                      aria-label={`Increase ${item.product.name}`}
-                                    >
-                                      <Plus className="h-3.5 w-3.5" />
-                                    </button>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeItem(bag.id, item.product.id)}
-                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-600"
-                                    disabled={loading || updating}
-                                    aria-label={`Remove ${item.product.name}`}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="rounded-xl bg-background px-4 py-10 text-center">
-                          <p className="font-sans text-xl text-zinc-800">This bag is ready for something good.</p>
-                          <Link href="/products" className="mt-3 inline-flex text-sm font-medium text-emerald-800">Add products</Link>
-                        </div>
-                      )}
-
-                      {bag.tags && bag.tags.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {bag.tags.map((tag, index) => (
-                            <span key={`${bag.id}-tag-${index}-${tag}`} className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold normal-case text-emerald-800">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-4 border-t border-zinc-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
-                      <div>
-                        <p className="text-xs font-bold normal-case text-muted-foreground">Bag total</p>
-                        <p className="mt-1 font-sans text-2xl text-zinc-950">Rs. {total.toFixed(2)}</p>
-                      </div>
-                      <Link
-                        href={{ pathname: '/checkout', query: { bagId: bag.id } }}
-                        className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-xs font-bold normal-case transition-colors ${itemCount > 0 ? 'bg-brand-amber text-accent-foreground hover:bg-brand-amber/85' : 'pointer-events-none bg-background text-muted-foreground'} `}
-                        aria-disabled={itemCount === 0}
-                      >
-                        Checkout bag <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  </article>
-                );
+                const total = bag.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+                const available = bag.items.every((item) => item.quantity <= item.product.stock);
+                const checkout = bag.items.length > 0 && available && !loading && !updating;
+                return <article key={bag.id} className="rounded-xl border border-border bg-background px-5 sm:px-6">
+                  <div className="flex items-start justify-between gap-4 border-b border-border py-5">
+                    <div className="min-w-0"><Link href={'/bags/' + encodeURIComponent(bag.id)}><h2 className="break-words text-xl font-medium tracking-tight text-brand-green hover:underline">{bag.name}</h2></Link><p className="mt-2 text-xs text-muted-foreground">{bag.items.length} {bag.items.length === 1 ? 'product' : 'products'}</p>{bag.description && <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{bag.description}</p>}</div>
+                    <button type="button" disabled={loading || updating} aria-label={'Delete ' + bag.name} onClick={() => setDeleteTarget({ id: bag.id, name: bag.name })} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-destructive disabled:opacity-30"><Trash2 strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></button>
+                  </div>
+                  {bag.items.length ? <div className="divide-y divide-border">{bag.items.slice(0, 3).map((item) => <BagItemRow key={item.product.id} bagId={bag.id} item={item} compact />)}</div> : <div className="py-10 text-center"><p className="text-sm text-muted-foreground">Your bag is ready to fill.</p><Link href="/products" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop the market <ArrowRight strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></Link></div>}
+                  {bag.items.length > 3 && <Link href={'/bags/' + encodeURIComponent(bag.id)} className="inline-flex min-h-11 items-center text-sm text-brand-green hover:underline">View all {bag.items.length} products</Link>}
+                  {bag.tags.length > 0 && <div className="mb-4 flex flex-wrap gap-2">{bag.tags.map((tag) => <span key={tag} className="rounded-full bg-secondary px-3 py-1 text-xs text-brand-green">{tag}</span>)}</div>}
+                  <div className="border-t border-border py-5">
+                    {!available && <p className="mb-4 text-xs text-destructive">Update unavailable items before checking out.</p>}
+                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><p className="text-xs text-muted-foreground">Items total</p><p className="mt-1 text-xl font-semibold tabular-nums">Rs. {money(total)}</p></div>{checkout ? <Link href={{ pathname: '/checkout', query: { bagId: bag.id } }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-amber px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-brand-amber/85">Checkout bag <ArrowRight strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></Link> : <button disabled className="min-h-11 rounded-lg bg-secondary px-5 text-sm text-muted-foreground">Checkout bag</button>}</div>
+                    <Link href={'/bags/' + encodeURIComponent(bag.id)} className="mt-3 inline-flex min-h-11 items-center text-sm text-brand-green hover:underline">View and edit bag</Link>
+                  </div>
+                </article>;
               })}
             </div>
           )}
         </div>
-      </main>
+      </div>
 
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="rounded-xl border-zinc-200 sm:max-w-[460px]">
-          <DialogHeader>
-            <DialogTitle className="font-sans text-3xl font-normal">Create a new bag</DialogTitle>
-            <DialogDescription>Give it a name that makes sense to you. You can use bags for different routines, people, or occasions.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-5 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Bag name</Label>
-              <Input
-                id="name"
-                value={newBagName}
-                onChange={(event) => setNewBagName(event.target.value)}
-                className="h-12 rounded-xl"
-                placeholder="e.g. Weekly groceries"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                value={newBagDescription}
-                onChange={(event) => setNewBagDescription(event.target.value)}
-                className="h-12 rounded-xl"
-                placeholder="Optional note"
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" className="rounded-lg" onClick={() => setShowCreateDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="button" className="rounded-lg bg-brand-amber hover:bg-brand-amber/85" onClick={handleCreateBag} disabled={loading || !newBagName.trim()}>
-              Create bag
-            </Button>
-          </DialogFooter>
+      <Dialog open={showCreate} onOpenChange={(open) => { if (!creating) setShowCreate(open); }}>
+        <DialogContent className="max-w-[calc(100vw-32px)] rounded-xl sm:max-w-[460px]">
+          <form onSubmit={(event) => { event.preventDefault(); create(); }}>
+            <DialogHeader><DialogTitle className="text-2xl font-medium text-brand-green">Create a shopping bag</DialogTitle><DialogDescription>Name it for the way you shop.</DialogDescription></DialogHeader>
+            <div className="space-y-4 py-6"><div className="space-y-2"><Label htmlFor="bag-name">Bag name</Label><Input autoFocus id="bag-name" required maxLength={120} disabled={creating} value={name} onChange={(event) => setName(event.target.value)} placeholder="Weekly groceries" /></div><div className="space-y-2"><Label htmlFor="bag-description">Note <span className="text-muted-foreground">(optional)</span></Label><Input id="bag-description" maxLength={300} disabled={creating} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Anything you’d like to remember" /></div></div>
+            <DialogFooter className="gap-2"><Button type="button" variant="outline" disabled={creating} className="h-11 border text-sm normal-case" onClick={() => setShowCreate(false)}>Cancel</Button><Button type="submit" disabled={creating || !name.trim()} className="h-11 bg-brand-amber text-sm hover:bg-brand-amber/85">{creating ? 'Creating…' : 'Create bag'}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open && !deleting) setDeleteTarget(null); }}>
+        <AlertDialogContent className="max-w-[calc(100vw-32px)] rounded-xl sm:max-w-md">
+          <AlertDialogHeader><AlertDialogTitle className="font-medium text-brand-green">Delete this bag?</AlertDialogTitle><AlertDialogDescription>“{deleteTarget?.name}” and its saved items will be removed from your bags.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter className="gap-2"><AlertDialogCancel disabled={deleting} className="h-11 border text-sm normal-case">Keep bag</AlertDialogCancel><AlertDialogAction disabled={deleting} onClick={(event) => { event.preventDefault(); removeBag(); }} className="h-11 bg-brand-green text-sm text-primary-foreground hover:bg-brand-green/90">{deleting ? 'Deleting…' : 'Delete bag'}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
