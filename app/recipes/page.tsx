@@ -23,7 +23,7 @@ export default async function RecipesPage() {
   const recipes = await listPublishedRecipes(36);
   return (
     <div className="min-h-screen bg-background">
-      <PremiumPageHeader title="Recipes" subtitle="Find something to cook, then shop the ingredients." />
+      <PremiumPageHeader title="Recipes" subtitle="Find something to cook, then shop the ingredients." backgroundImage="/images/editorial/recipe-ingredients.webp" imageLayout="compact" />
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         {recipes.length ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">

@@ -22,7 +22,7 @@ export default async function DiscoverPage() {
 
   return (
     <div className="bg-background pb-10">
-      <PremiumPageHeader title="A little food inspiration" subtitle="Find something to cook, something ready or something new from a local maker." />
+      <PremiumPageHeader title="A little food inspiration" subtitle="Find something to cook, something ready or something new from a local maker." backgroundImage="/images/editorial/recipe-ingredients.webp" imageLayout="compact" />
       <FoodDiscovery />
       <section className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-6">
         <div className="flex flex-wrap items-center justify-between gap-4">

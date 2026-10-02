@@ -15,7 +15,7 @@ export default async function CreatorsPage() {
   const creators = await listCreators(48);
   return (
     <div className="min-h-screen bg-background">
-      <PremiumPageHeader title="Meet the cooks" subtitle="Recipes and ideas from the people behind them." />
+      <PremiumPageHeader title="Meet the cooks" subtitle="Recipes and ideas from the people behind them." backgroundImage="/images/editorial/hands-at-work.webp" imageLayout="compact" />
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         {creators.length ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
