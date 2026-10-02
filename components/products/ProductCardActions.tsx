@@ -79,7 +79,7 @@ export default function ProductCardActions({ id, sku, name, image, price, isOutO
         disabled={isOutOfStock || (loading && Boolean(user && currentBag))}
         className="flex h-12 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-l-lg bg-brand-amber px-2 sm:gap-2 sm:px-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {!isOutOfStock && <ShoppingBag className="h-4 w-4 shrink-0" aria-hidden="true" />}
+        {!isOutOfStock && <ShoppingBag strokeWidth={1.75} aria-hidden="true" className="h-4 w-4 shrink-0" />}
         {isOutOfStock ? <span className="min-w-0 truncate text-xs sm:text-sm">Sold out</span> : <><span className="sm:hidden">Add</span><span className="hidden min-w-0 truncate sm:inline">Add to bag</span></>}
       </button>
       <button
@@ -91,7 +91,7 @@ export default function ProductCardActions({ id, sku, name, image, price, isOutO
         )}
         aria-label={isWishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
       >
-        <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
+        <Heart strokeWidth={1.75} aria-hidden="true" className={cn("h-4 w-4", isWishlisted && "fill-current")} />
       </button>
     </div>
   );
