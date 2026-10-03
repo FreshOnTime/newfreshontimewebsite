@@ -106,7 +106,9 @@ production build. Lint has no errors and retains existing warnings. A built-app
 browser check exercised supplier review, delivery confirmation/completion, newsletter
 pagination/deactivation and signed unsubscribe through actual routes with local
 Prisma fixtures, at 320, 390, 820 and 1440 px; no overflow or browser exceptions.
-The expanded isolated PostgreSQL script is included in CI; there is no local
-PostgreSQL server in this workspace, so new SQL/concurrency cases need the CI/staging
-run. External credentials, database contents, email delivery, uploads and Netlify
-schedules have not been exercised against production.
+[GitHub CI run 37099034036](https://github.com/FreshOnTime/newfreshontimewebsite/actions/runs/37099034036)
+passed database migrations and the expanded integrity script against isolated
+PostgreSQL 16, including concurrent basket signup/capacity, single delivery counting,
+and newsletter signup/outbox/link invalidation. CI also passed tests, build and HTTP
+smoke checks. External credentials, production database contents, email delivery,
+uploads and Netlify schedules have not been exercised against production.
