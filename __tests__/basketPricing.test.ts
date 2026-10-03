@@ -18,3 +18,10 @@ it('rejects invalid totals and stock quantities', () => {
   expect(() => allocateBasketPrice(0,[item('a',1,1)])).toThrow();
   expect(() => allocateBasketPrice(1,[])).toThrow();
 });
+
+it('does not leak stock-reservation metadata into persisted order items', () => {
+  const reserved = { ...item('a',3,40), basePrice:40, discountPercentage:25, total:120 };
+  for (const line of allocateBasketPrice(100.01,[reserved])) {
+    expect(Object.keys(line).sort()).toEqual(['name','price','productId','qty','sku','total']);
+  }
+});

@@ -121,7 +121,7 @@ order/delivery lifecycle. Plan content edits now persist with optimistic version
 checks, including content-only edits; historical subscription plans cannot be
 hard-deleted. See [the operating guide](OPERATIONS.md) for activation and pricing.
 
-Local validation covers 266 unit/API tests, type checking and a production build.
+Local validation covers 267 unit/API tests, type checking and a production build.
 The isolated PostgreSQL integrity script additionally covers mapped basket shortage
 rollback, concurrent retry, fixed-price rounding, durable confirmation, cancellation,
 order/queue completion races, consumed-stock refunds and stale plan content edits.

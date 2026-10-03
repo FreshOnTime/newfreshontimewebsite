@@ -15,8 +15,8 @@ export function allocateBasketPrice(total: number, items: { productId: string; s
     share.cents++;
   }
   return shares.flatMap(share => {
-    const { price: _price, ...item } = items[share.index];
-    void _price;
+    const source = items[share.index];
+    const item = { productId: source.productId, sku: source.sku, name: source.name, qty: source.qty };
     const unitCents = Math.floor(share.cents / item.qty);
     const extra = share.cents % item.qty;
     return [
