@@ -30,6 +30,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       return NextResponse.json({ error: 'User is not linked to a supplier account' }, { status: 403 });
     }
 
+    const approved = await prisma.supplier.findUnique({ where: { id: resolvedSupplierId }, select: { applicationStatus: true, status: true } });
+    if (!approved || approved.applicationStatus !== 'approved' || approved.status !== 'active') return NextResponse.json({ error: 'Your supplier application needs approval before catalogue upload' }, { status: 403 });
+
     // Support two upload modes:
     // 1) JSON body containing { fileName, fileData } where fileData is base64 (recommended for all runtimes)
     // 2) multipart/form-data with a `file` field (legacy, may not work in all environments)
@@ -295,7 +298,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
         const html = `<p>Supplier uploaded product file: <strong>${originalName}</strong></p><p>Preview rows: ${JSON.stringify(
           previewRows.slice(0, 3)
         )}</p><p><a href="${process.env.FRONTEND_URL}/admin">Open admin dashboard</a></p>`;
-        sendEmail(adminEmail, 'Supplier Product Upload', html).catch(err => console.error('admin notification error', err));
+        await sendEmail(adminEmail, 'Supplier Product Upload', html).catch(err => console.error('admin notification error', err));
       }
     } catch (e) {
       console.warn('Notify admin error', e);

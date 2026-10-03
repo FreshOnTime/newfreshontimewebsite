@@ -80,6 +80,7 @@ export function withAuth(
       // Attach user to request
       (req as AuthenticatedRequest).user = {
         ...payload,
+        role: user.role,
         _id: user.id,
       };
 

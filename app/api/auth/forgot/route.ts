@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest) => {
     await prisma.emailToken.create({ data: { userId: user.id, tokenHash, type: 'reset', expiresAt } });
 
     // send reset email (non-blocking)
-    sendPasswordResetEmail(user.email as string, rawToken).catch((e) => console.error('sendPasswordResetEmail error', e));
+    await sendPasswordResetEmail(user.email as string, rawToken).catch((e) => console.error('sendPasswordResetEmail error', e));
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent' });
   } catch (error) {

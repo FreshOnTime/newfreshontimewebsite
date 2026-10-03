@@ -93,6 +93,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const submissionLock = useRef(false);
   const retryRef = useRef<CheckoutRetry | null>(null);
+  const subscriptionRetryRef = useRef<CheckoutRetry | null>(null);
   const [quoteState, setQuoteState] = useState<{ itemsKey: string; quote: CheckoutQuote } | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoteVersion, setQuoteVersion] = useState(0);
@@ -285,7 +286,9 @@ export default function CheckoutPage() {
 
   const itemsKey = JSON.stringify(effectiveItems.map((item) => ({ productId: item.product.id, quantity: item.quantity })));
   const retryScope = `freshpick-checkout:${user?._id || ""}:${effectiveBagId || quickSku || "default"}`;
-  const quote = quoteState?.itemsKey === itemsKey ? quoteState.quote : null;
+  const areaKey = JSON.stringify({ city: useAccountAddress ? user?.registrationAddress?.city || '' : shipCity, country: useAccountAddress ? user?.registrationAddress?.countryCode || 'LK' : shipCountry });
+  const quoteKey = JSON.stringify([itemsKey, areaKey]);
+  const quote = quoteState?.itemsKey === quoteKey ? quoteState.quote : null;
 
   useEffect(() => {
     if (!user || planSlug || bagsLoading || previewLoading) return;
@@ -316,15 +319,15 @@ export default function CheckoutPage() {
     let cancelled = false;
     setQuoteState(null);
     setQuoteError(null);
-    authenticatedApiFetch("/api/orders/quote", { method: "POST", body: JSON.stringify({ items: JSON.parse(itemsKey) }) })
+    authenticatedApiFetch("/api/orders/quote", { method: "POST", body: JSON.stringify({ items: JSON.parse(itemsKey), ...(JSON.parse(areaKey).city ? { deliveryAddress: JSON.parse(areaKey) } : {}) }) })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok || !data.quote) throw new Error(data.error || "Unable to confirm the order total.");
-        if (!cancelled) setQuoteState({ itemsKey, quote: data.quote });
+        if (!cancelled) setQuoteState({ itemsKey: quoteKey, quote: data.quote });
       })
       .catch((failure) => { if (!cancelled) setQuoteError(failure.message); });
     return () => { cancelled = true; };
-  }, [user, planSlug, bagsLoading, bagUpdating, previewLoading, itemsKey, quoteVersion]);
+  }, [user, planSlug, bagsLoading, bagUpdating, previewLoading, itemsKey, areaKey, quoteKey, quoteVersion]);
 
   const quotedUnitPrice = (item: CheckoutItem) => quote?.items.find((line) => line.productId === item.product.id)?.price
     ?? (quickSku && quote?.items.length === 1 ? quote.items[0].price : item.product.price);
@@ -406,15 +409,17 @@ export default function CheckoutPage() {
               phone: shipPhone,
             };
 
+        const intent = { planId: selectedSubscriptionPlan.id, deliveryAddress,
+          deliverySlot: { day, timeSlot: "Any time" }, paymentMethod: "cod", startDate: startDate || undefined };
+        const scope = `freshpick-subscription:${user._id}:${selectedSubscriptionPlan.id}`;
+        const hash = await hashCheckoutIntent(intent);
+        let previous = subscriptionRetryRef.current;
+        if (!previous) { try { previous = readCheckoutRetry(sessionStorage, scope); } catch { /* Same-page protection remains available. */ } }
+        const retry = checkoutRetryForIntent(previous, hash);
+        subscriptionRetryRef.current = retry;
+        try { sessionStorage.setItem(scope, JSON.stringify(retry)); } catch { /* Optional reload recovery. */ }
         const response = await apiFetch("/api/subscriptions", {
-          method: "POST",
-          body: JSON.stringify({
-            planId: selectedSubscriptionPlan.id,
-            deliveryAddress,
-            deliverySlot: { day, timeSlot: "Any time" },
-            paymentMethod: "cod",
-            startDate: startDate || undefined,
-          }),
+          method: "POST", headers: { 'Idempotency-Key': retry.key }, body: JSON.stringify(intent),
         });
         const data = await response.json();
         if (!response.ok || !data.success) {
@@ -422,6 +427,8 @@ export default function CheckoutPage() {
         }
 
         completed = true;
+        try { sessionStorage.setItem(scope, JSON.stringify({ ...retry, completed: true })); } catch { /* Optional persistence. */ }
+        subscriptionRetryRef.current = null;
         router.replace("/profile/subscriptions");
         return;
       }

@@ -14,42 +14,31 @@ export function isValidDeliveryDay(day: string): boolean {
   return Object.prototype.hasOwnProperty.call(DAY_MAP, (day || '').toLowerCase());
 }
 
-/**
- * Next occurrence of the delivery weekday strictly after `from`.
- * Used when first scheduling a subscription.
- */
+// Sri Lanka has a fixed UTC+05:30 offset; use UTC calendar methods so host TZ
+// cannot shift a customer's chosen weekday or monthly boundary.
+const COLOMBO_OFFSET = 330 * 60_000;
+const businessDay = (date: Date) => {
+  const local = new Date(date.getTime()+COLOMBO_OFFSET);
+  return new Date(Date.UTC(local.getUTCFullYear(),local.getUTCMonth(),local.getUTCDate()));
+};
+const instant = (date: Date) => new Date(date.getTime()-COLOMBO_OFFSET);
 export function nextWeekday(from: Date, day: string): Date {
-  const target = DAY_MAP[(day || '').toLowerCase()];
-  if (target === undefined) throw new Error('Invalid delivery day');
-  const d = new Date(from);
-  do {
-    d.setDate(d.getDate() + 1);
-  } while (d.getDay() !== target);
-  return d;
+  const target=DAY_MAP[(day||'').toLowerCase()];
+  if(target===undefined)throw new Error('Invalid delivery day');
+  const date=businessDay(from);
+  do{date.setUTCDate(date.getUTCDate()+1);}while(date.getUTCDay()!==target);
+  return instant(date);
 }
-
-/**
- * Advance a delivery date by the plan's frequency (weekly/biweekly/monthly),
- * snapping back onto the delivery weekday.
- */
 export function advanceByFrequency(from: Date, day: string, frequency: string): Date {
-  const base = new Date(from);
-  if (frequency === 'monthly') {
-    base.setMonth(base.getMonth() + 1);
-  } else if (frequency === 'biweekly') {
-    base.setDate(base.getDate() + 14);
-  } else {
-    base.setDate(base.getDate() + 7);
-  }
-
-  const target = DAY_MAP[(day || '').toLowerCase()] ?? base.getDay();
-  const snapped = new Date(base);
-  let guard = 0;
-  while (snapped.getDay() !== target && guard < 7) {
-    snapped.setDate(snapped.getDate() + 1);
-    guard++;
-  }
-  return snapped;
+  const target=DAY_MAP[(day||'').toLowerCase()];
+  if(target===undefined)throw new Error('Invalid delivery day');
+  const date=businessDay(from);
+  if(frequency==='monthly'){
+    const original=date.getUTCDate();date.setUTCDate(1);date.setUTCMonth(date.getUTCMonth()+1);
+    const last=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()+1,0)).getUTCDate();date.setUTCDate(Math.min(original,last));
+  }else{date.setUTCDate(date.getUTCDate()+(frequency==='biweekly'?14:7));}
+  while(date.getUTCDay()!==target)date.setUTCDate(date.getUTCDate()+1);
+  return instant(date);
 }
 
 type PlanForClient = {

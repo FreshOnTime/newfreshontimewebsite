@@ -1,6 +1,6 @@
 # FreshPick platform readiness
 
-Last reviewed: 2026-10-02. This is a source review and local verification record,
+Last reviewed: 2026-10-03. This is a source review and local verification record,
 not a certification of the production environment.
 
 ## Completed foundations
@@ -57,8 +57,8 @@ not a certification of the production environment.
 
 Apply `npm run db:migrate` before deploying this code. Do not remove completed
 retry receipts without an explicit retention policy: removing a key permits an
-old client retry to create another order. Online payments and subscription-plan
-creation do not gain idempotency from this customer-order migration.
+old client retry to create another order. Subscription signup now has its own durable retry receipts. Online payments
+remain a separate integration.
 
 The reproducible database check refuses remote hosts and requires a fresh,
 empty `checkout_test_*` schema. It creates local fixture users, products and
@@ -74,48 +74,41 @@ npm run test:checkout-db
 
 The [account design and flow fixes](ACCOUNT_DESIGN_AND_FLOW_FIXES.md) add softer shared surfaces, separate account photographs, safe return destinations, supplier save retries and ownership enforcement, first-bag item creation, password-reset validation and atomic token consumption. [Public discovery improvements](DISCOVERY_IMPROVEMENTS.md) cover canonical URLs, sitemap entries, journal HTML and help answers. These locally verified changes retain the staging and operational acceptance criteria below.
 
-## Remaining work before calling the platform complete
+## Operational gaps addressed
 
-| Area | Source evidence / remaining acceptance criterion |
+The [operating guide](OPERATIONS.md) covers the additive migration, configuration,
+new admin workflows and deployment acceptance. This phase implements protected
+admin promotion/uploads, stock-reserving admin order creation, persistent subscription
+retry receipts, atomic plan capacity checks, a basket delivery queue and delivered
+counter claims, supplier application review, newsletter management and signed
+unsubscribe, durable image storage, configured delivery pricing/areas and a leased,
+retrying email outbox. Netlify builds now retain type checking, and CI no longer
+contains competing Vercel deployment jobs. Secondary admin roles work in the admin
+layout and the shared admin API guards.
+
+## Remaining production acceptance
+
+| Area | Required acceptance |
 | --- | --- |
-| Delivery pricing | The shared policy preserves the previous Rs. 5 delivery charge at subtotal ≤ Rs. 50 and free delivery above Rs. 50. Obtain and implement the approved LKR fee/threshold, service areas, and tax policy before launch. Catalogue percentage promotions are supported; verified order-level promotions remain to be implemented. |
-| Subscription creation retries | Customer product-order retries are persisted and verified. Subscription-plan creation still uses its separate API and needs equivalent protection for uncertain network outcomes. |
-| Admin/public API boundaries | Legacy category/brand writes, product-add and registration are now covered. Complete a separate permission and validation audit of every remaining catalogue/user/admin mutation, including secondary roles. |
-| Existing inventory records | Reconcile any pending recurring orders created by older code without reservations. The new transaction behavior does not repair historical inventory discrepancies. |
-| Admin-created orders | `app/api/admin/orders/route.ts` creates orders separately from the stock-reserving customer path. Unify or explicitly distinguish reservation policy, then test creation/edit/cancel together against PostgreSQL. |
-| Recurring fulfillment | Scheduled functions and delivery services exist. Overlapping recurring-order claims, current pricing, and unavailable-stock rollback passed isolated PostgreSQL checks. Subscription fulfillment counters, paused/ended subscriptions, time zones, failure notifications, and deployed scheduling still need staging acceptance tests. |
-| Payments and settlement | Customer checkout currently presents cash on delivery. Confirm this is the launch payment method; an online gateway needs verified callbacks, duplicate-event handling, refunds, and reconciliation before being offered. |
-| Customer account journey | Verify password signup, Google signup, verification, reset, refresh/logout, saved addresses, and bans in an isolated staging environment with real email/Firebase integrations. |
-| Content and commerce entry points | Verify recipes, collections, wishlist, producer pages, B2B forms, and discovery surfaces using representative persisted staging data. Avoid placeholder content and claims of live functionality without evidence. |
-| Deployment and operations | Validate the actual Netlify deployment, TLS/domain configuration, migrations, durable image uploads, email delivery, scheduled-function logs, backups, and alerting. The repository also has Vercel deployment jobs; align the delivery pipeline with the intended hosting platform. |
+| Configuration | Set approved delivery fees/threshold/areas, canonical site URL, Azure and verified SendGrid credentials; run the read-only preflight. No real business rates were supplied. |
+| Database | Back up and restore-test, apply the additive migration, verify the PostgreSQL concurrency script and reconcile historical unreserved orders. |
+| Basket fulfillment | Plans remain descriptive packing lists; SKU reservations and automated payment/order conversion are not implemented for basket plans. Test manual packing, COD collection, pause/skip/cancel and deployed scheduling in staging. |
+| Hosting and monitoring | Verify the linked Netlify site/domain, published function schedules, provider activity, logs, backlog alerts and backup policy. Code changes do not configure external dashboards. |
+| Payments | Checkout offers cash on delivery. A gateway, callback idempotency, refunds and settlement need a separate integration before online payment is offered. |
+| Account integrations | Exercise signup, verification, password reset, refresh/logout, Google/Firebase, saved addresses and bans using staging credentials. |
+| Catalogue and content | Verify representative persisted recipes, collections, wishlist, producer and B2B records; remove placeholders. Review old supplier approvals and existing inline image references explicitly. |
+| Permission review | The reported exposed routes and supplier ownership fallback are fixed; this is not a certification of every legacy API. Continue the wider permission/validation review separately. |
 
 ## Verification scope
 
-Local verification includes 132 unit/API tests in 17 suites, a production
-build, TypeScript, and six non-mutating HTTP smoke checks. ESLint reported zero
-errors and 55 existing warnings.
-
-Isolated PostgreSQL checks applied every migration to a fresh schema and verified
-concurrent same-key receipt replay, one reservation per order, conflicting
-intents, customer scoping, competing checkout stock protection, stale quotes,
-transaction-time price-change rollback, unavailable recurring inventory rollback,
-and overlapping recurring schedule runs. These checks use disposable fixtures;
-no production customers, orders, stock, or subscriptions were modified.
-
-Browser verification uses local response fixtures at 1440, 1024, 820, 390 and
-320 px. It covers quoted prices and delivery totals, quote failures and retries,
-uncertain submission retries, receipt recovery after reload, discounted quick
-orders, recurring retry payloads, and separate subscription-plan checkout.
-These checks do not verify production email, payment settlement, or scheduled
-function operation.
-
-Useful commands:
-
-```sh
-npm run test:unit -- --runInBand
-npx tsc --noEmit
-npm run lint
-npm run build
-# With the application running at localhost:3000:
-npm run test:smoke -- --runInBand
-```
+This phase passes 256 unit/API tests across 34 suites, TypeScript checking and the
+production build. Lint has no errors and retains existing warnings. A built-app
+browser check exercised supplier review, delivery confirmation/completion, newsletter
+pagination/deactivation and signed unsubscribe through actual routes with local
+Prisma fixtures, at 320, 390, 820 and 1440 px; no overflow or browser exceptions.
+[GitHub CI run 37099034036](https://github.com/FreshOnTime/newfreshontimewebsite/actions/runs/37099034036)
+passed database migrations and the expanded integrity script against isolated
+PostgreSQL 16, including concurrent basket signup/capacity, single delivery counting,
+and newsletter signup/outbox/link invalidation. CI also passed tests, build and HTTP
+smoke checks. External credentials, production database contents, email delivery,
+uploads and Netlify schedules have not been exercised against production.

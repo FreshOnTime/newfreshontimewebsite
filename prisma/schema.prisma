@@ -256,6 +256,10 @@ model Supplier {
   paymentTerms PaymentTerms   @default(net_30)
   notes        String?
   status       SupplierStatus @default(active)
+  applicationStatus String @default("approved")
+  reviewNotes String @default("")
+  reviewedAt DateTime?
+  reviewVersion Int @default(0)
 
   products User[] // supplier-role accounts linked to this supplier
   catalog  Product[]
@@ -530,6 +534,7 @@ model Subscription {
 }
 
 model SubscriptionDelivery {
+  version Int @default(0)
   id               String                     @id @default(uuid())
   subscriptionId   String
   subscription     Subscription               @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
@@ -742,6 +747,7 @@ model Subscriber {
   source         SubscriberSource @default(homepage)
   isActive       Boolean          @default(true)
   unsubscribedAt DateTime?
+  unsubscribeVersion Int @default(0)
 
   @@index([isActive])
   @@map("subscribers")
@@ -844,4 +850,43 @@ model CheckoutRequest {
 
   @@id([customerId, key])
   @@map("checkout_requests")
+}
+
+// A subscription retry receipt commits with the new subscription and capacity claim.
+model SubscriptionRequest {
+  id String @id @default(uuid())
+  userId String
+  key String
+  fingerprint String
+  response Json?
+  createdAt DateTime @default(now())
+  @@unique([userId, key])
+  @@map("subscription_requests")
+}
+
+// One claim per customer and plan serializes active-subscription creation.
+model SubscriptionPlanClaim {
+  userId String
+  planId String
+  @@id([userId, planId])
+  @@map("subscription_plan_claims")
+}
+
+model EmailOutbox {
+  id String @id @default(uuid())
+  dedupeKey String? @unique
+  recipient String @db.VarChar(254)
+  subject String @db.VarChar(200)
+  html String
+  text String?
+  status String @default("pending")
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  leaseUntil DateTime?
+  claimToken String?
+  createdAt DateTime @default(now())
+  sentAt DateTime?
+  lastError String?
+  @@index([status, nextAttemptAt])
+  @@map("email_outbox")
 }

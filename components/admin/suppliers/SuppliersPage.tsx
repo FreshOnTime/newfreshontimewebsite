@@ -84,6 +84,7 @@ export function SuppliersPage() {
           <p className="text-muted-foreground mt-2">Manage supplier records</p>
         </div>
         <div className="flex flex-wrap gap-3">
+        <Button variant="outline" asChild><Link href="/admin/supplier-applications">Review applications</Link></Button>
         <Button variant="outline" asChild><Link href="/admin/supplier-uploads">Review supplier uploads</Link></Button>
         <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />

@@ -1,6 +1,6 @@
-import { Prisma, SubscriptionDeliveryStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
-import { advanceByFrequency } from '@/lib/subscriptionUtils';
+import { advanceByFrequency, nextWeekday } from '@/lib/subscriptionUtils';
 
 export class SubscriptionDeliveryService {
   /**
@@ -8,15 +8,23 @@ export class SubscriptionDeliveryService {
    * schedule. The conditional update claims the exact due timestamp so two
    * overlapping scheduled-function invocations cannot create duplicates.
    */
-  static async processDueSubscriptions() {
+  static async processDueSubscriptions(deadline = Date.now()+20_000) {
+    const expiredPauses = await prisma.subscription.findMany({ where: { status: 'paused', pausedUntil: { lte: new Date() }, plan: { isActive: true } }, take: 50 });
+    for (const paused of expiredPauses) {
+      if (Date.now()>=deadline) break;
+      await prisma.subscription.updateMany({ where: { id: paused.id, status: 'paused', pausedUntil: paused.pausedUntil, updatedAt: paused.updatedAt }, data: { status: 'active', pausedUntil: null, nextDeliveryDate: nextWeekday(new Date(), paused.deliverySlotDay) } });
+    }
     const dueSubscriptions = await prisma.subscription.findMany({
-      where: { status: 'active', nextDeliveryDate: { lte: new Date() } },
+      where: { status: 'active', nextDeliveryDate: { lte: new Date() }, plan: { isActive: true } },
+      orderBy: [{ nextDeliveryDate: 'asc' }, { id: 'asc' }],
       select: { id: true },
       take: 50,
     });
 
-    const result = { processed: dueSubscriptions.length, created: 0, errors: [] as string[] };
+    const result = { processed: 0, created: 0, errors: [] as string[] };
     for (const subscription of dueSubscriptions) {
+      if (Date.now() >= deadline) break;
+      result.processed++;
       try {
         const created = await this.createPendingDelivery(subscription.id);
         if (created) result.created++;
@@ -43,7 +51,7 @@ export class SubscriptionDeliveryService {
         where: { id: subscriptionId },
         include: { plan: { include: { contents: true } } },
       });
-      if (!current || current.status !== 'active' || current.nextDeliveryDate.getTime() !== dueDate.getTime()) return null;
+      if (!current || !current.plan.isActive || current.status !== 'active' || current.nextDeliveryDate.getTime() !== dueDate.getTime()) return null;
 
       const nextDeliveryDate = advanceByFrequency(
         dueDate,
@@ -71,28 +79,21 @@ export class SubscriptionDeliveryService {
     });
   }
 
-  /** Mark a pending/confirmed delivery complete exactly once. */
-  static async markDelivered(deliveryId: string) {
-    return prisma.$transaction(async (tx) => {
+  static async transitionDelivery(deliveryId: string, action: 'confirm' | 'deliver' | 'cancel', version?: number) {
+    return prisma.$transaction(async tx => {
       const delivery = await tx.subscriptionDelivery.findUnique({ where: { id: deliveryId } });
-      if (!delivery) throw new Error('Delivery not found');
-      if (delivery.status === SubscriptionDeliveryStatus.delivered) return delivery;
-      if (
-        delivery.status !== SubscriptionDeliveryStatus.pending &&
-        delivery.status !== SubscriptionDeliveryStatus.confirmed
-      ) {
-        throw new Error(`Cannot deliver a ${delivery.status} delivery`);
-      }
-
-      const updated = await tx.subscriptionDelivery.update({
-        where: { id: delivery.id },
-        data: { status: SubscriptionDeliveryStatus.delivered, deliveredAt: new Date() },
-      });
-      await tx.subscription.update({
-        where: { id: delivery.subscriptionId },
-        data: { totalDeliveries: { increment: 1 } },
-      });
-      return updated;
+      if (!delivery) throw new DeliveryTransitionError('Delivery not found', 404);
+      if (action === 'deliver' && delivery.status === 'delivered') return delivery;
+      if (version !== undefined && delivery.version !== version) throw new DeliveryTransitionError('This delivery changed. Refresh before saving.', 409);
+      const allowed = action === 'confirm' ? ['pending'] : ['pending', 'confirmed'];
+      if (!allowed.includes(delivery.status)) throw new DeliveryTransitionError(`Cannot ${action} a ${delivery.status} delivery`, 409);
+      const status = action === 'confirm' ? 'confirmed' : action === 'deliver' ? 'delivered' : 'cancelled';
+      const claimed = await tx.subscriptionDelivery.updateMany({ where: { id: delivery.id, status: delivery.status, version: delivery.version }, data: { status, version: { increment: 1 }, ...(action === 'deliver' ? { deliveredAt: new Date() } : {}) } });
+      if (claimed.count !== 1) throw new DeliveryTransitionError('This delivery changed. Refresh before saving.', 409);
+      if (action === 'deliver') await tx.subscription.update({ where: { id: delivery.subscriptionId }, data: { totalDeliveries: { increment: 1 } } });
+      return tx.subscriptionDelivery.findUniqueOrThrow({ where: { id: delivery.id } });
     });
   }
+  static markDelivered(deliveryId: string) { return this.transitionDelivery(deliveryId, 'deliver'); }
 }
+export class DeliveryTransitionError extends Error { constructor(message: string, public status: number) { super(message); } }

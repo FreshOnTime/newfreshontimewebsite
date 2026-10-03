@@ -4,30 +4,10 @@ import { requireAuth } from '@/lib/auth';
 
 const NON_BILLABLE_STATUSES = ['cancelled', 'refunded'] as const;
 
-/**
- * Resolve the Supplier this user represents: User.supplierId first, then match a
- * supplier by email/phone (persisting the link when found).
- */
-async function resolveSupplierId(userId: string): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, supplierId: true, email: true, phoneNumber: true },
-  });
-  if (!user) return null;
-  if (user.supplierId) return user.supplierId;
-
-  let found = user.email ? await prisma.supplier.findUnique({ where: { email: user.email } }) : null;
-  if (!found && user.phoneNumber) found = await prisma.supplier.findFirst({ where: { phone: user.phoneNumber } });
-
-  if (found) {
-    try {
-      await prisma.user.update({ where: { id: user.id }, data: { supplierId: found.id } });
-    } catch {
-      /* best-effort link */
-    }
-    return found.id;
-  }
-  return null;
+/** Use only the account's explicit supplier link; contact details do not grant ownership. */
+async function resolveSupplier(userId: string) {
+  const user=await prisma.user.findUnique({where:{id:userId},select:{supplier:{select:{id:true,applicationStatus:true,status:true}}}});
+  return user?.supplier || null;
 }
 
 /**
@@ -47,13 +27,16 @@ export const GET = requireAuth(
       }
 
       const userId = authUser.mongoId || authUser.userId;
-      const supplierId = await resolveSupplierId(userId);
+      const supplier = await resolveSupplier(userId);
+      const supplierId = supplier?.id;
 
-      if (!supplierId) {
+      if (!supplierId || supplier?.applicationStatus !== 'approved' || supplier?.status !== 'active') {
         return NextResponse.json({
           success: true,
           data: {
-            linked: false,
+            linked: Boolean(supplierId),
+            applicationStatus: supplier?.applicationStatus || null,
+            supplierStatus: supplier?.status || null,
             stats: {
               totalProducts: 0,
               activeProducts: 0,
@@ -155,6 +138,8 @@ export const GET = requireAuth(
         success: true,
         data: {
           linked: true,
+          applicationStatus: supplier?.applicationStatus,
+          supplierStatus: supplier?.status,
           stats: {
             totalProducts: productStats.totalProducts,
             activeProducts: productStats.activeProducts,

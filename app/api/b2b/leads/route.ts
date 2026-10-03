@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       ["Partnership details", lead.requirement || "Not provided"],
     ].map(([label, value]) => `<p><strong>${label}:</strong> ${escapeHtml(value)}</p>`).join("");
 
-    sendEmail(
+    await sendEmail(
       recipient,
       `New FreshPick partnership application: ${lead.organizationName}`,
       `<h2>New supplier / partnership application</h2>${details}`

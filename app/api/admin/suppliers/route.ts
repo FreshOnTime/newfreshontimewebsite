@@ -55,6 +55,7 @@ function serializeSupplier(s: Supplier) {
     paymentTerms: termsToApi(s.paymentTerms),
     notes: s.notes ?? undefined,
     status: s.status,
+    applicationStatus: s.applicationStatus,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };

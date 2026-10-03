@@ -5,7 +5,7 @@ jest.mock('@/lib/services/mailService', () => ({ sendOrderEmail: jest.fn() }));
 const db = prisma as unknown as { order: { findUnique: jest.Mock }; user: { findUnique: jest.Mock }; $transaction: jest.Mock };
 const tx = { order: { findUnique: jest.fn(), updateMany: jest.fn(), create: jest.fn() }, product: { findMany: jest.fn(), updateMany: jest.fn() } };
 const due = new Date('2026-09-30');
-const schedule = { id: 'schedule1', isRecurring: true, scheduleStatus: 'active', nextDeliveryAt: due, customerId: 'customer1', recurrence: { daysOfWeek: [1, 3] }, shippingAddress: {}, items: [{ productId: 'p1', qty: 2, price: 10, total: 20 }], subtotal: 20, total: 25, paymentStatus: 'paid', paymentMethod: 'cash' };
+const schedule = { id: 'schedule1', isRecurring: true, scheduleStatus: 'active', nextDeliveryAt: due, customerId: 'customer1', recurrence: { daysOfWeek: [1, 3] }, shippingAddress: { city: 'Colombo', country: 'LK' }, items: [{ productId: 'p1', qty: 2, price: 10, total: 20 }], subtotal: 20, total: 25, paymentStatus: 'paid', paymentMethod: 'cash' };
 beforeEach(() => {
   jest.clearAllMocks(); db.order.findUnique.mockResolvedValue(schedule); db.user.findUnique.mockResolvedValue(null);
   db.$transaction.mockImplementation(async (fn: (tx: unknown) => unknown) => fn(tx));

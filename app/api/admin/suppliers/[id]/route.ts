@@ -48,6 +48,7 @@ function serializeSupplier(s: Supplier) {
     paymentTerms: termsToApi(s.paymentTerms),
     notes: s.notes ?? undefined,
     status: s.status,
+    applicationStatus: s.applicationStatus,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };
@@ -78,6 +79,8 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
       return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
 
+    if (data.status === 'active' && before.applicationStatus !== 'approved') return NextResponse.json({ error: 'Approve this supplier application before activating the account' }, { status: 409 });
+
     // Ensure unique email if changed
     if (data.email && data.email !== before.email) {
       const exists = await prisma.supplier.findFirst({
@@ -91,9 +94,10 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
       }
     }
 
-    const updated = await prisma.supplier.update({
-      where: { id },
+    const changed = await prisma.supplier.updateMany({
+      where: { id, reviewVersion: before.reviewVersion },
       data: {
+        reviewVersion: { increment: 1 },
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.contactName !== undefined ? { contactName: data.contactName } : {}),
         ...(data.email !== undefined ? { email: data.email } : {}),
@@ -113,8 +117,11 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
       },
     });
 
+    if (changed.count !== 1) return NextResponse.json({ error: 'Supplier changed. Refresh before saving.' }, { status: 409 });
+    const updated = await prisma.supplier.findUniqueOrThrow({ where: { id } });
     const serializedBefore = serializeSupplier(before);
     const serializedUpdated = serializeSupplier(updated);
+
     await logAuditAction(
       request.user!.userId,
       'update',

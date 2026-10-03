@@ -1,0 +1,26 @@
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+import { useAdminQueue } from '@/components/admin/useAdminQueue';
+import { QueueFeedback, QueuePager } from '@/components/admin/QueueFeedback';
+import { apiFetch } from '@/lib/api/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ConfirmAction } from '@/components/account/ConfirmAction';
+interface Delivery { id: string; version: number; status: string; planName: string; price: number; scheduledFor: string; deliveryAddress: Record<string,string>; deliverySlotTime: string; contentsSnapshot: { name: string; quantity: string }[]; subscription: { user: { firstName: string; lastName: string; email: string; phoneNumber: string } } }
+export default function DeliveriesPage() {
+  const [page, setPage] = useState(1), [status, setStatus] = useState('pending');
+  const queue = useAdminQueue<Delivery>(`/api/admin/subscription-deliveries?page=${page}${status ? `&status=${status}` : ''}`, 'deliveries');
+  const [selected, setSelected] = useState<{ delivery: Delivery; action: 'confirm' | 'deliver' | 'cancel' } | null>(null), [saving, setSaving] = useState(false), [error, setError] = useState('');
+  async function save() {
+    if (!selected || saving) return; setSaving(true); setError('');
+    try { const response = await apiFetch(`/api/admin/subscription-deliveries/${selected.delivery.id}`, { method: 'PATCH', body: JSON.stringify({ action: selected.action, version: selected.delivery.version }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Unable to update delivery'); setSelected(null); queue.reload(); }
+    catch (failure) { setError(failure instanceof Error ? failure.message : 'Unable to update delivery'); } finally { setSaving(false); }
+  }
+  return <div className="space-y-6"><div className="flex flex-wrap justify-between gap-4"><div><Link href="/admin/subscriptions" className="text-sm text-brand-green underline">Subscription plans</Link><h1 className="mt-2 text-3xl font-semibold">Basket delivery queue</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">Review scheduled baskets, confirm preparation and record delivery. Completing a basket counts it once.</p></div><Button variant="outline" disabled={queue.loading} onClick={queue.reload}>Refresh</Button></div>
+    <label className="flex flex-wrap items-center gap-3 text-sm">Delivery status<select aria-label="Delivery status filter" value={status} onChange={event => { setPage(1); setStatus(event.target.value); }} className="min-h-11 rounded-lg border bg-background px-3"><option value="">All</option>{['pending','confirmed','delivered','cancelled','skipped'].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+    <QueueFeedback loading={queue.loading} error={queue.error} retry={queue.reload} />
+    {!queue.loading && !queue.error && <><p role="status" className="text-sm text-muted-foreground">{queue.total} deliveries in this view</p><div className="grid gap-5 xl:grid-cols-2">{queue.items.map(delivery => <Card key={`${delivery.id}:${delivery.version}`}><CardContent className="space-y-4 pt-6"><div className="flex flex-wrap justify-between gap-3"><h2 className="text-xl font-semibold">{delivery.planName}</h2><span className="text-sm text-brand-green">{delivery.status}</span></div><p className="text-sm">{new Date(delivery.scheduledFor).toLocaleDateString('en-LK', { timeZone: 'Asia/Colombo', dateStyle: 'medium' })} · {delivery.deliverySlotTime || 'Any time'} · Rs. {delivery.price.toFixed(2)}</p><p className="break-words text-sm">{delivery.subscription.user.firstName} {delivery.subscription.user.lastName} · {delivery.subscription.user.phoneNumber || delivery.subscription.user.email}</p><p className="break-words text-sm text-muted-foreground">{[delivery.deliveryAddress?.name, delivery.deliveryAddress?.street, delivery.deliveryAddress?.city].filter(Boolean).join(', ')}</p><ul className="text-sm">{Array.isArray(delivery.contentsSnapshot) && delivery.contentsSnapshot.map((item,index) => <li key={index}>{item.name} · {item.quantity}</li>)}</ul>{['pending','confirmed'].includes(delivery.status) && <div className="flex flex-wrap gap-3">{(delivery.status === 'pending' ? ['confirm','deliver','cancel'] as const : ['deliver','cancel'] as const).map(action => <Button key={action} variant={action === 'cancel' ? 'outline' : 'default'} onClick={() => { setError(''); setSelected({ delivery, action }); }}>{action === 'deliver' ? 'Mark delivered' : action === 'confirm' ? 'Confirm preparation' : 'Cancel delivery'}</Button>)}</div>}</CardContent></Card>)}</div>{!queue.items.length && <p className="py-8 text-muted-foreground">No deliveries in this view.</p>}<QueuePager page={page} pages={queue.pages} change={setPage} /></>}
+    <ConfirmAction open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }} title={selected?.action === 'deliver' ? 'Mark this basket delivered?' : selected?.action === 'cancel' ? 'Cancel this delivery?' : 'Confirm basket preparation?'} description="This updates the selected delivery record. Cancelling one delivery leaves the subscription schedule active." label="Confirm update" busy={saving} error={error} onConfirm={() => void save()} />
+  </div>;
+}

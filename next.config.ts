@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
+      { protocol: 'https', hostname: '*.blob.core.windows.net', pathname: '/product-images/**' },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
@@ -33,7 +34,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',

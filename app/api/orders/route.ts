@@ -1,8 +1,9 @@
+import { DeliveryPolicyError, assertDeliveryArea } from '@/lib/deliveryPolicy';
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { CheckoutError, checkoutSchema, checkoutRequestHash, prepareCheckout } from '@/lib/checkoutService';
+import { CheckoutError, checkoutSchema, checkoutRequestHash, reserveCheckoutStock, prepareCheckout } from '@/lib/checkoutService';
 import { orderAddressSchema } from '@/lib/orderAddress';
 import { sendOrderEmail } from '@/lib/services/mailService';
 import { RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
@@ -239,21 +240,14 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     const address = orderAddressSchema.safeParse(resolvedShipping);
     if (!address.success) return NextResponse.json({ error: address.error.issues[0].message }, { status: 400 });
     resolvedShipping = address.data;
+    assertDeliveryArea(address.data);
 
     // Atomically reserve stock and create the order. Conditional decrements
     // (stockQty >= qty) prevent overselling under concurrency; any failure rolls
     // back every decrement AND the order together.
     const created = await prisma.$transaction(async (tx) => {
       if (retryIdentity) await tx.checkoutRequest.create({ data: retryIdentity });
-      for (const it of validatedItems) {
-        const res = await tx.product.updateMany({
-          where: { id: it.productId, archived: false, price: it.basePrice, discountPercentage: it.discountPercentage, stockQty: { gte: it.qty } },
-          data: { stockQty: { decrement: it.qty } },
-        });
-        if (res.count !== 1) {
-          throw new Error(`INSUFFICIENT_STOCK:${it.name}`);
-        }
-      }
+      await reserveCheckoutStock(tx, validatedItems);
 
       const initialOrder = await tx.order.create({
         data: {
@@ -309,20 +303,9 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         where: { customerId_key: { customerId, key: retryIdentity.key } },
         data: { response: JSON.parse(JSON.stringify(receipt)) as Prisma.InputJsonValue },
       });
+      if (userDoc?.email) await sendOrderEmail(userDoc.email, { _id: initialOrder.id, total: Number(initialOrder.total) }, tx);
       return { initialOrder, recurringSchedule };
     });
-
-    // Send order confirmation email (non-blocking).
-    try {
-      const customerEmail = userDoc?.email || userDoc?.phoneNumber || null;
-      if (customerEmail) {
-        sendOrderEmail(customerEmail, { _id: String(created.initialOrder.id), total: Number(created.initialOrder.total) }).catch((e) =>
-          console.error('sendOrderEmail error', e)
-        );
-      }
-    } catch (e) {
-      console.error('Order email error:', e);
-    }
 
     return NextResponse.json({
       success: true,
@@ -339,7 +322,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         if (previous) return NextResponse.json({ error: 'This retry key belongs to a different checkout.' }, { status: 409 });
       } catch (recoveryError) { console.error("Checkout recovery error:", recoveryError); }
     }
-    if (error instanceof CheckoutError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof CheckoutError || error instanceof DeliveryPolicyError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof Error && error.message.startsWith('INSUFFICIENT_STOCK:')) {
       return NextResponse.json(
         { error: 'Availability or prices changed. Review your order before trying again.' },

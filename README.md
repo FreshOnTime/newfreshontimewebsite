@@ -211,3 +211,13 @@ MIT License — © 2024 Fresh Pick
 ---
 
 **Built with ❤️ in Sri Lanka**
+
+## Operational readiness
+
+See [the operating guide](docs/OPERATIONS.md) for approved delivery pricing,
+product-photo storage, supplier approval, basket fulfillment, newsletter preferences,
+the email outbox and Netlify schedules. Apply the additive migration before publishing
+this version. `npm run check:production -- --config-only` checks configuration without
+reading the database; `npm run check:production` also verifies migration state.
+The remaining staging and production acceptance is tracked in
+[platform readiness](docs/PLATFORM_READINESS.md).

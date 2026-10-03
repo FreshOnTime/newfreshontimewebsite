@@ -1,151 +1,16 @@
-const mockPrisma = {
-    subscriber: {
-        findUnique: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-    },
-};
-
-jest.mock("@/lib/prisma", () => ({
-    __esModule: true,
-    default: mockPrisma,
-}));
-
-// Mock mail service
-jest.mock("@/lib/services/mailService", () => ({
-    sendEmail: jest.fn().mockResolvedValue(undefined),
-}));
-
-describe("Newsletter API", () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    describe("POST /api/newsletter", () => {
-        it("should reject invalid email addresses", async () => {
-            const { POST } = await import(
-                "@/app/api/newsletter/route"
-            );
-
-            const request = new Request("http://localhost:3000/api/newsletter", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "invalid-email" }),
-            });
-
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.ok).toBe(false);
-            expect(data.error).toContain("valid email");
-        });
-
-        it("should reject empty email", async () => {
-            const { POST } = await import(
-                "@/app/api/newsletter/route"
-            );
-
-            const request = new Request("http://localhost:3000/api/newsletter", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "" }),
-            });
-
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.ok).toBe(false);
-        });
-
-        it("should handle already subscribed emails", async () => {
-            mockPrisma.subscriber.findUnique.mockResolvedValue({
-                email: "existing@example.com",
-                isActive: true,
-            });
-
-            const { POST } = await import(
-                "@/app/api/newsletter/route"
-            );
-
-            const request = new Request("http://localhost:3000/api/newsletter", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "existing@example.com" }),
-            });
-
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(409);
-            expect(data.ok).toBe(false);
-            expect(data.error).toContain("already subscribed");
-        });
-
-        it("should successfully subscribe new email", async () => {
-            mockPrisma.subscriber.findUnique.mockResolvedValue(null);
-            mockPrisma.subscriber.create.mockResolvedValue({
-                email: "new@example.com",
-                isActive: true,
-            });
-
-            const { POST } = await import(
-                "@/app/api/newsletter/route"
-            );
-
-            const request = new Request("http://localhost:3000/api/newsletter", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "new@example.com" }),
-            });
-
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(200);
-            expect(data.ok).toBe(true);
-            expect(mockPrisma.subscriber.create).toHaveBeenCalledWith({
-                data: {
-                    email: "new@example.com",
-                    source: "homepage",
-                },
-            });
-        });
-
-        it("should reactivate inactive subscription", async () => {
-            mockPrisma.subscriber.findUnique.mockResolvedValue({
-                email: "inactive@example.com",
-                isActive: false,
-            });
-            mockPrisma.subscriber.update.mockResolvedValue({
-                email: "inactive@example.com",
-                isActive: true,
-            });
-
-            const { POST } = await import(
-                "@/app/api/newsletter/route"
-            );
-
-            const request = new Request("http://localhost:3000/api/newsletter", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "inactive@example.com" }),
-            });
-
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(200);
-            expect(data.ok).toBe(true);
-            expect(mockPrisma.subscriber.update).toHaveBeenCalledWith({
-                where: { email: "inactive@example.com" },
-                data: {
-                    isActive: true,
-                    subscribedAt: expect.any(Date),
-                    unsubscribedAt: null,
-                },
-            });
-        });
-    });
-});
+import { POST } from '@/app/api/newsletter/route';
+import { POST as unsubscribe } from '@/app/api/newsletter/unsubscribe/route';
+import { readUnsubscribeToken, unsubscribeToken } from '@/lib/newsletterTokens';
+import { sendEmail } from '@/lib/services/mailService';
+const mockTx = {$queryRaw:jest.fn()}, mockUpdate=jest.fn();
+jest.mock('@/lib/prisma',()=>({__esModule:true,default:{$transaction:jest.fn(async(fn:(tx:unknown)=>unknown)=>fn(mockTx)),subscriber:{updateMany:(...args:unknown[])=>mockUpdate(...args)}}}));
+jest.mock('@/lib/services/mailService',()=>({sendEmail:jest.fn().mockResolvedValue(undefined),frontendUrl:()=> 'https://www.freshpick.lk'}));
+jest.mock('@/lib/middleware/rateLimiter',()=>({makeKey:()=>'',isRateLimited:()=>false}));
+const request=(body:unknown)=>new Request('http://localhost/api/newsletter',{method:'POST',body:JSON.stringify(body)});
+beforeEach(()=>{jest.clearAllMocks();mockTx.$queryRaw.mockResolvedValue([{id:'subscriber-1',unsubscribeVersion:0}]);mockUpdate.mockResolvedValue({count:1});});
+it.each(['invalid-email','', 'a'.repeat(255)+'@example.com'])('rejects invalid/oversized address %s',async email=>{expect((await POST(request({email}))).status).toBe(400);expect(mockTx.$queryRaw).not.toHaveBeenCalled();});
+it('queues a welcome with a working signed unsubscribe link inside the transaction',async()=>{expect((await POST(request({email:' New@Example.com ',source:'footer'}))).status).toBe(200);expect(sendEmail).toHaveBeenCalledWith('new@example.com','Welcome to FreshPick',expect.stringContaining('/newsletter/unsubscribe?token='),expect.any(String),{tx:mockTx,dedupeKey:'newsletter-welcome:subscriber-1:0'});});
+it('does not send another welcome for an active duplicate',async()=>{mockTx.$queryRaw.mockResolvedValue([]);expect((await POST(request({email:'new@example.com'}))).status).toBe(200);expect(sendEmail).not.toHaveBeenCalled();});
+it('does not report success when newsletter persistence fails',async()=>{mockTx.$queryRaw.mockRejectedValue(new Error('database unavailable'));expect((await POST(request({email:'new@example.com'}))).status).toBe(500);expect(sendEmail).not.toHaveBeenCalled();});
+it('rejects tampered unsubscribe claims',async()=>{const token=unsubscribeToken('subscriber-1',0);expect(readUnsubscribeToken(token)).toEqual({id:'subscriber-1',version:0});expect(readUnsubscribeToken(token+'x')).toBeNull();expect((await unsubscribe(request({token:token+'x'}))).status).toBe(400);expect(mockUpdate).not.toHaveBeenCalled();});
+it('unsubscribes only the matching signup generation and permits retries',async()=>{const token=unsubscribeToken('subscriber-1',0);expect((await unsubscribe(request({token}))).status).toBe(200);expect(mockUpdate).toHaveBeenCalledWith({where:{id:'subscriber-1',unsubscribeVersion:0},data:{isActive:false,unsubscribedAt:expect.any(Date)}});mockUpdate.mockResolvedValue({count:0});expect((await unsubscribe(request({token}))).status).toBe(410);});

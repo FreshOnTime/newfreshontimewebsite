@@ -1,0 +1,7 @@
+import { deliveryCharge,assertDeliveryArea } from '@/lib/deliveryPolicy';
+beforeEach(()=>{process.env.DELIVERY_FEE_LKR='300';process.env.DELIVERY_FREE_ABOVE_LKR='5000';process.env.DELIVERY_MINIMUM_LKR='0';process.env.DELIVERY_AREAS='Colombo,Dehiwala';});
+afterEach(()=>{process.env.DELIVERY_FEE_LKR='5';process.env.DELIVERY_FREE_ABOVE_LKR='50';delete process.env.DELIVERY_MINIMUM_LKR;delete process.env.DELIVERY_AREAS;});
+it('uses configured rates and free-delivery boundary',()=>{expect(deliveryCharge(5000)).toBe(300);expect(deliveryCharge(5000.01)).toBe(0);delete process.env.DELIVERY_FREE_ABOVE_LKR;expect(deliveryCharge(10000)).toBe(300);});
+it.each([undefined,'','-1','NaN','0.001'])('does not invent a delivery fee when settings are invalid: %s',value=>{if(value===undefined)delete process.env.DELIVERY_FEE_LKR;else process.env.DELIVERY_FEE_LKR=value;expect(()=>deliveryCharge(100)).toThrow('not configured');});
+it('rejects orders below the configured minimum',()=>{process.env.DELIVERY_MINIMUM_LKR='1000';expect(()=>deliveryCharge(999)).toThrow('minimum order');});
+it('normalizes supported cities and rejects unsupported regions/countries',()=>{expect(()=>assertDeliveryArea({city:' colombo 05 ',country:'LK'})).not.toThrow();expect(()=>assertDeliveryArea({city:'Kandy',country:'LK'})).toThrow('outside');expect(()=>assertDeliveryArea({city:'Colombo',country:'US'})).toThrow('Sri Lanka');});

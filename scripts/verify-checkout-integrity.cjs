@@ -5,7 +5,9 @@ if (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !/^checkout_t
   throw new Error('CHECKOUT_TEST_DATABASE_URL must use localhost and a checkout_test_* schema');
 }
 process.env.DATABASE_URL = url.toString();
-process.env.JWT_SECRET = 'checkout-integration-only-secret';
+process.env.DELIVERY_FEE_LKR = '5';
+process.env.DELIVERY_FREE_ABOVE_LKR = '50';
+process.env.JWT_SECRET = 'checkout-integration-only-secret-long-enough';
 const Module = require('module');
 const path = require('path');
 const resolve = Module._resolveFilename;
