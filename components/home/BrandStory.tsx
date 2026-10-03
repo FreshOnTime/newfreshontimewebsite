@@ -18,7 +18,7 @@ export function BusinessStory() {
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/55" />
       <div className="max-w-4xl">
         <p className="text-xs font-bold uppercase tracking-[0.08em]">FreshPick for business</p>
-        <h2 id="business-title" className="mt-5 text-[clamp(2.05rem,6.5vw,5.75rem)] font-bold uppercase leading-[1.01] text-white">Good ingredients.<br />For a bigger table.</h2>
+        <h2 id="business-title" className="mt-5 text-[clamp(2.05rem,6.5vw,5.75rem)] font-heading font-normal leading-[1.1] text-white">Good ingredients.<br />For a bigger table.</h2>
         <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-white">For restaurants, cafés, hotels and workplaces. Let’s discuss a supply arrangement that fits your business.</p>
         <Link href="/b2b" className="mt-7 inline-flex min-h-12 items-center gap-4 rounded-lg border border-white px-6 py-3 text-xs font-bold uppercase transition-colors hover:bg-white hover:text-foreground">Talk to FreshPick <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
       </div>

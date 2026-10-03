@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --font-sans: Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
-    --font-heading: var(--font-sans);
+    --font-sans: var(--font-interface), Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: var(--font-editorial), Georgia, "Times New Roman", serif;
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
     /* Produce-led editorial system: the original ivory, green and amber palette. */
@@ -64,9 +64,9 @@
   * { @apply border-border; }
   .lucide { stroke-width: 1.5; }
   html { scroll-padding-top: 7rem; -webkit-font-smoothing: antialiased; }
-  body { @apply bg-background text-foreground antialiased; font-feature-settings: "kern" 1; }
-  h1, h2 { font-family: var(--font-heading); font-weight: 400; letter-spacing: -0.035em; }
-  h3, h4, h5, h6 { @apply font-medium tracking-tight; }
+  body { @apply bg-background text-foreground antialiased; font-kerning: normal; font-optical-sizing: auto; line-height: 1.6; }
+  h1, h2 { font-family: var(--font-sans); font-weight: 500; letter-spacing: -0.025em; }
+  h3, h4, h5, h6 { @apply font-medium; letter-spacing: -0.015em; }
   ::selection { background: hsl(var(--freshpick-lime) / 0.3); }
   a:focus-visible, button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 4px; }
   input:focus, textarea:focus, select:focus { outline-color: hsl(var(--ring)); }
@@ -75,19 +75,19 @@
 @layer components {
   .editorial-wrap { @apply mx-auto w-full max-w-[1440px] px-5 md:px-10; }
   .editorial-section { @apply py-12 md:py-20; }
-  .editorial-label { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground; }
-  .editorial-title { @apply font-sans text-3xl font-bold uppercase leading-[1.02] tracking-[-0.045em] text-foreground md:text-5xl; }
-  .editorial-link { @apply inline-flex min-h-11 items-center gap-3 border-b border-current text-xs font-semibold uppercase tracking-[0.03em] text-brand-green; }
-  .editorial-button { @apply rounded-lg inline-flex min-h-12 items-center justify-center gap-4 bg-brand-amber px-6 py-3 text-xs font-bold uppercase tracking-[0.03em] text-foreground transition-colors hover:bg-brand-amber/85 disabled:opacity-50; }
+  .editorial-label { @apply text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground; }
+  .editorial-title { @apply font-heading text-4xl font-normal normal-case leading-[1.12] tracking-[-0.025em] text-foreground md:text-5xl; text-wrap: balance; }
+  .editorial-link { @apply inline-flex min-h-11 items-center gap-3 border-b border-current text-sm font-medium tracking-normal text-brand-green; }
+  .editorial-button { @apply rounded-lg inline-flex min-h-12 items-center justify-center gap-4 bg-brand-amber px-6 py-3 text-sm font-semibold tracking-normal text-foreground transition-colors hover:bg-brand-amber/85 disabled:opacity-50; }
   .freshpick-market h1, .freshpick-market h2 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: -0.045em;
+    font-family: var(--font-heading);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: -0.025em;
   }
-  .freshpick-market h1 { text-wrap: balance; overflow-wrap: anywhere; }
-  .account-form h1, .account-form h2 { text-transform: none; letter-spacing: -0.035em; }
-  .market-story-title { @apply font-sans font-bold uppercase tracking-[-0.025em] text-foreground; }
+  .freshpick-market h1 { text-wrap: balance; overflow-wrap: break-word; }
+  .freshpick-market h1.font-sans, .freshpick-market h2.font-sans { font-family: var(--font-sans); }
+  .market-story-title { @apply font-heading font-normal normal-case tracking-[-0.015em] text-foreground; text-wrap: pretty; }
 }
 
 @layer utilities {

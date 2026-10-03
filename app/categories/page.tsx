@@ -59,7 +59,7 @@ export default async function CategoriesIndex() {
                   <Image src={image} alt="" fill priority={index < 2} sizes="(max-width: 1023px) 50vw, 400px" className={image.split("?")[0].endsWith(".svg") ? "object-contain p-10 sm:p-16" : "object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"} />
                 </div>
                 <div className="mt-4 flex items-start justify-between gap-2">
-                  <div className="min-w-0"><h2 className="text-base font-bold uppercase tracking-tight text-foreground md:text-xl">{category.name}</h2>
+                  <div className="min-w-0"><h2 className="font-sans text-base font-medium tracking-[-0.01em] text-foreground md:text-xl">{category.name}</h2>
                   {category.description && <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{category.description}</p>}
                   <span className="mt-2 inline-block text-xs text-muted-foreground">Shop category</span></div>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center text-brand-green transition-colors group-hover:border-brand-green group-hover:bg-brand-green group-hover:text-primary-foreground"><ArrowRight strokeWidth={1.75} className="h-4 w-4" aria-hidden="true" /></span>

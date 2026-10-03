@@ -115,7 +115,7 @@ export function BlogPost({ blog }: BlogPostProps) {
       <div className="bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto">
-            <div className="prose prose-lg prose-zinc max-w-none prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:font-normal prose-p:leading-loose prose-p:text-muted-foreground prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-img:rounded-sm prose-img:shadow-none">
+            <div className="prose prose-lg prose-zinc max-w-[68ch] mx-auto prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:font-normal prose-p:leading-[1.8] prose-p:text-muted-foreground prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-img:rounded-sm prose-img:shadow-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}
