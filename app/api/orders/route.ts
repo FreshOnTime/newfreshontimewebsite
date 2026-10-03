@@ -1,3 +1,4 @@
+import { registrationAddressToOrderAddress } from '@/lib/checkoutAddress';
 import { DeliveryPolicyError, assertDeliveryArea } from '@/lib/deliveryPolicy';
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
@@ -226,15 +227,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     } else if (useRegisteredAddress || !shippingAddress) {
       const ra = userDoc?.addresses.find((a) => a.isRegistration) || userDoc?.addresses[0];
       if (ra) {
-        resolvedShipping = {
-          name: ra.recipientName || `${userDoc?.firstName || ''}`.trim() || 'Customer',
-          street: [ra.streetAddress, ra.streetAddress2].filter(Boolean).join(', '),
-          city: ra.city || ra.town || '',
-          state: ra.state || '',
-          zipCode: ra.postalCode || '',
-          country: ra.countryCode || 'LK',
-          phone: ra.phoneNumber || userDoc?.phoneNumber || '',
-        };
+        resolvedShipping = registrationAddressToOrderAddress(ra, { name: userDoc?.firstName, phone: userDoc?.phoneNumber });
       }
     }
     const address = orderAddressSchema.safeParse(resolvedShipping);

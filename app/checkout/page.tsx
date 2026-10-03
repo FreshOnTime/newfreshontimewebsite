@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api/client";
 import { authenticatedApiFetch } from "@/lib/api/authenticated-fetch";
+import { isCompleteOrderAddress, registrationAddressToOrderAddress } from "@/lib/checkoutAddress";
 import { discountedUnitPrice, type CheckoutQuote } from "@/lib/commercePricing";
 import { checkoutRetryForIntent, hashCheckoutIntent, readCheckoutRetry, type CheckoutRetry } from "@/lib/checkoutRetry";
 import { WHATSAPP_NUMBER } from "@/lib/config/site";
@@ -286,7 +287,8 @@ export default function CheckoutPage() {
 
   const itemsKey = JSON.stringify(effectiveItems.map((item) => ({ productId: item.product.id, quantity: item.quantity })));
   const retryScope = `freshpick-checkout:${user?._id || ""}:${effectiveBagId || quickSku || "default"}`;
-  const areaKey = JSON.stringify({ city: useAccountAddress ? user?.registrationAddress?.city || '' : shipCity, country: useAccountAddress ? user?.registrationAddress?.countryCode || 'LK' : shipCountry });
+  const accountAddress = registrationAddressToOrderAddress(user?.registrationAddress, { name: user?.firstName, phone: user?.phoneNumber });
+  const areaKey = JSON.stringify({ city: useAccountAddress ? accountAddress?.city || '' : shipCity, country: useAccountAddress ? accountAddress?.country || 'LK' : shipCountry });
   const quoteKey = JSON.stringify([itemsKey, areaKey]);
   const quote = quoteState?.itemsKey === quoteKey ? quoteState.quote : null;
 
@@ -332,9 +334,9 @@ export default function CheckoutPage() {
   const quotedUnitPrice = (item: CheckoutItem) => quote?.items.find((line) => line.productId === item.product.id)?.price
     ?? (quickSku && quote?.items.length === 1 ? quote.items[0].price : item.product.price);
 
-  const customAddressComplete = [shipName, shipPhone, shipStreet, shipCity, shipZip].every((value) => value.trim().length > 0);
+  const customAddressComplete = isCompleteOrderAddress({ name: shipName, phone: shipPhone, street: shipStreet, city: shipCity, country: shipCountry });
   const stockAvailable = effectiveItems.every((item) => item.product.stock === undefined || item.quantity <= item.product.stock);
-  const canPlaceOrder = !recovering && !recoveryError && (Boolean(planSlug) || Boolean(quote)) && effectiveItems.length > 0 && stockAvailable && !bagsLoading && !bagUpdating && (useAccountAddress ? Boolean(user?.registrationAddress) : customAddressComplete);
+  const canPlaceOrder = !recovering && !recoveryError && (Boolean(planSlug) || Boolean(quote)) && effectiveItems.length > 0 && stockAvailable && !bagsLoading && !bagUpdating && (useAccountAddress ? isCompleteOrderAddress(accountAddress) : customAddressComplete);
 
   const buildRecurrence = (startedAt: string) => {
     if (!isRecurring) return undefined;
@@ -398,7 +400,7 @@ export default function CheckoutPage() {
         if (!day) throw new Error("Please choose a delivery day.");
 
         const deliveryAddress = useAccountAddress
-          ? user.registrationAddress
+          ? accountAddress
           : {
               name: shipName,
               street: shipStreet,
@@ -418,7 +420,7 @@ export default function CheckoutPage() {
         const retry = checkoutRetryForIntent(previous, hash);
         subscriptionRetryRef.current = retry;
         try { sessionStorage.setItem(scope, JSON.stringify(retry)); } catch { /* Optional reload recovery. */ }
-        const response = await apiFetch("/api/subscriptions", {
+        const response = await authenticatedApiFetch("/api/subscriptions", {
           method: "POST", headers: { 'Idempotency-Key': retry.key }, body: JSON.stringify(intent),
         });
         const data = await response.json();

@@ -148,6 +148,7 @@ Sources: [mailService.ts](../lib/services/mailService.ts), [emailOutboxService.t
 
 | Source | Functions | Responsibility / contract |
 | --- | --- | --- |
+| [checkoutAddress](../lib/checkoutAddress.ts) | `registrationAddressToOrderAddress`, `isCompleteOrderAddress` | Convert saved profile fields to the canonical checkout/subscription recipient and validate required client fields; postcode remains optional |
 | [checkoutService](../lib/checkoutService.ts) | `checkoutRequestHash`, `prepareCheckout`, `reserveCheckoutStock` | Stable intent hash, current-price quote, transaction-only guarded stock decrements |
 | [commercePricing](../lib/commercePricing.ts) | `roundMoney`, `discountedUnitPrice`, `productUnitPrice`, `basketTotals` | Consistent monetary rounding, sale unit price and order totals |
 | [deliveryPolicy](../lib/deliveryPolicy.ts) | `deliveryPolicy`, `deliveryCharge`, `assertDeliveryArea` | Required approved delivery settings, strict free threshold and geographic validation |

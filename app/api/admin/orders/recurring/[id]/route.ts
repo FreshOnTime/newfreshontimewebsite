@@ -95,6 +95,8 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     if (!before) return NextResponse.json({ error: 'Recurring order not found' }, { status: 404 });
     if (!before.isRecurring) return NextResponse.json({ error: 'Order is not a recurring order' }, { status: 400 });
 
+    if (data.isRecurring === false) return NextResponse.json({ error: 'A recurring schedule cannot become a standalone order. End the schedule instead.' }, { status: 400 });
+
     if (data.customerId && data.customerId !== before.customerId) {
       const customerExists = await prisma.user.findUnique({ where: { id: data.customerId } });
       if (!customerExists) return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
@@ -149,14 +151,11 @@ export const DELETE = requireAdmin(async (request: NextRequest, { params }: { pa
     if (!before) return NextResponse.json({ error: 'Recurring order not found' }, { status: 404 });
     if (!before.isRecurring) return NextResponse.json({ error: 'Order is not a recurring order' }, { status: 400 });
 
-    await prisma.$transaction(async (tx) => {
-      if (!['delivered', 'shipped', 'cancelled', 'refunded'].includes(before.status)) {
-        for (const item of before.items) {
-          await tx.product.update({ where: { id: item.productId }, data: { stockQty: { increment: item.qty } } }).catch(() => null);
-        }
-      }
-      await tx.order.delete({ where: { id } });
-    });
+    // Template rows never reserve inventory. Generated deliveries remain intact.
+    const removed = await prisma.$transaction(async (tx) => tx.order.deleteMany({
+      where: { id, isRecurring: true, updatedAt: before.updatedAt },
+    }));
+    if (removed.count !== 1) return NextResponse.json({ error: 'This schedule changed. Refresh before deleting.' }, { status: 409 });
 
     await logAuditAction((request as AuthenticatedRequest).user.userId, 'delete', 'order', id, serializeOrder(before), undefined, request);
     return NextResponse.json({ success: true, message: 'Recurring order deleted successfully' });
@@ -193,7 +192,7 @@ export const PATCH = requireAdmin(async (request: NextRequest, { params }: { par
           total: before.total,
           status: 'pending',
           paymentMethod: before.paymentMethod,
-          paymentStatus: before.paymentStatus,
+          paymentStatus: 'pending',
           shippingAddress: before.shippingAddress as Prisma.InputJsonValue,
           billingAddress: before.billingAddress as Prisma.InputJsonValue,
           notes: before.notes,

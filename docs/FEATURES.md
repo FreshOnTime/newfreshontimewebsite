@@ -36,7 +36,7 @@ Legacy aliases and redirects remain in the source, including account signup vari
 ## Shopping and checkout, step by step
 
 1. Browse categories or products, then add quantities to a bag. Product unit metadata describes the offered item; stock and checkout quantities are whole catalog units.
-2. Sign in and select an address. A saved profile address is converted into the checkout address shape.
+2. Sign in and select an address. A saved profile address is converted into the checkout address shape for groceries and subscriptions; postcode is optional. Bag and subscription requests recover an expired access session once. Bag state is scoped to the active account, ignores superseded reads, and serializes quantity writes.
 3. The server resolves products, merges duplicate identifiers, checks availability and derives current sale prices. Client totals are not authoritative.
 4. Delivery area, approved delivery fee, minimum order and free-delivery threshold are evaluated on the server. Free delivery applies **strictly above** the configured threshold, not at equality. Tax is currently zero.
 5. An ordinary order reserves stock transactionally. If any item fails its price/stock guard, the transaction rolls back instead of partially ordering the bag.

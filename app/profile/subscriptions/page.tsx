@@ -16,7 +16,7 @@ interface Subscription {
   plan: { name: string; icon: string; price: number; frequency: string };
   status: 'active' | 'paused' | 'cancelled';
   nextDeliveryDate: string;
-  deliveryAddress: { fullName: string; addressLine1: string; city: string };
+  deliveryAddress: { name?: string; street?: string; fullName?: string; addressLine1?: string; city: string };
   deliverySlot: { day: string; timeSlot: string };
   totalDeliveries: number;
 }
@@ -96,7 +96,7 @@ export default function MySubscriptionsPage() {
     }
   };
 
-  const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo', weekday: 'short', month: 'short', day: 'numeric' });
 
   return (
     <AccountPage title="Subscriptions" description="Manage your regular deliveries." action={<Link href="/subscriptions" className={accountSecondaryButton}>Explore plans</Link>}>
@@ -123,7 +123,7 @@ export default function MySubscriptionsPage() {
 
                 <div className="grid gap-px bg-background sm:grid-cols-3">
                   <Info icon={CalendarDays} label={sub.status === 'active' ? `Next delivery · ${sub.deliverySlot.day}` : 'Next delivery'} value={sub.status === 'active' ? formatDate(sub.nextDeliveryDate) : 'Not scheduled'} />
-                  <Info icon={MapPin} label="Delivery to" value={[sub.deliveryAddress?.addressLine1, sub.deliveryAddress?.city].filter(Boolean).join(', ') || 'Not recorded'} />
+                  <Info icon={MapPin} label="Delivery to" value={[sub.deliveryAddress?.street || sub.deliveryAddress?.addressLine1, sub.deliveryAddress?.city].filter(Boolean).join(', ') || 'Not recorded'} />
                   <Info icon={RefreshCw} label="Completed" value={`${sub.totalDeliveries} deliver${sub.totalDeliveries === 1 ? 'y' : 'ies'}`} />
                 </div>
 
