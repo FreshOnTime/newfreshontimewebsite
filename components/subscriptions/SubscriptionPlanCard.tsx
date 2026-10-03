@@ -93,7 +93,7 @@ export default function SubscriptionPlanCard({ plan }: SubscriptionPlanCardProps
             </div>
 
             <div className="relative z-10 mt-auto">
-                <Link href={`/checkout?plan=${encodeURIComponent(plan.slug)}`} className="flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-amber px-4 py-3 text-sm font-bold text-foreground transition-colors hover:bg-brand-amber/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">Choose plan</Link>
+                <Link href={`/checkout?plan=${encodeURIComponent(plan.slug)}`} className="flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-leaf px-4 py-3 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-leaf/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">Choose plan</Link>
 
                 <div className={cn('mt-6 flex items-center gap-1.5 text-xs normal-case', isFeatured ? 'text-muted-foreground' : 'text-muted-foreground')}>
                     <CalendarClock className="h-3.5 w-3.5" />

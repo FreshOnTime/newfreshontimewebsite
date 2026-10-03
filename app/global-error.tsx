@@ -20,7 +20,7 @@ export default function GlobalError({
           <section className="p-7 md:p-9">
             <p className="text-sm font-normal leading-7 text-muted-foreground">If the same problem keeps appearing, return to FreshPick and try the action again from the relevant page.</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <button onClick={() => reset()} className="rounded-full bg-primary px-6 py-3 text-xs font-semibold text-accent-foreground transition-colors hover:bg-primary/85">Try again</button>
+              <button onClick={() => reset()} className="rounded-full bg-brand-leaf px-6 py-3 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-leaf/85">Try again</button>
               {/* A full reload recovers failures in the root layout. */}
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a href="/" className="rounded-md border border-border px-6 py-3 text-xs font-semibold text-foreground">FreshPick home</a>

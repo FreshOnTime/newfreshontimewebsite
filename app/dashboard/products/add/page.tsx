@@ -465,7 +465,7 @@ export default function AddProduct() {
                   type="button"
                   variant="outline"
                   onClick={enhanceWithAI}
-                  className="w-full bg-primary text-accent-foreground hover:bg-primary/85"
+                  className="w-full bg-brand-leaf text-brand-ink hover:bg-brand-leaf/85"
                   disabled={
                     isLoading ||
                     form.watch("name") === "" ||

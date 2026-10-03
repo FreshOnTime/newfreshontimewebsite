@@ -42,6 +42,9 @@ export default {
         },
         brand: {
           green: "#2F6B45",
+          leaf: "#61B547",
+          ink: "#171815",
+          tangerine: "#F4971A",
           sage: "#84977A",
           paper: "#EFECE3",
           amber: "#E6A23C",
@@ -105,7 +108,6 @@ export default {
     },
     fontFamily: {
       default: ["var(--font-default)"],
-      brand: ["var(--font-brand)", "sans-serif"],
       sans: ["var(--font-sans)", "sans-serif"],
       serif: ["var(--font-heading)", "serif"],
       accent: ["var(--font-accent)", "serif"],

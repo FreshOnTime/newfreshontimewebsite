@@ -197,7 +197,7 @@ export default function BundlesPage() {
                     <h1 className="text-3xl font-normal text-foreground">Bundles</h1>
                     <p className="text-muted-foreground mt-2">Manage product bundles and packages</p>
                 </div>
-                <Button onClick={() => setIsDialogOpen(true)} className="bg-primary hover:bg-primary">
+                <Button onClick={() => setIsDialogOpen(true)} className="bg-brand-leaf hover:bg-brand-leaf">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Bundle
                 </Button>
@@ -451,7 +451,7 @@ export default function BundlesPage() {
                             </Button>
                             <Button
                                 type="submit"
-                                className="bg-primary hover:bg-primary"
+                                className="bg-brand-leaf hover:bg-brand-leaf"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? "Creating..." : (

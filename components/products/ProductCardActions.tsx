@@ -77,7 +77,7 @@ export default function ProductCardActions({ id, sku, name, image, price, isOutO
         onClick={quickAdd}
         aria-label={isOutOfStock ? `${name} is unavailable` : `Add ${name} to ${currentBag?.name || "bag"}`}
         disabled={isOutOfStock || (loading && Boolean(user && currentBag))}
-        className="flex h-11 min-w-0 flex-1 rounded-lg items-center justify-center gap-1.5 border border-brand-amber bg-brand-amber px-2 sm:gap-2 sm:px-3 text-xs font-bold uppercase text-foreground transition-colors hover:bg-brand-amber/85 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex h-11 min-w-0 flex-1 rounded-lg items-center justify-center gap-1.5 border border-brand-leaf bg-brand-leaf px-2 sm:gap-2 sm:px-3 text-xs font-bold uppercase text-brand-ink transition-colors hover:bg-brand-leaf/85 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {!isOutOfStock && <ShoppingBag strokeWidth={1.75} aria-hidden="true" className="h-4 w-4 shrink-0" />}
         {isOutOfStock ? <span className="min-w-0 truncate text-xs sm:text-sm">Sold out</span> : <><span className="sm:hidden">Add</span><span className="hidden min-w-0 truncate sm:inline">Add to bag</span></>}

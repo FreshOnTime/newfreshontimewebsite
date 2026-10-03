@@ -182,7 +182,7 @@ export function SupplierSignupForm() {
 
             <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">Submitting does not imply automatic public listing. FreshPick reviews and manages supplier relationships as a curated network.</p>
-              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-md bg-brand-amber px-7 text-sm font-semibold normal-case text-foreground shadow-none hover:bg-brand-amber/85">
+              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-md bg-brand-leaf px-7 text-sm font-semibold normal-case text-brand-ink shadow-none hover:bg-brand-leaf/85">
                 {isLoading ? 'Submitting…' : <span className="inline-flex items-center gap-2">{accountCreated ? 'Finish application' : 'Submit application'} <ArrowRight className="h-4 w-4" /></span>}
               </Button>
             </div>

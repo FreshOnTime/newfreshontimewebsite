@@ -516,7 +516,7 @@ export default function CheckoutPage() {
         <h1 className="mt-5 text-3xl font-normal text-brand-green">Nothing to check out yet.</h1>
         <p className="mt-2 max-w-md text-muted-foreground">Choose products or an active recurring plan, then come back here to complete the order.</p>
         {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
-        <Link href="/products" className="mt-7 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-accent-foreground hover:bg-primary/85">
+        <Link href="/products" className="mt-7 rounded-lg bg-brand-leaf px-7 py-3.5 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">
           Browse products
         </Link>
       </div>
@@ -820,7 +820,7 @@ export default function CheckoutPage() {
                     size="lg"
                     onClick={() => placeOrder(false)}
                     disabled={submitting || !canPlaceOrder}
-                    className="mt-7 min-h-12 h-auto w-full whitespace-normal rounded-lg px-4 py-3 bg-primary text-base font-semibold text-accent-foreground hover:bg-primary/85"
+                    className="mt-7 min-h-12 h-auto w-full whitespace-normal rounded-lg px-4 py-3 bg-brand-leaf text-base font-semibold text-brand-ink hover:bg-brand-leaf/85"
                   >
                     {submitting && !orderingViaWhatsapp ? "Placing order…" : "Place order"}
                   </Button>

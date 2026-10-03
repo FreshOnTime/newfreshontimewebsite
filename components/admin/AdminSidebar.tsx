@@ -56,7 +56,7 @@ export function AdminSidebar() {
           <SidebarContent pathname={pathname} onNavigate={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
-      <span className="text-sm font-semibold">FreshPick admin</span>
+      <Wordmark className="text-xl" /><span className="text-xs text-muted-foreground">Admin</span>
     </div>
   </>;
 }

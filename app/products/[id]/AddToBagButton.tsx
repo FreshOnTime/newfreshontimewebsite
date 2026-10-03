@@ -93,7 +93,7 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
     <>
       <div className="w-full flex">
         <Button
-          className="h-12 w-full rounded-l-lg rounded-r-none bg-brand-amber px-4 text-xs font-bold uppercase leading-tight text-foreground hover:bg-brand-amber/85"
+          className="h-12 w-full rounded-l-lg rounded-r-none bg-brand-leaf px-4 text-xs font-bold uppercase leading-tight text-brand-ink hover:bg-brand-leaf/85"
           disabled={product.isOutOfStock || authLoading || loading || !Number.isFinite(quantity) || quantity <= 0}
           onClick={handleAddToBag}
         >

@@ -26,7 +26,7 @@ export default function PrivateClientCTA() {
                 </p>
 
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Link href="/subscriptions" className="group relative rounded-md bg-primary px-8 py-4 font-bold tracking-wide text-foreground shadow-[0_16px_45px_rgba(16,185,129,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-secondary">
+                    <Link href="/subscriptions" className="group relative rounded-md bg-brand-leaf px-8 py-4 font-bold tracking-wide text-brand-ink shadow-[0_16px_45px_rgba(16,185,129,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-secondary">
                         <span className="flex items-center gap-2">
                             Shop Private Memberships
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

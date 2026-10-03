@@ -131,7 +131,7 @@ export default function AdminIntelligencePage() {
               <button
                 key={filter}
                 onClick={() => setRiskFilter(filter)}
-                className={`border px-3 py-2 text-xs font-semibold capitalize ${riskFilter === filter ? "border-border bg-primary text-white" : "border-border bg-background text-muted-foreground"}`}
+                className={`border px-3 py-2 text-xs font-semibold capitalize ${riskFilter === filter ? "border-border bg-brand-leaf text-brand-ink" : "border-border bg-background text-muted-foreground"}`}
               >
                 {filter.replace("-", " ")}
               </button>

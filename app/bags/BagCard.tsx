@@ -65,14 +65,14 @@ export function BagCard({
       {onOrderNow ? (
         <button
           onClick={() => onOrderNow(bag.id)}
-          className="h-12 w-full bg-primary text-accent-foreground rounded-md flex items-center justify-center"
+          className="h-12 w-full bg-brand-leaf text-brand-ink rounded-md flex items-center justify-center"
         >
           <ShoppingBag className="w-6 h-6 mr-2 text-primary-foreground" /> Order Now
         </button>
       ) : (
         <Link
           href={bagUrl}
-          className="h-12 w-full bg-primary text-accent-foreground rounded-md flex items-center justify-center hover:bg-primary transition-colors"
+          className="h-12 w-full bg-brand-leaf text-brand-ink rounded-md flex items-center justify-center hover:bg-brand-leaf transition-colors"
         >
           <ShoppingBag className="w-6 h-6 mr-2 text-primary-foreground" /> View Bag
         </Link>

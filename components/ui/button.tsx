@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-brand-leaf text-brand-ink hover:bg-brand-leaf/90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
         outline:
@@ -18,8 +18,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-secondary hover:text-brand-green",
         link: "text-primary underline-offset-4 hover:underline",
-        "elite": "bg-accent text-accent-foreground hover:bg-accent/85",
-        "luxury": "bg-primary text-primary-foreground hover:bg-primary/90",
+        "elite": "bg-brand-leaf text-brand-ink hover:bg-brand-leaf/90",
+        "luxury": "bg-brand-ink text-brand-cream hover:bg-brand-ink/90",
       },
       size: {
         default: "h-12 px-6 py-2 text-base",

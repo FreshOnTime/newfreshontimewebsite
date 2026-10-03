@@ -54,5 +54,5 @@ export function AccountLoading({ label }: { label: string }) {
   return <div role="status" className="flex items-center gap-3 py-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{label}</div>;
 }
 
-export const accountButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-accent-foreground transition-colors hover:bg-primary/85 disabled:opacity-50';
+export const accountButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-leaf px-5 py-2.5 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-leaf/90 disabled:opacity-50';
 export const accountSecondaryButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-brand-green transition-colors hover:border-brand-green disabled:opacity-50';

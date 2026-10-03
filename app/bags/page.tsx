@@ -53,7 +53,7 @@ export default function BagsPage() {
   }
 
   if (!user) {
-    return <section className="mx-auto max-w-lg px-5 py-16 text-center"><ShoppingBag strokeWidth={1.5} aria-hidden="true" className="mx-auto h-9 w-9 text-brand-green" /><h1 className="mt-6 text-3xl font-normal tracking-tight text-brand-green">Your groceries, organised.</h1><p className="mt-4 text-sm leading-7 text-muted-foreground">Sign in to save shopping bags and pick up where you left off.</p><Link href="/auth/login?redirect=%2Fbags" className="mt-7 inline-flex min-h-11 items-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-primary/85">Sign in to view your bags</Link><Link href="/products" className="mt-4 flex min-h-11 items-center justify-center text-sm text-brand-green hover:underline">Continue shopping</Link></section>;
+    return <section className="mx-auto max-w-lg px-5 py-16 text-center"><ShoppingBag strokeWidth={1.5} aria-hidden="true" className="mx-auto h-9 w-9 text-brand-green" /><h1 className="mt-6 text-3xl font-normal tracking-tight text-brand-green">Your groceries, organised.</h1><p className="mt-4 text-sm leading-7 text-muted-foreground">Sign in to save shopping bags and pick up where you left off.</p><Link href="/auth/login?redirect=%2Fbags" className="mt-7 inline-flex min-h-11 items-center rounded-lg bg-brand-leaf px-6 py-3 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Sign in to view your bags</Link><Link href="/products" className="mt-4 flex min-h-11 items-center justify-center text-sm text-brand-green hover:underline">Continue shopping</Link></section>;
   }
 
   return (
@@ -63,7 +63,7 @@ export default function BagsPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground"><Link href="/" className="inline-flex min-h-9 items-center hover:text-brand-green">Home</Link><ChevronRight aria-hidden="true" className="h-3 w-3" /><span aria-current="page">Shopping bags</span></nav>
           <div className="mt-5 flex flex-col justify-between gap-5 border-b border-border pb-8 sm:flex-row sm:items-end">
             <div><h1 className="text-3xl font-normal tracking-tight text-brand-green md:text-4xl">Your shopping bags</h1><p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">A place for this week’s groceries, everyday essentials, and your next meal.</p></div>
-            <Button disabled={loading || updating} onClick={() => setShowCreate(true)} className="h-11 rounded-lg bg-primary px-5 text-sm font-semibold hover:bg-primary/85"><Plus strokeWidth={1.75} aria-hidden="true" /> New bag</Button>
+            <Button disabled={loading || updating} onClick={() => setShowCreate(true)} className="h-11 rounded-lg bg-brand-leaf px-5 text-sm font-semibold hover:bg-brand-leaf/85"><Plus strokeWidth={1.75} aria-hidden="true" /> New bag</Button>
           </div>
         </div>
         <div className="mx-auto max-w-7xl px-5 pb-12 pt-2 md:px-8 md:pb-16">
@@ -73,7 +73,7 @@ export default function BagsPage() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-brand-green"><ShoppingBag strokeWidth={1.5} aria-hidden="true" className="h-7 w-7" /></div>
               <h2 className="mt-6 text-2xl font-normal tracking-tight text-brand-green">{error ? 'Your bags are temporarily unavailable.' : 'Start with a fresh bag.'}</h2>
               <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">{error ? 'Reload your bags to continue shopping.' : 'Give your bag a name, then fill it with your favourites from the market.'}</p>
-              <Button disabled={loading} onClick={() => error ? fetchBags() : setShowCreate(true)} className="mt-6 h-11 rounded-lg bg-primary px-6 text-sm hover:bg-primary/85">{error ? 'Try again' : 'Create your first bag'}</Button>
+              <Button disabled={loading} onClick={() => error ? fetchBags() : setShowCreate(true)} className="mt-6 h-11 rounded-lg bg-brand-leaf px-6 text-sm hover:bg-brand-leaf/85">{error ? 'Try again' : 'Create your first bag'}</Button>
             </section>
           ) : (
             <div className="grid items-start gap-6 lg:grid-cols-2">
@@ -91,7 +91,7 @@ export default function BagsPage() {
                   {bag.tags.length > 0 && <div className="mb-4 flex flex-wrap gap-2">{bag.tags.map((tag) => <span key={tag} className="rounded-full bg-secondary px-3 py-1 text-xs text-brand-green">{tag}</span>)}</div>}
                   <div className="border-t border-border py-5">
                     {!available && <p className="mb-4 text-xs text-destructive">Update unavailable items before checking out.</p>}
-                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><p className="text-xs text-muted-foreground">Items total</p><p className="mt-1 text-xl font-semibold tabular-nums">Rs. {money(total)}</p></div>{checkout ? <Link href={{ pathname: '/checkout', query: { bagId: bag.id } }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-primary/85">Checkout bag <ArrowRight strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></Link> : <button disabled className="min-h-11 rounded-lg bg-secondary px-5 text-sm text-muted-foreground">Checkout bag</button>}</div>
+                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><p className="text-xs text-muted-foreground">Items total</p><p className="mt-1 text-xl font-semibold tabular-nums">Rs. {money(total)}</p></div>{checkout ? <Link href={{ pathname: '/checkout', query: { bagId: bag.id } }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-leaf px-5 py-3 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Checkout bag <ArrowRight strokeWidth={1.75} aria-hidden="true" className="h-4 w-4" /></Link> : <button disabled className="min-h-11 rounded-lg bg-secondary px-5 text-sm text-muted-foreground">Checkout bag</button>}</div>
                     <Link href={'/bags/' + encodeURIComponent(bag.id)} className="mt-3 inline-flex min-h-11 items-center text-sm text-brand-green hover:underline">View and edit bag</Link>
                   </div>
                 </article>;
@@ -106,7 +106,7 @@ export default function BagsPage() {
           <form onSubmit={(event) => { event.preventDefault(); create(); }}>
             <DialogHeader><DialogTitle className="text-2xl font-medium text-brand-green">Create a shopping bag</DialogTitle><DialogDescription>Name it for the way you shop.</DialogDescription></DialogHeader>
             <div className="space-y-4 py-6"><div className="space-y-2"><Label htmlFor="bag-name">Bag name</Label><Input autoFocus id="bag-name" required maxLength={120} disabled={creating} value={name} onChange={(event) => setName(event.target.value)} placeholder="Weekly groceries" /></div><div className="space-y-2"><Label htmlFor="bag-description">Note <span className="text-muted-foreground">(optional)</span></Label><Input id="bag-description" maxLength={300} disabled={creating} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Anything you’d like to remember" /></div></div>
-            <DialogFooter className="gap-2"><Button type="button" variant="outline" disabled={creating} className="h-11 border text-sm normal-case" onClick={() => setShowCreate(false)}>Cancel</Button><Button type="submit" disabled={creating || !name.trim()} className="h-11 bg-primary text-sm hover:bg-primary/85">{creating ? 'Creating…' : 'Create bag'}</Button></DialogFooter>
+            <DialogFooter className="gap-2"><Button type="button" variant="outline" disabled={creating} className="h-11 border text-sm normal-case" onClick={() => setShowCreate(false)}>Cancel</Button><Button type="submit" disabled={creating || !name.trim()} className="h-11 bg-brand-leaf text-sm hover:bg-brand-leaf/85">{creating ? 'Creating…' : 'Create bag'}</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

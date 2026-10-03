@@ -179,7 +179,7 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
 
             <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">By creating an account, your order and bag history can be used to make FreshPick more relevant to you.</p>
-              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-lg bg-brand-amber px-7 text-sm font-semibold normal-case text-foreground shadow-none hover:bg-brand-amber/85">
+              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-lg bg-brand-leaf px-7 text-sm font-semibold normal-case text-brand-ink shadow-none hover:bg-brand-leaf/85">
                 {isLoading ? 'Creating account…' : <span className="inline-flex items-center gap-2">Create account <ArrowRight className="h-4 w-4" /></span>}
               </Button>
             </div>

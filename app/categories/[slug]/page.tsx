@@ -93,7 +93,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
             <h2 className="text-2xl font-normal text-brand-green">{unavailable ? 'We couldn’t load this selection.' : page > 1 ? 'You’ve reached the end of this selection.' : 'Fresh arrivals are on their way.'}</h2>
             <p className="mt-3 text-sm text-muted-foreground">{unavailable ? 'Please try again in a moment, or browse the full market.' : 'Explore the rest of the market for your everyday essentials.'}</p>
             <div className="mt-6">
-              <Link href="/products" className="inline-flex min-h-11 items-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-primary/85">Shop the market</Link>
+              <Link href="/products" className="inline-flex min-h-11 items-center rounded-lg bg-brand-leaf px-6 py-3 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Shop the market</Link>
             </div>
           </div>
         )}

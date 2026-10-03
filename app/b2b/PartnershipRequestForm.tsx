@@ -106,7 +106,7 @@ export default function PartnershipRequestForm() {
         </div>
       </div>
 
-      <button type="submit" disabled={status === "submitting"} className="group mt-6 flex h-12 w-full items-center justify-center rounded-lg bg-primary px-8 text-sm font-semibold text-accent-foreground transition-all hover:bg-primary/85 disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="submit" disabled={status === "submitting"} className="group mt-6 flex h-12 w-full items-center justify-center rounded-lg bg-brand-leaf px-8 text-sm font-semibold text-brand-ink transition-all hover:bg-brand-leaf/85 disabled:cursor-not-allowed disabled:opacity-60">
         {status === "submitting" ? "Submitting…" : "Submit partnership application"}
         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
       </button>

@@ -394,7 +394,7 @@ export default function OrderDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-3 pt-2">
-                      <Button type="submit" disabled={saving} className="bg-primary text-accent-foreground hover:bg-primary/85">Save Schedule</Button>
+                      <Button type="submit" disabled={saving} className="bg-brand-leaf text-brand-ink hover:bg-brand-leaf/85">Save Schedule</Button>
                       {order.scheduleStatus === 'ended' && (
                         <Button type="button" variant="outline" onClick={() => doRecurringAction('resume')} disabled={saving}>Reactivate</Button>
                       )}
@@ -464,7 +464,7 @@ export default function OrderDetailPage() {
                           addressSaved ||
                           ['cancelled', 'canceled', 'shipped', 'delivered'].includes((order.status || '').toLowerCase())
                         }
-                        className="bg-primary text-accent-foreground hover:bg-primary/85"
+                        className="bg-brand-leaf text-brand-ink hover:bg-brand-leaf/85"
                       >
                         {addressSaved ? 'Address Saved ✓' : 'Save Address'}
                       </Button>

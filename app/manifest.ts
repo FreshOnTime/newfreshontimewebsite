@@ -1,101 +1,26 @@
-import type { MetadataRoute } from "next";
+import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
-    return {
-        name: "Fresh Pick - Premium Grocery Delivery",
-        short_name: "Fresh Pick",
-        description: "Premium artisanal groceries, sourced from the world's finest growers, delivered to your doorstep in Colombo.",
-        start_url: "/",
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#059669",
-        orientation: "portrait-primary",
-        categories: ["food", "shopping", "lifestyle"],
-        icons: [
-            {
-                src: "/icons/icon-72x72.png",
-                sizes: "72x72",
-                type: "image/png",
-                purpose: "maskable",
-            },
-            {
-                src: "/icons/icon-96x96.png",
-                sizes: "96x96",
-                type: "image/png",
-                purpose: "maskable",
-            },
-            {
-                src: "/icons/icon-128x128.png",
-                sizes: "128x128",
-                type: "image/png",
-                purpose: "maskable",
-            },
-            {
-                src: "/icons/icon-144x144.png",
-                sizes: "144x144",
-                type: "image/png",
-                purpose: "maskable",
-            },
-            {
-                src: "/icons/icon-152x152.png",
-                sizes: "152x152",
-                type: "image/png",
-                purpose: "maskable",
-            },
-            {
-                src: "/icons/icon-192x192.png",
-                sizes: "192x192",
-                type: "image/png",
-                purpose: "any",
-            },
-            {
-                src: "/icons/icon-384x384.png",
-                sizes: "384x384",
-                type: "image/png",
-                purpose: "any",
-            },
-            {
-                src: "/icons/icon-512x512.png",
-                sizes: "512x512",
-                type: "image/png",
-                purpose: "any",
-            },
-        ],
-        screenshots: [
-            {
-                src: "/screenshots/home.png",
-                sizes: "1280x720",
-                type: "image/png",
-                form_factor: "wide",
-                label: "Fresh Pick Homepage",
-            },
-            {
-                src: "/screenshots/products.png",
-                sizes: "750x1334",
-                type: "image/png",
-                form_factor: "narrow",
-                label: "Products Page",
-            },
-        ],
-        shortcuts: [
-            {
-                name: "Shop Products",
-                short_name: "Products",
-                url: "/products",
-                icons: [{ src: "/icons/icon-96x96.png", sizes: "96x96" }],
-            },
-            {
-                name: "View Deals",
-                short_name: "Deals",
-                url: "/deals",
-                icons: [{ src: "/icons/icon-96x96.png", sizes: "96x96" }],
-            },
-            {
-                name: "My Orders",
-                short_name: "Orders",
-                url: "/orders",
-                icons: [{ src: "/icons/icon-96x96.png", sizes: "96x96" }],
-            },
-        ],
-    };
+  return {
+    name: 'FreshPick — Fresh food in Colombo',
+    short_name: 'FreshPick',
+    description: 'Fresh groceries, pantry staples and local food delivered in Colombo, Sri Lanka.',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#F8F7F2',
+    theme_color: '#2F6B45',
+    orientation: 'portrait-primary',
+    categories: ['food', 'shopping', 'lifestyle'],
+    icons: [72, 96, 128, 144, 152, 192, 384, 512].map(size => ({
+      src: `/icons/icon-${size}x${size}.png`,
+      sizes: `${size}x${size}`,
+      type: 'image/png',
+      purpose: 'any',
+    })),
+    shortcuts: [
+      { name: 'Shop products', short_name: 'Products', url: '/products' },
+      { name: 'View deals', short_name: 'Deals', url: '/deals' },
+      { name: 'My orders', short_name: 'Orders', url: '/orders' },
+    ].map(shortcut => ({ ...shortcut, icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }] })),
+  };
 }

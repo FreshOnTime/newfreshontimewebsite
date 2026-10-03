@@ -49,7 +49,7 @@ export function FooterNewsletterForm() {
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="rounded-lg border border-brand-amber bg-brand-amber px-5 py-3 text-xs font-bold uppercase text-brand-green-deep transition-colors hover:bg-brand-amber/85 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-brand-leaf bg-brand-leaf px-5 py-3 text-xs font-bold uppercase text-brand-ink transition-colors hover:bg-brand-leaf/85 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === "submitting" ? "Joining…" : "Subscribe"}
         </button>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Wordmark from '@/components/brand/Wordmark';
 import { Heart, LayoutDashboard, Mail, Menu, Package, Repeat, ShoppingBag, ShoppingCart, UserRound, X } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
@@ -65,7 +66,7 @@ export function DashboardSidebar({ role, active, onSelect, title }: DashboardSid
       <div className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background px-5 lg:hidden">
         <button type="button" aria-label="Open account navigation" className="flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground" onClick={() => setSidebarOpen(true)}><Menu className="h-4 w-4" /></button>
         <div>
-          <p className="text-xs font-bold normal-case text-brand-green">FreshPick account</p>
+          <Wordmark className="text-xl" />
           <p className="mt-0.5 text-sm font-medium text-foreground">{title}</p>
         </div>
       </div>
@@ -77,7 +78,7 @@ function SidebarContent({ nav, active, role, onSelect }: { nav: NavItem[]; activ
   return (
     <div className="flex h-full flex-col px-5 pb-6 pt-6">
       <Link href="/" className="inline-flex flex-col leading-tight">
-        <span className="font-serif text-3xl font-normal text-white">FreshPick</span>
+        <Wordmark className="text-3xl" />
         <span className="mt-1 text-xs font-semibold normal-case text-white/80">{role === 'supplier' ? 'Partner workspace' : 'Your account'}</span>
       </Link>
 
