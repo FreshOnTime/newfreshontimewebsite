@@ -45,6 +45,7 @@ export default {
           sage: "#84977A",
           paper: "#EFECE3",
           amber: "#E6A23C",
+          clay: "#A45F23",
           "green-deep": "#102E1E",
           orange: "#E6A23C",
           lime: "#84977A",

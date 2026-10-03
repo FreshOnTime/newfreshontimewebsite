@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-green)](https://www.postgresql.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://typescriptlang.org/)
 
-The current implementation and launch gaps are tracked in [platform readiness](docs/PLATFORM_READINESS.md). See [account design and flow fixes](docs/ACCOUNT_DESIGN_AND_FLOW_FIXES.md) and [public discovery improvements](docs/DISCOVERY_IMPROVEMENTS.md) for the latest verified changes.
+The current implementation and launch gaps are tracked in [platform readiness](docs/PLATFORM_READINESS.md). See [category-first shopping and producer content](docs/CATEGORY_FIRST_MARKET.md), [account design and flow fixes](docs/ACCOUNT_DESIGN_AND_FLOW_FIXES.md) and [public discovery improvements](docs/DISCOVERY_IMPROVEMENTS.md) for the latest verified changes.
 
 Checkout deployment requires `npm run db:migrate` before the updated app is promoted.
 The `20261002090000_checkout_requests` migration stores retry receipts atomically

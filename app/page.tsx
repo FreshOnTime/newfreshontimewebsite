@@ -9,13 +9,8 @@ import { Product } from "@/models/product";
 
 import HeroSection from "@/components/home/HeroSection";
 import CategoryBento from "@/components/home/CategoryBento";
-import MarketDiscovery from "@/components/home/MarketDiscovery";
-import CreatorNetwork from "@/components/home/CreatorNetwork";
-import ShopFeatures from "@/components/home/ShopFeatures";
-import BrandStory, { BusinessStory } from "@/components/home/BrandStory";
+import BrandStory from "@/components/home/BrandStory";
 import { serverApiFetch } from "@/lib/api/server";
-import { listPublishedRecipes } from "@/lib/recipeService";
-import { listCreators } from "@/lib/creatorService";
 import { listPublishedJournalEntries } from "@/lib/journalService";
 import HomeJournal from "@/components/home/HomeJournal";
 
@@ -59,10 +54,8 @@ async function getHomeData(): Promise<HomeData> {
 }
 
 export default async function Home() {
-  const [{ products, categories }, recipes, creators, journal] = await Promise.all([
+  const [{ products, categories }, journal] = await Promise.all([
     getHomeData(),
-    listPublishedRecipes(3).catch(() => []),
-    listCreators(4).catch(() => []),
     listPublishedJournalEntries().catch((error) => { console.error('[Homepage] Failed to load journal:', error); return []; }),
   ]);
 
@@ -76,7 +69,7 @@ export default async function Home() {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 id="market-title" className="editorial-title">Fresh picks.</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Our current selection. Choose something good to cook with.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Browse the current selection, then build a bag for your kitchen.</p>
             </div>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </div>
@@ -114,11 +107,7 @@ export default async function Home() {
       </section>
 
       <BrandStory />
-      <ShopFeatures />
-      <MarketDiscovery recipes={recipes} />
-      <CreatorNetwork creators={creators} />
       <HomeJournal posts={journal} />
-      <BusinessStory />
       <HomeHelp />
     </div>
   );
