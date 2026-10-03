@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Wordmark from "@/components/brand/Wordmark";
 import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
 import { SERVICE_AREAS, SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
 
@@ -18,7 +17,7 @@ export function Footer() {
           <FooterNewsletterForm />
         </div>
         <div className="grid gap-12 py-12 lg:grid-cols-[1fr_2fr] md:py-16">
-          <div><Link href="/" aria-label="FreshPick home" className="inline-flex rounded-lg bg-brand-cream px-3 py-2"><Wordmark className="text-4xl" /></Link><p className="mt-5 max-w-xs text-sm leading-7 text-white/85">A thoughtfully chosen market for everyday cooking in Colombo.</p><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-6 inline-block min-h-11 break-all text-sm text-white/85 underline decoration-white/30 underline-offset-4">{SUPPORT_EMAIL}</a><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Delivery coverage includes {SERVICE_AREAS.slice(0, 4).join(', ')} and nearby areas.</p></div>
+          <div><p className="max-w-xs text-sm leading-7 text-white/85">A thoughtfully chosen market for everyday cooking in Colombo.</p><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-6 inline-block min-h-11 break-all text-sm text-white/85 underline decoration-white/30 underline-offset-4">{SUPPORT_EMAIL}</a><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Delivery coverage includes {SERVICE_AREAS.slice(0, 4).join(', ')} and nearby areas.</p></div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">{groups.map(group => <nav key={group.title} aria-label={`Footer ${group.title}`}><h3 className="mb-4 text-[11px] font-medium uppercase tracking-[0.12em] text-white/85">{group.title}</h3><ul>{group.links.map(([name,href]) => <li key={href}><Link href={href} className="inline-flex min-h-10 items-center text-[13px] font-normal leading-6 text-white/90 hover:underline underline-offset-4">{name}</Link></li>)}</ul></nav>)}</div>
         </div>
         <p aria-hidden="true" className="select-none pb-6 text-[clamp(2.6rem,12vw,11rem)] font-semibold leading-[1] tracking-[-0.045em]">FreshPick</p>
