@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma, OrderStatus } from '@prisma/client';
+import { assertDeliveryArea, DeliveryPolicyError } from '@/lib/deliveryPolicy';
+import { BasketLifecycleError, syncBasketDelivery, validateBasketOrderTransition } from '@/lib/basketOrderLifecycle';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { orderAddressSchema } from '@/lib/orderAddress';
@@ -7,6 +9,7 @@ import { orderAddressSchema } from '@/lib/orderAddress';
 class OrderConflict extends Error {}
 
 const ORDER_INCLUDE = {
+  subscriptionDelivery: true,
   items: {
     include: {
       product: { select: { id: true, name: true, price: true, images: true, stockQty: true, sku: true } },
@@ -118,7 +121,7 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
       return NextResponse.json({ error: 'No updatable fields provided' }, { status: 400 });
     }
 
-    const order = await prisma.order.findUnique({ where: { id } });
+    const order = await prisma.order.findUnique({ where: { id }, include: { subscriptionDelivery: true } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
     const user = (request as NextRequest & { user: AuthUser }).user;
@@ -131,13 +134,17 @@ export const PUT = requireAuth(async (request: NextRequest, context?: { params: 
       return NextResponse.json({ error: `Order cannot be edited in '${order.status}' state` }, { status: 400 });
     }
 
+    if (order.subscriptionDelivery && updates.shippingAddress) assertDeliveryArea(updates.shippingAddress as { city: string; country: string });
     const updated = await prisma.$transaction(async (tx) => {
       const changed = await tx.order.updateMany({ where: { id, status: order.status, updatedAt: order.updatedAt }, data: updates });
       if (changed.count !== 1) throw new OrderConflict();
+      await syncBasketDelivery(tx, order.subscriptionDelivery, order.status, updates.shippingAddress as Prisma.InputJsonValue | undefined);
       return tx.order.findUniqueOrThrow({ where: { id }, include: ORDER_INCLUDE });
     });
     return NextResponse.json({ success: true, data: serializeOrder(updated) });
   } catch (error) {
+    if (error instanceof DeliveryPolicyError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof BasketLifecycleError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof OrderConflict) return NextResponse.json({ error: 'This order changed. Refresh it before trying again.' }, { status: 409 });
     console.error('Error updating order:', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
@@ -155,7 +162,7 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
     const action = body?.action as string;
     const user = (request as NextRequest & { user: AuthUser }).user;
 
-    const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
+    const order = await prisma.order.findUnique({ where: { id }, include: { items: true, subscriptionDelivery: true } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     const ownerId = user.mongoId || user.userId;
     const isOwner = String(order.customerId) === String(ownerId);
@@ -173,6 +180,7 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
       if (['cancelled', 'refunded'].includes(order.status) && !['cancelled', 'refunded'].includes(target)) {
         return NextResponse.json({ error: 'Create a new order to reserve stock again' }, { status: 400 });
       }
+      if (order.subscriptionDelivery) validateBasketOrderTransition(order.status, target);
       const updated = await prisma.$transaction(async (tx) => {
         // Claim the exact version first. Concurrent requests cannot both release
         // the reservation, and shipment/address edits invalidate stale actions.
@@ -186,12 +194,13 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
         });
         if (changed.count !== 1) throw new OrderConflict();
         const restore = !order.isRecurring && ['cancelled', 'refunded'].includes(target)
-          && !['cancelled', 'refunded'].includes(order.status);
+          && !['cancelled', 'refunded'].includes(order.status) && !(order.subscriptionDelivery && ['shipped','delivered'].includes(order.status));
         if (restore) {
           for (const it of order.items) {
             await tx.product.updateMany({ where: { id: it.productId }, data: { stockQty: { increment: it.qty } } });
           }
         }
+        await syncBasketDelivery(tx, order.subscriptionDelivery, target);
         return tx.order.findUniqueOrThrow({ where: { id }, include: ORDER_INCLUDE });
       });
       return NextResponse.json({ success: true, data: serializeOrder(updated) });
@@ -199,6 +208,8 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
+    if (error instanceof DeliveryPolicyError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof BasketLifecycleError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof OrderConflict) return NextResponse.json({ error: 'This order changed. Refresh it before trying again.' }, { status: 409 });
     console.error('Error patching order:', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
@@ -215,9 +226,10 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: { param
     const user = (request as NextRequest & { user: AuthUser }).user;
     if (user.role !== 'admin') return NextResponse.json({ error: 'Access denied' }, { status: 403 });
 
-    const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
+    const order = await prisma.order.findUnique({ where: { id }, include: { items: true, subscriptionDelivery: true } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
+    if (order.subscriptionDelivery) return NextResponse.json({ error: 'Basket order history must be kept. Cancel the order instead.' }, { status: 409 });
     // Restore stock for orders that still hold reservations. Cancelled/refunded
     // orders already released their stock, so skip them to avoid double-restore.
     const restore = !order.isRecurring && !['delivered', 'shipped', 'cancelled', 'refunded'].includes(order.status);
@@ -234,6 +246,8 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: { param
 
     return NextResponse.json({ success: true, message: 'Order deleted' });
   } catch (error) {
+    if (error instanceof DeliveryPolicyError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof BasketLifecycleError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof OrderConflict) return NextResponse.json({ error: 'This order changed. Refresh it before trying again.' }, { status: 409 });
     console.error('Error deleting order:', error);
     return NextResponse.json({ error: 'Failed to delete order' }, { status: 500 });

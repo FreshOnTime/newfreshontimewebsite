@@ -63,10 +63,34 @@ and enable its retention/versioning separately from database backups.
   reject stale edits. The delivered counter increments in the winning transaction
   and repeated completion does not increment it again. Cancelling a queued basket
   leaves the customer's future schedule active.
-- Basket plan contents are descriptive packing lists. They do **not** reference
-  catalogue product IDs, reserve SKU inventory or create paid product orders.
-  Packing, availability and COD collection need an operator until a basket-to-SKU
-  inventory/payment model is agreed. The recorded amount is the plan price.
+- **Subscriptions → Edit plan:** map each content row to an active catalogue product
+  and specify whole **stock units**. Display quantities (for example “1 kg”) do not
+  control inventory. Repeated product mappings combine their stock quantities.
+  Enable **Reserve catalogue stock and create orders** only after reviewing the
+  mapping and confirming that the advertised basket price includes delivery.
+  Existing plans default to manual fulfillment; no historical delivery is converted.
+- Stock-tracked scheduled baskets claim the due date, reserve every product, create
+  a linked cash-on-delivery order and queue its confirmation in one transaction.
+  The fixed plan price is allocated proportionally across products in exact cents;
+  rounding may split a product into two price lines. Delivery is included, with no
+  additional shipping charge. COD stays payment-pending until an operator records
+  collection. This does not add an online payment gateway.
+- Shortages, archived/missing mappings, unsupported addresses, banned accounts and
+  custom customer requests block automation without advancing the schedule or
+  reserving partial stock. Use **Basket delivery queue → Needs attention** to read
+  the reason, fix stock/mapping/address, then **Retry fulfillment**. Concurrent
+  retries create at most one delivery. An overdue stock-tracked basket creates one
+  recovery delivery, then advances to a future slot; it does not bill missed weeks. Customer exclusions/preferences require an
+  operator; use a manual plan when substitutions are necessary. The worker rotates
+  failed attempts behind new due subscriptions so one shortage cannot starve others.
+- Linked basket orders appear in the existing order dashboard and customer order
+  history. Status/address updates synchronize the queue. Cancel before shipment to
+  release inventory once; delivered refunds keep the delivery count and do not add
+  consumed stock back. Queue completion and order completion count once together.
+  Contents/prices are locked for existing basket orders; edit the plan for future
+  deliveries. Basket orders and subscribed plan history cannot be hard-deleted.
+  Cancelling a subscription stops future scheduling; cancel any already queued
+  order separately. Apply the additive basket inventory migration before deploying.
 - **Publishing → Newsletter:** search and page subscribers; unsubscribe an address.
   Admins cannot reactivate an address. Customer signup is the reactivation path.
   Signed unsubscribe links display a confirmation page; only POST changes state.

@@ -1,6 +1,10 @@
+import { isDeepStrictEqual } from 'node:util';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
+import { orderAddressSchema } from '@/lib/orderAddress';
+import { assertDeliveryArea, DeliveryPolicyError } from '@/lib/deliveryPolicy';
+import { BasketLifecycleError, syncBasketDelivery, validateBasketOrderTransition } from '@/lib/basketOrderLifecycle';
 import prisma from '@/lib/prisma';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
@@ -9,6 +13,7 @@ class StockConflict extends Error {}
 
 const ORDER_INCLUDE = {
   items: true,
+  subscriptionDelivery: true,
   customer: { select: { firstName: true, lastName: true, email: true } },
 } satisfies Prisma.OrderInclude;
 
@@ -82,6 +87,15 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
     const before = await prisma.order.findUnique({ where: { id }, include: ORDER_INCLUDE });
     if (!before) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
+    if (before.subscriptionDelivery) {
+      if (['items','subtotal','tax','shipping','discount','total','isRecurring','recurrence','scheduleStatus','nextDeliveryAt'].some(key => key in data)) return NextResponse.json({ error: 'Basket contents and pricing are fixed. Edit the plan for future deliveries.' }, { status: 400 });
+      if (data.shippingAddress) {
+        if (['shipped','delivered','cancelled','refunded'].includes(before.status) && !isDeepStrictEqual(orderAddressSchema.parse(data.shippingAddress), orderAddressSchema.parse(before.shippingAddress))) return NextResponse.json({ error: 'The address cannot change after shipment or cancellation.' }, { status: 400 });
+        data.shippingAddress = orderAddressSchema.parse(data.shippingAddress);
+        assertDeliveryArea(data.shippingAddress as { city: string; country: string });
+      }
+      if (data.status) validateBasketOrderTransition(before.status, data.status);
+    }
     if (data.isRecurring !== undefined && data.isRecurring !== before.isRecurring) {
       return NextResponse.json({ error: 'An existing order cannot be converted to or from a recurring template' }, { status: 400 });
     }
@@ -124,7 +138,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
       // change, or release the original reservation on cancellation/refund.
       if (!before.isRecurring) {
         const release = data.status && ['cancelled', 'refunded'].includes(data.status)
-          && !['cancelled', 'refunded'].includes(before.status);
+          && !['cancelled', 'refunded'].includes(before.status) && !(before.subscriptionDelivery && ['shipped','delivered'].includes(before.status));
         const quantities = new Map<string, number>();
         if (release || data.items) {
           for (const item of before.items) quantities.set(item.productId, (quantities.get(item.productId) || 0) - item.qty);
@@ -159,6 +173,7 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
         });
       }
 
+      await syncBasketDelivery(tx, before.subscriptionDelivery, data.status ?? before.status, data.shippingAddress as Prisma.InputJsonValue | undefined);
       return tx.order.findUniqueOrThrow({ where: { id }, include: ORDER_INCLUDE });
     });
 
@@ -170,6 +185,8 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
+    if (error instanceof DeliveryPolicyError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof BasketLifecycleError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof OrderConflict) return NextResponse.json({ error: 'This order changed. Refresh it before trying again.' }, { status: 409 });
     if (error instanceof StockConflict) return NextResponse.json({ error: 'Insufficient stock for the updated items' }, { status: 400 });
     console.error('Update order error:', error);
@@ -183,6 +200,7 @@ export const DELETE = requireAdmin(async (request, { params }: { params: Promise
     const before = await prisma.order.findUnique({ where: { id }, include: ORDER_INCLUDE });
     if (!before) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
+    if (before.subscriptionDelivery) return NextResponse.json({ error: 'Basket order history must be kept. Cancel the order instead.' }, { status: 409 });
     await prisma.$transaction(async (tx) => {
       const removed = await tx.order.deleteMany({ where: { id, status: before.status, updatedAt: before.updatedAt } });
       if (removed.count !== 1) throw new OrderConflict();

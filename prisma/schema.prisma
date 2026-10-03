@@ -336,6 +336,8 @@ model Product {
   @@index([archived, createdAt])
   @@index([categoryId, archived, createdAt])
   @@map("products")
+  planContents PlanContent[]
+
 }
 
 model BundleItem {
@@ -363,6 +365,7 @@ model Order {
   bag         Bag?    @relation(fields: [bagId], references: [id], onDelete: SetNull)
   bagName     String?
 
+  subscriptionDelivery SubscriptionDelivery?
   items    OrderItem[]
   subtotal Decimal     @db.Decimal(12, 2)
   tax      Decimal     @default(0) @db.Decimal(12, 2)
@@ -476,6 +479,7 @@ model SubscriptionPlan {
   maxSubscribers     Int?
   currentSubscribers Int       @default(0)
 
+  inventoryManaged Boolean @default(false)
   contents      PlanContent[]
   subscriptions Subscription[]
 
@@ -493,7 +497,11 @@ model PlanContent {
   name     String
   quantity String
   category String
+  productId String?
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  units Int @default(1)
 
+  @@index([productId])
   @@index([planId])
   @@map("plan_contents")
 }
@@ -521,6 +529,8 @@ model Subscription {
   skippedDates      DateTime[] @default([])
   excludeItems      String[]   @default([])
   preferences       String?
+  fulfillmentError String?
+  fulfillmentErrorAt DateTime?
   deliveries        SubscriptionDelivery[]
 
   createdAt DateTime @default(now())
@@ -536,6 +546,8 @@ model Subscription {
 model SubscriptionDelivery {
   version Int @default(0)
   id               String                     @id @default(uuid())
+  orderId String? @unique
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Restrict)
   subscriptionId   String
   subscription     Subscription               @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   scheduledFor     DateTime

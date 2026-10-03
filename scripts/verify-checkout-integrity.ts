@@ -7,6 +7,11 @@ import { POST as unsubscribeNewsletter } from '../app/api/newsletter/unsubscribe
 import { unsubscribeToken } from '../lib/newsletterTokens';
 import { POST as createSubscription } from '../app/api/subscriptions/route';
 import { SubscriptionDeliveryService } from '../lib/services/subscriptionDeliveryService';
+import { PUT as updateBasketOrder } from '../app/api/admin/orders/[id]/route';
+import { PATCH as customerOrderAction, PUT as customerOrderUpdate, DELETE as deleteCustomerOrder } from '../app/api/orders/[id]/route';
+import { PUT as updateBasketPlan } from '../app/api/subscription-plans/[id]/route';
+import { POST as retryBasket } from '../app/api/admin/subscriptions/[id]/fulfill/route';
+import { GET as basketQueue } from '../app/api/admin/subscription-deliveries/route';
 import { POST } from '../app/api/orders/route';
 import { prepareCheckout } from '../lib/checkoutService';
 import { RecurringOrderService } from '../lib/services/recurringOrderService';
@@ -102,6 +107,79 @@ async function verify() {
   assert.equal((await prisma.subscription.findUniqueOrThrow({where:{id:sub.id}})).totalDeliveries,1);
   assert.equal(await prisma.subscriptionDelivery.count(),1);
   console.log('PASS overlapping basket schedule and completion count exactly once');
+
+  // Opt in only after real catalogue mapping. Manual records above remain unchanged.
+  const admin = await prisma.user.create({ data: { firstName: 'Basket operator', role: 'admin' } });
+  const adminToken = sign({ userId: admin.id, role: 'admin', type: 'access' }, process.env.JWT_SECRET!);
+  const adminRequest = (path: string, method: string, payload?: unknown) => new NextRequest(`http://localhost${path}`, { method, headers: { cookie: `accessToken=${adminToken}`, 'Content-Type': 'application/json' }, ...(payload === undefined ? {} : { body: JSON.stringify(payload) }) });
+  const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
+  const mappedPlan = await prisma.subscriptionPlan.create({ data: { name: 'Mapped basket', slug: 'mapped-basket', description: 'Test', shortDescription: 'Test', price: 100.01, inventoryManaged: true, contents: { create: [
+    { name: 'Tomatoes', quantity: '1kg', category: 'Produce', productId: product.id, units: 2 },
+    { name: 'Extra tomatoes', quantity: '500g', category: 'Produce', productId: product.id, units: 1 },
+  ] } } });
+  const oldDue = new Date(Date.now() - 35 * 86400000);
+  const managedSub = await prisma.subscription.create({ data: { userId: user.id, planId: mappedPlan.id, status: 'active', startDate: oldDue, nextDeliveryDate: oldDue, deliveryAddress: address, deliverySlotDay: 'monday', deliverySlotTime: 'Anytime' } });
+  await prisma.subscription.update({where:{id:managedSub.id},data:{preferences:'No tomatoes, please'}});
+  await assert.rejects(SubscriptionDeliveryService.createPendingDelivery(managedSub.id),/custom requests/);
+  await prisma.subscription.update({where:{id:managedSub.id},data:{preferences:null}});
+  await prisma.product.update({ where: { id: product.id }, data: { stockQty: 2 } });
+  const countBefore = await prisma.order.count();
+  await assert.rejects(SubscriptionDeliveryService.createPendingDelivery(managedSub.id), /Insufficient stock/);
+  assert.equal(await prisma.order.count(), countBefore);
+  assert.equal(await prisma.subscriptionDelivery.count({ where: { subscriptionId: managedSub.id } }), 0);
+  const blocked = await prisma.subscription.findUniqueOrThrow({ where: { id: managedSub.id } });
+  assert.equal(blocked.nextDeliveryDate.getTime(), oldDue.getTime()); assert.match(blocked.fulfillmentError!, /Insufficient stock/);
+  assert.equal((await prisma.product.findUniqueOrThrow({ where: { id: product.id } })).stockQty, 2);
+  const blockedQueue = await basketQueue(adminRequest('/api/admin/subscription-deliveries?status=blocked', 'GET'));
+  assert.equal(blockedQueue.status, 200); assert.equal((await blockedQueue.json()).deliveries[0].id, managedSub.id);
+  await prisma.user.update({ where: { id: user.id }, data: { email: 'basket-fixture@example.com' } });
+  await prisma.product.update({ where: { id: product.id }, data: { stockQty: 6 } });
+  const retries = await Promise.all([retryBasket(adminRequest(`/api/admin/subscriptions/${managedSub.id}/fulfill`, 'POST'),ctx(managedSub.id)),retryBasket(adminRequest(`/api/admin/subscriptions/${managedSub.id}/fulfill`, 'POST'),ctx(managedSub.id))]);
+  assert.deepEqual(retries.map(row => row.status).sort(), [200,409]);
+  const managedDelivery = await prisma.subscriptionDelivery.findFirstOrThrow({ where: { subscriptionId: managedSub.id }, include: { order: { include: { items: true } } } });
+  assert.ok(managedDelivery.order); assert.equal(Number(managedDelivery.order.total),100.01); assert.equal(Number(managedDelivery.order.shipping),0); assert.equal(managedDelivery.order.paymentStatus,'pending');
+  assert.equal(managedDelivery.order.items.reduce((sum,item) => sum + Math.round(Number(item.total)*100),0),10001);
+  assert.equal(managedDelivery.order.items.reduce((sum,item) => sum + item.qty,0),3);
+  assert.equal((await prisma.product.findUniqueOrThrow({where:{id:product.id}})).stockQty,3);
+  assert.equal((await prisma.subscription.findUniqueOrThrow({where:{id:managedSub.id}})).fulfillmentError,null);
+  assert.ok((await prisma.subscription.findUniqueOrThrow({where:{id:managedSub.id}})).nextDeliveryDate > new Date());
+  assert.equal(await prisma.emailOutbox.count({where:{dedupeKey:`order-confirmation:${managedDelivery.order.id}`}}),1);
+  const orderPath = `/api/orders/${managedDelivery.order.id}`;
+  const orderReq = (method: string, payload?: unknown) => new NextRequest(`http://localhost${orderPath}`, { method, headers: { Authorization: `Bearer ${token(user.id)}`, 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+  assert.equal((await customerOrderUpdate(orderReq('PUT',{shippingAddress:{...address,street:'New Market Road'}}),ctx(managedDelivery.order.id))).status,200);
+  assert.equal((await prisma.subscriptionDelivery.findUniqueOrThrow({where:{id:managedDelivery.id}})).deliveryAddress && ((await prisma.subscriptionDelivery.findUniqueOrThrow({where:{id:managedDelivery.id}})).deliveryAddress as {street:string}).street,'New Market Road');
+  await assert.rejects(SubscriptionDeliveryService.transitionDelivery(managedDelivery.id,'deliver',0),/changed/);
+  assert.equal((await updateBasketOrder(adminRequest(`/api/admin/orders/${managedDelivery.order.id}`,'PUT',{total:1}),ctx(managedDelivery.order.id))).status,400);
+  const cancels = await Promise.all([customerOrderAction(orderReq('PATCH',{action:'cancel'}),ctx(managedDelivery.order.id)),customerOrderAction(orderReq('PATCH',{action:'cancel'}),ctx(managedDelivery.order.id))]);
+  assert.ok(cancels.some(row => row.status === 200));
+  assert.equal((await prisma.product.findUniqueOrThrow({where:{id:product.id}})).stockQty,6);
+  assert.equal((await prisma.subscriptionDelivery.findUniqueOrThrow({where:{id:managedDelivery.id}})).status,'cancelled');
+  assert.equal((await prisma.subscription.findUniqueOrThrow({where:{id:managedSub.id}})).totalDeliveries,0);
+  const adminDelete = new NextRequest(`http://localhost${orderPath}`,{method:'DELETE',headers:{Authorization:`Bearer ${sign({userId:admin.id,role:'admin',type:'access'},process.env.JWT_SECRET!)}`}});
+  assert.equal((await deleteCustomerOrder(adminDelete,ctx(managedDelivery.order.id))).status,409);
+  // A second basket proves order and queue delivery actions share the same counter claim.
+  const secondDue = new Date(due.getTime()+1000);
+  await prisma.subscription.update({where:{id:managedSub.id},data:{nextDeliveryDate:secondDue}});
+  const second = (await SubscriptionDeliveryService.createPendingDelivery(managedSub.id))!;
+  assert.ok(second.orderId);
+  const orderAndQueue = await Promise.allSettled([
+    SubscriptionDeliveryService.transitionDelivery(second.id,'deliver',0),
+    updateBasketOrder(adminRequest(`/api/admin/orders/${second.orderId}`,'PUT',{status:'delivered'}),ctx(second.orderId!)),
+  ]);
+  assert.ok(orderAndQueue.some(row => row.status === 'fulfilled'));
+  assert.equal((await prisma.subscription.findUniqueOrThrow({where:{id:managedSub.id}})).totalDeliveries,1);
+  assert.equal((await prisma.order.findUniqueOrThrow({where:{id:second.orderId!}})).status,'delivered');
+  assert.equal((await updateBasketOrder(adminRequest(`/api/admin/orders/${second.orderId}`,'PUT',{status:'refunded'}),ctx(second.orderId!))).status,200);
+  assert.equal((await prisma.product.findUniqueOrThrow({where:{id:product.id}})).stockQty,3);
+  assert.equal((await prisma.subscriptionDelivery.findUniqueOrThrow({where:{id:second.id}})).status,'delivered');
+  assert.equal((await prisma.subscription.findUniqueOrThrow({where:{id:managedSub.id}})).totalDeliveries,1);
+  // Versioned content replacement is persisted atomically; stale editors lose.
+  const versioned = await prisma.subscriptionPlan.findUniqueOrThrow({where:{id:mappedPlan.id}});
+  const planUpdate = { version: versioned.updatedAt.toISOString(), contents: [{name:'Updated tomatoes',quantity:'1kg',category:'Produce',productId:product.id,units:2}] };
+  assert.equal((await updateBasketPlan(adminRequest(`/api/subscription-plans/${mappedPlan.id}`,'PUT',planUpdate),ctx(mappedPlan.id))).status,200);
+  assert.equal((await updateBasketPlan(adminRequest(`/api/subscription-plans/${mappedPlan.id}`,'PUT',planUpdate),ctx(mappedPlan.id))).status,409);
+  assert.equal((await prisma.planContent.findMany({where:{planId:mappedPlan.id}})).length,1);
+  console.log('PASS mapped basket rollback/retry, exact price, stock release, order/queue concurrency, refund and plan edit conflicts');
 
   const newsletterRequest=()=>new Request('http://localhost/api/newsletter',{method:'POST',body:JSON.stringify({email:'integration@example.com',source:'footer'})});
   const newsletterResults=await Promise.all([subscribeNewsletter(newsletterRequest()),subscribeNewsletter(newsletterRequest())]);
