@@ -85,7 +85,10 @@ export class RecurringOrderService {
               `UNTIL=${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`
             )
           : recurrence.rruleString;
-        const next = rrulestr(ruleString).after(currentDate);
+        const searchAfter = recurrence.startDate && recurrence.startDate > currentDate
+          ? new Date(recurrence.startDate.getTime() - 1)
+          : currentDate;
+        const next = rrulestr(ruleString).after(searchAfter);
         if (next && (!endDate || next <= endDate)) return next;
       } catch (e) {
         console.error('Error parsing RRULE:', e);

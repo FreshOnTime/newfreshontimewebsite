@@ -55,6 +55,13 @@ it('keeps a future start date when recalculating a weekday schedule', async () =
   expect(res.status).toBe(200);
   expect(new Date((await res.json()).data.nextDeliveryAt).getTime()).toBe(future.getTime());
 });
+it('keeps a future start date when resuming a stored RRULE schedule', async () => {
+  const future = new Date(Date.now() + 90 * 86400000);
+  db.order.findUnique.mockResolvedValue({ ...stored, recurrence: { ...stored.recurrence, startDate: future.toISOString() } });
+  const res = await PATCH(request({ action: 'resume' }), ctx);
+  expect(res.status).toBe(200);
+  expect(new Date((await res.json()).data.nextDeliveryAt).getTime()).toBeGreaterThanOrEqual(future.getTime());
+});
 it.each([PUT, adminPut])('rejects converting a schedule into an unreserved ordinary order', async (update) => {
   expect((await update(request({ isRecurring: false }, 'admin'), ctx)).status).toBe(400);
   expect(db.order.update).not.toHaveBeenCalled(); expect(db.order.updateMany).not.toHaveBeenCalled();
