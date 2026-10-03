@@ -12,6 +12,7 @@ interface User {
   email?: string;
   phoneNumber: string;
   role: string;
+  secondaryRoles?: string[];
   _id: string;
   registrationAddress?: {
     recipientName: string;

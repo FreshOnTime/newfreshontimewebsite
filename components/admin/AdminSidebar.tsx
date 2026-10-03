@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Wordmark from '@/components/brand/Wordmark';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ChefHat, ArrowUpRight, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ChefHat, ArrowUpRight, MessageSquare, Mail } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,7 @@ const groups = [
   ] },
   { name: 'Publishing', items: [
     { name: 'Journal', href: '/admin/blogs', icon: BookOpen },
+    { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
     { name: 'Recipes', href: '/admin/recipes', icon: ChefHat },
     { name: 'Collections', href: '/admin/collections', icon: Layers },
   ] },
@@ -68,7 +69,7 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
       {groups.map(group => <div key={group.name}>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{group.name}</p>
         <ul className="-mx-2 space-y-1">{group.items.map(item => {
-          const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/suppliers' && pathname === '/admin/supplier-uploads');
+          const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/subscriptions' && pathname === '/admin/subscription-deliveries') || (item.href === '/admin/suppliers' && ['/admin/supplier-uploads', '/admin/supplier-applications'].includes(pathname));
           return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 px-2 py-2 text-sm font-medium transition-colors', active ? 'bg-secondary text-brand-green' : 'text-foreground hover:bg-secondary hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
         })}</ul>
       </div>)}

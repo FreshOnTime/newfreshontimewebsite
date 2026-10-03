@@ -1,7 +1,11 @@
+import { DeliveryPolicyError, assertDeliveryArea } from '@/lib/deliveryPolicy';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { prepareCheckout, reserveCheckoutStock, CheckoutError } from '@/lib/checkoutService';
+import { roundMoney } from '@/lib/commercePricing';
+import { orderAddressSchema } from '@/lib/orderAddress';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 export const dynamic = 'force-dynamic';
@@ -36,8 +40,8 @@ function serializeOrder(o: any) {
 }
 
 const querySchema = z.object({
-  page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),
+  page: z.coerce.number().int().min(1).max(100000).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(['pending','confirmed','processing','shipped','delivered','cancelled','refunded']).optional(),
   search: z.string().optional(),
   isRecurring: z.string().optional(),
@@ -90,6 +94,7 @@ export const GET = requireAdminSimple(async (request) => {
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid order filters' }, { status: 400 });
     console.error('Get orders error:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
@@ -112,7 +117,7 @@ const createOrderSchema = z.object({
   total: z.number().min(0),
   paymentMethod: z.enum(['card', 'cash', 'bank_transfer', 'digital_wallet']),
   paymentStatus: z.enum(['pending','paid','failed','refunded']).optional().default('pending'),
-  shippingAddress: z.record(z.unknown()),
+  shippingAddress: orderAddressSchema,
   billingAddress: z.record(z.unknown()).optional(),
   notes: z.string().max(1000).optional(),
   bagId: z.string().optional(),
@@ -132,17 +137,27 @@ export const POST = requireAdminSimple(async (request) => {
     if (!customer) return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
 
     const orderNumber = `ADM-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    const created = await prisma.order.create({
+    if (customer.isBanned) return NextResponse.json({ error: 'This customer account is banned' }, { status: 409 });
+    if (data.isRecurring) return NextResponse.json({ error: 'Create a normal order, then configure its recurring schedule through the recurring-order workflow.' }, { status: 400 });
+    if (data.bagId && !await prisma.bag.findFirst({ where: { id: data.bagId, userId: customer.id, isActive: true } })) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
+    const { validatedItems, quote } = await prepareCheckout(data.items.map(item => ({ productId: item.productId, quantity: item.qty })));
+    assertDeliveryArea(data.shippingAddress);
+    const subtotal = quote.subtotal;
+    if (data.discount > subtotal + data.shipping + data.tax) return NextResponse.json({ error: 'Discount exceeds the order value' }, { status: 400 });
+    const total = roundMoney(subtotal + data.shipping + data.tax - data.discount);
+    const created = await prisma.$transaction(async tx => {
+      await reserveCheckoutStock(tx, validatedItems);
+      return tx.order.create({
       data: {
         orderNumber,
         customerId: data.customerId,
         bagId: data.bagId || null,
         bagName: data.bagName || null,
-        subtotal: data.subtotal,
+        subtotal,
         tax: data.tax,
         shipping: data.shipping,
         discount: data.discount ?? 0,
-        total: data.total,
+        total,
         status: 'pending',
         paymentMethod: data.paymentMethod,
         paymentStatus: data.paymentStatus ?? 'pending',
@@ -153,9 +168,10 @@ export const POST = requireAdminSimple(async (request) => {
         scheduleStatus: data.isRecurring ? (data.scheduleStatus ?? 'active') : null,
         nextDeliveryAt: data.nextDeliveryAt ? new Date(data.nextDeliveryAt) : null,
         recurrence: data.recurrence ? (data.recurrence as Prisma.InputJsonValue) : Prisma.JsonNull,
-        items: { create: data.items },
+        items: { create: validatedItems.map(({ productId, sku, name, qty, price, total }) => ({ productId, sku, name, qty, price, total })) },
       },
       include: ORDER_INCLUDE,
+      });
     });
 
     const serialized = serializeOrder(created);
@@ -163,6 +179,7 @@ export const POST = requireAdminSimple(async (request) => {
 
     return NextResponse.json({ order: serialized }, { status: 201 });
   } catch (error) {
+    if (error instanceof CheckoutError || error instanceof DeliveryPolicyError) return NextResponse.json({ error: error.message }, { status: error.status });
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }

@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { basketTotals, productUnitPrice, roundMoney, type CheckoutQuote } from '@/lib/commercePricing';
 import { orderAddressSchema } from '@/lib/orderAddress';
 
@@ -70,4 +71,15 @@ export async function prepareCheckout(items: z.infer<typeof checkoutItemsSchema>
   const fingerprint = createHash('sha256').update(JSON.stringify({ items: quoteItems, ...totals })).digest('hex');
   const quote: CheckoutQuote = { items: quoteItems, fingerprint, ...totals };
   return { validatedItems, quote };
+}
+
+/** One stock-reservation policy for customer checkout and admin-created orders. */
+export async function reserveCheckoutStock(tx: Prisma.TransactionClient, items: Awaited<ReturnType<typeof prepareCheckout>>['validatedItems']) {
+  for (const item of items) {
+    const result = await tx.product.updateMany({
+      where: { id: item.productId, archived: false, price: item.basePrice, discountPercentage: item.discountPercentage, stockQty: { gte: item.qty } },
+      data: { stockQty: { decrement: item.qty } },
+    });
+    if (result.count !== 1) throw new CheckoutError('Availability or prices changed. Review your order before trying again.', 409);
+  }
 }

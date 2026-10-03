@@ -58,6 +58,7 @@ export async function verifyToken(request: NextRequest) {
       userId: user.id,
       email: user.email || decoded.email,
       role: user.role,
+      secondaryRoles: user.secondaryRoles,
       mongoId: user.id,
     };
   } catch (error) {
@@ -102,7 +103,7 @@ export function requireAdmin(handler: (
       );
     }
 
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && !user.secondaryRoles?.includes('admin')) {
       return Response.json(
         { error: 'Admin access required' },
         { status: 403 }

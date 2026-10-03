@@ -1,3 +1,4 @@
+import { assertDeliveryArea } from '@/lib/deliveryPolicy';
 import { basketTotals, productUnitPrice, roundMoney } from "@/lib/commercePricing";
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
@@ -167,9 +168,10 @@ export class RecurringOrderService {
         // create a cancellable order for stock that was not reserved.
         if (reserved.count !== 1) throw new Error(`INSUFFICIENT_STOCK:${item.productId}`);
       }
+      assertDeliveryArea(recurringOrder.shippingAddress as { city: string; country: string });
       const totals = basketTotals(items.map((item) => ({ price: item.price, quantity: item.qty })));
 
-      return tx.order.create({
+      const order = await tx.order.create({
         data: {
           orderNumber: `AUTO-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
           customerId: recurringOrder.customerId,
@@ -188,32 +190,24 @@ export class RecurringOrderService {
           items: { create: items },
         },
       });
+      if (recurringOrder.customer?.email) await sendOrderEmail(recurringOrder.customer.email, { _id: order.id, total: Number(order.total) }, tx);
+      return order;
     });
-
-    if (!created) return null;
-
-    const customer = await prisma.user.findUnique({
-      where: { id: created.customerId },
-      select: { email: true, phoneNumber: true },
-    });
-    const customerEmail = customer?.email || customer?.phoneNumber;
-    if (customerEmail) {
-      sendOrderEmail(customerEmail, { _id: created.id, total: Number(created.total) }).catch((e) => console.error('sendOrderEmail error', e));
-    }
 
     return created;
   }
 
-  static async processRecurringOrders() {
+  static async processRecurringOrders(deadline = Date.now()+20_000) {
     const results = { processed: 0, created: 0, errors: [] as string[] };
     const dueOrders = await prisma.order.findMany({
       where: { isRecurring: true, scheduleStatus: 'active', nextDeliveryAt: { lte: new Date() } },
       select: { id: true },
       take: 50,
     });
-    results.processed = dueOrders.length;
 
     for (const order of dueOrders) {
+      if (Date.now() >= deadline) break;
+      results.processed++;
       try {
         const created = await this.createNextOrderInstance(order.id);
         if (created) results.created++;

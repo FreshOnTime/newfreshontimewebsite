@@ -25,7 +25,7 @@ it('requires an authenticated account before saving supplier data', async () => 
 });
 it('atomically saves the supplier, catalogue note and account link', async () => {
   expect((await POST(request())).status).toBe(201);
-  expect(prisma.supplier.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ notes: body.productListCsv, phone: body.phone }) }));
+  expect(prisma.supplier.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ notes: body.productListCsv, phone: body.phone, applicationStatus: 'pending', status: 'inactive' }) }));
   expect(prisma.user.updateMany).toHaveBeenCalledWith({ where: { id: 'customer', supplierId: null }, data: { supplierId: 'new-supplier', role: 'supplier' } });
   expect(prisma.$transaction).toHaveBeenCalledTimes(1);
 });

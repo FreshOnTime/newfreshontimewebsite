@@ -32,6 +32,8 @@ interface RecentUpload {
 
 interface SupplierDashboardData {
     linked: boolean;
+    applicationStatus?: string | null;
+    supplierStatus?: string | null;
     stats: SupplierStats;
     lowStockList: LowStockItem[];
     recentUploads: RecentUpload[];
@@ -81,6 +83,7 @@ export default function SupplierDashboard() {
         );
     }
 
+    if(data.linked && (data.applicationStatus !== 'approved' || data.supplierStatus !== 'active')) return <section className="rounded-xl border border-border bg-background p-6"><h2 className="text-xl font-semibold text-brand-green">{data.applicationStatus === 'pending' ? 'Your application is being reviewed' : 'Your supplier account is inactive'}</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{data.applicationStatus === 'pending' ? 'The FreshPick team will review your details before enabling catalogue uploads.' : 'Contact FreshPick to discuss your supply arrangement and the next steps.'}</p><a href="/contact?type=producer" className="mt-4 inline-block text-sm text-brand-green underline">Contact the team</a></section>;
     const stats = data.stats;
     const availability = stats.totalProducts > 0
         ? Math.round(((stats.totalProducts - stats.outOfStockProducts) / stats.totalProducts) * 100)

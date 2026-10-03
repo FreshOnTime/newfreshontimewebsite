@@ -1,3 +1,5 @@
+import { deliveryCharge } from '@/lib/deliveryPolicy';
+
 /** Shared LKR arithmetic. Product promotions are applied once per base unit. */
 export function roundMoney(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -15,8 +17,7 @@ export function productUnitPrice(product: { price: unknown; discountPercentage?:
 
 export function basketTotals(items: { price: number; quantity: number }[]) {
   const subtotal = items.reduce((cents, item) => cents + Math.round(item.price * 100) * item.quantity, 0) / 100;
-  // Preserve the existing delivery policy; expose it before checkout submission.
-  const shipping = subtotal > 50 ? 0 : 5;
+  const shipping = deliveryCharge(subtotal);
   const tax = 0;
   return { subtotal, shipping, tax, discount: 0, total: roundMoney(subtotal + shipping + tax) };
 }

@@ -122,7 +122,7 @@ export function SupplierSignupForm() {
           <div className="mt-6 border-b border-border pb-8">
             <span className="text-xs font-bold normal-case text-brand-green">Partner application</span>
             <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Create a supplier account</h1>
-            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">This creates your account and sends the supplier details needed for onboarding. Product catalogue work can continue from the supplier dashboard.</p>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">This creates your account and sends the supplier details needed for onboarding. The FreshPick team reviews your application before enabling catalogue uploads.</p>
             {accountCreated && <p role="status" className="mt-4 rounded-lg bg-secondary px-4 py-3 text-sm text-brand-green">Your login account is connected. Complete the business details below to save your supplier application.</p>}
           </div>
 
@@ -170,7 +170,7 @@ export function SupplierSignupForm() {
               </div>
               <Label htmlFor="productList" className="text-sm font-medium text-foreground">Product list or short catalogue note</Label>
               <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" aria-describedby="supplier-product-help" placeholder="E.g. home-grown greens, vegetables, homemade meals, bakery, beverages or pantry staples…" />
-              <p id="supplier-product-help" className="mt-2 text-xs font-normal leading-5 text-muted-foreground">Start with what you grow, make or supply, the quantities available and your usual lead time. A full catalogue can be uploaded later from your supplier dashboard.</p>
+              <p id="supplier-product-help" className="mt-2 text-xs font-normal leading-5 text-muted-foreground">Start with what you grow, make or supply, the quantities available and your usual lead time. After approval, upload your catalogue from your supplier dashboard.</p>
             </section>
 
             {(serverError || fieldErrors) && (

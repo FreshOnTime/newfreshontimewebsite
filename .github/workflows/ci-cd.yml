@@ -29,6 +29,8 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/freshpick_test?schema=public
       JWT_SECRET: test_jwt_secret_that_is_long_enough_for_tests
       NODE_ENV: test
+      DELIVERY_FEE_LKR: "5"
+      DELIVERY_FREE_ABOVE_LKR: "50"
 
     steps:
     - name: Checkout code
@@ -91,61 +93,3 @@ jobs:
           exit 1
         fi
         npm run test:smoke -- --runInBand
-
-  deploy-preview:
-    if: github.event_name == 'pull_request'
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy to Vercel Preview
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        working-directory: ./
-
-  deploy-production:
-    if: github.ref == 'refs/heads/main'
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy to Vercel Production
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
-        working-directory: ./
-
-  smoke-test:
-    if: github.ref == 'refs/heads/main'
-    needs: deploy-production
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.17.0'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run smoke tests
-      run: npm run test:smoke
-      env:
-        BASE_URL: ${{ secrets.PRODUCTION_URL }}
-        API_KEY: ${{ secrets.API_KEY }}

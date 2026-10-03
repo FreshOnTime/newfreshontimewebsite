@@ -18,7 +18,7 @@ export default function AdminLayout({
     if (!loading) {
       if (!user) {
         router.push('/auth/login');
-      } else if (user.role !== 'admin') {
+      } else if ((user.role !== 'admin' && !user.secondaryRoles?.includes('admin'))) {
         router.push('/');
       }
     }
@@ -32,7 +32,7 @@ export default function AdminLayout({
     );
   }
 
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && !user.secondaryRoles?.includes('admin'))) {
     return null;
   }
 

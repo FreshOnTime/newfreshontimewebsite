@@ -56,7 +56,7 @@ async function handleSignup(request: NextRequest) {
 
       // send verification email (non-blocking)
       if (result.user.email) {
-        sendVerificationEmail(result.user.email, rawToken).catch((e) => console.error('sendVerificationEmail error', e));
+        await sendVerificationEmail(result.user.email, rawToken).catch((e) => console.error('sendVerificationEmail error', e));
       }
     } catch (e) {
       console.error('Failed to create/send verification token', e);

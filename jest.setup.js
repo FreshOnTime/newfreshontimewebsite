@@ -19,3 +19,7 @@ process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:po
 process.env.FIREBASE_PROJECT_ID = 'test-project';
 process.env.FIREBASE_CLIENT_EMAIL = 'test@example.com';
 process.env.FIREBASE_PRIVATE_KEY = 'test-key';
+
+// Explicit fixture pricing; production must configure approved LKR values.
+process.env.DELIVERY_FEE_LKR = '5';
+process.env.DELIVERY_FREE_ABOVE_LKR = '50';

@@ -1,57 +1,31 @@
-import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { sendSuccess, sendInternalError, sendBadRequest, sendNotFound } from '@/lib/utils/apiResponses';
+import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
-export async function POST(req: NextRequest) {
+const input = z.object({ userId: z.string().trim().min(1).max(200) });
+const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } });
+export const POST = requireAdminSimple(async request => {
   try {
-    const { userId } = await req.json();
-    
-    if (!userId) {
-      return sendBadRequest('User ID is required');
-    }
-    
-    // Find the user
-    const user = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
-    if (!user) {
-      return sendNotFound('User not found');
-    }
-    
-    // Update user role to admin
-    const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { role: 'admin' } });
-    
-    return sendSuccess('User role updated to admin successfully', {
-      userId: updatedUser.id,
-      firstName: updatedUser.firstName,
-      role: updatedUser.role
-    });
+    const { userId } = input.parse(await request.json());
+    const before = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
+    if (!before) return json({ error: 'User not found' }, 404);
+    if (before.isBanned) return json({ error: 'A banned account cannot be promoted' }, 409);
+    const user = await prisma.user.update({ where: { id: before.id }, data: { role: 'admin' } });
+    await logAuditAction(request.user!.userId, 'promote', 'user', user.id, { role: before.role }, { role: 'admin' }, request);
+    return json({ success: true, message: 'User role updated to admin', data: { userId: user.id, firstName: user.firstName, role: user.role } });
   } catch (error) {
-    console.error('Error making user admin:', error);
-    return sendInternalError('Failed to update user role');
+    if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: 'A valid user ID is required' }, 400);
+    return json({ error: 'Unable to update this account' }, 500);
   }
-}
-
-export async function GET(req: NextRequest) {
+});
+export const GET = requireAdminSimple(async request => {
   try {
-    const url = new URL(req.url);
-    const userId = url.searchParams.get('userId');
-    
-    if (!userId) {
-      return sendBadRequest('User ID is required');
-    }
-    
+    const { userId } = input.parse({ userId: new URL(request.url).searchParams.get('userId') });
     const user = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { phoneNumber: userId }] } });
-    if (!user) {
-      return sendNotFound('User not found');
-    }
-    
-    return sendSuccess('User role retrieved', {
-      userId: user.id,
-      firstName: user.firstName,
-      role: user.role,
-      isAdmin: user.role === 'admin'
-    });
+    if (!user) return json({ error: 'User not found' }, 404);
+    return json({ success: true, data: { userId: user.id, firstName: user.firstName, role: user.role, isAdmin: user.role === 'admin' } });
   } catch (error) {
-    console.error('Error getting user role:', error);
-    return sendInternalError('Failed to get user role');
+    return json({ error: 'Unable to retrieve this account' }, error instanceof z.ZodError ? 400 : 500);
   }
-}
+});

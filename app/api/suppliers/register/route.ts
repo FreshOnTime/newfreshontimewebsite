@@ -46,7 +46,7 @@ async function handleRegister(request: NextRequest) {
         name: body.companyName, contactName: body.contactName, email: body.email || undefined,
         phone: body.phone, street: body.address.addressLine1, city: body.address.city,
         state: body.address.province, zipCode: body.address.postalCode, country: body.address.country,
-        paymentTerms: 'net_30', notes: body.productListCsv || body.productList || undefined,
+        status: 'inactive', applicationStatus: 'pending', paymentTerms: 'net_30', notes: body.productListCsv || body.productList || undefined,
       } });
       const link = await tx.user.updateMany({ where: { id: user.id, supplierId: null }, data: { supplierId: supplier.id, ...(user.role === 'customer' ? { role: 'supplier' as const } : {}) } });
       if (link.count !== 1) throw new RegistrationError('Your supplier account changed. Retry to load its current link.', 409);

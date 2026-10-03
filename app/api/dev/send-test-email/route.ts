@@ -18,7 +18,7 @@ export const POST = async (req: NextRequest) => {
 
     await sendEmail(to, subject, html, (body?.text || 'Test email'));
 
-    return NextResponse.json({ message: 'Email queued (if SendGrid configured)' });
+    return NextResponse.json({ message: 'Email queued; check the email worker and provider activity' });
   } catch (e) {
     console.error('send-test-email error', e);
     return NextResponse.json({ error: 'Failed to send test email' }, { status: 500 });

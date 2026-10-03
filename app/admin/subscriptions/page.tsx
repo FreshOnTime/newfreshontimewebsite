@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,8 +77,9 @@ export default function SubscriptionsPage() {
     const fetchPlans = async () => {
         try {
             setLoading(true);
-            const res = await fetch("/api/subscription-plans");
+            const res = await fetch("/api/admin/subscription-plans");
             const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || "Unable to load plans");
             if (data.success) {
                 setPlans(data.plans);
             }
@@ -168,6 +170,7 @@ export default function SubscriptionsPage() {
                 <div>
                     <h1 className="text-3xl font-normal text-foreground">Subscriptions</h1>
                     <p className="text-muted-foreground mt-2">Manage subscription packages and plans</p>
+                    <Link href="/admin/subscription-deliveries" className="mt-3 inline-flex min-h-11 items-center text-sm text-brand-green underline">Open basket delivery queue</Link>
                 </div>
                 <Button
                     onClick={() => {
