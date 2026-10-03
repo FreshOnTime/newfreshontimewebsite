@@ -65,6 +65,7 @@ Do not add a public self-promotion route or enable seed endpoints to bootstrap a
 | --- | --- |
 | `npm run dev` | Start Turbopack development server |
 | `npm run build` | Generate Prisma client, initialize upload directories, build and type-check |
+| `npm run build:netlify` | Netlify-only deployment command: production migrates before build; previews only check migration status. Requires database URL in build scope |
 | `npm start` | Initialize uploads and serve the built production application |
 | `npm run lint` | ESLint across repository |
 | `npm test` | Jest suites; inspect environment requirements |

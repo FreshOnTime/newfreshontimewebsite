@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
     const authToken = request.cookies.get('accessToken')?.value;
     
     // If no token, redirect to login with redirect parameter
-    if (!authToken) {
+    if (!authToken && !request.cookies.get('refreshToken')?.value) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyToken, TokenPayload } from '@/lib/jwt';
+import { adminDataError } from '@/lib/adminApiErrors';
 
 export interface AdminUser {
   userId: string;
@@ -26,44 +27,39 @@ export class AuthError extends Error {
  */
 export async function verifyAdminToken(cookieToken?: string): Promise<AdminUser | null> {
   try {
-    if (!cookieToken) {
-      return null;
-    }
-
-    let decoded: TokenPayload;
-    try {
-      decoded = verifyToken(cookieToken);
-    } catch {
-      return null;
-    }
-
-    // Only accept access tokens for admin APIs
-    if (decoded.type !== 'access') {
-      return null;
-    }
-
-    // Verify user still exists and has admin role
-    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-    if (!user || user.isBanned) {
-      return null;
-    }
-
-    // Check if user has admin role
-    if (user.role !== 'admin' && !user.secondaryRoles?.includes('admin')) {
-      return null;
-    }
-
-    return {
-      userId: user.id,
-      email: user.email || '',
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName || undefined,
-    };
+    return await authenticateAdmin(cookieToken);
   } catch (error) {
-    console.error('Admin token verification error:', error);
-    return null;
+    if (error instanceof AuthError) return null;
+    throw error;
   }
+}
+
+async function authenticateAdmin(cookieToken?: string): Promise<AdminUser> {
+  if (!cookieToken) throw new AuthError('Sign in to access administration.', 401);
+  let decoded: TokenPayload;
+  try {
+    decoded = verifyToken(cookieToken);
+  } catch {
+    throw new AuthError('Your session has expired. Sign in again.', 401);
+  }
+  if (decoded.type !== 'access') throw new AuthError('An access session is required.', 401);
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+    select: { id: true, email: true, role: true, firstName: true, lastName: true, isBanned: true, secondaryRoles: true },
+  });
+  if (!user) throw new AuthError('Your account session is no longer available.', 401);
+  if (user.isBanned || (user.role !== 'admin' && !user.secondaryRoles?.includes('admin'))) {
+    throw new AuthError('Admin access required', 403);
+  }
+  return { userId: user.id, email: user.email || '', role: user.role, firstName: user.firstName, lastName: user.lastName || undefined };
+}
+
+function adminFailure(error: unknown) {
+  if (error instanceof AuthError) return NextResponse.json({ error: error.message }, {
+    status: error.statusCode, headers: { 'Cache-Control': 'private, no-store' },
+  });
+  return adminDataError(error, 'Unable to load admin data. Please try again.');
 }
 
 /**
@@ -81,25 +77,14 @@ export function requireAdmin<T extends Record<string, string>>(
           ?.find(c => c.trim().startsWith('accessToken='))
           ?.split('=')[1];
 
-      const user = await verifyAdminToken(cookieToken);
-
-      if (!user) {
-        return NextResponse.json(
-          { error: 'Admin access required' },
-          { status: 403 }
-        );
-      }
+      const user = await authenticateAdmin(cookieToken);
 
       // Add user to request
       (request as AdminRequest).user = user;
 
       return await handler(request as AdminRequest, context);
     } catch (error) {
-      console.error('Admin auth middleware error:', error);
-      return NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 401 }
-      );
+      return adminFailure(error);
     }
   };
 }
@@ -117,25 +102,14 @@ export function requireAdminSimple(
           ?.find(c => c.trim().startsWith('accessToken='))
           ?.split('=')[1];
 
-      const user = await verifyAdminToken(cookieToken);
-
-      if (!user) {
-        return NextResponse.json(
-          { error: 'Admin access required' },
-          { status: 403 }
-        );
-      }
+      const user = await authenticateAdmin(cookieToken);
 
       // Add user to request
       (request as AdminRequest).user = user;
 
       return await handler(request as AdminRequest);
     } catch (error) {
-      console.error('Admin auth middleware error:', error);
-      return NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 401 }
-      );
+      return adminFailure(error);
     }
   };
 }

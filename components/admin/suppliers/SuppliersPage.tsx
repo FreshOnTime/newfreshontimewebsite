@@ -1,17 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Mail } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Mail, RefreshCw } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { SupplierDialog } from '@/components/admin/suppliers/SupplierDialog';
 import { AdminMessageSender } from '@/components/admin/AdminMessageSender';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import { useAdminQueue } from '@/components/admin/useAdminQueue';
+import { QueueFeedback } from '@/components/admin/QueueFeedback';
 
 interface Supplier {
   _id: string;
@@ -23,50 +26,31 @@ interface Supplier {
   createdAt: string;
 }
 
-interface SuppliersResponse {
-  suppliers: Supplier[];
-  pagination: { page: number; limit: number; total: number; pages: number };
-}
-
 export function SuppliersPage() {
-  const [items, setItems] = useState<Supplier[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+  const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }) });
+  const queue = useAdminQueue<Supplier>(`/api/admin/suppliers?${params}`, 'suppliers');
+  const { items, loading } = queue;
+  const pagination = { page, limit: 20, total: queue.total, pages: queue.pages };
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const fetchItems = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }) });
-      const res = await fetch(`/api/admin/suppliers?${params}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch suppliers');
-      const data: SuppliersResponse = await res.json();
-      setItems(data.suppliers);
-      setPagination(data.pagination);
-    } catch {
-      toast.error('Failed to load suppliers');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchItems(); }, [page, search]); // eslint-disable-line react-hooks/exhaustive-deps
+  const fetchItems = queue.reload;
 
   const handleEdit = (s: Supplier) => { setEditing(s); setIsDialogOpen(true); };
   const handleView = (s: Supplier) => { setEditing(s); setIsViewOpen(true); };
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this supplier?')) return;
     try {
-      const res = await fetch(`/api/admin/suppliers/${id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) throw new Error('Failed');
+      const res = await authenticatedApiFetch(`/api/admin/suppliers/${id}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || 'Failed to delete supplier');
       toast.success('Supplier deleted');
       fetchItems();
-    } catch {
-      toast.error('Failed to delete supplier');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete supplier');
     }
   };
 
@@ -84,6 +68,7 @@ export function SuppliersPage() {
           <p className="text-muted-foreground mt-2">Manage supplier records</p>
         </div>
         <div className="flex flex-wrap gap-3">
+        <Button variant="outline" onClick={fetchItems} disabled={loading}><RefreshCw className="mr-2 h-4 w-4" />Refresh</Button>
         <Button variant="outline" asChild><Link href="/admin/supplier-applications">Review applications</Link></Button>
         <Button variant="outline" asChild><Link href="/admin/supplier-uploads">Review supplier uploads</Link></Button>
         <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
@@ -106,7 +91,7 @@ export function SuppliersPage() {
             </div>
           </div>
 
-          {loading ? (
+          {queue.error ? <QueueFeedback loading={false} error={queue.error} retry={fetchItems} /> : loading ? (
             <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
           ) : (
             <>

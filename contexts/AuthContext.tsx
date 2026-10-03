@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { apiFetch } from '@/lib/api/client';
+import { refreshSession } from '@/lib/api/authenticated-fetch';
 import { scheduleIdleTask } from '@/lib/utils/idleCallback';
 
 interface User {
@@ -85,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshAuth = useCallback(async () => {
     try {
-      const response = await apiFetch('/api/auth/refresh', { method: 'POST' });
+      const response = await refreshSession();
 
       if (response.ok) {
         const userResponse = await apiFetch('/api/auth/me');

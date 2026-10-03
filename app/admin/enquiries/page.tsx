@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { Inbox, RefreshCw } from 'lucide-react';
-import { apiFetch } from '@/lib/api/client';
+import { authenticatedApiFetch as apiFetch } from '@/lib/api/authenticated-fetch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -71,9 +71,9 @@ export default function EnquiriesPage() {
     async function load() {
       setLoading(true); setError('');
       try {
-        const response = await apiFetch(`/api/admin/enquiries?${query}`, { signal: controller.signal });
-        const data = await response.json();
-        if (!response.ok || !Array.isArray(data.enquiries)) throw new Error(data.error || 'Unable to load enquiries.');
+        const response = await apiFetch(`/api/admin/enquiries?${query}`, { signal: controller.signal, cache: 'no-store' });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !Array.isArray(data?.enquiries)) throw new Error(data?.error || 'Unable to load enquiries.');
         if (active) { setEnquiries(data.enquiries); setTotal(data.total); setPages(data.pages); }
       } catch (failure) { if (active) setError(failure instanceof Error ? failure.message : 'Unable to load enquiries.'); }
       finally { if (active) setLoading(false); }
