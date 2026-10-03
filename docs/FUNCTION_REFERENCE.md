@@ -216,3 +216,7 @@ For any new admin control, document whether it only changes local form state, pe
 ### Account message delivery
 
 [`saveAccountMessages`](../lib/accountMessages.ts) derives a deterministic ID for each submission/recipient pair, inserts with duplicate skipping and verifies persisted intent inside the caller transaction. Exact retries return the existing messages; changed sender, subject or content raises `MessageWriteError` (409). The admin route resolves active linked producer accounts before calling it. The shared inbox uses authenticated fetch, recipient-scoped pagination and explicit read-update retries.
+
+### Notification delivery and reads
+
+[`notificationInput` and `safeNotificationLink`](../lib/notificationInput.ts) validate bounded send fields and allow storefront action paths only. [`NotificationCenter`](../components/NotificationCenter.tsx) loads the recipient inbox, filters/paginates and persists read actions through authenticated fetch with account-scoped state. Admin sends preserve the same submission identifier on a failed retry and transactionally audit new inserts. [`verifyNotificationIntegrity`](../scripts/verify-notification-integrity.ts) runs through the guarded disposable PostgreSQL harness, checking concurrent deduplication and recipient isolation.

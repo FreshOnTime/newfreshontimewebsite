@@ -204,3 +204,9 @@ npm run test:checkout-db
 
 The script explicitly sets test pricing and a test signing secret. Do not use that
 secret or those rates in production.
+
+### Notification read migration
+
+Deploy `20261003180000_notification_reads` before using the notification inbox. Netlify production migration-on-build applies it; `check:production` also checks its recorded completion. The additive table stores per-recipient receipts with cascading foreign keys and a unique notification/user pair. Targeted historical `isRead=true` values are backfilled. Shared broadcast read flags cannot identify a user, so broadcasts begin unread per account. No notification content is removed. Older application versions can keep using the retained column during rollback.
+
+The disposable PostgreSQL checkout harness now also verifies notification retry/audit deduplication, concurrent reads and broadcast isolation between accounts. It never uses the production database URL.

@@ -13,7 +13,7 @@ Start with the [complete documentation index](docs/README.md).
 | [Subscriptions and recurring orders](docs/SUBSCRIPTIONS.md) | Basket plans, pause/skip/cancel, pricing, stock, scheduling and delivery queue |
 | [Developer setup](docs/DEVELOPER_GUIDE.md) | Configuration, first admin, commands, tests and handover |
 | [Architecture](docs/ARCHITECTURE.md) | Data relationships, transaction boundaries, auth and integrations |
-| [API reference](docs/API_REFERENCE.md) | 112 route files / 188 exported HTTP handlers and core request contracts |
+| [API reference](docs/API_REFERENCE.md) | 113 route files / 190 exported HTTP handlers and core request contracts |
 | [Function reference](docs/FUNCTION_REFERENCE.md) | All public domain-service methods, critical helpers and admin actions |
 | [Operations](docs/OPERATIONS.md) | Backups, migrations, deployment, outbox, workers and recovery |
 | [Readiness](docs/PLATFORM_READINESS.md) | Production requirements and verification evidence |

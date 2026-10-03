@@ -100,3 +100,5 @@ The stateless Streamable HTTP endpoint creates a server for each request and exp
 ## Extending the application
 
 For a new capability, define server validation, owner/admin policy, transaction boundary, historical snapshot rules and operator recovery before wiring the UI. Reuse current pricing/inventory/lifecycle helpers. Add meaningful failure/concurrency checks when touching commerce. Document UI/API differences, particularly when an API has controls not exposed in the form.
+
+Notification reads use `NotificationRead` keyed by notification/user. A broadcast never shares read state between accounts. The legacy Notification.isRead column is retained for compatibility but the reader uses receipts. The migration preserves targeted historical reads; legacy broadcast flags cannot identify readers and are left unread per account. Admin sends use a deterministic actor/submission identifier, duplicate-safe insertion and intent verification in the same transaction as audit creation.

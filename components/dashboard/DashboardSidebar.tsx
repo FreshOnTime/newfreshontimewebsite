@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Wordmark from '@/components/brand/Wordmark';
-import { Heart, LayoutDashboard, Mail, Menu, Package, Repeat, ShoppingBag, ShoppingCart, UserRound, X } from 'lucide-react';
+import { Bell, Heart, LayoutDashboard, Mail, Menu, Package, Repeat, ShoppingBag, ShoppingCart, UserRound, X } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
 type NavItem = { name: string; icon: IconType; section?: string; href?: string };
@@ -21,6 +21,7 @@ const customerNav: NavItem[] = [
   { name: 'Smart Basket', href: '/profile/subscriptions', icon: Repeat },
   { name: 'Saved', href: '/wishlist', icon: Heart },
   { name: 'Messages', href: '/profile/messages', icon: Mail },
+  { name: 'Notifications', href: '/profile/notifications', icon: Bell },
   { name: 'Shopping bags', href: '/bags', icon: ShoppingCart },
   { name: 'Profile', href: '/profile', icon: UserRound },
 ];

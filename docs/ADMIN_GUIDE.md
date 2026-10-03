@@ -231,7 +231,11 @@ Filter recorded activities by resource/action/user, dates and search; paginate b
 
 ### Notifications `/admin/notifications`
 
-Create title/message, type (info/success/warning/error/promo), all-users or one-user target, and optional link. This stores in-app notifications. Authenticated notification reading returns the latest relevant user/broadcast records; it is not a browser push or email campaign service.
+Create a title (up to 200 characters), message (up to 5,000), type (info/success/warning/error/promo), all-accounts or specific-account target, and an optional storefront path such as `/products`. Specific-account targeting uses the Account ID shown when viewing/editing a user. Inactive/banned or missing target accounts are rejected. External, protocol-relative and script links are rejected; unsafe legacy links are hidden.
+
+Recipients read these under Account → Notifications (`/profile/notifications`). Read status is stored separately for each recipient, including broadcasts. They can filter unread updates, paginate, mark one read or mark the current page read. Failures show retry actions. These are in-app notifications, not browser push or email campaigns.
+
+Failed sends preserve the draft and submission identifier. Retrying the same intent does not create another notification or audit record; changed intent needs a new identifier. Admin authorization uses the current database role, including secondary admin access. Sends are audited without duplicating full message content in the audit.
 
 ### Bundles `/admin/bundles`
 
