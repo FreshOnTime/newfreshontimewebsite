@@ -1,4 +1,5 @@
 import { serializeJsonLd } from '@/lib/seo';
+import localFont from 'next/font/local';
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -7,6 +8,23 @@ import AdminChromeGuard from "../components/layout/AdminChromeGuard";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 import { Footer } from "@/components/layout/Footer";
 import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL, SOCIAL_LINKS } from "@/lib/config/site";
+
+const interfaceFont = localFont({
+  src: './fonts/dm-sans-variable.woff2',
+  variable: '--font-interface',
+  weight: '100 1000',
+  style: 'normal',
+  display: 'swap',
+  adjustFontFallback: 'Arial',
+});
+const editorialFont = localFont({
+  src: './fonts/newsreader-variable.woff2',
+  variable: '--font-editorial',
+  weight: '200 800',
+  style: 'normal',
+  display: 'swap',
+  adjustFontFallback: 'Times New Roman',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
@@ -74,7 +92,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-LK">
+    <html lang="en-LK" className={`${interfaceFont.variable} ${editorialFont.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
         <AdminChromeGuard footer={<Footer />}>{children}</AdminChromeGuard>
         <Toaster />

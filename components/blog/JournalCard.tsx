@@ -17,7 +17,7 @@ export default function JournalCard({ post, headingLevel = 'h3' }: { post: Journ
           <span>{post.category || 'From the market'}</span>
           {validDate && <time dateTime={validDate.toISOString()}>{new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Colombo' }).format(validDate)}</time>}
         </div>
-        <Heading className="market-story-title mt-3 break-words text-xl leading-tight group-hover:underline underline-offset-4 md:text-2xl">{post.title}</Heading>
+        <Heading className="market-story-title mt-3 break-words text-2xl leading-[1.2] group-hover:underline underline-offset-4 md:text-3xl">{post.title}</Heading>
         <p className="mt-4 line-clamp-3 text-sm leading-7 text-muted-foreground">{post.excerpt}</p>
         <span className="editorial-link mt-4">Read story <ArrowRight className="h-4 w-4" aria-hidden="true" /></span>
       </Link>

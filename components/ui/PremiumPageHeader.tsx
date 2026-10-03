@@ -6,7 +6,7 @@ interface PremiumPageHeaderProps {
   imageLayout?: 'feature' | 'compact';
 }
 
-/** Bold editorial introductions; browsing pages can keep their photography compact. */
+/** Editorial introductions; browsing pages can keep their photography compact. */
 export default function PremiumPageHeader({ title, subtitle, backgroundImage, count, isLoading = false, eyebrow, imageLayout = 'feature' }: PremiumPageHeaderProps) {
   const compact = imageLayout === 'compact';
   return (
@@ -17,7 +17,7 @@ export default function PremiumPageHeader({ title, subtitle, backgroundImage, co
             <div>
               {eyebrow && <p className="editorial-label mb-5">{eyebrow}</p>}
               <div className={!compact && backgroundImage ? 'grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-end md:gap-14' : ''}>
-                <h1 className={compact ? 'max-w-4xl font-sans text-[clamp(2.2rem,5vw,4.5rem)] font-bold uppercase leading-[1.02] text-foreground' : 'max-w-5xl font-sans text-[clamp(2.4rem,6vw,5.5rem)] font-bold uppercase leading-[1.02] text-foreground'}>{title}</h1>
+                <h1 className={compact ? 'max-w-4xl font-heading text-[clamp(2.2rem,5vw,4.5rem)] font-normal leading-[1.1] text-foreground' : 'max-w-5xl font-heading text-[clamp(2.4rem,6vw,5.5rem)] font-normal leading-[1.1] text-foreground'}>{title}</h1>
                 {(subtitle || count !== undefined) && <div className={backgroundImage && !compact ? '' : 'mt-5'}>
                   {subtitle && <p className="max-w-xl text-base leading-7 text-muted-foreground md:text-lg">{subtitle}</p>}
                   {count !== undefined && <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">{count} {count === 1 ? 'item' : 'items'}</p>}
