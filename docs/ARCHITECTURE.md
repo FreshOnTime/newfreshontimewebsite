@@ -67,7 +67,7 @@ The delivery snapshot freezes that delivery's plan/content/address/price. Later 
 - Legacy route wrappers differ. Some primary-role checks and direct JWT checks remain. Do not infer consistent granular permissions from the page layout alone.
 - Owner IDs are derived from verified sessions in protected shopping APIs. Public catalog/MCP reads intentionally need no account.
 - Rate-limit helpers use process memory. Their quotas are per warm process, not a deployment-wide guarantee. Origin helpers exist but are not universally invoked as a CSRF policy.
-- Legacy referral mutation routes need stronger authorization and verified order events before monetary activation.
+- Referral attribution locks the customer row; reward recording verifies paid/delivered first-order evidence and atomically claims the reward with an audit record. The ledger does not process payouts or checkout discounts.
 
 ## Address and pricing contracts
 

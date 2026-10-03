@@ -57,12 +57,14 @@ export async function PATCH(request: NextRequest) {
 
     const current = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { email: true, phoneNumber: true },
+      select: { email: true, phoneNumber: true, isBanned: true },
     });
 
     if (!current) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    if (current.isBanned) return NextResponse.json({ error: 'This account is unavailable' }, { status: 403 });
 
     const updated = await prisma.user.update({
       where: { id: payload.userId },

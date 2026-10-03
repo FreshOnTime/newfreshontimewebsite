@@ -1,223 +1,88 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
+import { randomBytes } from 'node:crypto';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { withAuth } from '@/lib/middleware/auth';
+import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
-const REFERRAL_REWARD = 200; // Rs. 200 per successful referral
+const REFERRAL_REWARD = 200; // Ledger amount; this API does not pay out or discount checkout.
+const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
+const codeSchema = z.string().trim().toUpperCase().regex(/^[A-Z0-9]{6,32}$/, 'Enter a valid referral code');
+class ReferralError extends Error { constructor(message: string, public status = 400) { super(message); } }
+const failure = (error: unknown) => {
+  if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ success: false, message: error instanceof z.ZodError ? error.issues[0].message : 'Invalid referral request' }, 400);
+  if (error instanceof ReferralError) return json({ success: false, message: error.message }, error.status);
+  return json({ success: false, message: 'Unable to update referrals. Please retry.' }, 500);
+};
 
-/**
- * GET /api/referrals
- * Get current user's referral code and stats (creates one if doesn't exist)
- */
-export async function GET(request: NextRequest) {
-    try {
-        const user = await verifyToken(request);
-        if (!user) {
-            return NextResponse.json(
-                { success: false, message: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
-
-        // The JWT subject is the Postgres user id (mongoId === userId === user.id).
-        const userId = user.userId;
-
-        // Find or create referral record for user
-        let referral = await prisma.referral.findUnique({ where: { ownerId: userId } });
-
-        if (!referral) {
-            // Generate unique code
-            let code = '';
-            let attempts = 0;
-            const maxAttempts = 10;
-
-            do {
-                code = 'FRESH' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                const exists = await prisma.referral.findUnique({ where: { code } });
-                if (!exists) break;
-                attempts++;
-            } while (attempts < maxAttempts);
-
-            referral = await prisma.referral.create({
-                data: {
-                    code,
-                    ownerId: userId,
-                    totalEarnings: 0,
-                    totalReferrals: 0,
-                    successfulReferrals: 0,
-                },
-            });
-        }
-
-        return NextResponse.json({
-            success: true,
-            referral: {
-                code: referral.code,
-                totalEarnings: Number(referral.totalEarnings),
-                totalReferrals: referral.totalReferrals,
-                successfulReferrals: referral.successfulReferrals,
-                isActive: referral.isActive,
-            },
-        });
-    } catch (error) {
-        console.error('Error fetching referral:', error);
-        return NextResponse.json(
-            { success: false, message: 'Failed to fetch referral' },
-            { status: 500 }
-        );
+export const GET = withAuth(async req => {
+  try {
+    const ownerId = req.user!._id;
+    let referral = await prisma.referral.findUnique({ where: { ownerId } });
+    for (let attempt = 0; !referral && attempt < 10; attempt++) {
+      try {
+        referral = await prisma.referral.upsert({ where: { ownerId }, update: {}, create: { ownerId, code: 'FRESH' + randomBytes(5).toString('hex').toUpperCase() } });
+      } catch (error) {
+        if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'P2002') throw error;
+        referral = await prisma.referral.findUnique({ where: { ownerId } });
+      }
     }
-}
+    if (!referral) throw new Error('Referral code unavailable');
+    return json({ success: true, referral: { code: referral.code, totalEarnings: Number(referral.totalEarnings), totalReferrals: referral.totalReferrals, successfulReferrals: referral.successfulReferrals, isActive: referral.isActive }, checkoutDiscountsAvailable: false, automaticPayoutsAvailable: false });
+  } catch (error) { return failure(error); }
+});
 
-/**
- * POST /api/referrals
- * Apply a referral code (used during signup or first order)
- */
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { code, userId } = body;
+/** Record attribution for the signed-in account, never an arbitrary supplied ID. */
+export const POST = withAuth(async req => {
+  try {
+    const data = z.object({ code: codeSchema, userId: z.string().min(1).max(100).optional() }).parse(await req.json());
+    const userId = req.user!._id;
+    if (data.userId && data.userId !== userId) return json({ success: false, message: 'A referral can only be applied to your own account' }, 403);
+    const result = await prisma.$transaction(async tx => {
+      // Serialize competing codes for this customer even though the legacy
+      // unique key is (referralId, userId), rather than userId alone.
+      await tx.$queryRaw`SELECT id FROM users WHERE id=${userId} FOR UPDATE`;
+      const referral = await tx.referral.findFirst({ where: { code: data.code, isActive: true } });
+      if (!referral) throw new ReferralError('Invalid or inactive referral code');
+      if (referral.ownerId === userId) throw new ReferralError('Cannot use your own referral code');
+      const previous = await tx.referredUser.findFirst({ where: { userId }, orderBy: [{ appliedAt: 'asc' }, { id: 'asc' }] });
+      if (previous) {
+        if (previous.referralId !== referral.id) throw new ReferralError('A referral is already recorded for this account', 409);
+        return { code: referral.code, replay: true };
+      }
+      if (await tx.order.findFirst({ where: { customerId: userId, isRecurring: false }, select: { id: true } })) throw new ReferralError('Apply a referral before placing your first order', 409);
+      await tx.referredUser.create({ data: { referralId: referral.id, userId } });
+      await tx.referral.update({ where: { id: referral.id }, data: { totalReferrals: { increment: 1 } } });
+      return { code: referral.code, replay: false };
+    });
+    return json({ success: true, referrerCode: result.code, message: 'Referral recorded. No checkout discount has been applied.', discount: 0 }, result.replay ? 200 : 201);
+  } catch (error) { return failure(error); }
+});
 
-        if (!code) {
-            return NextResponse.json(
-                { success: false, message: 'Referral code is required' },
-                { status: 400 }
-            );
-        }
-
-        // Normalize code
-        const normalizedCode = code.toUpperCase().trim();
-
-        // Find the referral
-        const referral = await prisma.referral.findFirst({
-            where: { code: normalizedCode, isActive: true },
-        });
-
-        if (!referral) {
-            return NextResponse.json(
-                { success: false, message: 'Invalid or inactive referral code' },
-                { status: 400 }
-            );
-        }
-
-        // If userId provided, add to referred users
-        if (userId) {
-            // The provided id is the Postgres user id directly.
-            const referredUserId: string = userId;
-
-            // Prevent self-referral
-            if (referral.ownerId === referredUserId) {
-                return NextResponse.json(
-                    { success: false, message: 'Cannot use your own referral code' },
-                    { status: 400 }
-                );
-            }
-
-            // Check if already referred
-            const alreadyReferred = await prisma.referredUser.findUnique({
-                where: { referralId_userId: { referralId: referral.id, userId: referredUserId } },
-            });
-
-            if (!alreadyReferred) {
-                await prisma.$transaction([
-                    prisma.referredUser.create({
-                        data: {
-                            referralId: referral.id,
-                            userId: referredUserId,
-                            orderPlaced: false,
-                            rewardPaid: false,
-                        },
-                    }),
-                    prisma.referral.update({
-                        where: { id: referral.id },
-                        data: { totalReferrals: { increment: 1 } },
-                    }),
-                ]);
-            }
-        }
-
-        return NextResponse.json({
-            success: true,
-            message: 'Referral code applied! You\'ll get Rs. 200 off your first order.',
-            discount: REFERRAL_REWARD,
-            referrerCode: referral.code,
-        });
-    } catch (error) {
-        console.error('Error applying referral:', error);
-        return NextResponse.json(
-            { success: false, message: 'Failed to apply referral code' },
-            { status: 500 }
-        );
-    }
-}
-
-/**
- * PATCH /api/referrals
- * Mark a referral as successful (called after first order is placed)
- */
-export async function PATCH(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { referralCode, userId } = body;
-
-        if (!referralCode || !userId) {
-            return NextResponse.json(
-                { success: false, message: 'Referral code and user ID are required' },
-                { status: 400 }
-            );
-        }
-
-        const referral = await prisma.referral.findFirst({
-            where: { code: referralCode.toUpperCase() },
-        });
-
-        if (!referral) {
-            return NextResponse.json(
-                { success: false, message: 'Referral not found' },
-                { status: 404 }
-            );
-        }
-
-        // Find the referred user entry that hasn't had an order placed yet
-        const referredEntry = await prisma.referredUser.findFirst({
-            where: { referralId: referral.id, userId, orderPlaced: false },
-        });
-
-        if (referredEntry) {
-            const ops: Prisma.PrismaPromise<unknown>[] = [
-                prisma.referredUser.update({
-                    where: { id: referredEntry.id },
-                    data: {
-                        orderPlaced: true,
-                        ...(referredEntry.rewardPaid ? {} : { rewardPaid: true }),
-                    },
-                }),
-            ];
-
-            // Add reward for both parties (only once)
-            if (!referredEntry.rewardPaid) {
-                ops.push(
-                    prisma.referral.update({
-                        where: { id: referral.id },
-                        data: {
-                            totalEarnings: { increment: REFERRAL_REWARD },
-                            successfulReferrals: { increment: 1 },
-                        },
-                    })
-                );
-            }
-
-            await prisma.$transaction(ops);
-        }
-
-        return NextResponse.json({
-            success: true,
-            message: 'Referral marked as successful',
-        });
-    } catch (error) {
-        console.error('Error updating referral:', error);
-        return NextResponse.json(
-            { success: false, message: 'Failed to update referral' },
-            { status: 500 }
-        );
-    }
-}
+/** Admin-only ledger reconciliation backed by the first paid, delivered order. */
+export const PATCH = requireAdminSimple(async req => {
+  try {
+    const data = z.object({ referralCode: codeSchema, userId: z.string().min(1).max(100), orderId: z.string().min(1).max(100) }).parse(await req.json());
+    const result = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM users WHERE id=${data.userId} FOR UPDATE`;
+      await tx.$queryRaw`SELECT id FROM orders WHERE id=${data.orderId} FOR SHARE`;
+      const referral = await tx.referral.findFirst({ where: { code: data.referralCode, isActive: true } });
+      if (!referral) throw new ReferralError('Referral not found', 404);
+      const entry = await tx.referredUser.findFirst({ where: { referralId: referral.id, userId: data.userId } });
+      if (!entry) throw new ReferralError('No referral attribution exists for this customer', 404);
+      const firstAttribution = await tx.referredUser.findFirst({ where: { userId: data.userId }, orderBy: [{ appliedAt: 'asc' }, { id: 'asc' }] });
+      if (firstAttribution?.id !== entry.id) throw new ReferralError('Only the first referral attribution can earn a reward', 409);
+      const order = await tx.order.findUnique({ where: { id: data.orderId } });
+      if (!order || order.customerId !== data.userId || order.isRecurring || order.status !== 'delivered' || order.paymentStatus !== 'paid' || Number(order.total) <= 0 || order.createdAt < entry.appliedAt) throw new ReferralError('Use this customer\'s paid, delivered order placed after the referral was recorded');
+      const firstPurchase = await tx.order.findFirst({ where: { customerId: data.userId, isRecurring: false, status: 'delivered', paymentStatus: 'paid', total: { gt: 0 } }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], select: { id: true } });
+      if (firstPurchase?.id !== order.id) throw new ReferralError('Only the first paid, delivered purchase qualifies');
+      if (entry.rewardPaid) return { replay: true };
+      const claimed = await tx.referredUser.updateMany({ where: { id: entry.id, rewardPaid: false }, data: { orderPlaced: true, rewardPaid: true } });
+      if (claimed.count !== 1) return { replay: true };
+      await tx.referral.update({ where: { id: referral.id }, data: { totalEarnings: { increment: REFERRAL_REWARD }, successfulReferrals: { increment: 1 } } });
+      await tx.auditLog.create({ data: { userId: req.user!.userId, action: 'record_referral_reward', resourceType: 'referral', resourceId: referral.id, after: { referredUserId: data.userId, orderId: order.id, amount: REFERRAL_REWARD, currency: 'LKR', payoutProcessed: false } } });
+      return { replay: false };
+    });
+    return json({ success: true, replay: result.replay, message: 'Referral reward recorded. Payout is handled separately.', reward: REFERRAL_REWARD });
+  } catch (error) { return failure(error); }
+});

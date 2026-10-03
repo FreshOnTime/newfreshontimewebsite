@@ -146,6 +146,7 @@ export default function ProfilePage() {
             <section className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
               <AccountLink href="/for-you" title="For You" copy="Personal picks and repeat reminders" />
               <AccountLink href="/orders" title="Orders" copy="Track and revisit your purchases" />
+              <AccountLink href="/profile/messages" title="Messages" copy="Read updates from the FreshPick team" />
               <AccountLink href="/bags" title="Shopping bags" copy="Continue a saved or active bag" />
             </section>
           </aside>
