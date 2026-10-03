@@ -133,7 +133,7 @@ export function SupplierSignupForm() {
                 <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">Who are we partnering with?</h2>
               </div>
               <div className="grid gap-5 md:grid-cols-2">
-                <div className="md:col-span-2"><Field label="Company name *" htmlFor="companyName"><Input id="companyName" value={formData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)} required className={inputClass} /></Field></div>
+                <div className="md:col-span-2"><Field label="Business or producer name *" htmlFor="companyName"><Input id="companyName" value={formData.companyName} onChange={(e) => handleInputChange('companyName', e.target.value)} required className={inputClass} /></Field></div>
                 <Field label="Contact person *" htmlFor="contactName"><Input id="contactName" disabled={accountCreated} value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} required className={inputClass} /></Field>
                 <Field label="Phone *" htmlFor="phone"><Input id="phone" type="tel" autoComplete="tel" disabled={accountCreated && Boolean(user?.phoneNumber)} value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className={inputClass} /></Field>
                 <Field label="Email" htmlFor="email"><Input id="email" disabled={accountCreated} type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} /></Field>
@@ -151,7 +151,7 @@ export function SupplierSignupForm() {
                 <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">Where do you operate?</h2>
               </div>
               <div className="grid gap-5 md:grid-cols-2">
-                <div className="md:col-span-2"><Field label="Business address *" htmlFor="addressLine1"><Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className={inputClass} /></Field></div>
+                <div className="md:col-span-2"><Field label="Business or growing address *" htmlFor="addressLine1"><Input id="addressLine1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className={inputClass} /></Field></div>
                 <div className="md:col-span-2"><Field label="Address line 2" htmlFor="addressLine2"><Input id="addressLine2" value={formData.registrationAddress.addressLine2} onChange={(e) => handleAddressChange('addressLine2', e.target.value)} className={inputClass} /></Field></div>
                 <Field label="City *" htmlFor="city"><Input id="city" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required className={inputClass} /></Field>
                 <Field label="Province *" htmlFor="province"><Input id="province" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required className={inputClass} /></Field>
@@ -169,8 +169,8 @@ export function SupplierSignupForm() {
                 </div>
               </div>
               <Label htmlFor="productList" className="text-sm font-medium text-foreground">Product list or short catalogue note</Label>
-              <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" placeholder="E.g. fresh produce, bakery, dairy, ready meals, specialty pantry items…" />
-              <p className="mt-2 text-xs font-normal leading-5 text-muted-foreground">A full product list can be uploaded later from your supplier dashboard.</p>
+              <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" aria-describedby="supplier-product-help" placeholder="E.g. home-grown greens, vegetables, homemade meals, bakery, beverages or pantry staples…" />
+              <p id="supplier-product-help" className="mt-2 text-xs font-normal leading-5 text-muted-foreground">Start with what you grow, make or supply, the quantities available and your usual lead time. A full catalogue can be uploaded later from your supplier dashboard.</p>
             </section>
 
             {(serverError || fieldErrors) && (

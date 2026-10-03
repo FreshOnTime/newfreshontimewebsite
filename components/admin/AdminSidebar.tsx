@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Wordmark from '@/components/brand/Wordmark';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ChefHat, ArrowUpRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
@@ -59,7 +60,7 @@ export function AdminSidebar() {
 
 function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return <>
-    <Link href="/admin" onClick={onNavigate} className="flex h-20 shrink-0 items-center text-xl font-bold uppercase tracking-tight text-brand-green">FreshPick</Link>
+    <Link href="/admin" onClick={onNavigate} className="flex h-20 shrink-0 items-center text-xl font-bold tracking-tight text-brand-green"><Wordmark /></Link>
     <nav aria-label="Admin navigation" className="space-y-7 pb-8">
       {groups.map(group => <div key={group.name}>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{group.name}</p>
