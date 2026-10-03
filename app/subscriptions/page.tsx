@@ -73,7 +73,7 @@ export default async function SubscriptionsPage() {
                                 Browse our groceries or contact us to ask about recurring deliveries.
                             </p>
                             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                                <Link href="/products" className="rounded-md bg-primary px-7 py-3.5 text-xs font-bold normal-case text-accent-foreground transition-colors hover:bg-primary/85">
+                                <Link href="/products" className="rounded-md bg-brand-leaf px-7 py-3.5 text-xs font-bold normal-case text-brand-ink transition-colors hover:bg-brand-leaf/85">
                                     Shop all products
                                 </Link>
                                 <Link href="/contact" className="rounded-md border border-border px-7 py-3.5 text-xs font-bold normal-case text-foreground transition-colors hover:border-border hover:text-brand-green">

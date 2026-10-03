@@ -118,7 +118,7 @@ export default function ContactPage() {
             </label>
 
             <div className="col-span-1 flex flex-wrap items-center gap-4 md:col-span-2">
-              <Button type="submit" className="h-14 rounded-md bg-brand-amber px-8 text-xs font-bold normal-case text-foreground hover:bg-brand-amber/85" disabled={status === "sending"}>
+              <Button type="submit" className="h-14 rounded-md bg-brand-leaf px-8 text-xs font-bold normal-case text-brand-ink hover:bg-brand-leaf/85" disabled={status === "sending"}>
                 {status === "sending" ? "Sending…" : "Send enquiry"}
               </Button>
               <p role={status === "error" ? "alert" : "status"} aria-live="polite" className={`text-sm ${status === "error" ? "text-red-600" : "text-brand-green"} `}>

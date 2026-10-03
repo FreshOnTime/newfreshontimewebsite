@@ -36,14 +36,14 @@ export default function WhatsAppButton() {
             {/* Floating Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary rounded-full shadow-none flex items-center justify-center transition-all duration-300  group"
+                className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 bg-brand-leaf hover:bg-brand-leaf rounded-full shadow-none flex items-center justify-center transition-all duration-300  group"
                 aria-label="Contact via WhatsApp"
             >
                 {isOpen ? (
-                    <X className="w-6 h-6 text-white" />
+                    <X className="w-6 h-6 text-brand-ink" />
                 ) : (
                     <>
-                        <MessageCircle className="w-7 h-7 text-accent-foreground" />
+                        <MessageCircle className="w-7 h-7 text-brand-ink" />
                         {/* Pulse Animation */}
 
                     </>
@@ -98,7 +98,7 @@ export default function WhatsAppButton() {
                             <button
                                 onClick={() => sendMessage(message)}
                                 disabled={!message.trim()}
-                                className="px-3 py-2 bg-primary hover:bg-primary disabled:bg-muted text-accent-foreground rounded-lg transition-colors"
+                                className="px-3 py-2 bg-brand-leaf hover:bg-brand-leaf disabled:bg-muted text-brand-ink rounded-lg transition-colors"
                             >
                                 <Send className="w-4 h-4" />
                             </button>

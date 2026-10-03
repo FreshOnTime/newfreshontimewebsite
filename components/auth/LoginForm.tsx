@@ -76,7 +76,7 @@ export function LoginForm() {
 
             {error && <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
-            <Button type="submit" className="h-12 w-full rounded-lg bg-brand-amber text-sm font-semibold normal-case text-foreground shadow-none transition-colors hover:bg-brand-amber/85" disabled={isLoading || !identifier || !password}>
+            <Button type="submit" className="h-12 w-full rounded-lg bg-brand-leaf text-sm font-semibold normal-case text-brand-ink shadow-none transition-colors hover:bg-brand-leaf/85" disabled={isLoading || !identifier || !password}>
               {isLoading ? 'Signing in…' : <span className="inline-flex items-center gap-2">Continue <ArrowRight className="h-4 w-4" /></span>}
             </Button>
 

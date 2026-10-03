@@ -90,7 +90,7 @@ export default function UploadProducts() {
             </div>
 
             <div className="mt-3 flex gap-2">
-              <button onClick={handleUpload} disabled={loading || !file} className="w-full inline-flex justify-center items-center gap-2 px-3 py-2 bg-primary text-accent-foreground rounded-md hover:bg-primary disabled:opacity-60">
+              <button onClick={handleUpload} disabled={loading || !file} className="w-full inline-flex justify-center items-center gap-2 px-3 py-2 bg-brand-leaf text-brand-ink rounded-md hover:bg-brand-leaf disabled:opacity-60">
                 {loading ? (
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

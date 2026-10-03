@@ -79,7 +79,7 @@ export default function NewsletterForm() {
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="whitespace-nowrap rounded-md bg-primary px-8 py-4 font-semibold text-white shadow-sm transition-all hover:bg-primary hover:shadow-sm disabled:opacity-50"
+                                className="whitespace-nowrap rounded-md bg-brand-leaf px-8 py-4 font-semibold text-brand-ink shadow-sm transition-all hover:bg-brand-leaf hover:shadow-sm disabled:opacity-50"
                             >
                                 {isLoading ? "Subscribing..." : "Subscribe"}
                             </Button>

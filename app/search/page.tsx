@@ -65,7 +65,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <div className="flex h-14 items-center rounded-lg border border-border bg-background px-5 transition-colors focus-within:border-primary focus-within:bg-card">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
               <input aria-label="Search FreshPick products" name="q" defaultValue={query} autoFocus={!query} placeholder="Try dinner, mango, pasta, tea…" className="ml-3 min-w-0 flex-1 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground" />
-              <button type="submit" className="ml-3 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-accent-foreground hover:bg-primary/85">Search</button>
+              <button type="submit" className="ml-3 rounded-lg bg-brand-leaf px-5 py-2 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Search</button>
             </div>
           </form>
 
@@ -92,7 +92,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <section className="rounded-lg border border-border bg-card p-10 text-center md:p-16">
             <h2 className="font-serif text-2xl font-normal text-foreground">Nothing exact yet.</h2>
             <p className="mx-auto mt-4 max-w-lg text-sm font-normal leading-7 text-muted-foreground">Try a broader food name or move into Discover, where you can start from a craving or meal instead of a product keyword.</p>
-            <Link href="/discover" className="mt-7 inline-flex rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-accent-foreground hover:bg-primary/85">Open Discover</Link>
+            <Link href="/discover" className="mt-7 inline-flex rounded-lg bg-brand-leaf px-6 py-3 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Open Discover</Link>
           </section>
         ) : (
           <div className="space-y-16">

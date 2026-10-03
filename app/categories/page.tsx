@@ -47,7 +47,7 @@ export default async function CategoriesIndex() {
           <section className="rounded-lg border border-border bg-card p-10 text-center">
             <h2 className="font-serif text-2xl text-brand-green">Categories are being refreshed.</h2>
             <p className="mt-3 text-muted-foreground">You can still browse the full market.</p>
-            <Link href="/products" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-accent-foreground">Shop all products <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link href="/products" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-brand-leaf px-6 py-3 font-semibold text-brand-ink">Shop all products <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
           </section>
         ) : (
           <div className="grid grid-cols-2 gap-x-5 gap-y-8 md:gap-x-8 md:gap-y-10 lg:grid-cols-3">

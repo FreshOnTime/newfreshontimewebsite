@@ -88,7 +88,7 @@ export default function BusinessLeadsPage() {
 
       <div className="flex flex-wrap gap-2">
         {(["all", ...statuses] as const).map((status) => (
-          <button key={status} onClick={() => setFilter(status)} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${filter === status ? "bg-primary text-white" : "bg-background text-muted-foreground ring-1 ring-border hover:bg-secondary"}`}>
+          <button key={status} onClick={() => setFilter(status)} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${filter === status ? "bg-brand-leaf text-brand-ink" : "bg-background text-muted-foreground ring-1 ring-border hover:bg-secondary"}`}>
             {status === "all" ? `All (${leads.length})` : `${status[0].toUpperCase()}${status.slice(1)}`}
           </button>
         ))}

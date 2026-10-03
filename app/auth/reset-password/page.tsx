@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
               <label htmlFor="confirm-password" className="text-sm font-medium text-foreground">Confirm password</label>
               <PasswordInput id="confirm-password" autoComplete="new-password" minLength={8} required value={confirm} onChange={(event) => setConfirm(event.target.value)} placeholder="Repeat the password" className="h-12 w-full rounded-lg border border-border bg-background px-4 text-sm outline-none focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10" />
             </div>
-            <button type="submit" disabled={loading} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-6 text-xs font-bold normal-case text-accent-foreground hover:bg-primary/85 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-leaf px-6 text-xs font-bold normal-case text-brand-ink hover:bg-brand-leaf/85 disabled:opacity-50">
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Resetting</> : <>Reset password <ArrowRight className="h-4 w-4" /></>}
             </button>
           </form>

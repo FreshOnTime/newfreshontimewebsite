@@ -90,7 +90,7 @@ export default function FirstOrderPopup() {
                             <Button
                                 onClick={handleSubscribe}
                                 disabled={isSubmitting || !email}
-                                className="w-full bg-primary hover:bg-primary disabled:bg-primary text-white py-3 rounded-lg font-semibold"
+                                className="w-full bg-brand-leaf hover:bg-brand-leaf disabled:bg-brand-leaf text-brand-ink py-3 rounded-lg font-semibold"
                             >
                                 {isSubmitting ? 'Joining…' : 'Get 15% Off'}
                                 <ArrowRight className="w-4 h-4 ml-2" />

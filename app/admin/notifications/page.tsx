@@ -136,7 +136,7 @@ export default function NotificationsPage() {
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-primary hover:bg-primary text-white shadow-sm shadow-blue-500/20 px-8"
+                                className="bg-brand-leaf hover:bg-brand-leaf text-brand-ink shadow-sm shadow-blue-500/20 px-8"
                             >
                                 {isSubmitting ? (
                                     "Sending..."

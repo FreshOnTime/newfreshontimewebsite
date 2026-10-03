@@ -5,7 +5,6 @@
 @layer base {
   :root {
     --font-sans: Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
-    --font-brand: "Helvetica Now Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --font-heading: var(--font-sans);
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
@@ -79,7 +78,7 @@
   .editorial-label { @apply text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground; }
   .editorial-title { @apply font-heading text-4xl font-normal normal-case leading-[1.12] tracking-[-0.025em] text-foreground md:text-5xl; text-wrap: balance; }
   .editorial-link { @apply inline-flex min-h-11 items-center gap-3 border-b border-current text-sm font-medium tracking-normal text-brand-green; }
-  .editorial-button { @apply rounded-lg inline-flex min-h-12 items-center justify-center gap-4 bg-brand-amber px-6 py-3 text-sm font-semibold tracking-normal text-foreground transition-colors hover:bg-brand-amber/85 disabled:opacity-50; }
+  .editorial-button { @apply rounded-lg inline-flex min-h-12 items-center justify-center gap-4 bg-brand-leaf px-6 py-3 text-sm font-semibold tracking-normal text-brand-ink transition-colors hover:bg-brand-leaf/90 disabled:opacity-50; }
   .freshpick-market h1, .freshpick-market h2 {
     font-family: var(--font-heading);
     font-weight: 400;

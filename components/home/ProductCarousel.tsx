@@ -306,7 +306,7 @@ export default function ProductCarousel({
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
-                  className={`h-2.5 rounded-md transition-all  ${i === activePage ? "w-6 bg-primary" : "w-2.5 bg-muted hover:bg-muted"
+                  className={`h-2.5 rounded-md transition-all  ${i === activePage ? "w-6 bg-brand-leaf" : "w-2.5 bg-muted hover:bg-muted"
                     } `}
                   onClick={() => {
                     const el = ref.current;

@@ -42,7 +42,7 @@ export default function VerifyPage() {
         <p className="mx-auto mt-5 max-w-md text-sm font-normal leading-7 text-muted-foreground">{message}</p>
         {status !== 'loading' && (
           <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link href="/auth/login" className="rounded-md bg-primary px-6 py-3 text-xs font-semibold text-accent-foreground hover:bg-primary/85">Sign in</Link>
+            <Link href="/auth/login" className="rounded-md bg-brand-leaf px-6 py-3 text-xs font-semibold text-brand-ink hover:bg-brand-leaf/85">Sign in</Link>
             {status === 'error' && <Link href="/profile" className="inline-flex items-center gap-2 rounded-md border border-border px-6 py-3 text-xs font-semibold text-foreground"><MailCheck className="h-3.5 w-3.5" /> Account settings</Link>}
           </div>
         )}

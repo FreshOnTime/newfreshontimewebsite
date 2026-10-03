@@ -46,7 +46,7 @@ export default async function DealsPage() {
           <section className="rounded-lg border border-border bg-background p-10 text-center md:p-14">
             <h2 className="font-serif text-2xl font-normal">No live offers right now.</h2>
             <p className="mx-auto mt-4 max-w-lg text-sm font-normal leading-7 text-muted-foreground">The market is still open—this page only shows products that currently carry a real catalogue discount.</p>
-            <Link href="/products" className="mt-7 inline-flex rounded-md bg-primary px-6 py-3 text-xs font-semibold text-accent-foreground hover:bg-primary/85">Browse Market</Link>
+            <Link href="/products" className="mt-7 inline-flex rounded-md bg-brand-leaf px-6 py-3 text-xs font-semibold text-brand-ink hover:bg-brand-leaf/85">Browse Market</Link>
           </section>
         ) : (
           <section>

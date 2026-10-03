@@ -195,7 +195,7 @@ export default function SubscriptionsPage() {
                         });
                         setIsDialogOpen(true);
                     }}
-                    className="bg-primary hover:bg-primary text-white"
+                    className="bg-brand-leaf hover:bg-brand-leaf text-brand-ink"
                 >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Plan
@@ -488,7 +488,7 @@ export default function SubscriptionsPage() {
                             </Button>
                             <Button
                                 type="submit"
-                                className="bg-primary hover:bg-primary text-white min-w-[120px]"
+                                className="bg-brand-leaf hover:bg-brand-leaf text-brand-ink min-w-[120px]"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (

@@ -70,19 +70,24 @@ in the shared Blog table are retained, excluded from all public/editorial feeds
 and inaccessible through the blog editor. There is no destructive migration or
 production record deletion. Existing saved bags remain ordinary shopping bags.
 
-## Wordmark
+## Wordmark and buttons
 
-The shared wordmark uses uppercase letters, medium weight and tighter spacing,
-with Fresh in green and Pick in clay. Navbar, account/checkout chrome, footer
-and the public SVG use the same typographic direction. The footer uses white
-on green and retains its restored layout without a logo badge.
+The shared wordmark uses original lowercase outlined lettering and a leaf accent,
+with Fresh in leaf green (`#61B547`) and Pick in tangerine (`#F4971A`). Navbar,
+checkout, account and admin sidebars, footer, social preview and the public SVG
+use the same artwork. Browser and app icons use its compact f/p mark. The footer
+retains its restored layout without a logo badge.
 
-The brand font stack is Helvetica Now Text, Helvetica Neue, Helvetica, Arial,
-sans-serif. Helvetica Now Text was observed on Natoora's page. No commercial
-font files were downloaded or bundled: supported installed fonts are used,
-otherwise the logo falls back to the next family. Exact cross-device Helvetica
-Now rendering requires a licensed webfont file. Body/page typography remains
-the previous Arial stack. This is an original FreshPick wordmark treatment.
+Letter outlines derive from the OFL-licensed Acme typeface. See
+`public/brand/CREDITS.md` and `ACME-OFL.txt` for provenance and reproduction.
+SVG outlines render consistently without a font download. The supplied
+FreshDirect reference informs the direction; its logo artwork is not copied.
+Body/page typography remains the previous Arial stack.
+
+Primary actions use leaf green with fixed dark ink (`#171815`) for readable
+text in either theme. The shared dark variant uses ink with cream lettering.
+Ivory backgrounds, forest-green navigation/section accents and orange price or
+promotional badges remain deliberate parts of the existing palette.
 
 ## Banner assets
 
