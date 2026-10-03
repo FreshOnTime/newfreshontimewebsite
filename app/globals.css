@@ -5,6 +5,7 @@
 @layer base {
   :root {
     --font-sans: Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-brand: "Helvetica Now Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --font-heading: var(--font-sans);
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);

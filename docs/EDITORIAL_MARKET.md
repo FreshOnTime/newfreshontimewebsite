@@ -8,8 +8,8 @@ recipe, journal-navigation and single-banner design notes.
 
 ## Homepage
 
-The homepage has three photographic highlights: food at the table; bakery and
-pantry; independent makers. Categories immediately follow the banner and remain
+The homepage has three photographic highlights: a fresh vegetable box; tropical
+fruit and fresh produce; raw pantry staples and tea. Categories immediately follow the banner and remain
 the first shopping destination. Product listings and the existing brand story
 remain, followed by the latest published **Blog** stories and ordering answers.
 
@@ -70,38 +70,58 @@ in the shared Blog table are retained, excluded from all public/editorial feeds
 and inaccessible through the blog editor. There is no destructive migration or
 production record deletion. Existing saved bags remain ordinary shopping bags.
 
+## Wordmark
+
+The shared wordmark uses uppercase letters, medium weight and tighter spacing,
+with Fresh in green and Pick in clay. Navbar, account/checkout chrome, footer
+and the public SVG use the same typographic direction. The footer uses white
+on green and retains its restored layout without a logo badge.
+
+The brand font stack is Helvetica Now Text, Helvetica Neue, Helvetica, Arial,
+sans-serif. Helvetica Now Text was observed on Natoora's page. No commercial
+font files were downloaded or bundled: supported installed fonts are used,
+otherwise the logo falls back to the next family. Exact cross-device Helvetica
+Now rendering requires a licensed webfont file. Body/page typography remains
+the previous Arial stack. This is an original FreshPick wordmark treatment.
+
 ## Banner assets
 
-Two illustrative editorial images were made with the built-in image generation
-tool. They represent food culture, not a named supplier, actual listing,
-confirmed menu or basket contents. Product cards retain catalogue photography.
-Both are locally hosted WebP files at 1672 × 941:
+Natoora's terms require a licence for commercial reuse of its site content.
+Reference photography and logo files were not copied or hotlinked.
 
-- `public/images/home/market-table.webp`
-- `public/images/home/market-bakery.webp`
+Three original campaign images are used; they are illustrative artwork rather
+than proof of a specific producer, basket contents or stock. Actual product
+cards retain catalogue photographs.
 
-The third slide reuses `public/images/editorial/hands-at-work.webp`; its original
-photographer/source/license are in [editorial credits](../public/images/editorial/CREDITS.md).
+- `public/images/home/market-produce-box.webp`: generated for this revision with
+  the built-in image-generation tool, 1672 × 941, optimized to WebP.
+- `public/images/home/fresh-market-hero.webp`: existing original mixed-produce
+  campaign artwork; see `public/images/home/CREDITS.md` for provenance.
+- `public/images/home/market-pantry.webp`: generated for this revision with the
+  built-in image-generation tool, 1672 × 941, optimized to WebP.
+
+The cooked-table/bakery hero assets are retired. Discover now uses the fresh
+produce-box banner. Blog, business and category journeys remain available.
 
 ### Generation prompts
 
-**Table:** Premium editorial photograph of a contemporary Sri Lankan breakfast
-table. Ivory linen on weathered wood, golden coconut roti on a ceramic plate,
-small bowls of coconut sambol and dhal, amber tea in a carafe and tumbler,
-rustic bread on creased paper. Sparse composition with food toward middle/right
-and a shaded bottom-left tabletop for HTML copy. Soft morning light, honest
-texture, natural shadows, subtle grain, three-quarter overhead angle. No
-people, hands, logos, labels, text, fruit pile, glossy CGI or artificial glow.
-Wide 16:9 photograph, no UI or baked headline.
+**Produce box** (photorealistic-natural): An original wide editorial photograph
+of an unbranded kraft produce crate on charcoal slate. Fresh aubergines, cabbage,
+carrots with tops, green beans, pumpkin, limes, cucumbers, avocados and red onions
+are loosely packed in brown paper. Three-quarter overhead view, produce mostly
+centre/right, dark space left for HTML copy and mobile-safe centre cropping.
+Natural daylight, tactile imperfections, rich greens and earthy orange/violet,
+subtle grain. No cooked food, bread, plates, utensils, people, logos, labels,
+printed artwork, watermarks, symmetrical piles, CGI or artificial saturation.
 
-**Bakery:** Premium food editorial photo of rustic sourdough on a weathered
-board, two flaky pastries on brown paper, an unlabeled jar of marmalade and an
-ivory cup of coffee on charcoal stone. Soft daylight from the right, tactile
-crumbs, believable crust, natural shadows and muted warm film photography.
-Sparse arrangement across middle/right, mostly clear dark bottom-left tabletop
-for HTML copy. No fruit/vegetable pile, people, hands, logos, labels, text,
-watermark, CGI, artificial glow or symmetry. Wide 16:9 photograph, no UI or
-baked headline.
+**Pantry** (photorealistic-natural): An original wide food editorial photograph
+of uncooked red rice and lentils in plain paper bags, cinnamon and cardamom in
+a ceramic bowl, whole/half coconut, an unbranded amber corked bottle and loose
+black tea in a kraft pouch. Charcoal brown stone, creased paper, centre/right
+subjects and dark space left for HTML copy. Directional daylight, earthy tones,
+real textures, deep natural shadows and mobile-safe cropping. No cooked dishes,
+bread, table settings, people, labels, logos, watermarks, excessive props, CGI
+or symmetrical staging.
 
 ## Verification
 

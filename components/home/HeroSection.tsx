@@ -6,9 +6,9 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
 
 const slides = [
-  { id: 'table', eyebrow: 'The FreshPick market · Colombo', title: ['Good food.', 'Good company.'], description: 'From everyday essentials to something made with care. Find your next good thing.', image: '/images/home/market-table.webp', alt: 'Roti, coconut sambol, dhal, bread and tea on a softly lit table', action: 'Explore the market', href: '#categories-title' },
-  { id: 'bakery', eyebrow: 'Bakery, pantry & everyday rituals', title: ['A little care.', 'A lot of flavour.'], description: 'Bread, pantry favourites and the small things that make a table feel complete.', image: '/images/home/market-bakery.webp', alt: 'Rustic bread, flaky pastries, marmalade and coffee on a dark stone countertop', action: 'Shop by category', href: '/categories' },
-  { id: 'makers', eyebrow: 'Growers, kitchens & independent makers', title: ['Food with', 'a story.'], description: 'Explore the people and products that can find a place in the FreshPick market.', image: '/images/editorial/hands-at-work.webp', alt: 'Hands preparing dough on a flour-dusted work surface', action: 'Our producers', href: '/farm-to-table' },
+  { id: 'produce', eyebrow: 'Fresh vegetables · The FreshPick market', title: ['Fresh picks.', 'Full of flavour.'], description: 'Leafy greens, everyday vegetables and fresh ingredients for your kitchen. Start with what you love.', image: '/images/home/market-produce-box.webp', alt: 'A kraft produce box with aubergines, cabbage, carrots, green beans, pumpkin, limes and avocados', action: 'Explore the market', href: '#categories-title' },
+  { id: 'fruit', eyebrow: 'Fruit, colour & everyday goodness', title: ['A brighter', 'kind of fresh.'], description: 'Tropical fruit, citrus and fresh favourites. Explore the range and find your next pick.', image: '/images/home/fresh-market-hero.webp', alt: 'Papaya, bananas, limes, carrots and leafy greens on a warm stone surface', action: 'Shop by category', href: '/categories' },
+  { id: 'pantry', eyebrow: 'Pantry essentials, tea & more', title: ['Good things.', 'Every day.'], description: 'Rice, pulses, spices and drinks alongside fresh produce, bakery and food from local kitchens.', image: '/images/home/market-pantry.webp', alt: 'Uncooked rice, lentils, coconut, spices and loose tea in a natural pantry still life', action: 'Shop all food', href: '/products' },
 ] as const;
 
 export default function HeroSection() {
