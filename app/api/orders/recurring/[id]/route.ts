@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma, type ScheduleStatus } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { hydrateRecurrence, RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
 type AuthUser = { userId: string; role: string; mongoId?: string };
 type RecurringOrderRouteContext = { params: Promise<{ id: string }> };
@@ -53,91 +54,17 @@ function serializeOrder(o: RecurringOrderWithItems) {
   };
 }
 
-type StoredRecurrence = {
-  startDate?: string | Date;
-  endDate?: string | Date;
-  daysOfWeek?: number[];
-  includeDates?: (string | Date)[];
-  excludeDates?: (string | Date)[];
-  selectedDates?: (string | Date)[];
-  notes?: string;
-};
-
-type HydratedRecurrence = {
-  startDate?: Date;
-  endDate?: Date;
-  daysOfWeek?: number[];
-  includeDates?: Date[];
-  excludeDates?: Date[];
-  selectedDates?: Date[];
-  notes?: string;
-};
-
-// recurrence is a JSON column now, so its dates come back as ISO strings.
-// Hydrate them to Date objects for calculation/validation, dehydrate for storage.
-function hydrateRecurrence(rec: unknown): HydratedRecurrence | undefined {
-  if (!rec || typeof rec !== 'object') return undefined;
-  const r = rec as StoredRecurrence;
-  const h: HydratedRecurrence = {};
-  if (r.startDate) h.startDate = new Date(r.startDate);
-  if (r.endDate) h.endDate = new Date(r.endDate);
-  if (r.daysOfWeek) h.daysOfWeek = r.daysOfWeek;
-  if (r.includeDates) h.includeDates = r.includeDates.map((d) => new Date(d));
-  if (r.excludeDates) h.excludeDates = r.excludeDates.map((d) => new Date(d));
-  if (r.selectedDates) h.selectedDates = r.selectedDates.map((d) => new Date(d));
-  if (typeof r.notes === 'string') h.notes = r.notes;
-  return h;
-}
+type HydratedRecurrence = RecurringOrderPattern['recurrence'];
 
 function dehydrateRecurrence(rec: HydratedRecurrence): Prisma.InputJsonValue {
-  const out: Record<string, unknown> = {};
-  if (rec.startDate) out.startDate = rec.startDate.toISOString();
-  if (rec.endDate) out.endDate = rec.endDate.toISOString();
-  if (rec.daysOfWeek) out.daysOfWeek = rec.daysOfWeek;
-  if (rec.includeDates) out.includeDates = rec.includeDates.map((d) => d.toISOString());
-  if (rec.excludeDates) out.excludeDates = rec.excludeDates.map((d) => d.toISOString());
-  if (rec.selectedDates) out.selectedDates = rec.selectedDates.map((d) => d.toISOString());
-  if (typeof rec.notes === 'string') out.notes = rec.notes;
-  return out as Prisma.InputJsonValue;
+  return JSON.parse(JSON.stringify(rec)) as Prisma.InputJsonValue;
 }
 
 function calculateNextDelivery(recurrence: HydratedRecurrence, fromDate = new Date()): Date | null {
-  const start = recurrence.startDate && recurrence.startDate > fromDate ? recurrence.startDate : fromDate;
-  const end = recurrence.endDate;
-  const excluded = new Set((recurrence.excludeDates || []).map((d) => d.toDateString()));
-
-  const explicitDates = [...(recurrence.selectedDates || []), ...(recurrence.includeDates || [])]
-    .filter((d) => d >= start && (!end || d <= end) && !excluded.has(d.toDateString()))
-    .sort((a, b) => +a - +b);
-  if (explicitDates.length) return explicitDates[0];
-
-  const days = recurrence.daysOfWeek || [];
-  if (!days.length) return null;
-
-  for (let i = 0; i <= 366; i++) {
-    const candidate = new Date(start);
-    candidate.setDate(candidate.getDate() + i);
-    if (end && candidate > end) return null;
-    if (days.includes(candidate.getDay()) && !excluded.has(candidate.toDateString())) return candidate;
-  }
-
-  return null;
+  return RecurringOrderService.calculateNextDelivery({ recurrence } as RecurringOrderPattern, fromDate);
 }
 
-function validateRecurrencePattern(recurrence: HydratedRecurrence): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  if (recurrence.startDate && recurrence.endDate && recurrence.startDate >= recurrence.endDate) {
-    errors.push('Start date must be before end date');
-  }
-  if (
-    !recurrence.daysOfWeek?.length &&
-    !recurrence.includeDates?.length &&
-    !recurrence.selectedDates?.length
-  ) {
-    errors.push('Select at least one delivery day or date');
-  }
-  return { valid: errors.length === 0, errors };
-}
+const deliveryDate = z.union([z.string().date(), z.string().datetime({ offset: true }), z.date()]);
 
 // Validation schema for updating recurring order
 const updateRecurringOrderSchema = z.object({
@@ -149,12 +76,13 @@ const updateRecurringOrderSchema = z.object({
   })).min(1).optional(),
   recurrence: z.object({
     // Accept ISO string, date-only string, or Date
-    startDate: z.union([z.string().datetime(), z.string(), z.date()]).optional(),
-    endDate: z.union([z.string().datetime(), z.string(), z.date()]).optional(),
-    daysOfWeek: z.array(z.number().min(0).max(6)).optional(),
-    includeDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
-    excludeDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
-    selectedDates: z.array(z.union([z.string().datetime(), z.string(), z.date()])).optional(),
+    startDate: deliveryDate.optional(),
+    endDate: deliveryDate.optional(),
+    daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
+    includeDates: z.array(deliveryDate).optional(),
+    excludeDates: z.array(deliveryDate).optional(),
+    selectedDates: z.array(deliveryDate).optional(),
+    rruleString: z.string().max(2000).optional(),
     notes: z.string().max(1000).optional(),
   }).optional(),
   nextDeliveryAt: z.string().datetime().optional(),
@@ -237,6 +165,8 @@ export const PUT = requireAuth(async (request: NextRequest, context?: RecurringO
     if (String(order.customerId) !== String(user.mongoId || user.userId) && user.role !== 'admin') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
+
+    if (data.isRecurring === false) return NextResponse.json({ error: 'A recurring schedule cannot become a standalone order. End the schedule instead.' }, { status: 400 });
 
     // Prepare update object
     const updateData: Prisma.OrderUpdateInput = {};
@@ -323,6 +253,7 @@ export const PUT = requireAuth(async (request: NextRequest, context?: RecurringO
       if (data.recurrence.selectedDates) {
         recurrenceUpdate.selectedDates = data.recurrence.selectedDates.map((d) => new Date(d));
       }
+      if (data.recurrence.rruleString !== undefined) recurrenceUpdate.rruleString = data.recurrence.rruleString;
       if (typeof data.recurrence.notes === 'string') {
         recurrenceUpdate.notes = data.recurrence.notes;
       }
@@ -340,7 +271,7 @@ export const PUT = requireAuth(async (request: NextRequest, context?: RecurringO
         }, { status: 400 });
       }
 
-      const validation = validateRecurrencePattern(mergedRecurrence);
+      const validation = RecurringOrderService.validateRecurrencePattern(mergedRecurrence);
       if (!validation.valid) {
         return NextResponse.json({
           error: 'Invalid recurrence pattern',
@@ -356,7 +287,7 @@ export const PUT = requireAuth(async (request: NextRequest, context?: RecurringO
       const next = calculateNextDelivery(mergedRecurrence, new Date());
       if (next) {
         // Only set if user didn't explicitly pause/end
-        if (!updateData.scheduleStatus) updateData.scheduleStatus = 'active';
+        if (!updateData.scheduleStatus) updateData.scheduleStatus = order.scheduleStatus;
         updateData.nextDeliveryAt = next;
       } else {
         if (!updateData.scheduleStatus) updateData.scheduleStatus = 'ended';
@@ -435,22 +366,11 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: Recurri
       });
     }
 
-    // Admin can actually delete the order.
-    // Restore stock for items if the order still holds reservations. Cancelled/refunded
-    // orders already released their stock, so skip them to avoid double-restore.
-    const shouldRestoreStock = !['delivered', 'shipped', 'cancelled', 'refunded'].includes(order.status);
-
-    await prisma.$transaction(async (tx) => {
-      if (shouldRestoreStock) {
-        for (const item of order.items) {
-          await tx.product.updateMany({
-            where: { id: item.productId },
-            data: { stockQty: { increment: item.qty || 0 } },
-          });
-        }
-      }
-      await tx.order.delete({ where: { id } });
-    });
+    // Schedules reserve no stock; only their generated delivery orders do.
+    const removed = await prisma.$transaction(async (tx) => tx.order.deleteMany({
+      where: { id, isRecurring: true, updatedAt: order.updatedAt },
+    }));
+    if (removed.count !== 1) return NextResponse.json({ error: 'This schedule changed. Refresh before deleting.' }, { status: 409 });
 
     return NextResponse.json({
       success: true,

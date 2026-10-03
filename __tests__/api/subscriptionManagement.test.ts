@@ -2,11 +2,12 @@ import type { NextRequest } from 'next/server';
 import { PATCH } from '@/app/api/subscriptions/[id]/route';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { nextWeekday } from '@/lib/subscriptionUtils';
 
 jest.mock('@/lib/auth', () => ({ verifyToken: jest.fn() }));
 jest.mock('@/lib/subscriptionUtils', () => ({
   serializeSubscription: (value: unknown) => value,
-  nextWeekday: () => new Date('2026-10-08'),
+  nextWeekday: jest.fn(() => new Date('2026-10-08')),
   advanceByFrequency: () => new Date('2026-10-15'),
 }));
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: {
@@ -77,5 +78,20 @@ describe('Subscription state transitions', () => {
     db.subscription.findFirst.mockResolvedValue({ ...stored, status: 'paused' });
     expect((await PATCH(request({ action: 'resume' }), ctx)).status).toBe(200);
     expect(tx.subscription.updateMany.mock.calls[0][0].data).toMatchObject({ status: 'active', pausedUntil: null });
+  });
+  it('ends a scheduled pause immediately when the owner explicitly resumes', async () => {
+    const pausedUntil = new Date(Date.now() + 30 * 86400000);
+    db.subscription.findFirst.mockResolvedValue({ ...stored, status: 'paused', pausedUntil });
+    const before = Date.now();
+    expect((await PATCH(request({ action: 'resume' }), ctx)).status).toBe(200);
+    const base = (nextWeekday as jest.Mock).mock.calls[0][0] as Date;
+    expect(base.getTime()).toBeGreaterThanOrEqual(before);
+    expect(base.getTime()).toBeLessThan(pausedUntil.getTime());
+  });
+  it('keeps a future subscription start when resuming a pause', async () => {
+    const startDate = new Date(Date.now() + 20 * 86400000);
+    db.subscription.findFirst.mockResolvedValue({ ...stored, status: 'paused', startDate });
+    expect((await PATCH(request({ action: 'resume' }), ctx)).status).toBe(200);
+    expect(nextWeekday).toHaveBeenCalledWith(startDate, 'thursday');
   });
 });

@@ -76,7 +76,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       case 'resume': {
         if (subscription.status !== 'paused') return invalidTransition('Only paused subscriptions can be resumed');
         const now = new Date();
-        const base = subscription.pausedUntil && subscription.pausedUntil > now ? subscription.pausedUntil : now;
+        // Explicit resume ends the pause now, even when a later auto-resume
+        // date was saved. A future subscription start still remains binding.
+        const base = subscription.startDate > now ? subscription.startDate : now;
         data.status = 'active';
         data.pausedUntil = null;
         data.nextDeliveryDate = nextWeekday(base, day);

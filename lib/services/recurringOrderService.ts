@@ -85,7 +85,10 @@ export class RecurringOrderService {
               `UNTIL=${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`
             )
           : recurrence.rruleString;
-        const next = rrulestr(ruleString).after(currentDate);
+        const searchAfter = recurrence.startDate && recurrence.startDate > currentDate
+          ? new Date(recurrence.startDate.getTime() - 1)
+          : currentDate;
+        const next = rrulestr(ruleString).after(searchAfter);
         if (next && (!endDate || next <= endDate)) return next;
       } catch (e) {
         console.error('Error parsing RRULE:', e);
@@ -93,16 +96,17 @@ export class RecurringOrderService {
     }
 
     const excluded = new Set((recurrence.excludeDates || []).map((d) => d.toDateString()));
+    const searchStart = recurrence.startDate && recurrence.startDate > currentDate ? recurrence.startDate : currentDate;
     const explicit = [...(recurrence.selectedDates || []), ...(recurrence.includeDates || [])]
-      .filter((d) => d > currentDate && !excluded.has(d.toDateString()) && (!endDate || d <= endDate))
+      .filter((d) => d > currentDate && d >= searchStart && !excluded.has(d.toDateString()) && (!endDate || d <= endDate))
       .sort((a, b) => +a - +b);
     if (explicit.length) return explicit[0];
 
     const days = recurrence.daysOfWeek || [];
     if (!days.length) return null;
-    for (let i = 1; i <= 366; i++) {
-      const nextDate = new Date(currentDate);
-      nextDate.setDate(currentDate.getDate() + i);
+    for (let i = searchStart > currentDate ? 0 : 1; i <= 366; i++) {
+      const nextDate = new Date(searchStart);
+      nextDate.setDate(searchStart.getDate() + i);
       if (endDate && nextDate > endDate) return null;
       if (days.includes(nextDate.getDay()) && !excluded.has(nextDate.toDateString())) return nextDate;
     }

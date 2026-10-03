@@ -85,7 +85,7 @@ For basket-linked orders, composition and pricing are locked to the basket snaps
 
 **Recurring templates:** inspect recurrence, schedule status and next date in the dialog; use active/paused/ended to control future instances. The template itself is not a pending stock-reserved delivery. Do not convert an existing ordinary order into a template by editing a flag; use the supported recurrence creation flow.
 
-The retained recurring-order quick-action API also supports admin force-next-date, skip and duplicate. Duplicate creates a second active schedule; it can result in an additional delivery. Prefer ending/pausing to destructive template deletion: legacy recurring deletion uses status-based stock restoration that needs review when a template never reserved stock.
+The retained recurring-order quick-action API also supports admin force-next-date, skip and duplicate. Duplicate creates a second active schedule with payment pending; it can result in an additional delivery. Template deletion checks the stored update timestamp and never restores product stock, because templates hold no reservation. Generated delivery orders remain intact. Prefer ending/pausing when you want to keep the schedule history. Templates cannot be converted into ordinary orders by changing `isRecurring`.
 
 **Delete:** destructive deletion is distinct from cancellation. The endpoint rejects basket-linked orders and uses stock-release guards where applicable. Preserve historical orders unless a legitimate data-maintenance reason requires deletion; fulfilment mistakes are normally handled by status changes and notes.
 

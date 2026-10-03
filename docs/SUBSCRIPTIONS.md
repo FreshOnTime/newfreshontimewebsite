@@ -62,7 +62,7 @@ For an automated customer offering, map the real sellable products, confirm stoc
 
 ## 4. Customer signup and scheduling
 
-The checkout plan flow sends a plan UUID, checkout address, selected weekday, `timeSlot: "Any time"`, COD and optional start date. It does not send arbitrary RRULEs or an end date for a basket plan. The server enforces the plan's frequency.
+Saved account addresses are converted to the canonical recipient/phone/street/city fields before checkout; postcode is optional. The subscription view shows the street and formats delivery dates in Asia/Colombo. The checkout plan flow sends a plan UUID, checkout address, selected weekday, `timeSlot: "Any time"`, COD and optional start date. It does not send arbitrary RRULEs or an end date for a basket plan. The server enforces the plan's frequency.
 
 Example request; replace placeholder IDs and contact details with test fixtures:
 
@@ -115,7 +115,7 @@ All actions use `PATCH /api/subscriptions/[id]` and an authenticated owner. Othe
 { "action": "pause" }
 ```
 
-This UI action pauses indefinitely. The API also accepts a future offset datetime `pauseUntil` for a timed pause. The worker resumes expired timed pauses on active plans and picks the next future weekday. Resuming before a future `pauseUntil` uses that future date as its base. Cancellation can include `reason` up to 500 characters.
+This UI action pauses indefinitely. The API also accepts a future offset datetime `pauseUntil` for a timed pause. The worker resumes expired timed pauses on active plans and picks the next future weekday. Explicit resume ends the pause immediately and picks the next future chosen weekday, while respecting a future subscription start date. Cancellation can include `cancelReason` up to 500 characters.
 
 The action handler checks the record's status, date and update timestamp during the write. Concurrent actions can return 409; reload and review the new state before trying again.
 
@@ -181,15 +181,15 @@ The worker locks/claims the due template date, loads current active products, ca
 | `POST /api/orders/recurring` | Create from an existing owned `sourceOrderId` plus a recurrence |
 | `GET /api/orders/recurring/[id]` | Read owned template; primary admin exception exists |
 | `PUT /api/orders/recurring/[id]` | Update items, recurrence, next date, schedule status, shipping address or notes according to its schema |
-| `DELETE /api/orders/recurring/[id]` | Customer: end schedule and clear next date; primary admin: destructive legacy deletion |
+| `DELETE /api/orders/recurring/[id]` | Customer: end schedule and clear next date; primary admin: version-checked template deletion without stock changes |
 | `PATCH /api/orders/recurring/[id]` | Quick owner actions pause/resume/end |
 | `/api/admin/orders/recurring` and `/[id]` | Admin scheduling management; see API inventory for methods |
 
-Recurrence includes start/end dates, weekdays (`0` Sunday through `6` Saturday), included/excluded or selected dates. The service also understands stored RRULE patterns, but the owner update route uses its own explicit-date/day schema and calculation. **Do not assume every route supports the same RRULE payload or timezone semantics.** The basket calendar helper is explicitly Sri Lankan; older recurring-order calculations use JavaScript date behavior in the server environment.
+Recurrence includes start/end dates, weekdays (`0` Sunday through `6` Saturday), included/excluded or selected dates. Customer update/resume and the worker share the service calculation, including stored monthly/biweekly RRULE patterns. Editing a paused schedule does not activate it; use Resume explicitly. The basket calendar helper is explicitly Sri Lankan; older recurring-order calculations use JavaScript date behavior in the server environment.
 
 Admin Orders can filter templates and schedule states and edit scheduling details in the order dialog. Pausing a template stops future generated orders; it does not undo existing instances. Stats count templates separately from actual generated-order revenue.
 
-The customer quick-action PATCH accepts `{ "action": "pause" }`, `resume` or `end`. The admin quick-action route also supports `force_next_delivery` (with an ISO `nextDeliveryAt`), `skip_next_delivery` and `duplicate`. Duplicating creates another active template and can produce another future order; it is not an idempotent retry. Customer DELETE ends a schedule; primary-admin DELETE can remove it destructively. Retained deletion handlers have status-based stock restoration that needs review for unreserved templates, so **use end/pause for ordinary schedule management**, rather than deleting to stop recurrence.
+The customer quick-action PATCH accepts `{ "action": "pause" }`, `resume` or `end`. The admin quick-action route also supports `force_next_delivery` (with an ISO `nextDeliveryAt`), `skip_next_delivery` and `duplicate`. Duplicating creates another active template and can produce another future order; it is not an idempotent retry. Customer DELETE ends a schedule; primary-admin DELETE can remove it destructively. Both recurring deletion handlers compare the stored update timestamp and leave stock untouched. Generated delivery orders remain intact. A template cannot become an ordinary unreserved order by toggling `isRecurring`. Use end/pause when preserving schedule history is useful.
 
 ## 9. Operator launch and daily checklist
 
