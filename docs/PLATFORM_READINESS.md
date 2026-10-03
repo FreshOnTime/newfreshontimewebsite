@@ -127,3 +127,10 @@ rollback, concurrent retry, fixed-price rounding, durable confirmation, cancella
 order/queue completion races, consumed-stock refunds and stale plan content edits.
 Production inventory mappings, COD collection and deployed scheduling still need
 staging acceptance with real business configuration.
+
+## Notification completion
+
+- Customer notification inbox is linked from account and dashboard navigation; pagination, unread filters and page read actions are implemented.
+- NotificationRead records persist each account's state independently for broadcasts. Historical targeted reads are migrated; broadcast legacy read flags cannot be attributed and start unread.
+- Sending checks current admin access, validates active targets and local action links, deduplicates submitted retry keys and writes one audit record. Failed sends retain drafts.
+- 377 unit/API tests and production build pass locally. Nine built-app browser scenarios pass using isolated Prisma fixtures, including interrupted committed sends, read failures and cross-account isolation. PostgreSQL receipt/concurrency checks are included in the disposable CI harness; production credentials and hosted rollout remain separate verification.

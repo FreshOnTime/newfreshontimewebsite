@@ -1,116 +1,75 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Bell } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import { safeNotificationLink } from '@/lib/notificationInput';
+import { AccountLoading, accountSecondaryButton } from '@/components/account/AccountPage';
 
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-
-interface Notification {
-    _id: string;
-    title: string;
-    message: string;
-    type: "info" | "success" | "warning" | "error" | "promo";
-    isRead: boolean;
-    link?: string;
-    createdAt: string;
-}
-
+interface Notification { _id: string; title: string; message: string; type: string; isRead: boolean; link: string | null; createdAt: string }
 export function NotificationCenter() {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [unreadCount, setUnreadCount] = useState(0);
-
-    const fetchNotifications = async () => {
-        try {
-            const res = await fetch("/api/admin/notifications");
-            const data = await res.json();
-            if (data.success) {
-                setNotifications(data.data);
-                setUnreadCount(data.data.filter((n: Notification) => !n.isRead).length);
-            }
-        } catch (error) {
-            console.error("Failed to fetch notifications");
-        }
-    };
-
-    useEffect(() => {
-        fetchNotifications();
-        // Poll every minute
-        const interval = setInterval(fetchNotifications, 60000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const markAsRead = async (id: string) => {
-        // In a real app we'd call an API to mark as read
-        // For now purely UI state locally for demo
-        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-        setUnreadCount(prev => Math.max(0, prev - 1));
-    };
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative hover:bg-secondary/50 hover:text-primary transition-colors rounded-lg">
-                    <Bell className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                        <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 h-4 min-w-[16px] flex items-center justify-center border-0 shadow-sm animate-pulse">
-                            {unreadCount}
-                        </Badge>
-                    )}
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 p-0 rounded-lg shadow-none border-border max-h-[500px] overflow-y-auto">
-                <DropdownMenuLabel className="p-4 border-b border-border flex justify-between items-center sticky top-0 bg-background z-10">
-                    <span className="font-bold text-foreground">Notifications</span>
-                    {unreadCount > 0 && (
-                        <span className="text-xs text-primary cursor-pointer hover:underline" onClick={() => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))}>Mark all read</span>
-                    )}
-                </DropdownMenuLabel>
-
-                {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-muted-foreground text-sm">
-                        No notifications yet.
-                    </div>
-                ) : (
-                    <div className="divide-y divide-border">
-                        {notifications.map((notification) => (
-                            <div
-                                key={notification._id}
-                                className={`p-4 hover:bg-background transition-colors relative group ${!notification.isRead ? 'bg-secondary/30' : ''} `}
-                                onClick={() => markAsRead(notification._id)}
-                            >
-                                <div className="flex gap-3">
-                                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${notification.type === 'promo' ? 'bg-primary' :
-                                            notification.type === 'warning' ? 'bg-yellow-500' :
-                                                notification.type === 'error' ? 'bg-red-500' :
-                                                    'bg-primary'
-                                        } `} />
-                                    <div className="space-y-1">
-                                        <h4 className={`text-sm ${!notification.isRead ? 'font-bold text-foreground' : 'font-medium text-foreground'} `}>
-                                            {notification.title}
-                                        </h4>
-                                        <p className="text-xs text-muted-foreground line-clamp-2">
-                                            {notification.message}
-                                        </p>
-                                        <span className="text-xs text-muted-foreground block pt-1">
-                                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                                        </span>
-                                    </div>
-                                </div>
-                                {notification.link && (
-                                    <Link
-                                        href={notification.link}
-                                        className="absolute inset-0 z-10"
-                                    />
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
+  const { user, loading: authLoading } = useAuth();
+  const userId = user?._id, router = useRouter();
+  const accountRef = useRef({ id: userId });
+  if (accountRef.current.id !== userId) accountRef.current = { id: userId };
+  const account = accountRef.current;
+  const [state, setState] = useState<{ owner: object | null; rows: Notification[]; loading: boolean; error: string | null; pages: number; total: number; unreadCount: number }>({ owner: null, rows: [], loading: true, error: null, pages: 1, total: 0, unreadCount: 0 });
+  const [page, setPage] = useState(1), [unread, setUnread] = useState(false), [version, setVersion] = useState(0);
+  const [readError, setReadError] = useState<string | null>(null), [saving, setSaving] = useState(false);
+  const lock = useRef<object | null>(null);
+  const owned = state.owner === account, rows = owned ? state.rows : [], loading = authLoading || !owned || state.loading;
+  useEffect(() => { setPage(1); setReadError(null); setSaving(false); lock.current = null; }, [account]);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!userId) { router.replace('/auth/login?redirect=/profile/notifications'); return; }
+    const controller = new AbortController();
+    setState(current => ({ ...current, owner: account, rows: current.owner === account ? current.rows : [], loading: true, error: null }));
+    void (async () => {
+      try {
+        const response = await authenticatedApiFetch(`/api/notifications?page=${page}&limit=20${unread ? '&unread=true' : ''}`, { cache: 'no-store', signal: controller.signal });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || data.error || 'Unable to load notifications');
+        if (controller.signal.aborted || accountRef.current !== account) return;
+        if (page > data.pagination.pages) { setPage(data.pagination.pages); return; }
+        setState({ owner: account, rows: data.data, loading: false, error: null, pages: data.pagination.pages, total: data.pagination.total, unreadCount: data.unreadCount });
+      } catch (error) {
+        if (!controller.signal.aborted && accountRef.current === account) setState(current => ({ ...current, loading: false, error: error instanceof Error ? error.message : 'Unable to load notifications' }));
+      }
+    })();
+    return () => controller.abort();
+  }, [account, userId, authLoading, router, page, unread, version]);
+  const markRead = async (ids: string[]) => {
+    if (!ids.length || lock.current === account) return;
+    lock.current = account; setSaving(true); setReadError(null);
+    try {
+      const response = await authenticatedApiFetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.message || data.error || 'Unable to mark notifications read');
+      if (accountRef.current !== account) return;
+      setVersion(value => value + 1);
+    } catch (error) {
+      if (accountRef.current === account) setReadError(error instanceof Error ? error.message : 'Unable to mark notifications read');
+    } finally {
+      if (lock.current === account) lock.current = null;
+      if (accountRef.current === account) setSaving(false);
+    }
+  };
+  if (!userId && !authLoading) return null;
+  return <section aria-label="Notification inbox" className="rounded-lg border border-border bg-background p-5 md:p-7">
+    <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-xl font-normal text-brand-green"><Bell aria-hidden="true" className="h-5 w-5" /> Updates{owned && <span className="text-sm text-muted-foreground">{state.unreadCount} unread</span>}</h2><button type="button" className={accountSecondaryButton} disabled={loading || saving} onClick={() => setVersion(value => value + 1)}>Refresh notifications</button></div>
+    <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><label className="inline-flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={unread} disabled={saving} onChange={event => { setUnread(event.target.checked); setPage(1); }} /> Unread only</label><button type="button" className={accountSecondaryButton} disabled={saving || loading || !rows.some(row => !row.isRead)} onClick={() => void markRead(rows.filter(row => !row.isRead).map(row => row._id))}>{saving ? 'Saving…' : 'Mark this page read'}</button></div>
+    {owned && state.error && <div role="alert" className="mt-4 text-sm text-destructive"><p>{state.error}</p><button type="button" className="mt-2 min-h-11 underline" onClick={() => setVersion(value => value + 1)}>Try again</button></div>}
+    {readError && <p role="alert" className="mt-4 text-sm text-destructive">{readError} Use the read action to retry.</p>}
+    {loading ? <AccountLoading label="Loading notifications…" /> : <>
+      {!rows.length && !state.error && <p className="py-8 text-sm text-muted-foreground">{unread ? 'You have no unread notifications.' : 'No notifications yet. Updates from FreshPick will appear here.'}</p>}
+      <div className="mt-5 space-y-3">{rows.map(row => <article key={row._id} className={`rounded-lg border border-border p-4 ${row.isRead ? 'bg-background' : 'bg-secondary'}`}>
+        <h3 className="break-words text-sm font-semibold">{row.title}</h3><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7">{row.message}</p><p className="mt-3 text-xs text-muted-foreground">{row.isRead ? 'Read' : 'Unread'} · {new Date(row.createdAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Colombo', day: 'numeric', month: 'short', year: 'numeric' })}</p>
+        <div className="mt-3 flex flex-wrap gap-3">{!row.isRead && <button type="button" disabled={saving} className={accountSecondaryButton} aria-label={`Mark ${row.title} read`} onClick={() => void markRead([row._id])}>Mark read</button>}{safeNotificationLink(row.link) && <Link href={safeNotificationLink(row.link)!} className={accountSecondaryButton} aria-label={`View ${row.title}`}>View details</Link>}</div>
+      </article>)}</div>
+      {owned && state.total > 0 && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground"><p>{state.total} {state.total === 1 ? 'notification' : 'notifications'} · Page {page} of {state.pages}</p><div className="flex gap-2"><button type="button" className={accountSecondaryButton} disabled={page <= 1 || saving} onClick={() => setPage(value => value - 1)}>Previous</button><button type="button" className={accountSecondaryButton} disabled={page >= state.pages || saving} onClick={() => setPage(value => value + 1)}>Next</button></div></div>}
+    </>}
+  </section>;
 }

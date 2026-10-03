@@ -10,6 +10,7 @@ const accountLinks = [
   { href: '/orders', label: 'Orders' },
   { href: '/wishlist', label: 'Wishlist' },
   { href: '/profile/messages', label: 'Messages' },
+  { href: '/profile/notifications', label: 'Notifications' },
   { href: '/profile/subscriptions', label: 'Subscriptions' },
   { href: '/for-you', label: 'For you' },
 ];

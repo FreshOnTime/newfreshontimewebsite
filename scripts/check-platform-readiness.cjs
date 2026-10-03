@@ -14,7 +14,7 @@ require('esbuild-register');
  checks.productStorage=!!process.env.AZURE_STORAGE_CONNECTION_STRING;
  if(!process.argv.includes('--config-only')){
   const prisma=require('../lib/prisma').default;
-  try{const migrations=await prisma.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations"`;checks.platformMigration=migrations.some(row=>row.migration_name==='20261003050000_platform_operations'&&row.finished_at&&!row.rolled_back_at);checks.noFailedMigrations=!migrations.some(row=>!row.finished_at&&!row.rolled_back_at);}
+  try{const migrations=await prisma.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations"`;checks.platformMigration=migrations.some(row=>row.migration_name==='20261003050000_platform_operations'&&row.finished_at&&!row.rolled_back_at);checks.notificationReadsMigration=migrations.some(row=>row.migration_name==='20261003180000_notification_reads'&&row.finished_at&&!row.rolled_back_at);checks.noFailedMigrations=!migrations.some(row=>!row.finished_at&&!row.rolled_back_at);}
   catch{checks.platformMigration=false;checks.databaseRead=false;}
   finally{await prisma.$disconnect();}
  }

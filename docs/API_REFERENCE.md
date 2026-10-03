@@ -1,13 +1,13 @@
 # API reference
 
-This reference covers the App Router handlers at the revision in the [documentation index](README.md). The inventory below includes **112 route files and 188 exported HTTP handlers**, including compatibility aliases, disabled endpoints and MCP methods that intentionally return 405. Presence in the inventory is not an endorsement to use every legacy route.
+This reference covers the App Router handlers at the revision in the [documentation index](README.md). The inventory below includes **113 route files and 190 exported HTTP handlers**, including compatibility aliases, disabled endpoints and MCP methods that intentionally return 405. Presence in the inventory is not an endorsement to use every legacy route.
 
 ## Conventions
 
 - Default base is the website origin; `/api` is served by Next.js. The optional `NEXT_PUBLIC_API_URL` changes the client's base when a separate backend is configured.
 - JSON requests use `Content-Type: application/json`; image/spreadsheet uploads use their handler's multipart contract.
 - First-party browser requests use the session cookies set by auth routes. Do not copy tokens into documentation or accept a submitted user ID as authentication.
-- UUIDs are the database IDs. `_id` aliases appear for compatibility. Public SKU/slug lookups are supported only where the route resolves them.
+- Database IDs are opaque strings, usually UUIDs. `_id` aliases appear for compatibility. Public SKU/slug lookups are supported only where the route resolves them.
 - Money is LKR. Date responses use ISO serialization. Do not infer local calendar semantics from the storage string; basket scheduling explicitly uses Sri Lanka time.
 - Response envelopes vary (`data`, `orders`, `plans`, `success`, `ok`, etc.). Consume the specific route's response; there is no universal response wrapper.
 - Paginated admin lists are bounded; do not assume a `limit=1000` request returns everything.
@@ -136,7 +136,7 @@ The complete schemas, examples and transition rules are in [Subscriptions](SUBSC
 | Collection | Public collection list/slug | Admin GET/POST and ID GET/PATCH/DELETE; tagged content and 1–100 product IDs |
 | Newsletter | `POST /api/newsletter` signup; `POST /api/newsletter/unsubscribe` signed consent mutation | GET/PATCH consent list; send `version` from unsubscribeVersion; no campaigns |
 | Account messages | Authenticated recipient-only GET with page/limit/q/unread; owner-only PUT read; private no-store responses | Database-verified admin POST targets recipientId or supplierId; submissionId UUID supports exact retries; linked active producer accounts receive messages |
-| Notifications | GET relevant in-app entries through retained route | POST targeted/broadcast database notification; not push |
+| Notifications | GET /api/notifications with page/limit/unread; PATCH read receipts scoped to caller | POST targeted/broadcast notification with validated local links and retry identifier; not browser push |
 | Health | No public admin health access | `GET /api/admin/operations/health`: uncached readiness/queue/overdue indicators |
 
 For example, an enquiry update uses the current integer `version`:
@@ -182,7 +182,7 @@ The following table is generated from actual HTTP exports. Source signals are an
 | `/api/admin/intelligence` | `GET` | `requireAdmin` | [source](../app/api/admin/intelligence/route.ts) |
 | `/api/admin/make-admin` | `POST`, `GET` | `requireAdminSimple` | [source](../app/api/admin/make-admin/route.ts) |
 | `/api/admin/newsletter` | `GET`, `PATCH` | `requireAdminSimple` | [source](../app/api/admin/newsletter/route.ts) |
-| `/api/admin/notifications` | `POST`, `GET` | `verifyToken` | [source](../app/api/admin/notifications/route.ts) |
+| `/api/admin/notifications` | `POST`, `GET` | `requireAdminSimple` / authenticated reader | [source](../app/api/admin/notifications/route.ts) |
 | `/api/admin/operations/health` | `GET` | `requireAdminSimple` | [source](../app/api/admin/operations/health/route.ts) |
 | `/api/admin/orders/[id]` | `GET`, `PUT`, `DELETE` | `requireAdmin` | [source](../app/api/admin/orders/[id]/route.ts) |
 | `/api/admin/orders/recurring/[id]` | `GET`, `PUT`, `DELETE`, `PATCH` | `requireAdmin` | [source](../app/api/admin/orders/recurring/[id]/route.ts) |
@@ -248,6 +248,7 @@ The following table is generated from actual HTTP exports. Source signals are an
 | `/api/messages` | `POST`, `GET` | — | [source](../app/api/messages/route.ts) |
 | `/api/newsletter` | `POST` | — | [source](../app/api/newsletter/route.ts) |
 | `/api/newsletter/unsubscribe` | `POST` | — | [source](../app/api/newsletter/unsubscribe/route.ts) |
+| `/api/notifications` | `GET`, `PATCH` | `withAuth` | [source](../app/api/notifications/route.ts) |
 | `/api/orders/[id]` | `GET`, `PUT`, `PATCH`, `DELETE` | `requireAuth` | [source](../app/api/orders/[id]/route.ts) |
 | `/api/orders/quote` | `POST` | `requireAuth` | [source](../app/api/orders/quote/route.ts) |
 | `/api/orders/receipt` | `GET` | `requireAuth` | [source](../app/api/orders/receipt/route.ts) |
@@ -288,3 +289,9 @@ The following table is generated from actual HTTP exports. Source signals are an
 | `/api/users/register` | `POST` | — | [source](../app/api/users/register/route.ts) |
 | `/api/wishlist/[productId]` | `DELETE` | `requireAuth` | [source](../app/api/wishlist/[productId]/route.ts) |
 | `/api/wishlist` | `GET`, `POST` | `requireAuth` | [source](../app/api/wishlist/route.ts) |
+
+### Notifications
+
+- `GET /api/notifications`: current database-backed access session; `page` (1+), `limit` (1–50, default 20), optional `unread=true`. Returns recipient/broadcast `data`, pagination and global `unreadCount`. Private/no-store; receipt state belongs to the caller. The older `GET /api/admin/notifications` delegates to this reader.
+- `PATCH /api/notifications`: `{ ids: string[] }` (1–50). Marks eligible caller notifications read using duplicate-safe receipts. If any ID is missing or belongs to someone else, the entire request returns 404 before writing. Unknown and private IDs are indistinguishable. Repeated reads succeed.
+- `POST /api/admin/notifications`: database-verified admin; trimmed title (1–200), message (1–5,000), enum type, targetUserId (`all` by default or an active account ID), optional local link and optional submissionId UUID. Returns 201/new, 200/exact retry, 409/reused identifier with changed intent, 400/invalid input or 404/unavailable target. Admin UI supplies the retry identifier. Legacy clients omitting it are not deduplicated. New sends write one audit record atomically.

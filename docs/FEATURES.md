@@ -133,3 +133,7 @@ See the [Admin handbook](ADMIN_GUIDE.md) for operator procedures and [Operations
 Customers can read, search and filter team updates at `/profile/messages`; producer dashboards use the same inbox. Failed loads and failed read updates remain visible with retry actions. Admin producer messaging resolves linked active user accounts and preserves a submission identifier for safe retries. Unlinked producers receive an actionable error.
 
 Referral attribution is account-scoped and must precede the first ordinary order. Admin reward recording requires evidence of a first paid, delivered purchase, atomically claims the reward and writes an audit record. Earnings are ledger entries only; checkout discounts and automatic payouts remain unavailable. Banned accounts cannot update profiles.
+
+### Notification inbox
+
+Account → Notifications exposes targeted updates and broadcasts with pagination, an unread filter, total unread count and durable per-account read receipts. Admins can broadcast or target an active account. Validation limits message lengths and action links to this storefront. Exact retries are deduplicated and audited once. The former local demo read state has been replaced. This requires the notification-read migration; it does not add browser push or email delivery.

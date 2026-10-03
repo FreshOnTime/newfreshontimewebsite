@@ -168,6 +168,7 @@ model User {
   reviews          Review[]
   emailTokens      EmailToken[]
   notifications    Notification[]
+  notificationReads NotificationRead[]
   auditLogs        AuditLog[]
   blogs            Blog[]
   sentMessages     Message[]      @relation("MessageSender")
@@ -639,6 +640,18 @@ model ReferredUser {
   @@map("referred_users")
 }
 
+model NotificationRead {
+  notificationId String
+  userId String
+  readAt DateTime @default(now())
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([notificationId, userId])
+  @@index([userId])
+  @@map("notification_reads")
+}
+
 model Notification {
   id           String           @id @default(uuid())
   title        String
@@ -646,6 +659,7 @@ model Notification {
   type         NotificationType @default(info)
   targetUserId String?
   targetUser   User?            @relation(fields: [targetUserId], references: [id], onDelete: Cascade)
+  readReceipts NotificationRead[]
   isRead       Boolean          @default(false)
   link         String?
 

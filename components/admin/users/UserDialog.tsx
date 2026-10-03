@@ -105,6 +105,7 @@ export function UserDialog({ open, onOpenChange, user, onSave, readOnly }: { ope
           <DialogTitle>{readOnly ? 'View User' : form._id ? 'Edit User' : 'Add User'}</DialogTitle>
         </DialogHeader>
 
+        {form._id && <p className="break-all text-sm text-muted-foreground">Account ID: <span className="select-all">{form._id}</span></p>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>First name</Label>
