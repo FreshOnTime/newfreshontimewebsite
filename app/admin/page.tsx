@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,7 @@ export default function AdminPage() {
         <h1 className="text-3xl font-normal mb-2">Dashboard</h1>
           {/* Make User Admin Card */}
         <AdminOverview />
+        <Link href="/admin/enquiries" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-5 text-brand-green"><span><span className="block font-semibold">Enquiry inbox</span><span className="mt-1 block text-sm text-muted-foreground">Review customer questions, producer enquiries and support requests.</span></span><span className="text-sm font-semibold">Open inbox →</span></Link>
       </div>
 
       {/* Admin Tools Section */}

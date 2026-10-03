@@ -8,6 +8,8 @@
 
 The current implementation and launch gaps are tracked in [platform readiness](docs/PLATFORM_READINESS.md). See [category-first shopping and producer content](docs/CATEGORY_FIRST_MARKET.md), [account design and flow fixes](docs/ACCOUNT_DESIGN_AND_FLOW_FIXES.md) and [public discovery improvements](docs/DISCOVERY_IMPROVEMENTS.md) for the latest verified changes.
 
+Customer and producer questions are saved in the [admin enquiry inbox](docs/ENQUIRY_INBOX.md). Apply `npm run db:migrate` before deploying this feature; the `20261003040000_contact_enquiries` migration creates its storage. Enquiries are managed under `/admin/enquiries`, with private notes and status tracking.
+
 Checkout deployment requires `npm run db:migrate` before the updated app is promoted.
 The `20261002090000_checkout_requests` migration stores retry receipts atomically
 with order creation. Customer checkout uses cash on delivery; catalogue promotions
