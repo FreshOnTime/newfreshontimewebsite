@@ -212,3 +212,7 @@ These entry points connect operator controls to APIs. Fetch functions read/filte
 | [Intelligence](../app/admin/intelligence/page.tsx) | Insights fetch/display | Intelligence GET |
 
 For any new admin control, document whether it only changes local form state, persists a record, sends external communication, alters stock or schedules future work. Those consequences differ even when buttons share “Save”.
+
+### Account message delivery
+
+[`saveAccountMessages`](../lib/accountMessages.ts) derives a deterministic ID for each submission/recipient pair, inserts with duplicate skipping and verifies persisted intent inside the caller transaction. Exact retries return the existing messages; changed sender, subject or content raises `MessageWriteError` (409). The admin route resolves active linked producer accounts before calling it. The shared inbox uses authenticated fetch, recipient-scoped pagination and explicit read-update retries.

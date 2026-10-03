@@ -169,7 +169,7 @@ export function SuppliersPage() {
         <AdminMessageSender
           open={messageOpen}
           onOpenChange={setMessageOpen}
-          recipientId={editing._id}
+          supplierId={editing._id}
           recipientName={editing.name}
         />
       )}

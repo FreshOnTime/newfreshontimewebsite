@@ -138,7 +138,7 @@ Read [Subscriptions](SUBSCRIPTIONS.md) before activating a plan. It explains sto
 
 ## 7. Suppliers
 
-Manage producer/business records: identity/contact, address, active/inactive status, payment terms and notes as exposed by the form. Payment terms include net periods, COD and prepaid; they are business records, not supplier payout automation. View upload history and use the message action for a database account message where an account is linked.
+Manage producer/business records: identity/contact, address, active/inactive status, payment terms and notes as exposed by the form. Payment terms include net periods, COD and prepaid; they are business records, not supplier payout automation. View upload history and use the message action to send a database account message to all active accounts linked to the producer. Customers read messages under Account → Messages; producer accounts also have their dashboard inbox. Unlinked producers cannot receive account messages: use their listed contact details. Failed sends preserve the draft; retrying the same submission does not duplicate delivery. These messages do not send email or reply to enquiry tickets.
 
 Manually creating a Supplier record does not automatically provision or connect a login. Review User → Supplier association when an upload has no recognizable owner. Business lead qualification also does not create that account link automatically.
 

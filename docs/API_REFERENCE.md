@@ -135,7 +135,7 @@ The complete schemas, examples and transition rules are in [Subscriptions](SUBSC
 | Blog | Public blogs list/slug | Admin GET/POST and ID GET/PUT/DELETE; draft/publish and metadata |
 | Collection | Public collection list/slug | Admin GET/POST and ID GET/PATCH/DELETE; tagged content and 1–100 product IDs |
 | Newsletter | `POST /api/newsletter` signup; `POST /api/newsletter/unsubscribe` signed consent mutation | GET/PATCH consent list; send `version` from unsubscribeVersion; no campaigns |
-| Account messages | GET inbox, PUT message read; JWT checks in legacy handler | POST message primary-admin check; database delivery, not ticket reply/email |
+| Account messages | Authenticated recipient-only GET with page/limit/q/unread; owner-only PUT read; private no-store responses | Database-verified admin POST targets recipientId or supplierId; submissionId UUID supports exact retries; linked active producer accounts receive messages |
 | Notifications | GET relevant in-app entries through retained route | POST targeted/broadcast database notification; not push |
 | Health | No public admin health access | `GET /api/admin/operations/health`: uncached readiness/queue/overdue indicators |
 
@@ -152,8 +152,8 @@ The newsletter and supplier review requests also use `version`, but take it from
 - `/api/admin/seed` exports handlers but deliberately returns 404.
 - `/api/admin/customers/sync` is retained without data migration work.
 - `/api/dev/send-test-email` is a development helper; inspect environment guard before use.
-- `/api/referrals` legacy public mutations must be hardened before using monetary rewards.
-- Recurring-template destructive deletion uses legacy status-based stock restoration; review unreserved-template behavior before invoking it. Ending a schedule is the routine alternative.
+- `/api/referrals`: authenticated GET owns code/stats; POST attributes the signed-in customer before their first ordinary order. Admin-only PATCH requires orderId evidence of the first paid, delivered purchase and records an audited reward once. Ledger only: no automatic payout or checkout discount.
+- Recurring-template deletion checks the stored version and leaves stock untouched; templates hold no reservation. Ending preserves schedule history.
 - `/api/products/enhance-details`, role/permission endpoints and legacy product/user adapters are not a complete production integration contract merely because a handler exists.
 - MCP POST uses JSON-RPC and stateless Streamable HTTP, not REST product writes. GET/DELETE return 405; OPTIONS handles transport policy. See [MCP](mcp.md).
 

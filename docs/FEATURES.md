@@ -119,7 +119,7 @@ These are technical foundations, not a guarantee of rankings, answer-engine cita
 | Reviews | Product review APIs exist; no dedicated admin review-moderation page |
 | Referrals | Legacy reward handlers include public mutations and lack trustworthy order validation; do not launch monetary rewards until authorization and verified order events are implemented |
 | Dynamic roles | Legacy role/permission records are not a complete enforced policy engine; shared admin guards use user enum roles |
-| Recurring template maintenance | Retained destructive deletion routes use status-based stock restoration, which needs review for templates created without reservation; prefer ending schedules for normal operations |
+| Recurring template maintenance | Version-checked template deletion leaves stock untouched; ending schedules preserves history |
 | Bundles | Separate bundle product has its own stock; checkout does not automatically deplete all component products |
 | Intelligence | Deterministic forecasts/reorder suggestions, not an autonomous purchasing system or certified demand forecast |
 | Gift-card balance | Retained account field; not an integrated checkout redemption/payment system |
@@ -127,3 +127,9 @@ These are technical foundations, not a guarantee of rankings, answer-engine cita
 | Large catalogs | Some editors load the first 100 products/categories; selection beyond that requires further UI work |
 
 See the [Admin handbook](ADMIN_GUIDE.md) for operator procedures and [Operations](OPERATIONS.md) for deployment evidence. These gaps are documented here; this documentation change does not silently add or activate them.
+
+### Account messages and referral ledger
+
+Customers can read, search and filter team updates at `/profile/messages`; producer dashboards use the same inbox. Failed loads and failed read updates remain visible with retry actions. Admin producer messaging resolves linked active user accounts and preserves a submission identifier for safe retries. Unlinked producers receive an actionable error.
+
+Referral attribution is account-scoped and must precede the first ordinary order. Admin reward recording requires evidence of a first paid, delivered purchase, atomically claims the reward and writes an audit record. Earnings are ledger entries only; checkout discounts and automatic payouts remain unavailable. Banned accounts cannot update profiles.

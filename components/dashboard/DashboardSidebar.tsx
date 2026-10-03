@@ -20,6 +20,7 @@ const customerNav: NavItem[] = [
   { name: 'Orders', href: '/orders', icon: ShoppingBag },
   { name: 'Smart Basket', href: '/profile/subscriptions', icon: Repeat },
   { name: 'Saved', href: '/wishlist', icon: Heart },
+  { name: 'Messages', href: '/profile/messages', icon: Mail },
   { name: 'Shopping bags', href: '/bags', icon: ShoppingCart },
   { name: 'Profile', href: '/profile', icon: UserRound },
 ];
