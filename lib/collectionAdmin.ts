@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { foodCollectionContentSchema, parseFoodCollectionContent } from "@/lib/collectionContent";
-import { normalizeFeaturedImage } from "@/lib/recipeContent";
+import { normalizeFeaturedImage } from "@/lib/editorialContent";
 
 export const collectionAdminInputSchema = z.object({
   title: z.string().trim().min(3).max(180),

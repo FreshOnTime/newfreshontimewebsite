@@ -22,7 +22,7 @@ it('gives public pages distinct canonical URLs and working share asset paths', (
   const meta = pageMetadata({ title: 'Help', description: 'Ordering answers', path: '/help' });
   expect(meta.alternates?.canonical).toBe(absoluteUrl('/help'));
   expect(meta.title).toEqual({ absolute: 'Help | FreshPick' });
-  expect(pageMetadata({ title: 'Recipes | FreshPick', description: '', path: '/recipes' }).title).toEqual({ absolute: 'Recipes | FreshPick' });
+  expect(pageMetadata({ title: 'Blog | FreshPick', description: '', path: '/blog' }).title).toEqual({ absolute: 'Blog | FreshPick' });
   expect(meta.openGraph).toMatchObject({ url: absoluteUrl('/help'), images: [{ url: absoluteUrl('/opengraph-image') }] });
   expect(absoluteUrl('https://images.example.com/food.jpg')).toBe('https://images.example.com/food.jpg');
 });
@@ -40,7 +40,7 @@ it('keeps private pages out of indexing without blocking rendering assets', () =
   for (const path of ['/checkout', '/profile', '/auth/login']) expect(PUBLIC_PAGES.map(page => page.path)).not.toContain(path);
 });
 
-it('includes journal, valid recipes/collections and creator URLs, using encoded canonical identifiers', async () => {
+it('includes blog and product collections, excluding retired recipes and creator URLs', async () => {
   (prisma.product.findMany as jest.Mock).mockResolvedValue([{ sku: 'LIME / 01', updatedAt: new Date('2026-10-01') }]);
   (prisma.category.findMany as jest.Mock).mockResolvedValue([{ slug: 'fresh-produce', updatedAt: new Date('2026-10-01') }]);
   (prisma.blog.findMany as jest.Mock).mockImplementation(({ where }) => where.category === 'recipe'
@@ -49,8 +49,9 @@ it('includes journal, valid recipes/collections and creator URLs, using encoded 
       ? [{ slug: 'market-edit', content: JSON.stringify({ productIds: ['lime'] }), updatedAt: new Date('2026-10-01') }]
       : [{ slug: 'market-journal', updatedAt: new Date('2026-10-01') }]);
   const pages = await sitemap(); const urls = pages.map(page => page.url);
-  expect(urls).toEqual(expect.arrayContaining(['/blog', '/help', '/b2b', '/creators', '/blog/market-journal', '/recipes/lime-recipe', '/collections/market-edit', '/creators/creator-1', '/products/LIME%20%2F%2001'].map(absoluteUrl)));
-  expect(urls).not.toContain(absoluteUrl('/recipes/malformed-recipe'));
+  expect(urls).toEqual(expect.arrayContaining(['/blog', '/help', '/b2b', '/blog/market-journal', '/collections/market-edit', '/products/LIME%20%2F%2001'].map(absoluteUrl)));
+  expect(urls.some(url => /\/(recipes|creators|meal-kits)(\/|$)/.test(url))).toBe(false);
+  expect((prisma.blog.findMany as jest.Mock).mock.calls.some(([args]) => args.where.category === 'recipe')).toBe(false);
   expect(pages.find(page => page.url === absoluteUrl('/help'))?.lastModified).toBeUndefined();
   expect(prisma.blog.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ published: true, isDeleted: false, AND: expect.any(Array) }) }));
 });

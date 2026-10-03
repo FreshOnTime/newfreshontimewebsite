@@ -1,36 +1,34 @@
 # FreshPick typography
 
-FreshPick pairs Newsreader's editorial headings with DM Sans for shopping and
-account interfaces. The ivory, green and amber palette remains unchanged.
+FreshPick uses the Arial-based font stack from before the latest typography
+update throughout the site. The current ivory, green and amber palette remains
+unchanged, including the green/clay navbar wordmark.
 
 | Role | Font and treatment |
 | --- | --- |
-| Hero and public page introductions | Newsreader, regular weight, sentence case, responsive size and balanced lines |
-| Public section headings | Newsreader, 36px on mobile / 48px on desktop, 1.12 line height |
-| Journal story titles | Newsreader, 24px / 30px, 1.2 line height |
-| Product and category names | DM Sans, medium weight, sentence case |
-| Navigation, forms, buttons and operational dashboards | DM Sans; medium weights for actions and clear text sizes |
-| Prices | DM Sans with tabular numerals |
-| Editorial labels | DM Sans, small uppercase labels with 0.12em tracking |
-| Article body | DM Sans, readable column up to 68ch and 1.8 paragraph line height |
+| Hero and public page introductions | Arial-based stack, sentence case, responsive sizes and balanced lines |
+| Public section headings | Same stack, 36px on mobile / 48px on desktop, 1.12 line height |
+| Journal story titles | Same stack, 24px / 30px, 1.2 line height |
+| Product and category names | Same stack, medium weight, sentence case |
+| Navigation, forms, buttons and dashboards | Same stack, clear sizes and medium action weights |
+| Prices | Same stack with tabular numerals |
+| Editorial labels | Same stack, small uppercase labels with 0.12em tracking |
+| Article body | Same stack, readable column up to 68ch and 1.8 paragraph line height |
 
-Use `font-sans` for interface elements, `font-heading` or `font-serif` for
-editorial text, `editorial-title` for public section headings, and
-`market-story-title` for story cards. Avoid applying uppercase or heavy weights
-to whole titles, product names and navigation. Uppercase remains available for
-small labels and section markers. Preserve the green/clay wordmark treatment.
+The shared `--font-sans` token is Arial, Helvetica Neue, ui-sans-serif,
+system-ui and sans-serif. `--font-heading` aliases it so existing `font-heading`
+and `font-serif` components use the same family. `--font-default` and
+`--font-accent` also resolve to this stack. Tailwind aliases live in
+`tailwind.config.ts`; font definitions live in `app/globals.css`.
 
-The storefront scope (`freshpick-market`) applies editorial h1/h2 styles;
-explicit `font-sans` headings can opt into interface typography. Outside this
-scope, dashboard headings use DM Sans. Authentication pages share the editorial
-heading style while form labels and inputs remain in DM Sans.
+No downloadable font files, font preloads or font-provider requests are needed.
+The browser uses the first installed font in the stack. Keep text sizes,
+weights, spacing and colour roles independent of the font family.
 
-Fonts are initialized once in the root layout. The shared tokens live in
-`app/globals.css`, with Tailwind aliases in `tailwind.config.ts`. See
-[font provenance and licenses](../app/fonts/README.md). No font CDN dependency
-or new runtime package is required.
+The footer keeps its newsletter, navigation, contact information, large brand
+name and policies. The separate cream logo badge has been removed.
 
 When changing typography, check public headlines, long category/product names,
 article text, navigation, sign-in/signup forms and admin dialogs at 320, 390,
-820 and 1440px. Check actual font loading, keyboard interactions, overflow and
-form input sizes; screenshots alone do not prove that the intended font loaded.
+820 and 1440px. Confirm the computed font family, keyboard interactions,
+overflow and form input sizes.

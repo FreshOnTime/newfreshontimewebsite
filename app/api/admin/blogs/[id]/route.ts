@@ -18,7 +18,7 @@ const updateBlogSchema = z.object({
   excerpt: z.string().min(10).max(500).optional(),
   content: z.string().min(50).optional(),
   featuredImage: imageSchema.optional().nullable(),
-  category: z.string().max(100).optional().nullable().refine(value => !value || !COMMERCE_BLOG_CATEGORIES.includes(value), 'Use the recipe or collection editor for this content'),
+  category: z.string().max(100).optional().nullable().refine(value => !value || !COMMERCE_BLOG_CATEGORIES.includes(value), 'This category is reserved for structured commerce content'),
   tags: z.array(z.string()).max(20).optional(),
   published: z.boolean().optional(),
   publishedAt: z.string().datetime().optional().nullable(),

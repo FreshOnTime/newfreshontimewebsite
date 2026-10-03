@@ -4,8 +4,9 @@
 
 @layer base {
   :root {
-    --font-sans: var(--font-interface), Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
-    --font-heading: var(--font-editorial), Georgia, "Times New Roman", serif;
+    --font-sans: Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-brand: "Helvetica Now Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-heading: var(--font-sans);
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
     /* Produce-led editorial system: the original ivory, green and amber palette. */

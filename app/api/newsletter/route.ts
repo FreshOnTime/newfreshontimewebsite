@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         WHERE "subscribers"."isActive"=false RETURNING "id","unsubscribeVersion"`;
       if (!rows.length) return;
       const row = rows[0], link = `${origin}/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken(row.id,row.unsubscribeVersion))}`;
-      await sendEmail(email,'Welcome to FreshPick',`<h1>Welcome to FreshPick</h1><p>Seasonal news, recipes and market updates.</p><p><a href="${origin}/products">Explore the market</a></p><p><a href="${link}">Unsubscribe</a></p>`,`Welcome to FreshPick. Unsubscribe: ${link}`,{tx,dedupeKey:`newsletter-welcome:${row.id}:${row.unsubscribeVersion}`});
+      await sendEmail(email,'Welcome to FreshPick',`<h1>Welcome to FreshPick</h1><p>Food stories, seasonal news and market updates.</p><p><a href="${origin}/products">Explore the market</a></p><p><a href="${link}">Unsubscribe</a></p>`,`Welcome to FreshPick. Unsubscribe: ${link}`,{tx,dedupeKey:`newsletter-welcome:${row.id}:${row.unsubscribeVersion}`});
     });
     return NextResponse.json({ok:true,message:'Your newsletter subscription is saved.'},{headers:{'Cache-Control':'no-store'}});
   } catch {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Wordmark from '@/components/brand/Wordmark';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ChefHat, ArrowUpRight, MessageSquare, Mail } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ArrowUpRight, MessageSquare, Mail } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
@@ -19,9 +19,8 @@ const groups = [
     { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
   ] },
   { name: 'Publishing', items: [
-    { name: 'Journal', href: '/admin/blogs', icon: BookOpen },
+    { name: 'Blog', href: '/admin/blogs', icon: BookOpen },
     { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
-    { name: 'Recipes', href: '/admin/recipes', icon: ChefHat },
     { name: 'Collections', href: '/admin/collections', icon: Layers },
   ] },
   { name: 'Support', items: [

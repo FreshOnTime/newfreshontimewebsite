@@ -2,10 +2,9 @@ import "server-only";
 
 import prisma from "@/lib/prisma";
 import { parseFoodCollectionContent } from "@/lib/collectionContent";
-import { normalizeFeaturedImage, parseRecipeContent } from "@/lib/recipeContent";
+import { normalizeFeaturedImage } from "@/lib/editorialContent";
 import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
 import type { FoodCollectionContent, FoodCollectionDetail, FoodCollectionSummary } from "@/models/foodCollection";
-import type { RecipeSummary } from "@/models/recipe";
 
 type CollectionRow = {
   id: string;
@@ -41,7 +40,6 @@ function collectionSummary(row: CollectionRow, content: FoodCollectionContent): 
     eyebrow: content.eyebrow,
     occasion: content.occasion,
     themeTags: content.themeTags,
-    recipeCount: content.recipeSlugs.length,
     productCount: content.productIds.length,
     publishedAt: row.publishedAt?.toISOString(),
   };
@@ -71,66 +69,16 @@ export async function getPublishedCollectionBySlug(slug: string): Promise<FoodCo
   const content = parseFoodCollectionContent(row.content);
   if (!content) return null;
 
-  const [recipeRows, productRows] = await Promise.all([
-    content.recipeSlugs.length
-      ? prisma.blog.findMany({
-          where: {
-            slug: { in: content.recipeSlugs },
-            category: "recipe",
-            published: true,
-            isDeleted: false,
-          },
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            excerpt: true,
-            content: true,
-            featuredImage: true,
-            tags: true,
-            publishedAt: true,
-            authorName: true,
-            authorId: true,
-          },
-        })
-      : Promise.resolve([]),
-    content.productIds.length
-      ? prisma.product.findMany({
-          where: { id: { in: content.productIds }, archived: false },
-          select: productCardSelect,
-        })
-      : Promise.resolve([]),
-  ]);
-
-  const recipeMap = new Map<string, RecipeSummary>();
-  for (const recipeRow of recipeRows) {
-    const recipeContent = parseRecipeContent(recipeRow.content);
-    if (!recipeContent) continue;
-    recipeMap.set(recipeRow.slug, {
-      id: recipeRow.id,
-      authorId: recipeRow.authorId,
-      title: recipeRow.title,
-      slug: recipeRow.slug,
-      excerpt: recipeRow.excerpt,
-      featuredImage: normalizeFeaturedImage(recipeRow.featuredImage),
-      tags: recipeRow.tags,
-      authorName: recipeRow.authorName || undefined,
-      publishedAt: recipeRow.publishedAt?.toISOString(),
-      prepTimeMinutes: recipeContent.prepTimeMinutes,
-      cookTimeMinutes: recipeContent.cookTimeMinutes,
-      servings: recipeContent.servings,
-      cuisine: recipeContent.cuisine,
-      dietaryTags: recipeContent.dietaryTags,
-      ingredientCount: recipeContent.ingredients.length,
-    });
-  }
+  const productRows = await prisma.product.findMany({
+    where: { id: { in: content.productIds }, archived: false },
+    select: productCardSelect,
+  });
 
   const productMap = new Map(productRows.map((product) => [product.id, serializeProductCardForUi(product)]));
 
   return {
     ...collectionSummary(row as CollectionRow, content),
     story: content.story,
-    recipes: content.recipeSlugs.map((recipeSlug) => recipeMap.get(recipeSlug)).filter((recipe): recipe is RecipeSummary => Boolean(recipe)),
     products: content.productIds.map((productId) => productMap.get(productId)).filter((product): product is NonNullable<typeof product> => Boolean(product)),
     metaTitle: row.metaTitle || undefined,
     metaDescription: row.metaDescription || undefined,

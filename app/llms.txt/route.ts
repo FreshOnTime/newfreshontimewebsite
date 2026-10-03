@@ -12,7 +12,7 @@ Fresh Pick is a Colombo, Sri Lanka-based online food service bringing fresh groc
 - Farm to table: ${SITE_URL}/farm-to-table
 - Homemade: ${SITE_URL}/homemade
 - Meals on Deals: ${SITE_URL}/meals
-- Meal kits: ${SITE_URL}/meal-kits
+- Blog: ${SITE_URL}/blog
 
 ## What Fresh Pick offers
 Fresh Pick serves food shoppers while building a curated partnership network with growers, makers, producers, distributors, and business buyers in Sri Lanka.
@@ -36,7 +36,7 @@ Fresh Pick currently focuses on ${SERVICE_AREAS.join(', ')}.
 
 ## Contact
 General concierge: ${SUPPORT_EMAIL}
-Partnership applications: ${SITE_URL}/b2b#apply
+Partnership applications: ${SITE_URL}/b2b#business-enquiry
 `;
 
 export function GET() {

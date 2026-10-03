@@ -5,25 +5,24 @@ import { Layers3, Plus, Save, Trash2, Pencil, X, Eye, EyeOff } from "lucide-reac
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
 
-type RecipeOption = { id: string; title: string; slug: string; published: boolean };
 type ProductOption = { id: string; _id?: string; name: string; sku: string; stockQty: number };
 type CollectionRow = {
   id: string; title: string; slug: string; excerpt: string; published: boolean;
   featuredImage?: { url: string; alt?: string };
   tags: string[];
   metaTitle?: string; metaDescription?: string;
-  content: { version: 1; eyebrow: string; story: string; occasion: string; themeTags: string[]; recipeSlugs: string[]; productIds: string[] } | null;
+  content: { version: 1; eyebrow: string; story: string; occasion: string; themeTags: string[]; productIds: string[] } | null;
 };
 type Draft = {
   title: string; slug: string; excerpt: string; imageUrl: string; imageAlt: string; tags: string;
   published: boolean; metaTitle: string; metaDescription: string; eyebrow: string; story: string;
-  occasion: string; themeTags: string; recipeSlugs: string[]; productIds: string[];
+  occasion: string; themeTags: string; productIds: string[];
 };
 
 const emptyDraft: Draft = {
   title: "", slug: "", excerpt: "", imageUrl: "", imageAlt: "", tags: "", published: false,
   metaTitle: "", metaDescription: "", eyebrow: "FreshPick edit", story: "", occasion: "", themeTags: "",
-  recipeSlugs: [], productIds: [],
+  productIds: [],
 };
 
 const commaList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
@@ -43,14 +42,12 @@ function toDraft(item: CollectionRow): Draft {
     story: item.content?.story || "",
     occasion: item.content?.occasion || "",
     themeTags: item.content?.themeTags.join(", ") || "",
-    recipeSlugs: item.content?.recipeSlugs || [],
     productIds: item.content?.productIds || [],
   };
 }
 
 export default function AdminCollectionsPage() {
   const [collections, setCollections] = useState<CollectionRow[]>([]);
-  const [recipes, setRecipes] = useState<RecipeOption[]>([]);
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -61,17 +58,14 @@ export default function AdminCollectionsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [collectionRes, recipeRes, productRes] = await Promise.all([
+      const [collectionRes, productRes] = await Promise.all([
         apiFetch("/api/admin/collections?limit=100"),
-        apiFetch("/api/admin/recipes?limit=100"),
         apiFetch("/api/admin/products?limit=100&archived=false&bundles=all"),
       ]);
-      const [collectionJson, recipeJson, productJson] = await Promise.all([collectionRes.json(), recipeRes.json(), productRes.json()]);
+      const [collectionJson, productJson] = await Promise.all([collectionRes.json(), productRes.json()]);
       if (!collectionRes.ok) throw new Error(collectionJson.error || "Failed to load collections");
-      if (!recipeRes.ok) throw new Error(recipeJson.error || "Failed to load recipes");
       if (!productRes.ok) throw new Error(productJson.error || "Failed to load products");
       setCollections(Array.isArray(collectionJson.collections) ? collectionJson.collections : []);
-      setRecipes(Array.isArray(recipeJson.recipes) ? recipeJson.recipes : []);
       setProducts(Array.isArray(productJson.products) ? productJson.products : []);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to load collection studio");
@@ -82,12 +76,11 @@ export default function AdminCollectionsPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const toggleRecipe = (slug: string) => setDraft((current) => ({ ...current, recipeSlugs: current.recipeSlugs.includes(slug) ? current.recipeSlugs.filter((item) => item !== slug) : [...current.recipeSlugs, slug] }));
   const toggleProduct = (id: string) => setDraft((current) => ({ ...current, productIds: current.productIds.includes(id) ? current.productIds.filter((item) => item !== id) : [...current.productIds, id] }));
 
   const save = async () => {
     if (!draft.title.trim() || draft.excerpt.trim().length < 10) return toast.error("Add a title and useful summary.");
-    if (!draft.recipeSlugs.length && !draft.productIds.length) return toast.error("Choose at least one recipe or product.");
+    if (!draft.productIds.length) return toast.error("Choose at least one product.");
     setSaving(true);
     try {
       const payload = {
@@ -106,7 +99,6 @@ export default function AdminCollectionsPage() {
           story: draft.story.trim(),
           occasion: draft.occasion.trim(),
           themeTags: commaList(draft.themeTags),
-          recipeSlugs: draft.recipeSlugs,
           productIds: draft.productIds,
         },
       };
@@ -133,7 +125,7 @@ export default function AdminCollectionsPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-5">
-        <div><div className="mb-2 flex items-center gap-2 text-sm font-semibold text-brand-green"><Layers3 className="h-4 w-4" /> FreshPick merchandising</div><h1 className="text-3xl font-normal text-foreground">Collection Studio</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Build premium occasion-led edits from published recipes and live catalogue products.</p></div>
+        <div><div className="mb-2 flex items-center gap-2 text-sm font-semibold text-brand-green"><Layers3 className="h-4 w-4" /> FreshPick merchandising</div><h1 className="text-3xl font-normal text-foreground">Collection Studio</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Build premium occasion-led edits from live catalogue products.</p></div>
         <button onClick={() => { setEditingId(null); setDraft(emptyDraft); setOpen(true); }} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary"><Plus className="h-4 w-4" /> New collection</button>
       </div>
 
@@ -142,7 +134,7 @@ export default function AdminCollectionsPage() {
           <div key={item.id} className="grid grid-cols-[1fr_120px_150px_90px] items-center gap-4 border-b border-border px-6 py-5 last:border-b-0">
             <div className="min-w-0"><p className="truncate font-semibold text-foreground">{item.title}</p><p className="mt-1 truncate text-xs text-muted-foreground">/collections/{item.slug}</p></div>
             <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${item.published ? "bg-secondary text-brand-green" : "bg-secondary text-muted-foreground"}`}>{item.published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}{item.published ? "Published" : "Draft"}</span>
-            <span className="text-sm text-muted-foreground">{item.content?.recipeSlugs.length || 0} recipes · {item.content?.productIds.length || 0} picks</span>
+            <span className="text-sm text-muted-foreground">{item.content?.productIds.length || 0} picks</span>
             <div className="flex justify-end gap-1"><button onClick={() => { setEditingId(item.id); setDraft(toDraft(item)); setOpen(true); }} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-brand-green"><Pencil className="h-4 w-4" /></button><button onClick={() => void remove(item)} className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600"><Trash2 className="h-4 w-4" /></button></div>
           </div>
         )) : <div className="px-6 py-16 text-center text-sm text-muted-foreground">No collections yet.</div>}
@@ -151,7 +143,7 @@ export default function AdminCollectionsPage() {
       {open && (
         <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/50 p-4  md:p-8">
           <div className="mx-auto max-w-5xl overflow-hidden rounded-lg bg-background shadow-sm">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white/95 px-6 py-5  md:px-8"><div><h2 className="text-xl font-normal">{editingId ? "Edit collection" : "New collection"}</h2><p className="mt-1 text-xs text-muted-foreground">Story + recipes + live products</p></div><button onClick={() => setOpen(false)} className="rounded-full p-2 hover:bg-secondary"><X className="h-5 w-5" /></button></div>
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white/95 px-6 py-5  md:px-8"><div><h2 className="text-xl font-normal">{editingId ? "Edit collection" : "New collection"}</h2><p className="mt-1 text-xs text-muted-foreground">Story + live products</p></div><button onClick={() => setOpen(false)} className="rounded-full p-2 hover:bg-secondary"><X className="h-5 w-5" /></button></div>
             <div className="space-y-9 p-6 md:p-8">
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="md:col-span-2"><span className="mb-2 block text-sm font-semibold">Title</span><input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3" /></label>
@@ -166,7 +158,6 @@ export default function AdminCollectionsPage() {
                 <label><span className="mb-2 block text-sm font-semibold">Tags</span><input value={draft.tags} onChange={(e) => setDraft({ ...draft, tags: e.target.value })} className="w-full rounded-lg border border-border px-4 py-3" /></label>
               </div>
 
-              <section><h3 className="font-bold text-foreground">Recipes in this edit</h3><p className="mt-1 text-xs text-muted-foreground">Order follows selection order.</p><div className="mt-4 grid max-h-64 gap-2 overflow-y-auto rounded-lg border border-border p-3 md:grid-cols-2">{recipes.map((recipe) => <label key={recipe.id} className={`flex cursor-pointer items-center gap-3 rounded-lg p-3 text-sm ${draft.recipeSlugs.includes(recipe.slug) ? "bg-secondary text-brand-green" : "hover:bg-secondary"}`}><input type="checkbox" checked={draft.recipeSlugs.includes(recipe.slug)} onChange={() => toggleRecipe(recipe.slug)} /><span className="min-w-0 truncate">{recipe.title}</span>{!recipe.published && <span className="ml-auto text-[10px] text-amber-600">draft</span>}</label>)}</div></section>
 
               <section><h3 className="font-bold text-foreground">Products in this edit</h3><p className="mt-1 text-xs text-muted-foreground">Use for seasonal picks, maker drops or complementary shelf items.</p><div className="mt-4 grid max-h-72 gap-2 overflow-y-auto rounded-lg border border-border p-3 md:grid-cols-2">{products.map((product) => { const id = product.id || product._id || ""; return <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-lg p-3 text-sm ${draft.productIds.includes(id) ? "bg-secondary text-brand-green" : "hover:bg-secondary"}`}><input type="checkbox" checked={draft.productIds.includes(id)} onChange={() => toggleProduct(id)} /><span className="min-w-0 flex-1 truncate">{product.name}</span><span className="text-[10px] text-muted-foreground">stock {product.stockQty}</span></label>; })}</div></section>
 

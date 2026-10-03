@@ -96,7 +96,7 @@ layout and the shared admin API guards.
 | Hosting and monitoring | Verify the linked Netlify site/domain, published function schedules, provider activity, logs, backlog alerts and backup policy. Code changes do not configure external dashboards. |
 | Payments | Checkout offers cash on delivery. A gateway, callback idempotency, refunds and settlement need a separate integration before online payment is offered. |
 | Account integrations | Exercise signup, verification, password reset, refresh/logout, Google/Firebase, saved addresses and bans using staging credentials. |
-| Catalogue and content | Verify representative persisted recipes, collections, wishlist, producer and B2B records; remove placeholders. Review old supplier approvals and existing inline image references explicitly. |
+| Catalogue and content | Verify representative persisted blog stories, product collections, wishlist, producer and B2B records; remove placeholders. Review old supplier approvals and existing inline image references explicitly. |
 | Permission review | The reported exposed routes and supplier ownership fallback are fixed; this is not a certification of every legacy API. Continue the wider permission/validation review separately. |
 
 ## Verification scope

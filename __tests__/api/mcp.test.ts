@@ -1,10 +1,8 @@
 import type { NextRequest } from 'next/server';
 
 const mockPrisma = { product: { findMany: jest.fn(), findFirst: jest.fn() }, category: { findMany: jest.fn() } };
-const mockRecipes = { listPublishedRecipes: jest.fn(), getPublishedRecipeBySlug: jest.fn() };
 jest.mock('server-only', () => ({}), { virtual: true });
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: mockPrisma }));
-jest.mock('@/lib/recipeService', () => mockRecipes);
 
 import { POST, GET, DELETE, OPTIONS } from '@/app/api/mcp/route';
 
@@ -26,12 +24,10 @@ beforeEach(() => {
   mockPrisma.product.findMany.mockResolvedValue([product]);
   mockPrisma.product.findFirst.mockResolvedValue(product);
   mockPrisma.category.findMany.mockResolvedValue([]);
-  mockRecipes.listPublishedRecipes.mockResolvedValue([]);
-  mockRecipes.getPublishedRecipeBySlug.mockResolvedValue(null);
 });
 
 describe('FreshPick MCP protocol and public data boundaries', () => {
-  it('initializes, accepts initialized notifications and lists only five read tools', async () => {
+  it('initializes, accepts initialized notifications and lists only three catalogue read tools', async () => {
     const init = await rpc('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'test-client', version: '1.0' } });
     expect(init.response.status).toBe(200);
     expect(init.body.result.serverInfo.name).toBe('freshpick');
@@ -39,7 +35,7 @@ describe('FreshPick MCP protocol and public data boundaries', () => {
     const notification = await POST(request({ jsonrpc: '2.0', method: 'notifications/initialized' }));
     expect(notification.status).toBe(202);
     const listed = await rpc('tools/list');
-    expect(listed.body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'get_recipe', 'list_categories', 'list_recipes', 'search_products']);
+    expect(listed.body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'search_products']);
     expect(listed.body.result.tools.every((t: { annotations: { readOnlyHint: boolean; destructiveHint: boolean } }) => t.annotations.readOnlyHint && !t.annotations.destructiveHint)).toBe(true);
   });
 
@@ -75,23 +71,13 @@ describe('FreshPick MCP protocol and public data boundaries', () => {
     expect(mockPrisma.category.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { isActive: true }, take: 100 }));
   });
 
-  it('uses published recipes and removes internal author identifiers', async () => {
-    const recipe = { title: 'Salad', slug: 'salad', authorId: 'internal-author', authorName: 'Nisha', excerpt: 'Make a salad', prepTimeMinutes: 10, cookTimeMinutes: 0, servings: 2, dietaryTags: [], ingredientCount: 1, story: 'A simple salad', steps: ['Mix'], ingredients: [{ productId: 'p1', quantity: 1, product: { sku: 'tomato', name: 'Tomatoes', isOutOfStock: false }, substitutions: [] }] };
-    mockRecipes.listPublishedRecipes.mockResolvedValue([recipe]);
-    mockRecipes.getPublishedRecipeBySlug.mockResolvedValue(recipe);
-    const listed = await tool('list_recipes', { limit: 3 });
-    const detail = await tool('get_recipe', { slug: 'salad' });
-    expect(mockRecipes.listPublishedRecipes).toHaveBeenCalledWith(3);
-    expect(mockRecipes.getPublishedRecipeBySlug).toHaveBeenCalledWith('salad');
-    expect(JSON.stringify([listed.body, detail.body])).not.toContain('internal-author');
-    expect(detail.body.result.structuredContent.recipe.ingredients[0].product.path).toBe('/products/tomato');
-  });
-
-  it('does not provide unpublished recipes or mutation tools', async () => {
-    expect((await tool('get_recipe', { slug: 'draft' })).body.result.isError).toBe(true);
-    const called = await tool('delete_product', { sku: 'tomato' });
-    expect(called.body.error || called.body.result?.isError).toBeTruthy();
+  it('rejects retired recipe tools and mutations without querying the catalogue', async () => {
+    for (const name of ['list_recipes', 'get_recipe', 'delete_product']) {
+      const called = await tool(name, { sku: 'tomato', slug: 'salad' });
+      expect(called.body.error || called.body.result?.isError).toBeTruthy();
+    }
     expect(mockPrisma.product.findFirst).not.toHaveBeenCalled();
+    expect(mockPrisma.product.findMany).not.toHaveBeenCalled();
   });
 
   it('returns a generic failure without database connection details', async () => {

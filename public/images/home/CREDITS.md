@@ -9,7 +9,7 @@
 - License: https://unsplash.com/license (free Unsplash photo, not Unsplash+)
 - Downloaded October 2, 2026; optimized to WebP for this site.
 
-Recipe and product photographs are supplied by the published recipe and catalogue records.
+Product photographs are supplied by catalogue records; Blog photographs by published content.
 
 `produce-basket.webp`: Photograph by Sofia Holmberg, published February 1, 2024.
 
@@ -26,3 +26,5 @@ Recipe and product photographs are supplied by the published recipe and catalogu
 - Image: https://images.unsplash.com/photo-1582803824122-f25becf36ad8
 - License: https://unsplash.com/license (free Unsplash photo, not Unsplash+)
 - Downloaded October 2, 2026; optimized to WebP for this site.
+
+`market-produce-box.webp` and `market-pantry.webp`: original AI-generated editorial campaign artwork created for FreshPick on October 3, 2026 using the built-in image-generation tool. Both are 1672 × 941 WebP images. Prompts and usage notes are in `docs/EDITORIAL_MARKET.md`. Illustrative brand artwork, not documentation of a particular supplier, basket contents or product listing. No Natoora photograph was copied or hotlinked.

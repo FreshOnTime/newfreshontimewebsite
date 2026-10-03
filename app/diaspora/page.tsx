@@ -14,7 +14,7 @@ export default function DiasporaPage() {
 
       <div className="mx-auto max-w-6xl px-5 pt-14 md:px-8 md:pt-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <Step icon={ShoppingBasket} number="01" title="Choose from the live market" copy="Build a normal FreshPick bag from currently available products, recipes or saved essentials." />
+          <Step icon={ShoppingBasket} number="01" title="Choose from the live market" copy="Build a normal FreshPick bag from currently available products or saved essentials." />
           <Step icon={MapPin} number="02" title="Use their delivery address" copy="At checkout, enter the recipient’s supported Sri Lankan delivery details instead of your overseas location." />
           <Step icon={RefreshCw} number="03" title="Repeat when it makes sense" copy="For ongoing household support, use a recurring plan or repeat ordering rather than relying on a hardcoded gift box." />
         </section>

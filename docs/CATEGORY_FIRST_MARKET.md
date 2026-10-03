@@ -1,5 +1,7 @@
 # Category-first market and producer content
 
+> Current carousel, navigation and recipe scope: [Editorial market](EDITORIAL_MARKET.md). The earlier implementation notes below are historical.
+
 Updated 2026-10-03, following the merged account-design work.
 
 ## Shopping hierarchy

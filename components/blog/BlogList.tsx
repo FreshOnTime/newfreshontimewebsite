@@ -52,11 +52,11 @@ export function BlogList({ initialData }: { initialData?: JournalPage | null }) 
       try {
         const params = new URLSearchParams({ page: String(page), limit: '12', ...(debouncedSearch && { search: debouncedSearch }) });
         const response = await fetch(`/api/blogs?${params}`, { signal: controller.signal });
-        if (!response.ok) throw new Error('Failed to fetch journal');
+        if (!response.ok) throw new Error('Failed to fetch blog');
         const data: BlogsResponse = await response.json();
         if (!controller.signal.aborted) { setBlogs(data.blogs); setPagination(data.pagination); }
       } catch (error) {
-        if (!controller.signal.aborted) { console.error('Failed to fetch journal:', error); setError(true); }
+        if (!controller.signal.aborted) { console.error('Failed to fetch blog:', error); setError(true); }
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
@@ -73,7 +73,7 @@ export function BlogList({ initialData }: { initialData?: JournalPage | null }) 
           <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
           <Input
             type="text"
-            aria-label="Search the journal"
+            aria-label="Search the blog"
             placeholder="Search stories"
             value={search}
             onChange={(e) => {
@@ -99,14 +99,14 @@ export function BlogList({ initialData }: { initialData?: JournalPage | null }) 
         </div>
       ) : error ? (
         <section role="alert" className="border-y border-border py-12 text-center">
-          <h2 className="text-xl">We couldn’t load the journal.</h2>
+          <h2 className="text-xl">We couldn’t load the blog.</h2>
           <p className="mt-3 text-sm text-muted-foreground">Please try again in a moment.</p>
           <Button className="mt-6" onClick={() => setRetry(value => value + 1)}>Try again</Button>
         </section>
       ) : blogs.length === 0 ? (
         <div className="text-center py-12 border-y border-border">
           <p className="text-xl font-sans text-muted-foreground not-italic">
-            {search ? 'No stories match your search.' : 'The journal is currently empty.'}
+            {search ? 'No stories match your search.' : 'The blog is currently empty.'}
           </p>
         </div>
       ) : (

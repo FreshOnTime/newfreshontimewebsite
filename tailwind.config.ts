@@ -105,6 +105,7 @@ export default {
     },
     fontFamily: {
       default: ["var(--font-default)"],
+      brand: ["var(--font-brand)", "sans-serif"],
       sans: ["var(--font-sans)", "sans-serif"],
       serif: ["var(--font-heading)", "serif"],
       accent: ["var(--font-accent)", "serif"],
