@@ -4,16 +4,16 @@ import { SERVICE_AREAS, SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
 
 const groups = [
   { title: 'The market', links: [['Categories','/categories'],['Shop all','/products'],['Weekly baskets','/subscriptions'],['Saved products','/wishlist']] },
-  { title: 'FreshPick', links: [['About FreshPick','/about'],['Our producers','/farm-to-table'],['Recipes','/recipes'],['Journal','/blog']] },
-  { title: 'For business', links: [['Business supply','/b2b'],['Become a supplier','/auth/signup/supplier'],['Get in touch','/contact']] },
-  { title: 'Here to help', links: [['Delivery & ordering','/help'],['Your orders','/orders'],['Returns & refunds','/refund'],['Contact','/contact']] },
+  { title: 'FreshPick', links: [['About FreshPick','/about'],['Our producers','/farm-to-table'],['Blog','/blog']] },
+  { title: 'For business', links: [['For business','/b2b'],['Get in touch','/contact']] },
+  { title: 'Here to help', links: [['Help','/help'],['Your orders','/orders'],['Returns & refunds','/refund'],['Contact','/contact']] },
 ];
 export function Footer() {
   return (
     <footer className="mt-12 bg-brand-green text-white">
       <div className="editorial-wrap">
         <div className="grid gap-8 border-b border-white/20 py-12 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
-          <div><p className="text-[10px] uppercase tracking-[0.16em] text-white/85">A note from the market</p><h2 className="mt-4 max-w-xl font-heading text-4xl font-normal leading-[1.12] text-white/90 md:text-5xl">Good things, in your inbox.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">Seasonal inspiration, recipes and news from FreshPick.</p></div>
+          <div><p className="text-[10px] uppercase tracking-[0.16em] text-white/85">A note from the market</p><h2 className="mt-4 max-w-xl font-heading text-4xl font-normal leading-[1.12] text-white/90 md:text-5xl">Good things, in your inbox.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">Food stories, seasonal inspiration and news from FreshPick.</p></div>
           <FooterNewsletterForm />
         </div>
         <div className="grid gap-12 py-12 lg:grid-cols-[1fr_2fr] md:py-16">

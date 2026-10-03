@@ -272,7 +272,7 @@ export function BlogDialog({ open, onOpenChange, blog, onSave, readOnly }: BlogD
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Recipes, Tips, News"
+                  placeholder="e.g., Ingredients, Producers, News"
                   disabled={readOnly}
                   maxLength={100}
                 />

@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    return [
+      { source: '/recipes/:path*', destination: '/products', permanent: true },
+      { source: '/meal-kits/:path*', destination: '/products', permanent: true },
+      { source: '/creators/:path*', destination: '/farm-to-table', permanent: true },
+      { source: '/admin/recipes/:path*', destination: '/admin/blogs', permanent: true },
+    ];
+  },
   images: {
     // WebP is substantially faster to encode on a cold image-optimizer
     // invocation than AVIF, which matters more for a large product catalogue.

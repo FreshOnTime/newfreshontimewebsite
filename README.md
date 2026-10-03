@@ -38,7 +38,7 @@ Implemented application flows include:
 - Shopping bags, quoted customer checkout, order history and reorder.
 - Recurring baskets and subscription management.
 - Password signup/sign-in, Google sign-in, password reset and supplier applications.
-- Published recipes, collections and the journal, with page metadata and sitemaps.
+- Published blog stories and product collections, with page metadata and sitemaps.
 - Responsive customer pages and separate customer, supplier and admin workspaces.
 
 Production readiness is tracked in the linked document. These are repository capabilities, not a claim that every integration is configured or deployed.
@@ -221,3 +221,8 @@ this version. `npm run check:production -- --config-only` checks configuration w
 reading the database; `npm run check:production` also verifies migration state.
 The remaining staging and production acceptance is tracked in
 [platform readiness](docs/PLATFORM_READINESS.md).
+
+### Current storefront
+
+See [Editorial market](docs/EDITORIAL_MARKET.md) for the carousel, navigation,
+business journeys, product-only collections and recipe retirement.

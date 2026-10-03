@@ -1,5 +1,7 @@
 # Homepage journal and focused administration
 
+> Current carousel, navigation and recipe scope: [Editorial market](EDITORIAL_MARKET.md). The earlier implementation notes below are historical.
+
 Updated 2026-10-02, on top of the merged Natoora-inspired UI revision.
 
 ## Journal

@@ -1,5 +1,7 @@
 # Public discovery and ordering improvements
 
+> Current carousel, navigation and recipe scope: [Editorial market](EDITORIAL_MARKET.md). The earlier implementation notes below are historical.
+
 This update keeps the approved FreshPick market banner and editorial design, and fixes public discovery and ordering issues found in the current application.
 
 ## Bugs corrected

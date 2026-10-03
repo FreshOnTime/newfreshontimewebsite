@@ -1,5 +1,7 @@
 # FreshPick: produce-led editorial UI
 
+> Current carousel, navigation and recipe scope: [Editorial market](EDITORIAL_MARKET.md). The earlier implementation notes below are historical.
+
 Updated 2026-10-02. This supersedes the serif visual direction in `EDITORIAL_REVAMP.md`. The reference is the live [Natoora homepage](https://natoora.com/en-US/): bold uppercase sans-serif type, generous produce photography, open editorial layouts and restrained navigation. FreshPick retains its own brand, copy and credited photographs.
 
 ## Visual system

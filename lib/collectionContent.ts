@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { FoodCollectionContent } from "@/models/foodCollection";
-import { slugifyRecipe } from "@/lib/recipeContent";
+import { slugifyEditorial } from "@/lib/editorialContent";
 
 export const foodCollectionContentSchema = z.object({
   version: z.literal(1).optional().default(1),
@@ -8,10 +8,9 @@ export const foodCollectionContentSchema = z.object({
   story: z.string().trim().max(12000).optional().default(""),
   occasion: z.string().trim().max(80).optional().default(""),
   themeTags: z.array(z.string().trim().min(1).max(60)).max(20).optional().default([]),
-  recipeSlugs: z.array(z.string().trim().min(1).max(200)).max(40).optional().default([]),
   productIds: z.array(z.string().trim().min(1)).max(100).optional().default([]),
-}).refine((value) => value.recipeSlugs.length > 0 || value.productIds.length > 0, {
-  message: "A collection needs at least one recipe or product",
+}).refine((value) => value.productIds.length > 0, {
+  message: "A collection needs at least one product",
 });
 
 export function parseFoodCollectionContent(value: string): FoodCollectionContent | null {
@@ -27,4 +26,4 @@ export function stringifyFoodCollectionContent(value: unknown): string {
   return JSON.stringify(foodCollectionContentSchema.parse(value));
 }
 
-export const slugifyCollection = slugifyRecipe;
+export const slugifyCollection = slugifyEditorial;

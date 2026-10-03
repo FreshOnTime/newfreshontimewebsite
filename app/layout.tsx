@@ -11,7 +11,7 @@ import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL, SOCIAL_LINKS } from "@/lib/conf
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
   title: { default: 'Fresh groceries and local food in Colombo | FreshPick', template: '%s | FreshPick' },
-  description: 'Shop groceries, explore recipes and discover local food with FreshPick in Colombo, Sri Lanka.',
+  description: 'Shop groceries, bakery, pantry essentials and local food with FreshPick in Colombo, Sri Lanka.',
   openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'FreshPick groceries and local food in Colombo' }] },
   twitter: { card: 'summary_large_image', images: ['/opengraph-image'] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
@@ -27,7 +27,7 @@ const organizationJsonLd = {
       "name": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/brand/freshpick-wordmark.svg`,
-      "description": "FreshPick is a Sri Lankan food discovery and commerce platform connecting households to shoppable recipes, recurring baskets, groceries, prepared food, local makers, and curated food-supply partners.",
+      "description": "FreshPick is a Sri Lankan food discovery and commerce platform connecting households to recurring baskets, groceries, prepared food, local makers, and curated food-supply partners.",
       "sameAs": Object.values(SOCIAL_LINKS).filter(Boolean),
       "email": SUPPORT_EMAIL,
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
@@ -39,8 +39,7 @@ const organizationJsonLd = {
       },
       "knowsAbout": [
         "Food discovery in Colombo",
-        "Shoppable recipes",
-        "Fresh grocery delivery in Colombo",
+                "Fresh grocery delivery in Colombo",
         "Recurring grocery orders",
         "Prepared food delivery in Colombo",
         "Sri Lankan independent food makers",

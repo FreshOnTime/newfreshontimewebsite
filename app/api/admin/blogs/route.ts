@@ -18,7 +18,7 @@ const createBlogSchema = z.object({
   excerpt: z.string().min(10).max(500),
   content: z.string().min(50),
   featuredImage: imageSchema.optional(),
-  category: z.string().max(100).optional().refine(value => !value || !COMMERCE_BLOG_CATEGORIES.includes(value), 'Use the recipe or collection editor for this content'),
+  category: z.string().max(100).optional().refine(value => !value || !COMMERCE_BLOG_CATEGORIES.includes(value), 'This category is reserved for structured commerce content'),
   tags: z.array(z.string()).max(20).default([]),
   published: z.boolean().default(false),
   publishedAt: z.string().datetime().optional(),

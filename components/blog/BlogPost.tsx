@@ -57,13 +57,13 @@ export function BlogPost({ blog }: BlogPostProps) {
   return (
     <article className="min-h-screen bg-background">
       <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BlogPosting', '@id': absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}#article`), headline: blog.title, description: blog.excerpt, mainEntityOfPage: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`), image: blog.featuredImage?.url ? absoluteUrl(blog.featuredImage.url) : undefined, datePublished: blog.publishedAt || undefined, dateModified: blog.updatedAt || undefined, author: { '@type': blog.authorName && blog.authorName !== 'FreshPick' ? 'Person' : 'Organization', name: blog.authorName || 'FreshPick' }, publisher: { '@id': absoluteUrl('/#organization') }, inLanguage: 'en-LK' }} />
-      <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Journal', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`) }]} />
+      <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`) }]} />
       {/* Back Button - Minimalist */}
       <div className="w-full bg-background border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <Link href="/blog" className="inline-flex items-center text-xs font-bold normal-case text-muted-foreground hover:text-brand-green transition-colors">
             <ArrowLeft className="h-3 w-3 mr-2" />
-            Back to Journal
+            Back to Blog
           </Link>
         </div>
       </div>

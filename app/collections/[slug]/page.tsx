@@ -1,5 +1,4 @@
 import { pageMetadata } from '@/lib/seo';
-import FoodStoryCard from "@/components/ui/FoodStoryCard";
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -35,19 +34,6 @@ export default async function CollectionPage({ params }: Props) {
           <div className="container mx-auto max-w-7xl px-4 md:px-8">
             <span className="mb-5 block text-xs font-bold normal-case text-brand-green">The edit</span>
             <div className="max-w-4xl space-y-4 text-base leading-7 text-muted-foreground">{collection.story.split(/\n\s*\n/).filter(Boolean).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
-          </div>
-        </section>
-      )}
-
-      {collection.recipes.length > 0 && (
-        <section className="py-8 md:py-10">
-          <div className="container mx-auto max-w-7xl px-4 md:px-8">
-            <div className="mb-6"><span className="mb-4 block text-xs font-bold normal-case text-brand-green">Cook from the edit</span><h2 className="font-serif text-2xl font-normal text-foreground md:text-2xl">Recipes</h2></div>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {collection.recipes.map((recipe) => (
-                <FoodStoryCard key={recipe.id} href={`/recipes/${recipe.slug}`} title={recipe.title} image={recipe.featuredImage?.url} description={recipe.excerpt} meta={`${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min · Serves ${recipe.servings}`} action="View recipe" />
-              ))}
-            </div>
           </div>
         </section>
       )}

@@ -9,9 +9,9 @@ export const metadata: Metadata = publicPageMetadata('/site-map');
 
 const sections = [
   { title: "Shop", links: [["Home", "/"], ["All products", "/products"], ["Categories", "/categories"], ["Offers", "/deals"], ["Weekly baskets", "/subscriptions"], ["Ready meals", "/meals"], ["Local makers", "/homemade"]] },
-  { title: "Discover", links: [["Discover food", "/discover"], ["Recipes", "/recipes"], ["Collections", "/collections"], ["Creators", "/creators"], ["Journal", "/blog"], ["Search", "/search"]] },
+  { title: "Discover", links: [["Discover food", "/discover"], ["Collections", "/collections"], ["Blog", "/blog"], ["Search", "/search"]] },
   { title: "Your account", links: [["Sign in", "/auth/login"], ["Create an account", "/auth/signup/customer"], ["Shopping bags", "/bags"], ["Wishlist", "/wishlist"], ["Orders", "/orders"], ["Profile", "/profile"]] },
-  { title: "FreshPick", links: [["Our story", "/about"], ["Partner with us", "/b2b"], ["Contact", "/contact"], ["Delivery & ordering help", "/help"], ["Feedback", "/help-us"]] },
+  { title: "FreshPick", links: [["Our story", "/about"], ["For business", "/b2b"], ["Contact", "/contact"], ["Help", "/help"], ["Feedback", "/help-us"]] },
   { title: "Information", links: [["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"], ["Cookie Policy", "/cookies"], ["Returns & refunds", "/refund"]] },
 ];
 

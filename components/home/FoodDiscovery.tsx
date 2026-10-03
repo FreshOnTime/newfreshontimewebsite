@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, ChefHat, HeartHandshake, Repeat2, Utensils } from "lucide-react";
+import { ArrowRight, ShoppingBasket, HeartHandshake, Repeat2, Utensils } from "lucide-react";
 
 const journeys = [
-  { title: "Recipes", description: "Find a recipe and shop the ingredients.", href: "/recipes", action: "Browse recipes", icon: ChefHat },
+  { title: "The market", description: "Shop food, drinks and everyday essentials by category.", href: "/categories", action: "Explore categories", icon: ShoppingBasket },
   { title: "Ready meals", description: "Explore meals for days when you skip the cooking.", href: "/meals", action: "See ready meals", icon: Utensils },
   { title: "Local makers", description: "Discover food from independent Sri Lankan makers.", href: "/homemade", action: "Meet the makers", icon: HeartHandshake },
   { title: "Weekly baskets", description: "Set up a recurring basket for your household essentials.", href: "/subscriptions", action: "Build a basket", icon: Repeat2 },
