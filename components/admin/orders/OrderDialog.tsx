@@ -51,6 +51,7 @@ type FormData = z.infer<typeof schema>;
 
 interface Order {
   _id?: string;
+  subscriptionDelivery?: { id: string } | null;
   status: FormData['status'];
   paymentStatus: FormData['paymentStatus'];
   trackingNumber?: string;
@@ -72,6 +73,7 @@ interface Order {
 }
 
 export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boolean; onOpenChange: (o: boolean) => void; order?: Order | null; onSave: () => void; }) {
+  const basketOrder = !!order?.subscriptionDelivery;
   const isEditing = !!order?._id;
   const [loading, setLoading] = useState(false);
   const form = useForm<FormData>({
@@ -212,7 +214,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
+        body: JSON.stringify(basketOrder ? { status: data.status, paymentStatus: data.paymentStatus, trackingNumber: data.trackingNumber, notes: data.notes, shippingAddress: data.shippingAddress, billingAddress: data.billingAddress } : {
           ...data,
           // Items & totals
           items: items.map((it) => ({
@@ -384,6 +386,8 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
               </div>
             )}
 
+            {basketOrder && <p className="rounded-lg border p-3 text-sm leading-6">Basket contents and pricing are fixed for this delivery. Edit the subscription plan to change future baskets.</p>}
+            <fieldset disabled={basketOrder} className={basketOrder ? "opacity-70" : ""}>
             {/* Bag / Items summary */}
             <div className="mt-2 border rounded p-3">
               <h3 className="text-sm font-medium">Items</h3>
@@ -437,8 +441,8 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((it) => (
-                    <TableRow key={it.productId}>
+                  {items.map((it, index) => (
+                    <TableRow key={`${it.productId}:${index}`}>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{it.name}</span>
@@ -476,6 +480,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
             </div>
 
             {/* Delivery Address Section */}
+            </fieldset>
             <div className="mt-4 border rounded p-3">
               <h3 className="text-sm font-medium">Delivery Address</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">

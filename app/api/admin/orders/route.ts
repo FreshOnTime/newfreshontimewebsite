@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 const ORDER_INCLUDE = {
   items: true,
+  subscriptionDelivery: true,
   customer: { select: { firstName: true, lastName: true, email: true } },
 } satisfies Prisma.OrderInclude;
 

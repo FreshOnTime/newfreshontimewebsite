@@ -72,6 +72,7 @@ export function OrdersPage() {
 
   useEffect(() => {
     // Initialize customerId from URL once
+    setSearch(searchParams.get('search') || '');
     const cid = searchParams.get('customerId');
     if (cid && !customerId) setCustomerId(cid);
     // eslint-disable-next-line react-hooks/exhaustive-deps

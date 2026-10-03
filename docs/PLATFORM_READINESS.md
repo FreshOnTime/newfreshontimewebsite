@@ -92,7 +92,7 @@ layout and the shared admin API guards.
 | --- | --- |
 | Configuration | Set approved delivery fees/threshold/areas, canonical site URL, Azure and verified SendGrid credentials; run the read-only preflight. No real business rates were supplied. |
 | Database | Back up and restore-test, apply the additive migration, verify the PostgreSQL concurrency script and reconcile historical unreserved orders. |
-| Basket fulfillment | Plans remain descriptive packing lists; SKU reservations and automated payment/order conversion are not implemented for basket plans. Test manual packing, COD collection, pause/skip/cancel and deployed scheduling in staging. |
+| Basket fulfillment | Optional catalogue mapping now reserves stock and creates linked COD orders. Review real stock-unit mappings and delivery-inclusive plan pricing before opt-in; exercise shortages/retry, packing, collection, pause/skip/cancel and deployed scheduling in staging. Existing plans remain manual. |
 | Hosting and monitoring | Verify the linked Netlify site/domain, published function schedules, provider activity, logs, backlog alerts and backup policy. Code changes do not configure external dashboards. |
 | Payments | Checkout offers cash on delivery. A gateway, callback idempotency, refunds and settlement need a separate integration before online payment is offered. |
 | Account integrations | Exercise signup, verification, password reset, refresh/logout, Google/Firebase, saved addresses and bans using staging credentials. |
@@ -112,3 +112,18 @@ PostgreSQL 16, including concurrent basket signup/capacity, single delivery coun
 and newsletter signup/outbox/link invalidation. CI also passed tests, build and HTTP
 smoke checks. External credentials, production database contents, email delivery,
 uploads and Netlify schedules have not been exercised against production.
+
+## Basket inventory continuation
+
+The additive `20261003070000_basket_inventory` migration supports opt-in catalogue
+mapping, stock-reserving COD orders, blocked fulfillment recovery and synchronized
+order/delivery lifecycle. Plan content edits now persist with optimistic version
+checks, including content-only edits; historical subscription plans cannot be
+hard-deleted. See [the operating guide](OPERATIONS.md) for activation and pricing.
+
+Local validation covers 266 unit/API tests, type checking and a production build.
+The isolated PostgreSQL integrity script additionally covers mapped basket shortage
+rollback, concurrent retry, fixed-price rounding, durable confirmation, cancellation,
+order/queue completion races, consumed-stock refunds and stale plan content edits.
+Production inventory mappings, COD collection and deployed scheduling still need
+staging acceptance with real business configuration.

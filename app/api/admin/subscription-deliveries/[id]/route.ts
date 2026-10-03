@@ -1,3 +1,4 @@
+import { BasketLifecycleError } from '@/lib/basketOrderLifecycle';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAdmin } from '@/lib/middleware/adminAuth';
@@ -10,6 +11,6 @@ export const PATCH = requireAdmin(async (request, { params }) => {
     const delivery = await SubscriptionDeliveryService.transitionDelivery(id, action, version);
     return NextResponse.json({ success: true, delivery: { ...delivery, _id: delivery.id, price: Number(delivery.price) } }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof DeliveryTransitionError ? error.message : 'Invalid delivery update' }, { status: error instanceof DeliveryTransitionError ? error.status : error instanceof z.ZodError || error instanceof SyntaxError ? 400 : 500 });
+    return NextResponse.json({ error: (error instanceof DeliveryTransitionError || error instanceof BasketLifecycleError) ? error.message : 'Invalid delivery update' }, { status: (error instanceof DeliveryTransitionError || error instanceof BasketLifecycleError) ? error.status : error instanceof z.ZodError || error instanceof SyntaxError ? 400 : 500 });
   }
 });
