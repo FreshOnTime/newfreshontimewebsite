@@ -747,6 +747,28 @@ model Subscriber {
   @@map("subscribers")
 }
 
+model ContactEnquiry {
+  id            String   @id @default(uuid())
+  submissionId  String   @unique @default(uuid())
+  name          String   @db.VarChar(100)
+  email         String   @db.VarChar(254)
+  subject       String   @default("") @db.VarChar(160)
+  message       String
+  type          String   @default("question")
+  source        String   @default("general")
+  priority      String   @default("normal")
+  orderId       String   @default("") @db.VarChar(100)
+  status        String   @default("new")
+  internalNotes String   @default("")
+  version       Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([source, createdAt])
+  @@map("contact_enquiries")
+}
+
 model BusinessLead {
   id               String   @id @default(uuid())
   organizationName String
