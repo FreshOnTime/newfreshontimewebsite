@@ -19,14 +19,14 @@ beforeEach(() => {
 });
 it.each(['GET','PATCH'])('requires admin authentication for %s', async method => {
   const handler = method === 'GET' ? GET : PATCH;
-  expect((await handler(req(method, body, '', false))).status).toBe(403);
+  expect((await handler(req(method, body, '', false))).status).toBe(401);
   (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'customer', role: 'customer', secondaryRoles: [] });
   expect((await handler(req(method))).status).toBe(403);
   expect(prisma.contactEnquiry.findMany).not.toHaveBeenCalled(); expect(prisma.contactEnquiry.updateMany).not.toHaveBeenCalled();
 });
 it('rejects banned admins and refresh tokens', async () => {
   (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'admin', role: 'admin', isBanned: true }); expect((await GET(req())).status).toBe(403);
-  (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin', type: 'refresh' }); expect((await GET(req())).status).toBe(403);
+  (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin', type: 'refresh' }); expect((await GET(req())).status).toBe(401);
 });
 it('paginates, filters and searches privately', async () => {
   const response = await GET(req('GET', body, '?page=2&status=new&source=producers&q=FP-19D43C24'));

@@ -261,6 +261,7 @@ Daily checklist:
 | --- | --- |
 | Redirect or 401 | Login/session expiry; refresh flow; environment cookie/domain settings |
 | 403 in one tool | Primary vs secondary admin guard, banned account or older endpoint policy |
+| Database update required / 503 | Missing table/column; apply committed migrations to the deployed database. Netlify production builds now migrate before publishing; check Build and Functions database scopes |
 | 409 saving | Stale version/state, duplicate identifier, plan capacity or lifecycle conflict; reload and inspect |
 | Invalid product | Required supplier/category, unique SKU/slug, numeric limits, missing/archived mapped item |
 | Image upload failure | 4 MB/content type and production Azure credentials/container |

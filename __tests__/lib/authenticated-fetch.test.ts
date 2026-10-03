@@ -46,3 +46,47 @@ test('an aborted request does not refresh the session', async () => {
   await authenticatedApiFetch('/api/orders', { signal: controller.signal });
   expect(request).toHaveBeenCalledTimes(1);
 });
+
+test('simultaneous expired admin requests share a single token rotation', async () => {
+  let finishRefresh!: (value: Response) => void;
+  let refreshStarted = false;
+  request.mockImplementation(async path => {
+    if (path === '/api/auth/refresh') {
+      refreshStarted = true;
+      return new Promise<Response>(resolve => { finishRefresh = resolve; });
+    }
+    return response(refreshStarted ? 200 : 401);
+  });
+  const results = Promise.all([
+    authenticatedApiFetch('/api/admin/enquiries'),
+    authenticatedApiFetch('/api/admin/business-leads'),
+  ]);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  finishRefresh(response(200));
+  expect((await results).map(result => result.status)).toEqual([200, 200]);
+  expect(request.mock.calls.filter(([path]) => path === '/api/auth/refresh')).toHaveLength(1);
+});
+
+test('cancelling one caller during shared refresh does not replay it or cancel another caller', async () => {
+  const controller = new AbortController();
+  let finishRefresh!: (value: Response) => void;
+  request.mockImplementation(async path => path === '/api/auth/refresh'
+    ? new Promise<Response>(resolve => { finishRefresh = resolve; })
+    : response(request.mock.calls.length <= 2 ? 401 : 200));
+  const results = Promise.all([
+    authenticatedApiFetch('/api/admin/enquiries', { signal: controller.signal }),
+    authenticatedApiFetch('/api/admin/suppliers'),
+  ]);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  controller.abort();
+  finishRefresh(response(200));
+  expect((await results).map(result => result.status)).toEqual([401, 200]);
+  expect(request.mock.calls.filter(([path]) => path === '/api/admin/enquiries')).toHaveLength(1);
+  expect(request.mock.calls.filter(([path]) => path === '/api/auth/refresh')).toHaveLength(1);
+});
+
+test('role denial is never retried as a session expiry', async () => {
+  request.mockResolvedValueOnce(response(403));
+  expect((await authenticatedApiFetch('/api/admin/suppliers')).status).toBe(403);
+  expect(request).toHaveBeenCalledTimes(1);
+});

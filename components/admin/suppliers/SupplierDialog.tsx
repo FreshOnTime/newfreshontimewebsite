@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 const schema = z.object({
   name: z.string().min(1, 'Required'),
@@ -48,7 +49,7 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
       // fetch uploads for this supplier
       (async () => {
         try {
-          const res = await fetch(`/api/admin/supplier-uploads/by-supplier/${supplier!._id}`, { credentials: 'include' });
+          const res = await authenticatedApiFetch(`/api/admin/supplier-uploads/by-supplier/${supplier!._id}`, { credentials: 'include' });
           if (!res.ok) return setUploads([]);
           const j = await res.json();
           setUploads(j.data || []);
@@ -64,7 +65,7 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
   const submit = async (data: FormData) => {
     try {
       setLoading(true);
-      const res = await fetch(isEditing ? `/api/admin/suppliers/${supplier!._id}` : '/api/admin/suppliers', {
+      const res = await authenticatedApiFetch(isEditing ? `/api/admin/suppliers/${supplier!._id}` : '/api/admin/suppliers', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

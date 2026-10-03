@@ -171,7 +171,8 @@ Sources: [mailService.ts](../lib/services/mailService.ts), [emailOutboxService.t
 | [seo](../lib/seo.ts) | `serializeJsonLd`, `pageMetadata`, `catalogueMetadata`, `privateMetadata` | Escaped structured data, canonical metadata and private no-index |
 | [site config](../lib/config/site.ts) | `absoluteUrl` | Build absolute URLs from configured public site origin |
 | [API client](../lib/api/client.ts) | `apiFetch`, `apiUrl` | Resolve configured API base and send client requests |
-| [Authenticated fetch](../lib/api/authenticated-fetch.ts) | `authenticatedApiFetch` | Retry once after session refresh on 401 |
+| [Authenticated fetch](../lib/api/authenticated-fetch.ts) | `authenticatedApiFetch`, `refreshSession` | Retry once on 401 and share token rotation across concurrent requests |
+| [Admin data errors](../lib/adminApiErrors.ts) | `adminDataError` | Private database error response; missing schema returns actionable 503 without exposing database details |
 | [Server API](../lib/api/server.ts) | `serverApiFetch` | Server-side API request/base URL handling |
 | [Cookies](../lib/utils/cookies.ts) | `setCookie`, `deleteCookie`, `getCookie`, `setAuthCookies`, `clearAuthCookies` | Session cookie options and browser session lifecycle |
 | [Product image upload](../lib/productImageUpload.ts) | `readProductImage`, `storeProductImage` | Bound multipart body, validate signatures/size, write durable Azure or development storage |

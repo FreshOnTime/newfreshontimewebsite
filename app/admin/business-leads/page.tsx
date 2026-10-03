@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Handshake, Mail, Phone, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api/client";
+import { authenticatedApiFetch } from "@/lib/api/authenticated-fetch";
+import { useAdminQueue } from "@/components/admin/useAdminQueue";
+import { QueueFeedback } from "@/components/admin/QueueFeedback";
 
 const statuses = ["new", "contacted", "qualified", "won", "lost"] as const;
 type LeadStatus = (typeof statuses)[number];
@@ -30,44 +32,25 @@ const statusStyles: Record<LeadStatus, string> = {
 };
 
 export default function BusinessLeadsPage() {
-  const [leads, setLeads] = useState<BusinessLead[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | LeadStatus>("all");
   const [savingId, setSavingId] = useState<string | null>(null);
-
-  const filteredLeads = useMemo(
-    () => filter === "all" ? leads : leads.filter((lead) => lead.status === filter),
-    [filter, leads]
-  );
-
-  async function loadLeads() {
-    try {
-      setLoading(true);
-      const response = await apiFetch("/api/admin/business-leads");
-      if (!response.ok) throw new Error("Unable to load applications");
-      const data = await response.json();
-      setLeads(data.leads || []);
-    } catch {
-      toast.error("Unable to load partnership applications");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { loadLeads(); }, []);
+  const queue = useAdminQueue<BusinessLead>(`/api/admin/business-leads${filter === 'all' ? '' : `?status=${filter}`}`, 'leads');
+  const { items: filteredLeads, loading } = queue;
+  const loadLeads = queue.reload;
 
   async function updateStatus(id: string, status: LeadStatus) {
     try {
       setSavingId(id);
-      const response = await apiFetch("/api/admin/business-leads", {
+      const response = await authenticatedApiFetch("/api/admin/business-leads", {
         method: "PATCH",
         body: JSON.stringify({ id, status }),
       });
-      if (!response.ok) throw new Error("Unable to update application");
-      setLeads((current) => current.map((lead) => lead._id === id ? { ...lead, status } : lead));
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.error || "Unable to update application");
+      queue.reload();
       toast.success("Partnership status updated");
-    } catch {
-      toast.error("Unable to update partnership status");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update partnership status");
     } finally {
       setSavingId(null);
     }
@@ -89,12 +72,12 @@ export default function BusinessLeadsPage() {
       <div className="flex flex-wrap gap-2">
         {(["all", ...statuses] as const).map((status) => (
           <button key={status} onClick={() => setFilter(status)} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${filter === status ? "bg-brand-leaf text-brand-ink" : "bg-background text-muted-foreground ring-1 ring-border hover:bg-secondary"}`}>
-            {status === "all" ? `All (${leads.length})` : `${status[0].toUpperCase()}${status.slice(1)}`}
+            {status === "all" ? 'All' : `${status[0].toUpperCase()}${status.slice(1)}`}
           </button>
         ))}
       </div>
 
-      {loading ? (
+      {queue.error ? <QueueFeedback loading={false} error={queue.error} retry={loadLeads} /> : loading ? (
         <div className="flex justify-center py-20"><RefreshCw className="h-8 w-8 animate-spin text-brand-green" /></div>
       ) : filteredLeads.length === 0 ? (
         <Card><CardContent className="py-16 text-center text-muted-foreground">No partnership applications in this view yet.</CardContent></Card>

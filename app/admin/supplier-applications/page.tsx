@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAdminQueue } from '@/components/admin/useAdminQueue';
 import { QueueFeedback, QueuePager } from '@/components/admin/QueueFeedback';
-import { apiFetch } from '@/lib/api/client';
+import { authenticatedApiFetch as apiFetch } from '@/lib/api/authenticated-fetch';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';

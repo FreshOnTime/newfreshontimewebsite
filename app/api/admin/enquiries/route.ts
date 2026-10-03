@@ -1,3 +1,4 @@
+import { adminDataError } from '@/lib/adminApiErrors';
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -32,7 +33,7 @@ export const GET = requireAdminSimple(async (request: NextRequest) => {
     return json({ enquiries, total, page: input.page, pages: Math.max(1, Math.ceil(total/take)) });
   } catch (error) {
     if (error instanceof z.ZodError) return json({ error: 'Invalid enquiry filters.' }, 400);
-    return json({ error: 'Unable to load enquiries. Please retry.' }, 500);
+    return adminDataError(error, 'Unable to load enquiries. Please retry.');
   }
 });
 
@@ -48,6 +49,6 @@ export const PATCH = requireAdminSimple(async (request: NextRequest) => {
     return json({ enquiry });
   } catch (error) {
     if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: 'Invalid enquiry update.' }, 400);
-    return json({ error: 'Unable to save the enquiry. Please retry.' }, 500);
+    return adminDataError(error, 'Unable to save the enquiry. Please retry.');
   }
 });

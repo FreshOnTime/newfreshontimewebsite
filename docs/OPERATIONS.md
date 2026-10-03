@@ -1,7 +1,8 @@
 # FreshPick operating guide
 
-This branch prepares the application code. Production configuration, a database
-backup, migration execution and staging acceptance remain operator actions.
+Production configuration, database backups and staging acceptance remain operator
+actions. Netlify's production build now applies committed migrations before building
+the application; previews check migration status without changing a shared database.
 
 ## Deploy in this order
 
@@ -14,12 +15,39 @@ backup, migration execution and staging acceptance remain operator actions.
    `npm run check:production`. The latter only reads the migration table/database;
    it does not apply migrations, send messages or upload files.
 5. Exercise staging orders, uploads, supplier review, basket deliveries and email.
-   After acceptance, apply the reviewed additive migration to production before
-   publishing the app. This change is not an automatic production migration.
+   After acceptance, back up production and review the pending migrations before
+   publishing the app. `npm run build:netlify` applies them with `prisma migrate deploy`
+   when `NETLIFY=true` and `CONTEXT=production`, before the Next.js build. A failed
+   migration stops publication instead of serving code against missing tables/columns.
+   For previews/branch deploys, the command only runs `prisma migrate status`; apply
+   migrations to their isolated database explicitly. Do not point previews at an
+   unmigrated production database or give them a migration-on-build override.
 6. Use Netlify's Git integration for previews and production publishing. GitHub
    Actions checks tests, PostgreSQL concurrency, types/build and HTTP smoke routes.
    Require the test job before merging; the removed Vercel jobs were a separate,
    conflicting deployment pipeline. Verify Netlify's actual linked branch/domain.
+
+### Recover admin lists that fail to load
+
+Suppliers require the application/review columns from the platform operations
+migration; partnership applications require `business_leads`; Enquiry inbox requires
+`contact_enquiries`. Generating a Prisma client does not create these database objects.
+Check Netlify function logs for `P2021` (missing table) or `P2022` (missing column).
+Authenticated admin APIs now return 503 with `DATABASE_SCHEMA_OUTDATED` for these
+conditions rather than an empty queue or authentication error.
+
+Publish through the configured Netlify build command with `DATABASE_URL` available
+in both Build and Functions scopes, targeting the same intended database/schema.
+If the Netlify UI overrides the repository's build command, set it to
+`npm run build:netlify`. For controlled manual recovery, apply `npm run db:migrate`
+against that target database, then refresh the admin lists. No public migration
+endpoint is exposed. A missing build credential fails deployment with an explicit
+message instead of silently skipping schema readiness.
+
+Expired/missing access tokens return 401; authenticated non-admin/banned accounts
+return 403. The affected screens refresh the session once and retry, sharing token
+rotation across simultaneous requests. Database outages remain 500/503 and must not
+trigger refresh. An expired refresh session still requires signing in again.
 
 ## Server configuration
 

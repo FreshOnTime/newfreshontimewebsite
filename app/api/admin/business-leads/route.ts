@@ -1,3 +1,4 @@
+import { adminDataError } from '@/lib/adminApiErrors';
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -10,16 +11,20 @@ const updateSchema = z.object({
 });
 
 export const GET = requireAdminSimple(async (request: NextRequest) => {
-  const status = new URL(request.url).searchParams.get("status");
-  const where = status && statuses.includes(status as (typeof statuses)[number]) ? { status } : undefined;
+  try {
+    const status = new URL(request.url).searchParams.get("status");
+    const where = status && statuses.includes(status as (typeof statuses)[number]) ? { status } : undefined;
 
-  const leads = await prisma.businessLead.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  });
+    const leads = await prisma.businessLead.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    });
 
-  return NextResponse.json({ success: true, leads: leads.map((lead) => ({ ...lead, _id: lead.id })) });
+    return NextResponse.json({ success: true, leads: leads.map((lead) => ({ ...lead, _id: lead.id })) }, { headers: { 'Cache-Control': 'private, no-store' } });
+  } catch (error) {
+    return adminDataError(error, 'Unable to load partnership applications. Please try again.');
+  }
 });
 
 export const PATCH = requireAdminSimple(async (request: NextRequest) => {
@@ -29,6 +34,7 @@ export const PATCH = requireAdminSimple(async (request: NextRequest) => {
     return NextResponse.json({ success: true, lead: { ...lead, _id: lead.id } });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: "Invalid lead update" }, { status: 400 });
-    return NextResponse.json({ error: "Unable to update lead" }, { status: 500 });
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') return NextResponse.json({ error: 'Partnership application not found' }, { status: 404 });
+    return adminDataError(error, 'Unable to update partnership status');
   }
 });

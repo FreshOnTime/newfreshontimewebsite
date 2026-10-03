@@ -1,3 +1,4 @@
+import { adminDataError } from '@/lib/adminApiErrors';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma, PaymentTerms, Supplier } from '@prisma/client';
@@ -22,8 +23,8 @@ const supplierSchema = z.object({
 });
 
 const querySchema = z.object({
-  page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),
+  page: z.coerce.number().int().min(1).max(100000).default(1),
+  limit: z.coerce.number().int().min(1).default(20).transform(value => Math.min(value, 100)),
   search: z.string().optional(),
   status: z.enum(['active', 'inactive']).optional(),
 });
@@ -87,10 +88,10 @@ export const GET = requireAdminSimple(async (request) => {
     return NextResponse.json({
       suppliers: suppliers.map(serializeSupplier),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
-    console.error('Get suppliers error:', error);
-    return NextResponse.json({ error: 'Failed to fetch suppliers' }, { status: 500 });
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid supplier filters' }, { status: 400 });
+    return adminDataError(error, 'Failed to fetch suppliers. Please try again.');
   }
 });
 
@@ -136,7 +137,6 @@ export const POST = requireAdminSimple(async (request) => {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
-    console.error('Create supplier error:', error);
-    return NextResponse.json({ error: 'Failed to create supplier' }, { status: 500 });
+    return adminDataError(error, 'Failed to create supplier');
   }
 });

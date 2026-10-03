@@ -18,7 +18,7 @@ it.each([category, legacyCategory, editCategory, deleteCategory, brand, editBran
   expect(db.category.create).not.toHaveBeenCalled();
 });
 it('keeps the legacy product-add URL behind the validated admin route', async () => {
-  expect((await addProduct(request())).status).toBe(403);
+  expect((await addProduct(request())).status).toBe(401);
   expect((await addProduct(request(true))).status).toBe(403);
 });
 it('permits verified admins to create categories', async () => {
