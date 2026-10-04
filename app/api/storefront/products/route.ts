@@ -3,7 +3,8 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
 
-export const revalidate = 300;
+// Filters depend on each request. CDN caching is set on successful responses.
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
