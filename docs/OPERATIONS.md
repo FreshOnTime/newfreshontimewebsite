@@ -27,6 +27,26 @@ the application; previews check migration status without changing a shared datab
    Require the test job before merging; the removed Vercel jobs were a separate,
    conflicting deployment pipeline. Verify Netlify's actual linked branch/domain.
 
+### Recover `JWT_SECRET environment variable is required`
+
+Set `JWT_SECRET` in the deployment environment, not in source control. For the
+configured Netlify deployment, make it available in Functions and Build scopes
+for the intended deploy context, then redeploy. Reuse the existing production
+secret if one already exists; changing it invalidates existing session tokens
+and newsletter signatures when they use the same key. Preview deployments should
+use their own key.
+
+For a new environment, generate a random secret locally with `openssl rand -hex 32`
+and paste the output into the hosting environment-variable setting. Do not paste
+it into logs, issues or chat. Local development can use an uncommitted `.env` file.
+
+JWT configuration is resolved when signing or verifying a token, so importing
+route modules during `next build` does not require a secret. Signing and verification
+still fail when it is missing or blank; a successful build alone does not establish
+that authentication is configured. There is no fallback or Docker build-time key.
+Run `npm run check:production -- --config-only` in the configured environment and
+verify sign-in, refresh and an authenticated request after deployment.
+
 ### Recover admin lists that fail to load
 
 Suppliers require the application/review columns from the platform operations

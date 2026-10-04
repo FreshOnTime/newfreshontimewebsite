@@ -4,8 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
-# Set dummy secret to bypass module-level check during build
-ENV JWT_SECRET=build_time_dummy_secret
 RUN npm run build
 
 # Production stage

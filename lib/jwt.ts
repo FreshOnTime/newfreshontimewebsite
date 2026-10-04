@@ -1,15 +1,18 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET_RAW = process.env.JWT_SECRET;
 const JWT_ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '7d';
 const JWT_REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '30d';
 
-if (!JWT_SECRET_RAW) {
-  throw new Error('JWT_SECRET environment variable is required');
+// Next.js imports route modules during builds. Resolve secrets only when an
+// authentication operation runs, and never substitute a build/default key.
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || !secret.trim()) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return secret;
 }
-
-const JWT_SECRET = JWT_SECRET_RAW;
 
 export interface TokenPayload {
   userId: string;
@@ -27,7 +30,7 @@ export interface RefreshToken {
 export function signAccessToken(payload: Omit<TokenPayload, 'type'>): string {
   return jwt.sign(
     { ...payload, type: 'access' },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn'] }
   );
 }
@@ -35,7 +38,7 @@ export function signAccessToken(payload: Omit<TokenPayload, 'type'>): string {
 export function signRefreshToken(payload: Omit<TokenPayload, 'type'>): RefreshToken {
   const token = jwt.sign(
     { ...payload, type: 'refresh' },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: JWT_REFRESH_EXPIRES as jwt.SignOptions['expiresIn'] }
   );
 
@@ -54,8 +57,9 @@ export function signRefreshToken(payload: Omit<TokenPayload, 'type'>): RefreshTo
 }
 
 export function verifyToken(token: string): TokenPayload {
+  const secret = getJwtSecret();
   try {
-    return jwt.verify(token, JWT_SECRET) as TokenPayload;
+    return jwt.verify(token, secret) as TokenPayload;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       throw new Error('Token has expired');
