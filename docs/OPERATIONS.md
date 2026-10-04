@@ -230,3 +230,16 @@ secret or those rates in production.
 Deploy `20261003180000_notification_reads` before using the notification inbox. Netlify production migration-on-build applies it; `check:production` also checks its recorded completion. The additive table stores per-recipient receipts with cascading foreign keys and a unique notification/user pair. Targeted historical `isRead=true` values are backfilled. Shared broadcast read flags cannot identify a user, so broadcasts begin unread per account. No notification content is removed. Older application versions can keep using the retained column during rollback.
 
 The disposable PostgreSQL checkout harness now also verifies notification retry/audit deduplication, concurrent reads and broadcast isolation between accounts. It never uses the production database URL.
+
+### Storefront prerendering on Vercel
+
+The homepage and subscriptions page read shared Prisma loaders directly instead
+of requesting this deployment's own HTTP API during the build. Their successful
+results are cached for five minutes with the existing invalidation tags. Database
+errors propagate rather than being cached as successful empty catalogues; the
+homepage no longer abandons a database read after 1.2 seconds. A reachable,
+migrated `DATABASE_URL` is required for prerendering these pages.
+
+The products API is explicitly dynamic because it reads per-request query filters.
+Successful API responses retain their public CDN cache headers. No deployment
+protection bypass or public API URL override is needed for these server pages.

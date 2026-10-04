@@ -5,12 +5,12 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductErrorBoundary } from "@/components/products/ProductErrorBoundary";
-import { Product } from "@/models/product";
 
 import HeroSection from "@/components/home/HeroSection";
 import CategoryBento from "@/components/home/CategoryBento";
 import BrandStory from "@/components/home/BrandStory";
-import { serverApiFetch } from "@/lib/api/server";
+import { unstable_cache } from "next/cache";
+import { loadStorefrontHome } from "@/lib/storefrontData";
 import { listPublishedJournalEntries } from "@/lib/journalService";
 import HomeJournal from "@/components/home/HomeJournal";
 
@@ -19,39 +19,10 @@ export const revalidate = 300;
 
 export const metadata: Metadata = publicPageMetadata('/');
 
-type CategoryDisplay = { _id: string; name: string; slug: string; imageUrl?: string; description?: string };
-
-interface HomeData {
-  products: Product[];
-  categories: CategoryDisplay[];
-}
-
-const HOME_DATA_TIMEOUT_MS = 1200;
-
-async function getHomeData(): Promise<HomeData> {
-  const request = serverApiFetch('/api/storefront/home', {
-    next: { revalidate: 300, tags: ['products', 'categories'] },
-  } as RequestInit & { next: { revalidate: number; tags: string[] } })
-    .then(async (response) => {
-      if (!response.ok) throw new Error(`Homepage API returned HTTP ${response.status}`);
-      return response.json() as Promise<HomeData>;
-    })
-    .catch((error) => {
-      console.error("[Homepage] Failed to fetch home data:", error);
-      return { products: [], categories: [] };
-    });
-
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  const timeout = new Promise<HomeData>((resolve) => {
-    timeoutId = setTimeout(() => resolve({ products: [], categories: [] }), HOME_DATA_TIMEOUT_MS);
-  });
-
-  try {
-    return await Promise.race([request, timeout]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-}
+const getHomeData = unstable_cache(loadStorefrontHome, ['storefront-home-db-v1'], {
+  revalidate: 300,
+  tags: ['products', 'categories'],
+});
 
 export default async function Home() {
   const [{ products, categories }, journal] = await Promise.all([

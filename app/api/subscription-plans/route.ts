@@ -5,19 +5,16 @@ import { createPlanSchema } from '@/lib/subscriptionPlanSchema';
 import { PlanWriteError,validatePlanInventory } from '@/lib/subscriptionPlanValidation';
 import { z } from 'zod';
 import { serializePlan } from '@/lib/subscriptionUtils';
+import { loadActiveSubscriptionPlans } from '@/lib/storefrontData';
 
 // GET all active subscription plans
 export async function GET() {
   try {
-    const plans = await prisma.subscriptionPlan.findMany({
-      where: { isActive: true },
-      orderBy: { price: 'asc' },
-      include: { contents: true },
-    });
+    const plans = await loadActiveSubscriptionPlans();
 
     return NextResponse.json({
       success: true,
-      plans: plans.map(serializePlan),
+      plans,
     });
   } catch (error) {
     console.error('Error fetching subscription plans:', error);

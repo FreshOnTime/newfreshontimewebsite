@@ -7,33 +7,24 @@ import { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import { CalendarClock, ChevronDown, Handshake, SlidersHorizontal } from 'lucide-react';
 import SubscriptionPlanCard, { type SubscriptionPlan } from '@/components/subscriptions/SubscriptionPlanCard';
-import { serverApiFetch } from '@/lib/api/server';
+import { loadActiveSubscriptionPlans } from '@/lib/storefrontData';
 
 export const metadata: Metadata = publicPageMetadata('/subscriptions');
 
 export const revalidate = 300;
 
 const getSubscriptionPlans = unstable_cache(async (): Promise<SubscriptionPlan[]> => {
-    try {
-        const response = await serverApiFetch('/api/subscription-plans');
-        if (!response.ok) return [];
-        const data = await response.json();
-        if (!data?.success || !Array.isArray(data.plans)) return [];
-
-        return data.plans
-            .filter((plan: SubscriptionPlan) => Boolean(plan?._id && plan.slug && plan.name))
-            .map((plan: SubscriptionPlan) => ({
-                ...plan,
-                price: Number(plan.price || 0),
-                originalPrice: plan.originalPrice == null ? undefined : Number(plan.originalPrice),
-                features: Array.isArray(plan.features) ? plan.features : [],
-                contents: Array.isArray(plan.contents) ? plan.contents : [],
-            }));
-    } catch (error) {
-        console.error('Error fetching subscription plans:', error);
-        return [];
-    }
-}, ['active-subscription-plans-api-v2'], { revalidate: 300, tags: ['subscription-plans'] });
+    const plans = await loadActiveSubscriptionPlans();
+    return plans.map((plan) => ({
+        ...plan,
+        icon: plan.icon ?? undefined,
+        image: plan.image ?? undefined,
+        color: plan.color ?? undefined,
+        originalPrice: plan.originalPrice == null ? undefined : plan.originalPrice,
+        features: Array.isArray(plan.features) ? plan.features : [],
+        contents: Array.isArray(plan.contents) ? plan.contents : [],
+    }));
+}, ['active-subscription-plans-db-v1'], { revalidate: 300, tags: ['subscription-plans'] });
 
 const faqs = [
     {
