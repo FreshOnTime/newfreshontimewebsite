@@ -258,3 +258,30 @@ prerendering instead of publishing an empty catalogue. Existing successful ISR
 pages can remain available while failed regeneration is retried. Test these paths
 with the deployment database before promoting; local unit checks cannot establish
 remote database availability. These changes do not alter page layouts or credentials.
+
+### Versioned FreshPick blog guides
+
+Four editorial guides are stored in `content/blog/guides.json` and served under
+`/blog/guides/[slug]`. They ship with the deployment without a database seed or
+migration. Edit or remove them through the repository; the existing admin blog
+editor continues to manage database-backed stories under `/blog/[slug]`. The blog
+landing page links both sections, and the guides are included in the XML sitemap.
+Do not describe these guides as admin-editable database posts. Their dates are
+editorial publication/revision dates, not automatically refreshed build dates.
+
+Guide content provides planning examples, not fixed prices, delivery commitments,
+medical advice or claimed customer experiences. Recheck coverage, policy links and
+plan descriptions when business terms change. Photography is illustrative and
+reuses credited local editorial assets (see `public/images/editorial/CREDITS.md`).
+
+Blog images now fall back on invalid or failed URLs. External HTTPS images load
+in the browser without the Next.js image optimizer's remote-host restriction;
+prefer local or approved storage assets for predictable performance. Article
+heroes use a bounded aspect ratio and object-contain to preserve the full photo.
+Database blog reads are deduplicated between metadata and page rendering. Outages
+are no longer treated as missing posts, and ISR renders no longer increment views.
+
+SEO includes canonical metadata, article/breadcrumb markup, indexable HTML,
+internal links and sitemap entries. No special AI-search markup or ranking promise
+is implied. Useful, accurate, crawlable content follows Google's guidance:
+https://developers.google.com/search/docs/appearance/ai-features

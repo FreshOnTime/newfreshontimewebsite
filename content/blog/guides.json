@@ -1,0 +1,86 @@
+[
+  {
+    "_id": "guide-grocery-delivery-colombo-checklist",
+    "slug": "grocery-delivery-colombo-checklist",
+    "title": "Grocery delivery in Colombo: a practical ordering checklist",
+    "excerpt": "Check your delivery address, pack sizes, basket total and receiving arrangements before placing an online grocery order in Colombo.",
+    "category": "Ordering guide",
+    "featuredImage": {
+      "url": "/images/editorial/market-crates.webp",
+      "alt": "Vegetables displayed in market crates"
+    },
+    "content": "**Before ordering groceries online in Colombo, confirm delivery coverage, compare quantities rather than just prices, and make sure someone can receive the order.** A short check before checkout can prevent missing ingredients and avoidable delivery confusion.\n\n## 1. Check the exact delivery address\n\nA neighbourhood name is useful, but the full address matters. Enter the house or apartment number, street, area and a reachable phone number. If access involves a gate, reception desk or apartment entrance, include a short instruction where the order form allows it. Avoid putting private access codes in public notes or reviews.\n\nFreshPick serves supported delivery areas around Colombo. Check the current [delivery and ordering information](/help) and confirm an unfamiliar address with [customer support](/contact). An area mentioned in an article is not a guarantee that every address or every delivery slot is available.\n\n## 2. Compare the quantity you will receive\n\nA lower item price does not always mean a lower cost for the same amount. Read the pack size, unit and quantity selector on the product page. For illustration, a 500 g pack and a 1 kg pack are different purchases even when their photos look similar. If the unit is unclear, ask before paying rather than assuming an image represents the complete order.\n\nUse the [current grocery catalogue](/products) to check availability and pricing. Photos illustrate products; the item description and selected quantity should guide the purchase.\n\n## 3. Check the complete basket\n\nReview the merchandise subtotal, delivery fee and any minimum-order requirement shown before confirmation. Do not assume a discount or a free-delivery threshold from an old post still applies. Remove duplicate items and check whether a substitute ingredient would work if your preferred product is unavailable.\n\n## 4. Arrange who will receive it\n\nChoose arrangements that suit someone who can answer the phone and receive the order. For an order sent to family, check the recipient's address and availability first. Follow the product label for storage after arrival and contact support promptly if an item is missing or damaged.\n\n## Questions before checkout\n\n### Is delivery available everywhere in Colombo?\n\nCheck your exact address through FreshPick's current ordering flow or support team. Coverage and available arrangements should be confirmed before placing the order.\n\n### Where do I find the delivery charge?\n\nUse the charge shown during checkout. This guide does not quote a fixed rate because the checkout configuration is the current source for your order.\n\n### What if I need help after ordering?\n\nKeep your order reference and use the [contact page](/contact). For an issue with received goods, review the [returns and refunds policy](/refund).\n\n**Next step:** build your list with the [weekly grocery planning guide](/blog/guides/weekly-grocery-list-sri-lankan-household), then check the live catalogue.",
+    "tags": [
+      "Colombo",
+      "Sri Lanka",
+      "grocery planning"
+    ],
+    "authorName": "FreshPick",
+    "publishedAt": "2026-10-04T06:00:00.000Z",
+    "updatedAt": "2026-10-04T06:00:00.000Z",
+    "views": 0
+  },
+  {
+    "_id": "guide-weekly-grocery-list-sri-lankan-household",
+    "slug": "weekly-grocery-list-sri-lankan-household",
+    "title": "How to plan a weekly grocery list for a Sri Lankan household",
+    "excerpt": "Build a flexible grocery list around meals you will actually cook, what is already in your kitchen and the number of people eating at home.",
+    "category": "Kitchen planning",
+    "featuredImage": {
+      "url": "/images/editorial/kitchen-basket.webp",
+      "alt": "A basket of vegetables and herbs on a kitchen table"
+    },
+    "content": "**A useful weekly grocery list starts with your kitchen, not a full shopping basket.** Check what you already have, choose a few meals, and buy quantities that match the people eating at home. Treat the example below as a planning template rather than a required diet or a fixed-price basket.\n\n## Start with a ten-minute kitchen check\n\nLook through the fridge, freezer and dry-food cupboard. Write down ingredients that should be used first, unopened duplicates and everyday staples running low. Keep a small “use first” note where you plan meals. Follow package instructions and discard food that is unsafe; meal planning is not a reason to stretch storage guidance.\n\nNext, count the lunches and dinners you expect to prepare. A week with office lunches and a weekend away needs a different list from a week spent at home. Ask the household which meals they actually want before buying ingredients for an ambitious menu.\n\n## Build the list around repeat ingredients\n\nChoose ingredients that can work across several dishes. For example, dhal, onions and a preferred vegetable can fit into a rice meal on one day and a different preparation on another. Pick foods your household enjoys and can eat; account for allergies, preferences and any individual dietary advice.\n\n| List section | Examples to consider | Question before buying |\n| --- | --- | --- |\n| Main staples | Rice, flour, noodles or bread | Which meals need these, and what is already open? |\n| Proteins | Dhal, beans, eggs or a preferred alternative | How many servings are actually planned? |\n| Vegetables | A few varieties for your selected meals | Can an ingredient work in more than one dish? |\n| Fruit | Varieties the household will eat | How much will be used before the next shop? |\n| Flavour and pantry | Spices, cooking oil, coconut ingredients | Is another pack necessary this week? |\n\nThe table is an example, not a statement that every item is currently available at FreshPick. Check [grocery categories](/categories) for the live selection.\n\n## Add quantities after choosing meals\n\nUse your normal recipe portions and household size to calculate amounts. Record the quantity beside each ingredient, then subtract what you already own. Read product pack sizes carefully when moving the list into your basket. A list that says “tomatoes for two meals” is more useful than adding several packs without a plan.\n\n## Keep one flexible meal\n\nLeave room for a meal using ingredients remaining from earlier in the week. That might mean adapting a familiar dish rather than buying another complete set of ingredients. Keep food safety and package storage directions in mind; leftovers are not automatically suitable for later use.\n\n## Can I use the same list every week?\n\nReuse the structure, then adjust the quantities and fresh ingredients. A recurring list saves planning effort, but changing schedules and what is already in the kitchen still matter.\n\n## Is a weekly basket easier?\n\nIt can suit a predictable routine. Compare the actual plan contents and delivery schedule before choosing a [recurring basket](/subscriptions). Read our [basket comparison guide](/blog/guides/recurring-grocery-basket-or-one-time-order) if your routine changes often.\n\n**Before checkout:** review the [Colombo delivery checklist](/blog/guides/grocery-delivery-colombo-checklist).",
+    "tags": [
+      "Colombo",
+      "Sri Lanka",
+      "grocery planning"
+    ],
+    "authorName": "FreshPick",
+    "publishedAt": "2026-10-04T06:00:00.000Z",
+    "updatedAt": "2026-10-04T06:00:00.000Z",
+    "views": 0
+  },
+  {
+    "_id": "guide-sri-lankan-pantry-shopping-guide",
+    "slug": "sri-lankan-pantry-shopping-guide",
+    "title": "A practical Sri Lankan pantry shopping guide",
+    "excerpt": "Organise pantry staples around the dishes you cook, compare pack sizes and avoid buying duplicates that sit unused in the cupboard.",
+    "category": "Pantry notes",
+    "featuredImage": {
+      "url": "/images/editorial/recipe-ingredients.webp",
+      "alt": "Bowls of cooking spices arranged on a table"
+    },
+    "content": "**Build your pantry around dishes you cook regularly, then buy only the missing ingredients.** A well-used cupboard is more useful than a long list of fashionable essentials. This guide offers a flexible starting point for everyday Sri Lankan cooking, not a requirement to stock every item.\n\n## Choose your own core staples\n\nWrite down five meals your household makes often. List the dry ingredients each needs and mark the ones used repeatedly. Rice, dhal, spices, flour and coconut ingredients may appear on your list, but the right selection depends on your cooking style and preferences.\n\nGroup the cupboard by purpose: main staples, pulses, cooking ingredients and seasoning. Keep labels visible so similar packets do not get mixed up. Store products according to their labels, including any instruction to refrigerate after opening.\n\n## Compare packs using the same unit\n\nCompare price per equal weight or volume when products are genuinely comparable. As an illustrative calculation, a 500 g pack priced at Rs. 400 costs Rs. 800 per kg. A 1 kg pack priced at Rs. 750 has a lower price per kg, but it is only a useful purchase if you will use it. These are arithmetic examples, not FreshPick prices or offers.\n\nFor branded or prepared items, also compare the ingredients and product specification. Different products are not interchangeable solely because their packs have the same weight. Check the [current market](/products) for actual product details.\n\n## Buy for use, not just cupboard space\n\nA larger pack can make sense for a regularly used staple. A smaller pack may be more practical for an ingredient used occasionally or when storage space is limited. Add a note to your shopping list when you open the last spare packet, instead of buying another every week just in case.\n\nKeep older suitable stock visible and check date labels before shopping. Do not mix a new purchase into an old container without checking the remaining contents, cleaning needs and the instructions for the product. Retain labels you need for ingredient, allergen and storage information.\n\n## Plan one cupboard-based meal\n\nBefore the next shop, choose one familiar meal that uses ingredients already on hand. Add only the fresh items needed to complete it. This turns your pantry check into a specific meal rather than another inventory you never use.\n\n## Which pantry ingredients should I buy first?\n\nStart with the ingredients shared by your regular meals. Expand the list when you have a particular dish in mind rather than buying every possible spice or staple at once.\n\n## Is the biggest pack always the best value?\n\nNo. Compare unit price, likely use and storage requirements together. A lower unit price does not help if a large amount remains unused.\n\n**Continue planning:** use the [weekly grocery list template](/blog/guides/weekly-grocery-list-sri-lankan-household), or browse [FreshPick categories](/categories) for ingredients.",
+    "tags": [
+      "Colombo",
+      "Sri Lanka",
+      "grocery planning"
+    ],
+    "authorName": "FreshPick",
+    "publishedAt": "2026-10-04T06:00:00.000Z",
+    "updatedAt": "2026-10-04T06:00:00.000Z",
+    "views": 0
+  },
+  {
+    "_id": "guide-recurring-grocery-basket-or-one-time-order",
+    "slug": "recurring-grocery-basket-or-one-time-order",
+    "title": "Recurring grocery basket or one-time order: which fits your week?",
+    "excerpt": "Compare recurring grocery baskets with individual orders using contents, schedule, household needs and the terms shown for each plan.",
+    "category": "Basket guide",
+    "featuredImage": {
+      "url": "/images/editorial/hands-at-work.webp",
+      "alt": "Hands preparing food in a kitchen"
+    },
+    "content": "**A recurring grocery basket suits a reasonably predictable routine; a one-time order gives you more flexibility when your needs change.** Compare what you will receive and the available schedule before choosing. Convenience depends on whether the plan fits your household, not simply on ordering more often.\n\n## Compare the two approaches\n\n| Decision | Recurring basket | One-time order |\n| --- | --- | --- |\n| Planning | Review a defined plan and its schedule | Choose items for the current order |\n| Household routine | Useful when needs repeat | Useful when people or meals vary |\n| Contents | Check the specific plan's contents | Review each selected product |\n| Changes | Read the plan and account controls before committing | Build a different basket next time |\n| Price | Check the displayed plan and checkout totals | Check the selected items and checkout total |\n\nThis comparison explains the decision, not a promise that a particular feature is included in every plan. Use the [current recurring basket page](/subscriptions) and the terms displayed for your selection.\n\n## Start with what you actually use\n\nLook at the last few grocery lists. Which ingredients recur, and which were bought for a single recipe or occasion? A defined basket may work well when its contents closely match the first group. If your preferences change every week, choosing individual products may avoid accumulating things you do not need.\n\nBefore subscribing, write down the contents, quantities and frequency shown for the plan. Check that someone can receive the delivery. Consider your cooking schedule, available storage and whether the household can use the contents before the next order.\n\n## Read the change and cancellation details\n\nDo not assume a basket can be customised, paused or cancelled under every circumstance. Review the available account controls and the relevant terms before confirmation. For an upcoming delivery, ask support about the applicable process instead of assuming an account change automatically alters an order already being prepared.\n\nKeep the confirmation and order reference. If anything in the schedule or contents is unclear, use [FreshPick support](/contact) before placing the order.\n\n## Can I combine a basket with individual groceries?\n\nYou can plan your shopping around a recurring basket and use individual purchases for other needs. Confirm how each order is handled at checkout; do not assume separate orders share a delivery charge or arrive together.\n\n## Will a recurring basket always be cheaper?\n\nNot necessarily. Compare the actual contents and complete price with products you would otherwise buy. This guide does not promise a discount or a fixed saving.\n\n## What if my weekly routine changes?\n\nReview the options and terms shown for your plan, or choose a one-time order when you need flexibility. Our [weekly shopping guide](/blog/guides/weekly-grocery-list-sri-lankan-household) can help you estimate what you need first.\n\n**Next step:** compare [available baskets](/subscriptions) with the [current grocery catalogue](/products), and check [delivery arrangements](/help).",
+    "tags": [
+      "Colombo",
+      "Sri Lanka",
+      "grocery planning"
+    ],
+    "authorName": "FreshPick",
+    "publishedAt": "2026-10-04T06:00:00.000Z",
+    "updatedAt": "2026-10-04T06:00:00.000Z",
+    "views": 0
+  }
+]

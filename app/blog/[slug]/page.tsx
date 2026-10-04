@@ -1,7 +1,8 @@
 import { pageMetadata } from '@/lib/seo';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { cache } from 'react';
+import { normalizeBlogImage } from '@/lib/blogImages';
 import { BlogPost } from '@/components/blog/BlogPost';
 import prisma from '@/lib/prisma';
 import { publishedJournalWhere } from '@/lib/journalService';
@@ -10,15 +11,13 @@ interface BlogPageProps {
   params: Promise<{ slug: string }>;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 // ISR: revalidate every 60 seconds so blog content stays fresh without
 // re-rendering on every request. `force-dynamic` was removed because it
 // contradicts and overrides the `revalidate` directive.
 export const revalidate = 60;
 
 // Helper function to get blog data (shared between metadata and page)
-async function getBlogData(slug: string) {
+const getBlogData = cache(async (slug: string) => {
   const blog = await prisma.blog.findFirst({
     where: {
       slug,
@@ -45,13 +44,12 @@ async function getBlogData(slug: string) {
   });
 
   if (!blog) return null;
-  return { ...blog, _id: blog.id } as any;
-}
+  return { ...blog, featuredImage: normalizeBlogImage(blog.featuredImage), _id: blog.id };
+});
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  try {
     const blogData = await getBlogData(slug);
 
     if (!blogData) {
@@ -64,68 +62,20 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       ...pageMetadata({ title: blogData.metaTitle || blogData.title, description: blogData.metaDescription || blogData.excerpt, path: `/blog/${encodeURIComponent(blogData.slug)}`, image: blogData.featuredImage?.url, type: 'article' }),
       keywords: blogData.metaKeywords,
     };
-  } catch (error) {
-    console.error('Error fetching blog metadata:', error);
-    return {
-      title: 'Blog Post', robots: { index: false, follow: false },
-    };
-  }
-}
-
-// Loading fallback component
-function BlogSkeleton() {
-  return (
-    <div className="min-h-screen bg-background animate-pulse">
-      <div className="bg-background border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="h-10 w-32 bg-secondary rounded" />
-        </div>
-      </div>
-      <div className="bg-background">
-        <div className="container mx-auto px-4 py-6">
-          <div className="max-w-4xl mx-auto space-y-4">
-            <div className="h-8 bg-secondary rounded w-3/4" />
-            <div className="h-12 bg-secondary rounded" />
-            <div className="h-64 bg-secondary rounded" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default async function BlogPostPage({ params }: BlogPageProps) {
   const { slug } = await params;
-
-  try {
-    const blogData = await getBlogData(slug);
-
-    if (!blogData) {
-      notFound();
-    }
-
-    // Increment view count in background (non-blocking)
-    prisma.blog.update({
-      where: { id: blogData.id },
-      data: { views: { increment: 1 } },
-    }).catch(() => {});
-
-    // Convert to plain object and serialize dates
-    const serializedBlog = {
-      ...blogData,
-      _id: blogData._id || blogData.id,
-      createdAt: blogData.createdAt?.toISOString?.() || blogData.createdAt,
-      updatedAt: blogData.updatedAt?.toISOString?.() || blogData.updatedAt,
-      publishedAt: blogData.publishedAt?.toISOString?.() || blogData.publishedAt,
-    };
-
-    return (
-      <Suspense fallback={<BlogSkeleton />}>
-        <BlogPost blog={serializedBlog} />
-      </Suspense>
-    );
-  } catch (error) {
-    console.error('Error fetching blog:', error);
-    notFound();
-  }
+  const blogData = await getBlogData(slug);
+  if (!blogData) notFound();
+  // Rendering and ISR must not count as reader views or write to the database.
+  const serializedBlog = {
+    ...blogData,
+    category: blogData.category ?? undefined,
+    authorName: blogData.authorName ?? undefined,
+    createdAt: blogData.createdAt?.toISOString(),
+    updatedAt: blogData.updatedAt?.toISOString(),
+    publishedAt: blogData.publishedAt?.toISOString(),
+  };
+  return <BlogPost blog={serializedBlog} />;
 }

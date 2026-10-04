@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import BlogImage from './BlogImage';
+import { normalizeBlogImage } from '@/lib/blogImages';
 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -35,9 +36,12 @@ interface Blog {
 
 interface BlogPostProps {
   blog: Blog;
+  path?: string;
 }
 
-export function BlogPost({ blog }: BlogPostProps) {
+export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}` }: BlogPostProps) {
+  const image = normalizeBlogImage(blog.featuredImage);
+  const readingMinutes = Math.max(1, Math.ceil(blog.content.split(/\s+/).length / 200));
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     try {
@@ -56,8 +60,8 @@ export function BlogPost({ blog }: BlogPostProps) {
 
   return (
     <article className="min-h-screen bg-background">
-      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BlogPosting', '@id': absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}#article`), headline: blog.title, description: blog.excerpt, mainEntityOfPage: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`), image: blog.featuredImage?.url ? absoluteUrl(blog.featuredImage.url) : undefined, datePublished: blog.publishedAt || undefined, dateModified: blog.updatedAt || undefined, author: { '@type': blog.authorName && blog.authorName !== 'FreshPick' ? 'Person' : 'Organization', name: blog.authorName || 'FreshPick' }, publisher: { '@id': absoluteUrl('/#organization') }, inLanguage: 'en-LK' }} />
-      <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(`/blog/${encodeURIComponent(blog.slug)}`) }]} />
+      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BlogPosting', '@id': absoluteUrl(`${path}#article`), headline: blog.title, description: blog.excerpt, mainEntityOfPage: absoluteUrl(path), image: absoluteUrl(image.url), datePublished: blog.publishedAt || undefined, dateModified: blog.updatedAt || undefined, author: { '@type': blog.authorName && blog.authorName !== 'FreshPick' ? 'Person' : 'Organization', name: blog.authorName || 'FreshPick' }, publisher: { '@id': absoluteUrl('/#organization') }, inLanguage: 'en-LK', articleSection: blog.category, wordCount: blog.content.split(/\s+/).length }} />
+      <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(path) }]} />
       {/* Back Button - Minimalist */}
       <div className="w-full bg-background border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -77,6 +81,7 @@ export function BlogPost({ blog }: BlogPostProps) {
               {blog.category && (
                 <span>{blog.category}</span>
               )}
+              <span>{readingMinutes} min read</span>
               <span>By {blog.authorName || 'FreshPick'}</span>
               {blog.publishedAt && (
                 <time dateTime={blog.publishedAt}>{formatDate(blog.publishedAt)}</time>
@@ -84,38 +89,30 @@ export function BlogPost({ blog }: BlogPostProps) {
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-normal text-foreground leading-[1.1] tracking-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-normal text-foreground leading-[1.1] tracking-tight">
               {blog.title}
             </h1>
 
             {/* Excerpt */}
-            <p className="text-xl md:text-2xl text-muted-foreground font-normal leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-muted-foreground font-normal leading-relaxed max-w-2xl mx-auto">
               {blog.excerpt}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Featured Image - Full Width/Cinematic */}
-      {blog.featuredImage?.url && (
-        <div className="w-full h-[50vh] md:h-[70vh] relative overflow-hidden">
-
-          <Image
-            src={blog.featuredImage.url}
-            alt={blog.featuredImage.alt || blog.title}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+      <figure className="mx-auto mt-8 max-w-5xl px-5 md:px-8">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary md:aspect-[3/2]">
+          <BlogImage src={image.url} alt={image.alt || blog.title} priority contain
+            sizes="(max-width: 1024px) calc(100vw - 40px), 960px" />
         </div>
-      )}
+      </figure>
 
       {/* Content */}
       <div className="bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto">
-            <div className="prose prose-lg prose-zinc max-w-[68ch] mx-auto prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:font-normal prose-p:leading-[1.8] prose-p:text-muted-foreground prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-img:rounded-sm prose-img:shadow-none">
+            <div className="prose prose-base md:prose-lg prose-zinc max-w-[68ch] mx-auto break-words [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_pre]:overflow-x-auto prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:font-normal prose-p:leading-[1.8] prose-p:text-muted-foreground prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-img:rounded-sm prose-img:shadow-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}
@@ -148,11 +145,9 @@ export function BlogPost({ blog }: BlogPostProps) {
           <p className="text-muted-foreground text-lg mb-10 max-w-xl mx-auto font-normal">
             Explore more insights from our collection of curated articles.
           </p>
-          <Link href="/blog">
-            <Button size="lg" className="bg-background text-foreground hover:bg-secondary rounded-lg px-12 py-6 normal-case text-xs font-bold transition-all">
-              View All Articles
+          <Button asChild size="lg" className="bg-background text-foreground hover:bg-secondary rounded-lg px-12 py-6 normal-case text-xs font-bold transition-all">
+              <Link href="/blog">View All Articles</Link>
             </Button>
-          </Link>
         </div>
       </div>
     </article>
