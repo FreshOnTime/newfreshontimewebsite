@@ -6,7 +6,8 @@ import ProductsFilterBar from "@/components/products/ProductsFilterBar";
 import ProductsPagination from "@/components/products/ProductsPagination";
 import CatalogRetryButton from "@/components/products/CatalogRetryButton";
 import { Product } from "@/models/product";
-import { serverApiFetch } from "@/lib/api/server";
+import { unstable_cache } from "next/cache";
+import { loadStorefrontProducts } from "@/lib/storefrontProducts";
 import { catalogueMetadata } from '@/lib/seo';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -26,15 +27,13 @@ interface ProductPageResult {
   };
 }
 
+const getCachedProducts = unstable_cache(loadStorefrontProducts, ['storefront-products-db-v1'], {
+  revalidate: 300, tags: ['products'],
+});
+
 async function getProducts(query: string): Promise<ProductPageResult> {
   try {
-    const suffix = query ? `?${query}` : "";
-    const response = await serverApiFetch(`/api/storefront/products${suffix}`, {
-      next: { revalidate: 300, tags: ["products"] },
-    } as RequestInit & { next: { revalidate: number; tags: string[] } });
-
-    if (!response.ok) throw new Error(`Product catalog API returned HTTP ${response.status}`);
-    return response.json() as Promise<ProductPageResult>;
+    return await getCachedProducts(query);
   } catch (error) {
     console.error("[Products page] Failed to load catalog:", error);
     return {

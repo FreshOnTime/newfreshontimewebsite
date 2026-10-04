@@ -11,19 +11,14 @@ import { Product } from "@/models/product";
 export const revalidate = 300;
 
 const getDealProducts = unstable_cache(async () => {
-  try {
-    const products = await prisma.product.findMany({
-      where: { archived: false, discountPercentage: { gt: 0 } },
-      orderBy: [{ discountPercentage: "desc" }, { createdAt: "desc" }],
-      select: productCardSelect,
-      take: 60,
-    });
-    return products.map((product) => serializeProductCardForUi(product) as Product);
-  } catch (error) {
-    console.error('Failed to fetch deal products:', error);
-    return [];
-  }
-}, ["deal-products-v2"], { revalidate: 300, tags: ["products"] });
+  const products = await prisma.product.findMany({
+    where: { archived: false, discountPercentage: { gt: 0 } },
+    orderBy: [{ discountPercentage: "desc" }, { createdAt: "desc" }],
+    select: productCardSelect,
+    take: 60,
+  });
+  return products.map((product) => serializeProductCardForUi(product) as Product);
+}, ["deal-products-v3"], { revalidate: 300, tags: ["products"] });
 
 export default async function DealsPage() {
   const dealProducts = await getDealProducts();

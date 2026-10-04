@@ -14,35 +14,25 @@ import { Product } from "@/models/product";
 import { ProductControls } from "./ProductControls";
 import ProductJsonLd from "@/components/seo/ProductJsonLd";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
-import { serverApiFetch } from "@/lib/api/server";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
+import { loadStorefrontProduct, loadStorefrontProducts } from "@/lib/storefrontProducts";
 
 export const revalidate = 300;
 
 
-async function getProduct(id: string): Promise<Product | null> {
-  try {
-    const response = await serverApiFetch(`/api/storefront/products/${encodeURIComponent(id)}`, {
-      next: { revalidate: 300, tags: ["products"] },
-    } as RequestInit & { next: { revalidate: number; tags: string[] } });
-
-    if (response.status === 404) return null;
-    if (!response.ok) throw new Error(`Product API returned HTTP ${response.status}`);
-    return response.json() as Promise<Product>;
-  } catch (error) {
-    console.error("[Product page] Failed to load product:", error);
-    return null;
-  }
-}
+const getProduct = cache(unstable_cache(loadStorefrontProduct, ['storefront-product-db-v1'], {
+  revalidate: 300, tags: ['products'],
+}));
+const getRelatedSelection = unstable_cache(loadStorefrontProducts, ['storefront-related-db-v1'], {
+  revalidate: 300, tags: ['products'],
+});
 
 async function getRelatedProducts(product: Product): Promise<Product[]> {
   if (!product.category?.id) return [];
-  try {
-    const query = new URLSearchParams({ categoryId: product.category.id, limit: '5', inStock: 'true' });
-    const response = await serverApiFetch(`/api/storefront/products?${query}`, { next: { revalidate: 300, tags: ['products'] } } as RequestInit & { next: { revalidate: number; tags: string[] } });
-    if (!response.ok) return [];
-    const data = await response.json() as { products: Product[] };
-    return data.products.filter(item => item.sku !== product.sku).slice(0, 4);
-  } catch { return []; }
+  const query = new URLSearchParams({ categoryId: product.category.id, limit: '5', inStock: 'true' });
+  const data = await getRelatedSelection(query.toString());
+  return data.products.filter(item => item.sku !== product.sku).slice(0, 4);
 }
 
 export async function generateMetadata({

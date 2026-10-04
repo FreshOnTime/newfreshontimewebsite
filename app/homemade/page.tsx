@@ -16,25 +16,20 @@ export const metadata: Metadata = publicPageMetadata('/homemade');
 
 // Reusing logic to fetch products
 const getDomesticProducts = unstable_cache(async (): Promise<Product[]> => {
-    try {
-        const raw = await prisma.product.findMany({
-            // Use the indexed category relation directly. This avoids a
-            // category query followed by a dependent product query.
-            where: {
-                category: { slug: { in: ['domestic-produce', 'homemade', 'small-business'] } },
-                archived: false,
-            },
-            orderBy: { createdAt: 'desc' },
-            select: productCardSelect,
-            take: 48,
-        });
+    const raw = await prisma.product.findMany({
+        // Use the indexed category relation directly. This avoids a
+        // category query followed by a dependent product query.
+        where: {
+            category: { slug: { in: ['domestic-produce', 'homemade', 'small-business'] } },
+            archived: false,
+        },
+        orderBy: { createdAt: 'desc' },
+        select: productCardSelect,
+        take: 48,
+    });
 
-        return raw.map((p) => serializeProductCardForUi(p) as Product);
-    } catch (err) {
-        console.error('Failed to get domestic products:', err);
-        return [];
-    }
-}, ['domestic-products-v1'], { revalidate: 300, tags: ['products'] });
+    return raw.map((p) => serializeProductCardForUi(p) as Product);
+}, ['domestic-products-v2'], { revalidate: 300, tags: ['products'] });
 
 export default async function HomemadePage() {
     const products = await getDomesticProducts();

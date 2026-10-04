@@ -243,3 +243,18 @@ migrated `DATABASE_URL` is required for prerendering these pages.
 The products API is explicitly dynamic because it reads per-request query filters.
 Successful API responses retain their public CDN cache headers. No deployment
 protection bypass or public API URL override is needed for these server pages.
+
+### Catalogue data failures
+
+Product listing, detail/metadata and related-product server rendering now use
+shared Prisma loaders, not the deployment's own HTTP API. Successful queries keep
+five-minute product-tagged caches. A missing/archived product remains a 404; a
+failed database lookup propagates as an error instead of being cached as missing.
+The catalogue listing retains its retry UI outside the cached query.
+
+Deals, meals, homemade and category pages no longer turn failed database queries
+into successful empty collections. This means a database outage can fail initial
+prerendering instead of publishing an empty catalogue. Existing successful ISR
+pages can remain available while failed regeneration is retried. Test these paths
+with the deployment database before promoting; local unit checks cannot establish
+remote database availability. These changes do not alter page layouts or credentials.
