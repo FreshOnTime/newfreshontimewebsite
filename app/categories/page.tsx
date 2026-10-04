@@ -32,7 +32,7 @@ async function getCategories(): Promise<Category[]> {
     });
   } catch (error) {
     console.error("Failed to load FreshPick categories:", error);
-    return [];
+    throw error;
   }
 }
 

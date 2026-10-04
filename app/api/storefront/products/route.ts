@@ -1,89 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
-import prisma from "@/lib/prisma";
-import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
+import { loadStorefrontProducts } from "@/lib/storefrontProducts";
 
 // Filters depend on each request. CDN caching is set on successful responses.
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const params = request.nextUrl.searchParams;
-    const pageParam = parseInt(params.get("page") || "1", 10);
-    const limitParam = parseInt(params.get("limit") || "24", 10);
-    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
-    const limitBase = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 24;
-    const limit = Math.min(Math.max(limitBase, 1), 60);
-
-    const search = params.get("search");
-    const categoryId = params.get("categoryId");
-    const supplierId = params.get("supplierId");
-    const minPriceParam = params.get("minPrice");
-    const maxPriceParam = params.get("maxPrice");
-    const inStockParam = params.get("inStock");
-    const sortParam = params.get("sort");
-    const tagsParam = params.get("tags");
-
-    const where: Prisma.ProductWhereInput = { archived: false };
-
-    if (tagsParam) {
-      const tags = tagsParam.split(",").map((tag) => tag.trim()).filter(Boolean);
-      if (tags.length) where.tags = { hasSome: tags };
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { sku: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-        { tags: { has: search } },
-      ];
-    }
-
-    if (categoryId) where.categoryId = categoryId;
-    if (supplierId) where.supplierId = supplierId;
-
-    const minPrice = minPriceParam ? parseFloat(minPriceParam) : undefined;
-    const maxPrice = maxPriceParam ? parseFloat(maxPriceParam) : undefined;
-    if ((typeof minPrice === "number" && Number.isFinite(minPrice)) || (typeof maxPrice === "number" && Number.isFinite(maxPrice))) {
-      where.price = {};
-      if (typeof minPrice === "number" && Number.isFinite(minPrice)) where.price.gte = minPrice;
-      if (typeof maxPrice === "number" && Number.isFinite(maxPrice)) where.price.lte = maxPrice;
-    }
-
-    if (inStockParam === "true") where.stockQty = { gt: 0 };
-
-    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
-    if (sortParam === "price-asc") orderBy = { price: "asc" };
-    else if (sortParam === "price-desc") orderBy = { price: "desc" };
-    else if (sortParam === "oldest") orderBy = { createdAt: "asc" };
-
-    const [rawProducts, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        orderBy: [orderBy, { id: "asc" }],
-        skip: Math.max(0, (page - 1) * limit),
-        take: limit + 1,
-        select: productCardSelect,
-      }),
-      prisma.product.count({ where }),
-    ]);
-
-    const hasNext = rawProducts.length > limit;
-    const products = rawProducts.slice(0, limit).map(serializeProductCardForUi);
-
+    const data = await loadStorefrontProducts(request.nextUrl.searchParams.toString());
     return NextResponse.json(
-      {
-        products,
-        pagination: {
-          page,
-          limit,
-          count: products.length,
-          total,
-          hasNext,
-          hasPrev: page > 1,
-        },
-      },
+      data,
       {
         headers: {
           "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",

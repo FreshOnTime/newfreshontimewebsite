@@ -12,22 +12,17 @@ export const revalidate = 300;
 export const metadata: Metadata = publicPageMetadata('/meals');
 
 const getCookedFoodProducts = unstable_cache(async () => {
-  try {
-    const products = await prisma.product.findMany({
-      // Filter through the category relation so this collection is one query,
-      // rather than waiting for a category lookup before the product query.
-      where: { category: { slug: "cookedfood" }, archived: false },
-      orderBy: { createdAt: "desc" },
-      select: productCardSelect,
-      take: 48,
-    });
+  const products = await prisma.product.findMany({
+    // Filter through the category relation so this collection is one query,
+    // rather than waiting for a category lookup before the product query.
+    where: { category: { slug: "cookedfood" }, archived: false },
+    orderBy: { createdAt: "desc" },
+    select: productCardSelect,
+    take: 48,
+  });
 
-    return products.map((product) => serializeProductCardForUi(product) as Product);
-  } catch (error) {
-    console.error("[Meals] Failed to fetch cooked-food products:", error);
-    return [];
-  }
-}, ["cooked-food-products-v1"], { revalidate: 300, tags: ["products"] });
+  return products.map((product) => serializeProductCardForUi(product) as Product);
+}, ["cooked-food-products-v2"], { revalidate: 300, tags: ["products"] });
 
 export default async function MealsPage() {
   const products = await getCookedFoodProducts();

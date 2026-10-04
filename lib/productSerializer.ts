@@ -59,6 +59,7 @@ export type ProductForUi = {
   image: string | null;
   images: string[];
   isFeatured: boolean;
+  isBundle?: boolean;
   attributes: Prisma.JsonValue;
   tags?: string[];
   categoryId: string | null;
@@ -111,7 +112,7 @@ export function serializeProductForUi(p: ProductForUi) {
     category: p.category ? { id: p.categoryId as string, name: p.category.name, slug: p.category.slug } : undefined,
     baseMeasurementQuantity: 1,
     pricePerBaseQuantity: Number(p.price),
-    measurementUnit: 'ea',
+    measurementUnit: 'ea' as const,
     isSoldAsUnit: true,
     minOrderQuantity: 1,
     maxOrderQuantity: 9999,
@@ -120,6 +121,7 @@ export function serializeProductForUi(p: ProductForUi) {
     isOutOfStock: p.stockQty <= 0,
     totalSales: 0,
     isFeatured: p.isFeatured,
+    isBundle: p.isBundle ?? false,
     discountPercentage: Number(p.discountPercentage),
     lowStockThreshold: p.minStockLevel,
     createdAt: p.createdAt,

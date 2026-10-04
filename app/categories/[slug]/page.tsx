@@ -18,20 +18,16 @@ export const revalidate = 300;
 
 
 const getCategoryBySlug = unstable_cache(async (slug: string) => {
-  try {
-    const cat = await prisma.category.findUnique({ where: { slug } });
-    if (!cat || !cat.isActive) return null;
-    return {
-      id: cat.id,
-      name: cat.name || slug,
-      slug: cat.slug || slug,
-      description: cat.description || null,
-      imageUrl: cat.imageUrl || null,
-    };
-  } catch {
-    return null;
-  }
-}, ['category-by-slug-v2'], { revalidate: 300, tags: ['products'] });
+  const cat = await prisma.category.findUnique({ where: { slug } });
+  if (!cat || !cat.isActive) return null;
+  return {
+    id: cat.id,
+    name: cat.name || slug,
+    slug: cat.slug || slug,
+    description: cat.description || null,
+    imageUrl: cat.imageUrl || null,
+  };
+}, ['category-by-slug-v3'], { revalidate: 300, tags: ['products'] });
 
 const PAGE_SIZE = 24;
 const getCategoryProducts = unstable_cache(async (categoryId: string, page: number): Promise<{ products: Product[]; total: number; hasNext: boolean; unavailable?: boolean }> => {
@@ -44,9 +40,9 @@ const getCategoryProducts = unstable_cache(async (categoryId: string, page: numb
     return { products: raw.slice(0, PAGE_SIZE).map((p) => serializeProductCardForUi(p) as Product), total, hasNext: raw.length > PAGE_SIZE };
   } catch (err) {
     console.error('Failed to get category products by slug:', err);
-    return { products: [], total: 0, hasNext: false, unavailable: true };
+    throw err;
   }
-}, ['category-products-v2'], { revalidate: 300, tags: ['products'] });
+}, ['category-products-v3'], { revalidate: 300, tags: ['products'] });
 
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ page?: string }> }): Promise<Metadata> {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
