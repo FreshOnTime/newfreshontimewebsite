@@ -1,3 +1,4 @@
+import { editorialGuides, guidePath } from '@/lib/editorialGuides';
 import type { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
 import { absoluteUrl } from '@/lib/config/site';
@@ -15,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.blog.findMany({ where: publishedJournalWhere, select: { slug: true, updatedAt: true } }),
     prisma.blog.findMany({ where: { category: 'collection', published: true, isDeleted: false }, select: { slug: true, content: true, updatedAt: true } }),
   ]);
-  const pages: MetadataRoute.Sitemap = [...staticPages];
+  const pages: MetadataRoute.Sitemap = [...staticPages, ...editorialGuides.map(guide => ({ url: absoluteUrl(guidePath(guide.slug)), lastModified: guide.updatedAt, changeFrequency: 'monthly' as const, priority: 0.7 }))];
   const sections = ['products', 'categories', 'blog', 'collections'];
   results.forEach((result, index) => {
     if (result.status === 'rejected') { console.error(`Sitemap ${sections[index]} query failed`); return; }

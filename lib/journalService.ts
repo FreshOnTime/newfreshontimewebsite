@@ -1,6 +1,7 @@
 import { unstable_cache, revalidatePath, revalidateTag } from 'next/cache';
 import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { normalizeBlogImage } from '@/lib/blogImages';
 import type { JournalSummary, JournalPage } from '@/models/journal';
 
 export const COMMERCE_BLOG_CATEGORIES = ['recipe', 'collection'];
@@ -20,7 +21,7 @@ export const listPublishedJournalEntries = unstable_cache(async (): Promise<Jour
   });
   return posts.map(post => {
     const image = post.featuredImage;
-    const featuredImage = image && typeof image === 'object' && !Array.isArray(image) && typeof image.url === 'string'
+    const featuredImage = typeof image === 'string' ? normalizeBlogImage(image) : image && typeof image === 'object' && !Array.isArray(image) && typeof image.url === 'string'
       ? { url: image.url, alt: typeof image.alt === 'string' ? image.alt : undefined }
       : null;
     return { ...post, featuredImage, publishedAt: post.publishedAt?.toISOString() ?? null };
@@ -32,7 +33,7 @@ export const firstJournalPage = unstable_cache(async (): Promise<JournalPage> =>
     prisma.blog.findMany({ where: publishedJournalWhere, select: { id: true, title: true, slug: true, excerpt: true, featuredImage: true, category: true, publishedAt: true }, orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { id: 'desc' }], take: 12 }),
     prisma.blog.count({ where: publishedJournalWhere }),
   ]);
-  return { blogs: posts.map(({ id, featuredImage, publishedAt, ...post }) => ({ ...post, _id: id, publishedAt: publishedAt?.toISOString() ?? null, featuredImage: featuredImage && typeof featuredImage === 'object' && !Array.isArray(featuredImage) && typeof featuredImage.url === 'string' ? { url: featuredImage.url, alt: typeof featuredImage.alt === 'string' ? featuredImage.alt : undefined } : null })), pagination: { page: 1, limit: 12, total, pages: Math.ceil(total / 12) } };
+  return { blogs: posts.map(({ id, featuredImage, publishedAt, ...post }) => ({ ...post, _id: id, publishedAt: publishedAt?.toISOString() ?? null, featuredImage: typeof featuredImage === 'string' ? normalizeBlogImage(featuredImage) : featuredImage && typeof featuredImage === 'object' && !Array.isArray(featuredImage) && typeof featuredImage.url === 'string' ? { url: featuredImage.url, alt: typeof featuredImage.alt === 'string' ? featuredImage.alt : undefined } : null })), pagination: { page: 1, limit: 12, total, pages: Math.ceil(total / 12) } };
 }, ['journal-first-page-v1'], { revalidate: 60, tags: ['journal'] });
 
 /** Refresh summaries and article pages after an authorised editorial change. */

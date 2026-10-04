@@ -66,7 +66,7 @@ export function BlogList({ initialData }: { initialData?: JournalPage | null }) 
   }, [page, debouncedSearch, retry, initialData]);
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-10">
       {/* Search - Premium styled */}
       <div className="flex justify-center">
         <div className="relative w-full max-w-xl border-b border-border focus-within:border-primary transition-colors duration-300">
@@ -90,7 +90,7 @@ export function BlogList({ initialData }: { initialData?: JournalPage | null }) 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="flex flex-col animate-pulse">
-              <div className="w-full aspect-[4/3] bg-secondary mb-6" />
+              <div className="w-full aspect-[3/2] rounded-xl bg-secondary mb-6" />
               <div className="h-4 bg-background w-24 mb-4" />
               <div className="h-8 bg-background w-full mb-3" />
               <div className="h-4 bg-background w-2/3" />

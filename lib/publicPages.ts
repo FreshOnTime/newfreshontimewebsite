@@ -8,7 +8,7 @@ export const PUBLIC_PAGES = [
   { path: '/deals', title: 'Grocery offers', description: 'Browse currently discounted FreshPick groceries and check the latest prices and availability.' },
   { path: '/discover', title: 'Discover food in Colombo', description: 'Explore ready meals, local makers and food collections on FreshPick.' },
   { path: '/collections', title: 'Food collections', description: 'Explore FreshPick food collections for different meals, occasions and everyday routines.' },
-  { path: '/blog', title: 'The FreshPick blog', description: 'Ingredient ideas, cooking inspiration and stories from the FreshPick market in Sri Lanka.' },
+  { path: '/blog', title: 'The FreshPick blog', description: 'Practical grocery delivery guides for Colombo, weekly shopping lists, Sri Lankan pantry ideas and recurring basket advice from FreshPick.' },
   { path: '/subscriptions', title: 'Recurring grocery baskets', description: 'Explore FreshPick recurring baskets and available plans for regular grocery deliveries in Colombo.' },
   { path: '/meals', title: 'Ready meals in Colombo', description: 'Browse currently available FreshPick cooked food and explore recurring meal delivery options.' },
   { path: '/homemade', title: 'Local kitchens and homemade food', description: 'Browse FreshPick homemade food and products from independent Sri Lankan makers.' },
