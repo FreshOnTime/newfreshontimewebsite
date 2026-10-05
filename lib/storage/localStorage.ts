@@ -2,15 +2,10 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Local/Serverless Storage Service
- * 
- * For serverless environments (Netlify, Vercel):
- * - Stores images as base64 in MongoDB (since file system is ephemeral)
- * - Returns data URLs for immediate use
- * 
- * For containerized/traditional deployments:
- * - Stores images in public/uploads directory
- * - Returns public URLs
+ * Development-only local image storage.
+ *
+ * Production/serverless deployments use Supabase Storage. This fallback writes
+ * to public/uploads so local development can work without external credentials.
  */
 export class LocalStorageService {
   private uploadDir: string;

@@ -11,7 +11,7 @@ require('esbuild-register');
  checks.newsletterSigningSecret=(process.env.NEWSLETTER_TOKEN_SECRET||process.env.JWT_SECRET||'').length>=32;
  try{const url=new URL(process.env.FRONTEND_URL||'');checks.siteUrl=url.protocol==='https:';}catch{checks.siteUrl=false;}
  checks.emailProvider=!!process.env.SENDGRID_API_KEY&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(process.env.SENDGRID_FROM_EMAIL||'');
- checks.productStorage=!!process.env.AZURE_STORAGE_CONNECTION_STRING;
+ checks.productStorage=!!process.env.SUPABASE_URL&&!!(process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY);
  if(!process.argv.includes('--config-only')){
   const prisma=require('../lib/prisma').default;
   try{const migrations=await prisma.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations"`;checks.platformMigration=migrations.some(row=>row.migration_name==='20261003050000_platform_operations'&&row.finished_at&&!row.rolled_back_at);checks.notificationReadsMigration=migrations.some(row=>row.migration_name==='20261003180000_notification_reads'&&row.finished_at&&!row.rolled_back_at);checks.noFailedMigrations=!migrations.some(row=>!row.finished_at&&!row.rolled_back_at);}

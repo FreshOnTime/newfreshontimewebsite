@@ -131,7 +131,7 @@ The complete schemas, examples and transition rules are in [Subscriptions](SUBSC
 | Business lead | `POST /api/b2b/leads`: business/contact requirement schema; save before optional mail | `GET/PATCH /api/admin/business-leads`: status pipeline; no version field |
 | Supplier application | `POST /api/suppliers/register`: authenticated account; companyName/contactName/phone, optional email/product list, business address; not automatic approval | `GET/PATCH /api/admin/supplier-applications`: id, version from reviewVersion, status, notes |
 | Inventory spreadsheet | `/api/suppliers/upload`: authenticated approved/active supplier and supported file | Admin preview/download/resolve/backfill/import/delete routes; import body includes uploadId |
-| Product photo | `POST /api/upload/images/products`: authorized admin/inventory manager/approved active supplier; validated multipart photo | Durable production Azure storage; max 4 MB actual JPEG/PNG/WebP/AVIF |
+| Product photo | `POST /api/upload/images/products`: authorized admin/inventory manager/approved active supplier; validated multipart photo | Durable production Supabase Storage; max 4 MB actual JPEG/PNG/WebP/AVIF |
 | Blog | Public blogs list/slug | Admin GET/POST and ID GET/PUT/DELETE; draft/publish and metadata |
 | Collection | Public collection list/slug | Admin GET/POST and ID GET/PATCH/DELETE; tagged content and 1–100 product IDs |
 | Newsletter | `POST /api/newsletter` signup; `POST /api/newsletter/unsubscribe` signed consent mutation | GET/PATCH consent list; send `version` from unsubscribeVersion; no campaigns |

@@ -43,12 +43,12 @@ An empty database is a valid starting state. It will not contain a live product 
 | Google server | `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Server token verification; handle multiline key securely |
 | Mail | `SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL` | Outbox provider and sender identity; queuing is separate from sending |
 | Newsletter signing | Optional `NEWSLETTER_TOKEN_SECRET` | Separate 32+ character signing secret; otherwise uses JWT secret |
-| Product photos | `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_CONTAINER_NAME` | Production durable storage; check actual container behavior/configuration |
+| Runtime images | `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, optional `SUPABASE_STORAGE_BUCKET` | Server-only Supabase Storage configuration; default public bucket is `freshpick-images` |
 | Analytics | `NEXT_PUBLIC_GA_ID` | Optional GA4 measurement ID |
 | MCP | Optional `MCP_ALLOWED_ORIGINS` | Extra comma-separated permitted client origins |
 | Database tests | `CHECKOUT_TEST_DATABASE_URL` | Explicit isolated database/schema for integrity tests |
 
-Anything prefixed `NEXT_PUBLIC_` may be exposed in the browser build. Never put database credentials, JWT secrets, SendGrid keys or Azure connections in a public variable. Hosting build and function contexts may differ; check [Operations](OPERATIONS.md) before deployment.
+Anything prefixed `NEXT_PUBLIC_` may be exposed in the browser build. Never put database credentials, JWT secrets, SendGrid keys or the Supabase secret key in a public variable. Hosting build and function contexts may differ; check [Operations](OPERATIONS.md) before deployment.
 
 ## Provision the first administrator
 
