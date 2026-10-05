@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 
 const schema = z.object({
@@ -163,7 +164,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
     const run = async () => {
       try {
         const params = new URLSearchParams({ limit: '20', ...(searchProducts && { search: searchProducts }) });
-        const res = await fetch(`/api/admin/products?${params}`, { credentials: 'include' });
+        const res = await authenticatedApiFetch(`/api/admin/products?${params}`);
         if (!res.ok) return;
         const data: unknown = await res.json();
         const anyObj = data as { products?: unknown };
@@ -210,10 +211,9 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
     if (!isEditing) return onOpenChange(false);
     try {
       setLoading(true);
-      const res = await fetch(`/api/admin/orders/${order!._id}`, {
+      const res = await authenticatedApiFetch(`/api/admin/orders/${order!._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(basketOrder ? { status: data.status, paymentStatus: data.paymentStatus, trackingNumber: data.trackingNumber, notes: data.notes, shippingAddress: data.shippingAddress, billingAddress: data.billingAddress } : {
           ...data,
           // Items & totals
