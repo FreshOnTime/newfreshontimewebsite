@@ -43,6 +43,13 @@ it('uses refresh-aware authenticated fetches on core admin data surfaces', () =>
   }
 });
 
+it('does not offer customer notes that the data model cannot persist', () => {
+  const dialog = source('components/admin/customers/CustomerDialog.tsx');
+  expect(dialog).not.toContain('name="notes"');
+  expect(dialog).not.toContain('Additional notes about the customer');
+  expect(dialog).toContain('authenticatedApiFetch');
+});
+
 it('accepts direct-upload category paths as well as HTTPS image URLs', () => {
   for (const file of [
     'app/api/admin/categories/route.ts',
