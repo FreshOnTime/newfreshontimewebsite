@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { CustomerDialog } from './CustomerDialog';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 // Admin Customer stored in our Customer collection
 type AdminCustomer = {
@@ -42,24 +43,7 @@ type AdminCustomer = {
   };
 };
 
-// Fallback user mapped from Users collection when Customer collection is empty
-type FallbackUserCustomer = {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  totalOrders?: number;
-  totalSpent?: number;
-  createdAt: string;
-  address?: {
-    city: string;
-    state: string;
-    country: string;
-  };
-  source: 'user';
-};
-
-type ListCustomer = (AdminCustomer & { source?: 'customer' }) | FallbackUserCustomer;
+type ListCustomer = AdminCustomer & { source?: 'user' | 'customer' };
 
 interface CustomersResponse {
   customers: ListCustomer[];
@@ -90,9 +74,7 @@ export function CustomersPage() {
         ...(search && { search }),
       });
 
-      const response = await fetch(`/api/admin/customers?${params}`, {
-        credentials: 'include',
-      });
+      const response = await authenticatedApiFetch(`/api/admin/customers?${params}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch customers');
@@ -119,13 +101,11 @@ export function CustomersPage() {
   };
 
   const handleEdit = (customer: ListCustomer) => {
-    if (customer.source === 'user') return; // cannot edit fallback users
     setEditingCustomer(customer);
     setIsDialogOpen(true);
   };
 
   const handleView = (customer: ListCustomer) => {
-    if (customer.source === 'user') return;
     setEditingCustomer(customer);
     setIsViewOpen(true);
   };
@@ -136,13 +116,13 @@ export function CustomersPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/customers/${customerId}`, {
+      const response = await authenticatedApiFetch(`/api/admin/customers/${customerId}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete customer');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to delete customer');
       }
 
       toast.success('Customer deleted successfully');
@@ -164,9 +144,10 @@ export function CustomersPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-LK', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'LKR',
+      currencyDisplay: 'symbol',
     }).format(amount);
   };
 
@@ -228,9 +209,7 @@ export function CustomersPage() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <span>{customer.name}</span>
-                          {customer.source === 'user' && (
-                            <Badge variant="outline">App user</Badge>
-                          )}
+                          <Badge variant="outline">Customer</Badge>
                         </div>
                       </TableCell>
                       <TableCell>{customer.email}</TableCell>
@@ -253,42 +232,36 @@ export function CustomersPage() {
                         {formatDate(customer.createdAt)}
                       </TableCell>
                       <TableCell>
-                        {customer.source !== 'user' ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleView(customer)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleView(customer)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </DropdownMenuItem>
+                            <Link href={`/admin/orders?customerId=${customer._id}`}>
+                              <DropdownMenuItem>
+                                <ListOrdered className="h-4 w-4 mr-2" />
+                                View Orders
                               </DropdownMenuItem>
-                              {'_id' in customer && (
-                                <Link href={`/admin/orders?customerId=${customer._id}`}>
-                                  <DropdownMenuItem>
-                                    <ListOrdered className="h-4 w-4 mr-2" />
-                                    View Orders
-                                  </DropdownMenuItem>
-                                </Link>
-                              )}
-                              <DropdownMenuItem onClick={() => handleEdit(customer)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(customer._id)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
+                            </Link>
+                            <DropdownMenuItem onClick={() => handleEdit(customer)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(customer._id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
