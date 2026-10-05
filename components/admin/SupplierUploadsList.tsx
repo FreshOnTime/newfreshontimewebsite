@@ -20,8 +20,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Download, FileSpreadsheet, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then(r => r.json());
+const fetcher = async (url: string) => {
+  const response = await authenticatedApiFetch(url);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.error || 'Failed to load supplier uploads');
+  }
+  return data;
+};
 
 interface UploadData {
   _id: string;
@@ -46,12 +54,12 @@ export default function SupplierUploadsList() {
   if (error) return <div className="text-red-500 p-4 bg-red-50 rounded-md border border-red-100 flex items-center gap-2"><AlertCircle size={20} /> Failed to load uploads</div>;
   if (!data) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading uploads...</div>;
 
-  const uploads = data.data as UploadData[];
+  const uploads = Array.isArray(data?.data) ? data.data as UploadData[] : [];
 
   const doImport = async (id: string) => {
     if (!confirm('Import this upload into products?')) return;
     try {
-      const res = await fetch('/api/admin/supplier-uploads/import', {
+      const res = await authenticatedApiFetch('/api/admin/supplier-uploads/import', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -69,10 +77,31 @@ export default function SupplierUploadsList() {
     }
   };
 
+  const doDownload = async (upload: UploadData) => {
+    try {
+      const response = await authenticatedApiFetch(`/api/admin/supplier-uploads/${upload._id}/download`);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.error || 'Download failed');
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = upload.originalName || upload.filename || 'supplier-upload';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (failure) {
+      alert(failure instanceof Error ? failure.message : 'Download failed');
+    }
+  };
+
   const doResolve = async (id: string | undefined) => {
     if (!id) return;
     try {
-      const res = await fetch('/api/admin/supplier-uploads/resolve', {
+      const res = await authenticatedApiFetch('/api/admin/supplier-uploads/resolve', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -94,7 +123,7 @@ export default function SupplierUploadsList() {
     if (!id) return;
     if (!confirm('Permanently delete this upload? This will remove the file and its record.')) return;
     try {
-      const res = await fetch('/api/admin/supplier-uploads/delete', {
+      const res = await authenticatedApiFetch('/api/admin/supplier-uploads/delete', {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -190,11 +219,14 @@ export default function SupplierUploadsList() {
                         Preview
                       </Button>
 
-                      <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-muted-foreground border-border">
-                        <a href={`/api/admin/supplier-uploads/${u._id}/download`}>
-                          <Download className="h-3.5 w-3.5" />
-                          Download original
-                        </a>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 gap-1 text-muted-foreground border-border"
+                        onClick={() => void doDownload(u)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download original
                       </Button>
 
                       <Button
