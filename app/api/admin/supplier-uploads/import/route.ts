@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { revalidateTag } from 'next/cache';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import fs from 'fs';
@@ -63,9 +63,8 @@ function safeImage(value: unknown): string | null {
 
 const units = new Set(['g','kg','ml','l','ea','lb']);
 
-export const POST = requireAuth(async (request: NextRequest & { user?: { role?: string; userId?: string } }) => {
+export const POST = requireAdmin(async (request: NextRequest & { user?: { role?: string; userId?: string } }) => {
   try {
-    if (request.user?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const body = await request.json();
     const uploadId = body?.uploadId;
     if (!uploadId) return NextResponse.json({ error: 'uploadId required' }, { status: 400 });
