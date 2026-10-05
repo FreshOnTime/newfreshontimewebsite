@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2, RefreshCcw } from 'lucide-react';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 interface SupplierProduct {
   id: string;
@@ -22,12 +23,13 @@ export default function UploadProducts() {
   const [products, setProducts] = useState<SupplierProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState<string | null>(null);
+  const [categorySlugs, setCategorySlugs] = useState<string[]>([]);
 
   const loadProducts = useCallback(async () => {
     setProductsLoading(true);
     setProductsError(null);
     try {
-      const res = await fetch('/api/suppliers/products?limit=100', { credentials: 'include', cache: 'no-store' });
+      const res = await authenticatedApiFetch('/api/suppliers/products?limit=100', { cache: 'no-store' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Unable to load your products');
       setProducts(Array.isArray(data.products) ? data.products : []);
@@ -41,12 +43,37 @@ export default function UploadProducts() {
 
   useEffect(() => {
     void loadProducts();
+    void fetch('/api/categories')
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('categories unavailable')))
+      .then(data => {
+        const rows = Array.isArray(data?.data) ? data.data : [];
+        setCategorySlugs(rows.map((category: { slug?: unknown }) => typeof category.slug === 'string' ? category.slug : '').filter(Boolean));
+      })
+      .catch(() => setCategorySlugs([]));
   }, [loadProducts]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFile(e.target.files?.[0] ?? null);
+    const next = e.target.files?.[0] ?? null;
     setMessage(null);
     setError(null);
+    if (!next) {
+      setFile(null);
+      return;
+    }
+    const lowerName = next.name.toLowerCase();
+    if (!lowerName.endsWith('.csv') && !lowerName.endsWith('.xlsx') && !lowerName.endsWith('.xls')) {
+      setFile(null);
+      setError('Choose a CSV or Excel catalogue (.csv, .xlsx or .xls).');
+      e.currentTarget.value = '';
+      return;
+    }
+    if (next.size > 5 * 1024 * 1024) {
+      setFile(null);
+      setError('Catalogue files must be 5 MB or smaller.');
+      e.currentTarget.value = '';
+      return;
+    }
+    setFile(next);
   };
 
   const handleUpload = async () => {
@@ -62,9 +89,8 @@ export default function UploadProducts() {
         reader.readAsDataURL(file);
       });
 
-      const res = await fetch('/api/suppliers/upload', {
+      const res = await authenticatedApiFetch('/api/suppliers/upload', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fileName: file.name,
@@ -112,7 +138,7 @@ export default function UploadProducts() {
               <div className="text-sm font-medium">Choose file</div>
               <div className="text-xs text-muted-foreground">.xlsx or .csv — up to 5 MB</div>
             </div>
-            <input className="sr-only" type="file" accept=".csv,.xlsx" onChange={onChange} />
+            <input className="sr-only" type="file" accept=".csv,.xlsx,.xls" onChange={onChange} />
           </label>
 
           <div className="rounded-md border bg-background p-3">
@@ -133,6 +159,17 @@ export default function UploadProducts() {
         <p className="mt-4 text-xs leading-6 text-muted-foreground">
           Template fields: SKU, name, description, selling price, cost price, stock, minimum stock, category slug, tags, unit, unit quantity, supplier SKU and optional image URL.
         </p>
+        {categorySlugs.length > 0 && (
+          <details className="mt-3 rounded-md border border-border bg-secondary/30 p-3 text-xs">
+            <summary className="cursor-pointer font-medium text-brand-green">Valid category slugs</summary>
+            <p className="mt-2 leading-6 text-muted-foreground">
+              Use one of these values in <code>categorySlug</code>, or leave the cell blank for admin categorisation:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {categorySlugs.map(slug => <code key={slug} className="rounded bg-background px-2 py-1 text-foreground">{slug}</code>)}
+            </div>
+          </details>
+        )}
         {message && <div className="mt-4 rounded bg-secondary p-3 text-sm text-brand-green">{message}</div>}
         {error && <div className="mt-4 rounded bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       </section>

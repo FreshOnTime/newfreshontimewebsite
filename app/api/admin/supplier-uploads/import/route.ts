@@ -1,8 +1,9 @@
+import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { revalidateTag } from 'next/cache';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import fs from 'fs';
@@ -49,23 +50,32 @@ function parseTags(value: unknown): string[] {
   return Array.from(new Set(String(value ?? '').split(/[,;|]+/).map(v => v.trim()).filter(Boolean))).slice(0, 30);
 }
 
-function safeImage(value: unknown): string | null {
+function safeImage(value: unknown): { url: string | null; warning?: string } {
   const raw = String(value ?? '').trim();
-  if (!raw) return null;
-  if (raw.startsWith('/') && !raw.startsWith('//')) return raw;
+  if (!raw) return { url: null };
+  if (raw.startsWith('/') && !raw.startsWith('//')) return { url: raw };
   try {
     const url = new URL(raw);
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+    if (url.protocol !== 'https:') return { url: null, warning: 'imageUrl must use HTTPS' };
+    const host = url.hostname.toLowerCase();
+    const supported =
+      host.endsWith('.blob.core.windows.net') ||
+      host === 'images.unsplash.com' ||
+      host === 'plus.unsplash.com' ||
+      host === 'lh3.googleusercontent.com' ||
+      host.endsWith('.googleusercontent.com');
+    return supported
+      ? { url: url.href }
+      : { url: null, warning: 'imageUrl host is not supported by FreshPick; the product was imported without that image' };
   } catch {
-    return null;
+    return { url: null, warning: 'imageUrl is invalid; the product was imported without that image' };
   }
 }
 
 const units = new Set(['g','kg','ml','l','ea','lb']);
 
-export const POST = requireAuth(async (request: NextRequest & { user?: { role?: string; userId?: string } }) => {
+export const POST = requireAdmin(async (request: NextRequest & { user?: { role?: string; userId?: string } }) => {
   try {
-    if (request.user?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const body = await request.json();
     const uploadId = body?.uploadId;
     if (!uploadId) return NextResponse.json({ error: 'uploadId required' }, { status: 400 });
@@ -99,15 +109,17 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
       created: Array<{ sku: string; id: string }>;
       updated: Array<{ sku: string; id: string }>;
       errors: Array<{ row: number; reason: string }>;
+      warnings: Array<{ row: number; reason: string }>;
       note?: string;
-    } = { created: [], updated: [], errors: [] };
+    } = { created: [], updated: [], errors: [], warnings: [] };
 
     for (const [i, raw] of rows.entries()) {
       const row = raw as Record<string, unknown>;
       const sku = String(row.sku ?? row.SKU ?? '').trim().toUpperCase();
       const name = String(row.name ?? row.Name ?? '').trim();
       const description = String(row.description ?? row.Description ?? '').trim();
-      const price = parseNumber(row.price ?? row.Price ?? row.pricePerBaseQuantity);
+      const rawPrice = row.price ?? row.Price ?? row.pricePerBaseQuantity;
+      const price = parseNumber(rawPrice);
       const costPrice = parseNumber(row.costPrice ?? row.CostPrice);
       const stockQty = Math.max(0, Math.trunc(parseNumber(row.stockQty ?? row.stock ?? row.Stock)));
       const minStockLevel = Math.max(0, Math.trunc(parseNumber(row.minStockLevel ?? row.minimumStock ?? 5)));
@@ -117,10 +129,22 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
       const unit = String(row.unit ?? row.measurementUnit ?? '').trim().toLowerCase();
       const unitQuantity = parseNumber(row.unitQuantity ?? row.baseMeasurementQuantity);
       const unitPrice = parseNumber(row.unitPrice ?? row.pricePerBaseQuantity ?? price);
-      const image = safeImage(row.imageUrl ?? row.image);
+      const imageResult = safeImage(row.imageUrl ?? row.image);
+      const image = imageResult.url;
 
       if (!sku || !name) {
         results.errors.push({ row: i + 2, reason: 'Missing sku or name' });
+        continue;
+      }
+      if (rawPrice === null || rawPrice === undefined || String(rawPrice).trim() === '') {
+        results.errors.push({ row: i + 2, reason: 'Missing price' });
+        continue;
+      }
+      const priceLooksNumeric = typeof rawPrice === 'number'
+        ? Number.isFinite(rawPrice)
+        : /\d/.test(String(rawPrice));
+      if (!priceLooksNumeric) {
+        results.errors.push({ row: i + 2, reason: 'Invalid price' });
         continue;
       }
       if (price < 0) {
@@ -136,6 +160,10 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
           continue;
         }
         categoryId = category.id;
+      }
+
+      if (imageResult.warning) {
+        results.warnings.push({ row: i + 2, reason: imageResult.warning });
       }
 
       const attributes: Record<string, unknown> = {};
@@ -200,6 +228,28 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { role?: 
 
     if (results.created.length || results.updated.length) {
       revalidateTag('products', 'max');
+
+      try {
+        const supplierAccounts = await prisma.user.findMany({
+          where: { supplierId: upload.supplierId, isBanned: false },
+          select: { id: true },
+        });
+        if (supplierAccounts.length) {
+          const changedCount = results.created.length + results.updated.length;
+          await prisma.notification.createMany({
+            data: supplierAccounts.map(account => ({
+              id: randomUUID(),
+              title: 'Catalogue import completed',
+              message: `${changedCount} product${changedCount === 1 ? '' : 's'} from ${upload.originalName || upload.filename} ${changedCount === 1 ? 'is' : 'are'} now in your FreshPick product list.`,
+              type: 'success' as const,
+              targetUserId: account.id,
+              link: '/dashboard',
+            })),
+          });
+        }
+      } catch (notificationError) {
+        console.error('Supplier catalogue import notification failed', notificationError);
+      }
     }
 
     if (usedPreviewFallback) {

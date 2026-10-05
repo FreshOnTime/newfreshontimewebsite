@@ -6,7 +6,6 @@ import path from 'path';
 
 export const DELETE = requireAdmin(async (request: NextRequest & { user?: { role?: string } }) => {
   try {
-    if (request.user?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const body = await request.json();
     const { uploadId } = body as { uploadId?: string };
     if (!uploadId) return NextResponse.json({ error: 'Missing uploadId' }, { status: 400 });

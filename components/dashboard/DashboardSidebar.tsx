@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Wordmark from '@/components/brand/Wordmark';
 import { Bell, Heart, LayoutDashboard, Mail, Menu, Package, Repeat, ShoppingBag, ShoppingCart, UserRound, X } from 'lucide-react';
 
@@ -12,6 +13,7 @@ const supplierNav: NavItem[] = [
   { name: 'Overview', section: 'overview', icon: LayoutDashboard },
   { name: 'Products', section: 'products', icon: Package },
   { name: 'Messages', section: 'messages', icon: Mail },
+  { name: 'Notifications', href: '/profile/notifications', icon: Bell },
   { name: 'Profile', section: 'profile', icon: UserRound },
 ];
 
@@ -35,6 +37,7 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ role, active, onSelect, title }: DashboardSidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
   const nav = role === 'supplier' ? supplierNav : customerNav;
 
   const content = (
@@ -42,6 +45,7 @@ export function DashboardSidebar({ role, active, onSelect, title }: DashboardSid
       nav={nav}
       active={active}
       role={role}
+      pathname={pathname}
       onSelect={(section) => {
         onSelect(section);
         setSidebarOpen(false);
@@ -76,7 +80,7 @@ export function DashboardSidebar({ role, active, onSelect, title }: DashboardSid
   );
 }
 
-function SidebarContent({ nav, active, role, onSelect }: { nav: NavItem[]; active: string; role?: string; onSelect: (section: string) => void }) {
+function SidebarContent({ nav, active, role, pathname, onSelect }: { nav: NavItem[]; active: string; role?: string; pathname: string; onSelect: (section: string) => void }) {
   return (
     <div className="flex h-full flex-col px-5 pb-6 pt-6">
       <Link href="/" className="inline-flex flex-col leading-tight">
@@ -90,7 +94,9 @@ function SidebarContent({ nav, active, role, onSelect }: { nav: NavItem[]; activ
       <nav className="mt-3">
         <ul className="space-y-1">
           {nav.map((item) => {
-            const isActive = item.section ? active === item.section : false;
+            const isActive = item.section
+              ? active === item.section
+              : Boolean(item.href && (pathname === item.href || pathname.startsWith(item.href + '/')));
             const classes = `group flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm transition-colors ${isActive ? 'bg-white/10 text-white' : 'text-white/85 hover:bg-white/[0.06] hover:text-white'}`;
             const icon = <item.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-emerald-200' : 'text-white/80 group-hover:text-emerald-200'} `} />;
 
