@@ -1,5 +1,6 @@
 "use client";
 
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -60,7 +61,7 @@ export default function AuditLogsPage() {
         if (action) params.set('action', action);
         if (userId) params.set('userId', userId);
         if (search) params.set('search', search);
-        const res = await fetch(`/api/admin/activities?${params.toString()}`, { credentials: 'include', signal: controller.signal });
+        const res = await authenticatedApiFetch(`/api/admin/activities?${params.toString()}`, { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setActivities(data.activities || []);
