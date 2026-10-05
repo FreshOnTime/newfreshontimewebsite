@@ -23,10 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.blog.findMany({ where: publishedJournalWhere, select: { slug: true, updatedAt: true } }),
       prisma.blog.findMany({ where: { category: 'collection', published: true, isDeleted: false }, select: { slug: true, content: true, updatedAt: true } }),
     ]),
-    prisma.blog.findMany({
+    Promise.resolve(prisma.blog.findMany({
       where: { slug: { in: guideSlugs } },
       select: { slug: true },
-    }).catch(() => []),
+    })).catch(() => []),
   ]);
 
   const managedGuideSlugs = new Set(managedGuides.map(guide => guide.slug));
