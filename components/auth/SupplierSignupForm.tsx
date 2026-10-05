@@ -169,8 +169,8 @@ export function SupplierSignupForm() {
                 </div>
               </div>
               <Label htmlFor="productList" className="text-sm font-medium text-foreground">Product list or short catalogue note</Label>
-              <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" aria-describedby="supplier-product-help" placeholder="E.g. home-grown greens, vegetables, homemade meals, bakery, beverages or pantry staples…" />
-              <p id="supplier-product-help" className="mt-2 text-xs font-normal leading-5 text-muted-foreground">Start with what you grow, make or supply, the quantities available and your usual lead time. After approval, upload your catalogue from your supplier dashboard.</p>
+              <textarea id="productList" value={productList} onChange={(e) => setProductList(e.target.value)} className="mt-2 min-h-[130px] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" aria-describedby="supplier-product-help" placeholder="One product or product group per line, e.g.\nTomatoes — 50 kg/week\nLeafy greens — 20 bundles/week\nCoconut milk — 2 day lead time" />
+              <p id="supplier-product-help" className="mt-2 text-xs font-normal leading-5 text-muted-foreground">Add one product or product group per line, including approximate quantity and lead time where useful. These entries are shown directly in the admin approval view. After approval, upload the full catalogue from your supplier dashboard.</p>
             </section>
 
             {(serverError || fieldErrors) && (

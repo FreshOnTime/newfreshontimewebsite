@@ -1,12 +1,47 @@
 "use client";
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Loader2, RefreshCcw } from 'lucide-react';
+
+interface SupplierProduct {
+  id: string;
+  sku: string;
+  name: string;
+  price: number;
+  stockQty: number;
+  minStockLevel: number;
+  archived: boolean;
+  category?: { name: string; slug: string } | null;
+}
 
 export default function UploadProducts() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<SupplierProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
+
+  const loadProducts = useCallback(async () => {
+    setProductsLoading(true);
+    setProductsError(null);
+    try {
+      const res = await fetch('/api/suppliers/products?limit=100', { credentials: 'include', cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load your products');
+      setProducts(Array.isArray(data.products) ? data.products : []);
+    } catch (failure) {
+      setProductsError(failure instanceof Error ? failure.message : 'Unable to load your products');
+      setProducts([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadProducts();
+  }, [loadProducts]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFile(e.target.files?.[0] ?? null);
@@ -20,97 +55,139 @@ export default function UploadProducts() {
     setMessage(null);
     setError(null);
     try {
-      // Build a base64 Data URL from the file and send JSON fallback which the server supports.
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = (e) => reject(e);
+        reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-
-      const payload = {
-        fileName: file.name,
-        fileData: dataUrl,
-        mimeType: file.type || undefined,
-      };
 
       const res = await fetch('/api/suppliers/upload', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          fileName: file.name,
+          fileData: dataUrl,
+          mimeType: file.type || undefined,
+        }),
       });
 
-      const json = await res.json();
-      if (json && json.success) {
-        setMessage('File uploaded — admin will review it shortly.');
-        setFile(null);
-      } else {
-        setError(json?.error || 'Upload failed');
-      }
-    } catch (err) {
-      console.error('UploadProducts upload error:', err);
-      setError('Upload error');
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) throw new Error(json?.error || 'Upload failed');
+      setMessage('File uploaded — admin will review and import it shortly.');
+      setFile(null);
+    } catch (failure) {
+      console.error('UploadProducts upload error:', failure);
+      setError(failure instanceof Error ? failure.message : 'Upload error');
     } finally {
       setLoading(false);
     }
   };
 
+  const money = (value: number) => `Rs. ${Number(value || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-background rounded-lg shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-lg font-semibold">Upload Product List</h3>
-          <p className="text-sm text-muted-foreground mt-1">Upload an Excel (.xlsx) or CSV (.csv) file containing your product catalog. Admin will review and import.</p>
-        </div>
-        <div className="text-right">
-          <a href="/templates/product-upload-template.csv" download className="text-sm text-brand-green hover:underline">Download Template</a>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-        <label className="col-span-2 flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer hover:bg-background">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-brand-green">
-            <path d="M12 3v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M5 12l7-7 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+    <div className="space-y-8">
+      <section className="rounded-lg border border-border bg-background p-6">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div>
-            <div className="text-sm font-medium">Choose file</div>
-            <div className="text-xs text-muted-foreground">.xlsx or .csv — up to 5 MB</div>
+            <h3 className="text-lg font-semibold">Upload Product List</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Upload an Excel (.xlsx) or CSV (.csv) catalogue. Use the FreshPick template so the admin import maps every field correctly.
+            </p>
           </div>
-          <input className="sr-only" type="file" accept=".csv,.xlsx" onChange={onChange} />
-        </label>
+          <a href="/templates/product-upload-template.csv" download className="text-sm font-medium text-brand-green hover:underline">
+            Download Template
+          </a>
+        </div>
 
-        <div className="md:col-span-1">
-          <div className="p-3 border rounded-md bg-background h-full flex flex-col justify-between">
+        <div className="mt-5 grid grid-cols-1 items-center gap-4 md:grid-cols-3">
+          <label className="col-span-2 flex cursor-pointer items-center gap-3 rounded-md border border-dashed p-3 hover:bg-secondary/40">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-brand-green" aria-hidden="true">
+              <path d="M12 3v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 12l7-7 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             <div>
-              <div className="text-xs text-muted-foreground">Selected file</div>
-              <div className="text-sm font-medium mt-1">{file ? file.name : <span className="text-muted-foreground">No file chosen</span>}</div>
-              {file && <div className="text-xs text-muted-foreground mt-1">{(file.size / 1024).toFixed(1)} KB</div>}
+              <div className="text-sm font-medium">Choose file</div>
+              <div className="text-xs text-muted-foreground">.xlsx or .csv — up to 5 MB</div>
             </div>
+            <input className="sr-only" type="file" accept=".csv,.xlsx" onChange={onChange} />
+          </label>
 
-            <div className="mt-3 flex gap-2">
-              <button onClick={handleUpload} disabled={loading || !file} className="w-full inline-flex justify-center items-center gap-2 px-3 py-2 bg-brand-leaf text-brand-ink rounded-md hover:bg-brand-leaf disabled:opacity-60">
-                {loading ? (
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                  </svg>
-                ) : null}
-                <span>{loading ? 'Uploading...' : 'Send to Admin'}</span>
-              </button>
-              <a href="/templates/product-upload-template.csv" download className="w-full inline-flex justify-center items-center gap-2 px-3 py-2 border rounded-md text-sm">
-                Download Template
-              </a>
-            </div>
+          <div className="rounded-md border bg-background p-3">
+            <div className="text-xs text-muted-foreground">Selected file</div>
+            <div className="mt-1 break-all text-sm font-medium">{file ? file.name : <span className="text-muted-foreground">No file chosen</span>}</div>
+            {file && <div className="mt-1 text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</div>}
+            <button
+              onClick={handleUpload}
+              disabled={loading || !file}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-leaf px-3 py-2 text-brand-ink disabled:opacity-60"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span>{loading ? 'Uploading…' : 'Send to Admin'}</span>
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="mt-4">
-        {message && <div className="text-sm text-brand-green bg-secondary p-2 rounded">{message}</div>}
-        {error && <div className="text-sm text-red-700 bg-red-50 p-2 rounded">{error}</div>}
-      </div>
+        <p className="mt-4 text-xs leading-6 text-muted-foreground">
+          Template fields: SKU, name, description, selling price, cost price, stock, minimum stock, category slug, tags, unit, unit quantity, supplier SKU and optional image URL.
+        </p>
+        {message && <div className="mt-4 rounded bg-secondary p-3 text-sm text-brand-green">{message}</div>}
+        {error && <div className="mt-4 rounded bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      </section>
+
+      <section className="rounded-lg border border-border bg-background">
+        <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center">
+          <div>
+            <h3 className="font-semibold">Your FreshPick products</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Products appear here as soon as an admin imports them from your uploaded catalogue.</p>
+          </div>
+          <button
+            onClick={() => void loadProducts()}
+            disabled={productsLoading}
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-border px-3 text-sm text-brand-green disabled:opacity-60"
+          >
+            <RefreshCcw className={`h-4 w-4 ${productsLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+
+        {productsLoading ? (
+          <div className="flex items-center gap-2 p-6 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading products…</div>
+        ) : productsError ? (
+          <div className="p-6 text-sm text-amber-700">{productsError}</div>
+        ) : products.length === 0 ? (
+          <div className="p-6 text-sm text-muted-foreground">No imported products yet. Upload your catalogue and wait for admin review/import.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[680px] text-left text-sm">
+              <thead className="bg-secondary/40 text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Product</th>
+                  <th className="px-5 py-3 font-medium">SKU</th>
+                  <th className="px-5 py-3 font-medium">Category</th>
+                  <th className="px-5 py-3 font-medium">Price</th>
+                  <th className="px-5 py-3 font-medium">Stock</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {products.map(product => (
+                  <tr key={product.id}>
+                    <td className="px-5 py-4 font-medium">{product.name}</td>
+                    <td className="px-5 py-4 font-mono text-xs">{product.sku}</td>
+                    <td className="px-5 py-4">{product.category?.name || 'Uncategorised'}</td>
+                    <td className="px-5 py-4 tabular-nums">{money(product.price)}</td>
+                    <td className="px-5 py-4 tabular-nums">{product.stockQty}</td>
+                    <td className="px-5 py-4">{product.archived ? 'Archived' : 'Active'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

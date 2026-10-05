@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
@@ -214,7 +215,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
 
       if (isCsv) {
         const text = buffer.toString('utf8');
-        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+        const parsed = Papa.parse(text, { header: true, skipEmptyLines: 'greedy', comments: '#', transformHeader: header => header.trim() });
         previewRows = parsed.data as unknown[];
         console.log('[INFO] /api/suppliers/upload - CSV parsed, rows:', previewRows.length);
       } else if (isExcel) {
@@ -285,6 +286,32 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
 
       const created = await prisma.supplierUpload.create({ data: uploadData });
       uploadDoc = { ...created, _id: created.id };
+
+      // In-app admin notifications are the reliable primary alert. Email remains
+      // an optional secondary channel controlled by ADMIN_NOTIFICATION_EMAIL.
+      try {
+        const admins = await prisma.user.findMany({
+          where: {
+            isBanned: false,
+            OR: [{ role: 'admin' }, { secondaryRoles: { has: 'admin' } }],
+          },
+          select: { id: true },
+        });
+        if (admins.length) {
+          await prisma.notification.createMany({
+            data: admins.map(admin => ({
+              id: randomUUID(),
+              title: 'Supplier catalogue uploaded',
+              message: `${supplierName || 'A supplier'} uploaded ${originalName} for review and import.`,
+              type: 'info' as const,
+              targetUserId: admin.id,
+              link: '/admin/supplier-uploads',
+            })),
+          });
+        }
+      } catch (notificationError) {
+        console.error('Supplier upload admin notification failed', notificationError);
+      }
     } catch (dbErr) {
       console.error('[ERROR] /api/suppliers/upload - Failed to create DB record:', dbErr);
       const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);

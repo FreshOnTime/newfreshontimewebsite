@@ -59,7 +59,7 @@ export default function SupplierUploadsList() {
       });
       const j = await res.json();
       if (j.success) {
-        alert(`Created ${j.results.created.length} products, ${j.results.errors.length} errors`);
+        alert(`Created ${j.results.created.length}, updated ${j.results.updated?.length || 0}, ${j.results.errors.length} errors`);
         mutate();
       } else {
         alert('Import failed: ' + (j.error || 'Unknown error'));
@@ -190,14 +190,12 @@ export default function SupplierUploadsList() {
                         Preview
                       </Button>
 
-                      {u.path && (
-                        <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-muted-foreground border-border">
-                          <a href={u.path} download>
-                            <Download className="h-3.5 w-3.5" />
-                            Download
-                          </a>
-                        </Button>
-                      )}
+                      <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-muted-foreground border-border">
+                        <a href={`/api/admin/supplier-uploads/${u._id}/download`}>
+                          <Download className="h-3.5 w-3.5" />
+                          Download original
+                        </a>
+                      </Button>
 
                       <Button
                         size="sm"

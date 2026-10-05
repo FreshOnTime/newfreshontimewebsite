@@ -1,9 +1,11 @@
-sku,name,description,price,pricePerBaseQuantity,baseMeasurementQuantity,measurementUnit,stockQty,categorySlug,tags,supplierSku
-SKU12345,Fresh Banana,Yellow ripe bananas,2.50,2.50,1,kg,100,produce,"fruit,banana",BN-001
-SKU12346,Organic Milk,Full fat organic milk,3.80,3.80,1,l,200,dairy,"milk,organic",ML-010
+sku,name,description,price,costPrice,stockQty,minStockLevel,categorySlug,tags,unit,unitQuantity,supplierSku,imageUrl
+FP-BANANA-001,Fresh Banana,Yellow ripe bananas,350,250,100,10,fresh-produce,"fruit,banana",kg,1,BN-001,
+FP-MILK-001,Fresh Milk,Full cream milk,520,420,50,8,dairy-eggs,"milk,dairy",l,1,ML-010,
 
-# Notes: 
-# - `measurementUnit` should be one of: g, kg, ml, l, ea
-# - `price` and `pricePerBaseQuantity` are numbers (use dot for decimals)
-# - `baseMeasurementQuantity` is the quantity that `pricePerBaseQuantity` refers to (e.g., 1 for 1kg)
-# - `supplierSku` is optional external supplier code
+# Required: sku, name, price
+# Recommended: categorySlug, stockQty, minStockLevel
+# unit: g, kg, ml, l, ea, or lb
+# unitQuantity: pack/base quantity for the listed price (for example 1 with kg means 1 kg)
+# tags: comma-separated values inside quotes
+# supplierSku: optional code used in your own catalogue
+# imageUrl: optional https:// image URL; product images can also be added later by FreshPick admin
