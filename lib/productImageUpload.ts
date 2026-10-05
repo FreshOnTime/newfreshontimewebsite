@@ -1,3 +1,8 @@
+import { randomUUID } from 'node:crypto';
+import {
+  getCategoryImageStorage as supabaseCategoryStorage,
+  getProductImageStorage as supabaseProductStorage,
+} from '@/lib/storage/supabaseStorage';
 import {
   getCategoryImageStorage as localCategoryStorage,
   getProductImageStorage as localProductStorage,
