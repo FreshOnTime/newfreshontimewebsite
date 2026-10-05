@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       { protocol: 'https', hostname: '*.blob.core.windows.net', pathname: '/product-images/**' },
+      { protocol: 'https', hostname: '*.blob.core.windows.net', pathname: '/category-images/**' },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
