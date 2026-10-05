@@ -90,7 +90,7 @@ layout and the shared admin API guards.
 
 | Area | Required acceptance |
 | --- | --- |
-| Configuration | Set approved delivery fees/threshold/areas, canonical site URL, Azure and verified SendGrid credentials; run the read-only preflight. No real business rates were supplied. |
+| Configuration | Set approved delivery fees/threshold/areas, canonical site URL, Supabase Storage and verified SendGrid credentials; run the read-only preflight. No real business rates were supplied. |
 | Database | Back up and restore-test, apply the additive migration, verify the PostgreSQL concurrency script and reconcile historical unreserved orders. |
 | Basket fulfillment | Optional catalogue mapping now reserves stock and creates linked COD orders. Review real stock-unit mappings and delivery-inclusive plan pricing before opt-in; exercise shortages/retry, packing, collection, pause/skip/cancel and deployed scheduling in staging. Existing plans remain manual. |
 | Hosting and monitoring | Verify the linked Netlify site/domain, published function schedules, provider activity, logs, backlog alerts and backup policy. Code changes do not configure external dashboards. |
