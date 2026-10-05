@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 
-export const GET = requireAuth(async (
+export const GET = requireAdmin(async (
   request: NextRequest & { user?: { role?: string } },
   context: { params: Promise<{ id: string }> }
 ) => {
   try {
-    if (request.user?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Next 16: params is a Promise and must be awaited before use.
     const { id } = await context.params;
