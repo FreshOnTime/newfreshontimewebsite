@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
@@ -27,12 +28,12 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
     }
 
     const { page, limit, search } = filters.parse(Object.fromEntries(new URL(request.url).searchParams));
-    const where = {
+    const where: Prisma.ProductWhereInput = {
       supplierId: supplier.id,
       ...(search ? {
         OR: [
-          { name: { contains: search, mode: 'insensitive' as const } },
-          { sku: { contains: search, mode: 'insensitive' as const } },
+          { name: { contains: search, mode: 'insensitive' } },
+          { sku: { contains: search, mode: 'insensitive' } },
         ],
       } : {}),
     };
