@@ -1,11 +1,12 @@
 sku,name,description,price,costPrice,stockQty,minStockLevel,categorySlug,tags,unit,unitQuantity,supplierSku,imageUrl
-FP-BANANA-001,Fresh Banana,Yellow ripe bananas,350,250,100,10,fresh-produce,"fruit,banana",kg,1,BN-001,
-FP-MILK-001,Fresh Milk,Full cream milk,520,420,50,8,dairy-eggs,"milk,dairy",l,1,ML-010,
+FP-BANANA-001,Fresh Banana,Yellow ripe bananas,350,250,100,10,,"fruit,banana",kg,1,BN-001,
+FP-MILK-001,Fresh Milk,Full cream milk,520,420,50,8,,"milk,dairy",l,1,ML-010,
 
 # Required: sku, name, price
-# Recommended: categorySlug, stockQty, minStockLevel
+# Recommended: stockQty, minStockLevel
+# categorySlug is optional. Use one of the valid slugs shown in the supplier dashboard, or leave it blank for admin categorisation.
 # unit: g, kg, ml, l, ea, or lb
 # unitQuantity: pack/base quantity for the listed price (for example 1 with kg means 1 kg)
 # tags: comma-separated values inside quotes
 # supplierSku: optional code used in your own catalogue
-# imageUrl: optional https:// image URL; product images can also be added later by FreshPick admin
+# imageUrl: optional. Leave blank unless FreshPick has provided a compatible HTTPS image URL; admin can add product images later.
