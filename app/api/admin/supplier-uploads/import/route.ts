@@ -59,7 +59,7 @@ function safeImage(value: unknown): { url: string | null; warning?: string } {
     if (url.protocol !== 'https:') return { url: null, warning: 'imageUrl must use HTTPS' };
     const host = url.hostname.toLowerCase();
     const supported =
-      host.endsWith('.blob.core.windows.net') ||
+      (host.endsWith('.supabase.co') && url.pathname.includes('/storage/v1/object/public/')) ||
       host === 'images.unsplash.com' ||
       host === 'plus.unsplash.com' ||
       host === 'lh3.googleusercontent.com' ||
