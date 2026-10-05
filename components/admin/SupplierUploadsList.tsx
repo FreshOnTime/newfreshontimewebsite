@@ -67,7 +67,7 @@ export default function SupplierUploadsList() {
       });
       const j = await res.json();
       if (j.success) {
-        alert(`Created ${j.results.created.length}, updated ${j.results.updated?.length || 0}, ${j.results.errors.length} errors`);
+        alert(`Created ${j.results.created.length}, updated ${j.results.updated?.length || 0}, ${j.results.errors.length} errors, ${j.results.warnings?.length || 0} warnings`);
         mutate();
       } else {
         alert('Import failed: ' + (j.error || 'Unknown error'));
