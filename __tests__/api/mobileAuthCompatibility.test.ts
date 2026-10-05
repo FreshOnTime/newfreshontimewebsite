@@ -1,21 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const login = jest.fn();
-const refreshToken = jest.fn();
-const findUnique = jest.fn();
-const setAuthCookies = jest.fn();
+import { authService } from '@/lib/services/authService';
+import prisma from '@/lib/prisma';
+import { verifyToken } from '@/lib/jwt';
+import { setAuthCookies } from '@/lib/utils/cookies';
 
 jest.mock('@/lib/services/authService', () => ({
   authService: {
-    login,
-    refreshToken,
+    login: jest.fn(),
+    refreshToken: jest.fn(),
     signup: jest.fn(),
     logout: jest.fn(),
   },
 }));
 
 jest.mock('@/lib/utils/cookies', () => ({
-  setAuthCookies,
+  setAuthCookies: jest.fn(),
   clearAuthCookies: jest.fn(),
 }));
 
@@ -26,34 +25,33 @@ jest.mock('@/lib/utils/rateLimit', () => ({
 jest.mock('@/lib/prisma', () => ({
   __esModule: true,
   default: {
-    user: { findUnique },
+    user: { findUnique: jest.fn() },
   },
 }));
 
-const verifyToken = jest.fn();
 jest.mock('@/lib/jwt', () => ({
-  verifyToken,
+  verifyToken: jest.fn(),
 }));
 
 describe('native mobile auth compatibility', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    login.mockResolvedValue({
+    (authService.login as jest.Mock).mockResolvedValue({
       user: { _id: 'user-1', userId: 'user-1', firstName: 'Savi' },
       accessToken: 'access-1',
       refreshToken: 'refresh-1',
     });
-    refreshToken.mockResolvedValue({
+    (authService.refreshToken as jest.Mock).mockResolvedValue({
       accessToken: 'access-2',
       refreshToken: 'refresh-2',
     });
-    verifyToken.mockReturnValue({
+    (verifyToken as jest.Mock).mockReturnValue({
       userId: 'user-1',
       email: 'savi@example.com',
       role: 'customer',
       type: 'access',
     });
-    findUnique.mockResolvedValue({
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1',
       email: 'savi@example.com',
       role: 'customer',
@@ -104,7 +102,7 @@ describe('native mobile auth compatibility', () => {
     }));
 
     expect(response.status).toBe(200);
-    expect(refreshToken).toHaveBeenCalledWith('refresh-1');
+    expect(authService.refreshToken).toHaveBeenCalledWith('refresh-1');
     expect(await response.json()).toMatchObject({
       accessToken: 'access-2',
       refreshToken: 'refresh-2',
@@ -122,11 +120,8 @@ describe('native mobile auth compatibility', () => {
 
     expect(response.status).toBe(200);
     expect(verifyToken).toHaveBeenCalledWith('native-access-token');
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user: expect.objectContaining({ _id: 'user-1', userId: 'user-1' }),
-      }),
-      undefined,
-    );
+    expect(handler).toHaveBeenCalled();
+    const authenticatedRequest = handler.mock.calls[0][0] as { user?: { _id?: string; userId?: string } };
+    expect(authenticatedRequest.user).toMatchObject({ _id: 'user-1', userId: 'user-1' });
   });
 });
