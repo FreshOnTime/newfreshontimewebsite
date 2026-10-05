@@ -306,7 +306,20 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       };
 
       const created = await prisma.supplierUpload.create({ data: uploadData });
-      uploadDoc = { ...created, _id: created.id };
+      // Do not echo the inline base64 fileData back to the browser. On serverless
+      // deployments that can be several megabytes and is only needed by protected
+      // admin download/import endpoints.
+      uploadDoc = {
+        id: created.id,
+        _id: created.id,
+        supplierId: created.supplierId,
+        originalName: created.originalName,
+        filename: created.filename,
+        mimeType: created.mimeType,
+        size: created.size,
+        preview: created.preview,
+        createdAt: created.createdAt,
+      };
 
       // In-app admin notifications are the reliable primary alert. Email remains
       // an optional secondary channel controlled by ADMIN_NOTIFICATION_EMAIL.
