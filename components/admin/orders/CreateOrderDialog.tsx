@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 type ProductRow = { _id: string; name: string; sku: string; price: number };
 type CustomerRow = { _id: string; name: string; email?: string };
@@ -46,7 +47,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
     const run = async () => {
       try {
         const params = new URLSearchParams({ limit: '20', ...(searchProducts && { search: searchProducts }) });
-        const res = await fetch(`/api/admin/products?${params}`, { credentials: 'include' });
+        const res = await authenticatedApiFetch(`/api/admin/products?${params}`);
         if (!res.ok) return;
         const data: unknown = await res.json();
         const anyObj = data as { products?: unknown };
@@ -76,7 +77,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
     const run = async () => {
       try {
         const params = new URLSearchParams({ limit: '20', ...(searchCustomer && { search: searchCustomer }) });
-        const res = await fetch(`/api/admin/customers?${params}`, { credentials: 'include' });
+        const res = await authenticatedApiFetch(`/api/admin/customers?${params}`);
         if (!res.ok) return;
         const data: unknown = await res.json();
         const anyObj = data as { customers?: unknown };
@@ -145,7 +146,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
         paymentStatus: 'pending',
         shippingAddress: { name: shipName, street: shipStreet, city: shipCity, state: shipState, zipCode: shipZip, country: shipCountry, phone: shipPhone },
       };
-      const res = await fetch('/api/admin/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+      const res = await authenticatedApiFetch('/api/admin/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || 'Failed to create order');
@@ -160,7 +161,7 @@ export function CreateOrderDialog({ open, onOpenChange, onSaved }: { open: boole
     }
   };
 
-  const currency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+  const currency = (v: number) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(v);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
