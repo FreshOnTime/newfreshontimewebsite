@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CategoryDialog } from '@/components/admin/categories/CategoryDialog';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 interface Category { _id: string; name: string; slug: string; description?: string; imageUrl?: string | null; isActive: boolean; sortOrder: number; createdAt: string; }
 interface CategoriesResponse { categories: Category[]; pagination: { page: number; limit: number; total: number; pages: number } }
@@ -27,7 +28,7 @@ export function CategoriesPage() {
     try {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }) });
-      const res = await fetch(`/api/admin/categories?${params}`, { credentials: 'include' });
+      const res = await authenticatedApiFetch(`/api/admin/categories?${params}`);
       if (!res.ok) throw new Error('Failed');
       const data: CategoriesResponse = await res.json();
       setItems(data.categories);
