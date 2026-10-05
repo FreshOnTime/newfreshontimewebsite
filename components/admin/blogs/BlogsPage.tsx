@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,10 +17,14 @@ interface Blog {
   slug: string;
   excerpt: string;
   content: string;
+  featuredImage?: { url: string; alt?: string };
   category?: string;
   tags: string[];
   published: boolean;
   publishedAt?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
   views: number;
   likes: number;
   authorName?: string;
@@ -42,10 +46,30 @@ export function BlogsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Blog | null>(null);
   const [viewMode, setViewMode] = useState(false);
+  const guidesImportedRef = useRef(false);
+
+  const ensureExistingGuidesAreManaged = async () => {
+    if (guidesImportedRef.current) return;
+    guidesImportedRef.current = true;
+    try {
+      const response = await fetch('/api/admin/blogs/import-guides', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Unable to import existing guides');
+      const result = await response.json();
+      if (result.imported > 0) {
+        toast.success(`${result.imported} existing blog guide${result.imported === 1 ? '' : 's'} added to the CMS`);
+      }
+    } catch {
+      toast.error('Existing static guides could not be added to the admin list');
+    }
+  };
 
   const fetchItems = async () => {
     try {
       setLoading(true);
+      await ensureExistingGuidesAreManaged();
       const params = new URLSearchParams({
         page: String(page),
         limit: '20',

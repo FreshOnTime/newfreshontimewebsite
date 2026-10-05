@@ -2,7 +2,7 @@
 
 > Current carousel, navigation and recipe scope: [Editorial market](EDITORIAL_MARKET.md). The earlier implementation notes below are historical.
 
-Updated 2026-10-02, on top of the merged Natoora-inspired UI revision.
+Updated 2026-10-05, on top of the merged Natoora-inspired UI revision.
 
 ## Journal
 
@@ -10,6 +10,8 @@ Updated 2026-10-02, on top of the merged Natoora-inspired UI revision.
 - Journal is available in the main desktop/mobile navigation. The homepage section always provides an entry point to `/blog`, including when there are no posts.
 - Public lists, article pages and the homepage exclude drafts, deleted entries and the reserved recipe/collection records. Uncategorized journal entries are supported.
 - The journal editor accepts ordinary stories and drafts; recipes and collections use their dedicated editors. Publishing, editing, renaming, unpublishing or deleting a story invalidates the homepage journal cache and affected article paths.
+- The four repository-backed grocery guides introduced on 2026-10-04 are imported into the database-backed CMS on the first authenticated visit to /admin/blogs. Existing slugs are never duplicated, including deleted records, so CRUD state remains authoritative after import.
+- The editor includes write/preview formatting controls and image insertion. Featured images and inline article images upload through the protected blog image endpoint into the dedicated blog-images storage area rather than requiring administrators to paste image URLs.
 - Journal search cancels superseded requests; an outage has a retry state distinct from an empty result.
 
 ## Administration

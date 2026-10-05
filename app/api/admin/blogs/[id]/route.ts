@@ -5,8 +5,18 @@ import prisma from '@/lib/prisma';
 import { revalidateJournal, journalCategoryWhere, COMMERCE_BLOG_CATEGORIES } from '@/lib/journalService';
 import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 
+const blogImageUrlSchema = z.string().min(1).refine(value => {
+  if (value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}, 'Image must be a secure URL or local blog image path');
+
 const imageSchema = z.object({
-  url: z.string().url(),
+  url: blogImageUrlSchema,
   alt: z.string().optional(),
   width: z.number().optional(),
   height: z.number().optional(),
