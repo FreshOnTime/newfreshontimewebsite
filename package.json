@@ -30,8 +30,6 @@
     "seed": "node -r esbuild-register prisma/seed.ts"
   },
   "dependencies": {
-    "@azure/identity": "^4.7.0",
-    "@azure/storage-blob": "^12.26.0",
     "@hookform/resolvers": "^3.10.0",
     "@leenguyen/react-flip-clock-countdown": "^1.6.1",
     "@modelcontextprotocol/sdk": "1.31.0",
