@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { ProductDialog } from '@/components/admin/products/ProductDialog';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 interface Product {
   _id: string;
@@ -41,7 +42,7 @@ export function ProductsPage() {
     try {
       setLoading(true);
       const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }) });
-      const res = await fetch(`/api/admin/products?${params}`, { credentials: 'include' });
+      const res = await authenticatedApiFetch(`/api/admin/products?${params}`);
       if (!res.ok) throw new Error('Failed to fetch products');
       const data: ProductsResponse = await res.json();
       setItems(data.products);
@@ -60,18 +61,21 @@ export function ProductsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this product?')) return;
     try {
-      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) throw new Error('Failed');
+      const res = await authenticatedApiFetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed');
+      }
       toast.success('Product deleted');
       fetchItems();
-  } catch {
-      toast.error('Failed to delete product');
+  } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete product');
     }
   };
 
   const handleSaved = () => { setIsDialogOpen(false); setEditing(null); fetchItems(); };
 
-  const currency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+  const currency = (v: number) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(v);
 
   return (
     <div className="space-y-6">
