@@ -46,7 +46,7 @@ export default async function BlogPage() {
             <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">Practical grocery guides, pantry ideas and everyday cooking inspiration for households in Colombo and Sri Lanka.</p>
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
-            <BlogImage src="/images/editorial/kitchen-basket.webp" alt="A basket of vegetables and herbs on a kitchen table" priority sizes="(max-width: 767px) calc(100vw - 40px), 45vw" />
+            <BlogImage src="/images/home/produce-basket.webp" alt="A basket filled with fresh vegetables for everyday grocery shopping" priority sizes="(max-width: 767px) calc(100vw - 40px), 45vw" />
           </div>
         </div>
       </section>
