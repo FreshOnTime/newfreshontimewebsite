@@ -10,7 +10,7 @@ flowchart TD
   B --> C["Domain services and validation"]
   C --> D["PostgreSQL through Prisma"]
   E["Scheduled workers"] --> C
-  B --> F["Azure product-photo storage"]
+  B --> F["Supabase image storage"]
   D --> G["Email outbox worker"]
   G --> H["SendGrid"]
   I["Public MCP clients"] --> B
@@ -87,7 +87,7 @@ Configuration, leases and recovery details belong to [Operations](OPERATIONS.md)
 
 ## Images, content and cache
 
-Production product uploads use Azure durable storage, with content signature/size checks and randomly generated paths. Development disk fallback is not a production persistence strategy. Supplier spreadsheet original storage is a separate legacy mechanism and can be inline in database records.
+Production runtime image uploads use Supabase Storage, with content signature/size checks and randomly generated object paths. Development disk fallback is not a production persistence strategy. Supplier spreadsheet original storage is a separate mechanism and can be inline in database records.
 
 Public editorial rendering sanitizes Markdown. Slugs, collection content parsing and published visibility helpers prevent raw stored content from becoming an unrestricted script surface. Metadata/JSON-LD serialization escapes unsafe characters.
 
