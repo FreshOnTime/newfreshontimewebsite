@@ -6,12 +6,24 @@ import { firstJournalPage } from '@/lib/journalService';
 import { editorialGuides, guidePath } from '@/lib/editorialGuides';
 import JsonLd from '@/components/seo/JsonLd';
 import { absoluteUrl } from '@/lib/config/site';
+import prisma from '@/lib/prisma';
 
 export const revalidate = 60;
 export const metadata = publicPageMetadata('/blog');
 
 export default async function BlogPage() {
-  const initialData = await firstJournalPage().catch(() => null);
+  const guideSlugs = editorialGuides.map(guide => guide.slug);
+  const [initialData, managedGuides] = await Promise.all([
+    firstJournalPage().catch(() => null),
+    prisma.blog.findMany({
+      where: { slug: { in: guideSlugs } },
+      select: { slug: true },
+    }).catch(() => []),
+  ]);
+
+  const managedSlugs = new Set(managedGuides.map(guide => guide.slug));
+  const fallbackGuides = editorialGuides.filter(guide => !managedSlugs.has(guide.slug));
+
   return (
     <div className="min-h-screen bg-background">
       <section className="border-b border-border">
@@ -26,18 +38,41 @@ export default async function BlogPage() {
           </div>
         </div>
       </section>
-      <section className="editorial-wrap py-10 md:py-14" aria-labelledby="guides-heading">
-        <h2 id="guides-heading" className="text-2xl font-normal md:text-3xl">Practical guides for your next shop</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">Start with a useful checklist, build a weekly list or find a basket that fits your routine.</p>
-        <div className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-          {editorialGuides.map(guide => <JournalCard key={guide.slug} post={{ ...guide, id: guide._id }} href={guidePath(guide.slug)} />)}
-        </div>
-      </section>
-      {(!initialData || initialData.pagination.total > 0) && <section className="editorial-wrap border-t border-border py-10 md:py-14" aria-labelledby="stories-heading">
-        <h2 id="stories-heading" className="mb-8 text-2xl font-normal">More from the market</h2>
-        <BlogList initialData={initialData} />
-      </section>}
-      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'ItemList', name: 'FreshPick grocery guides', itemListElement: editorialGuides.map((guide, index) => ({ '@type': 'ListItem', position: index + 1, name: guide.title, url: absoluteUrl(guidePath(guide.slug)) })) }} />
+
+      {fallbackGuides.length > 0 && (
+        <section className="editorial-wrap py-10 md:py-14" aria-labelledby="guides-heading">
+          <h2 id="guides-heading" className="text-2xl font-normal md:text-3xl">Practical guides for your next shop</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">Start with a useful checklist, build a weekly list or find a basket that fits your routine.</p>
+          <div className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {fallbackGuides.map(guide => (
+              <JournalCard key={guide.slug} post={{ ...guide, id: guide._id }} href={guidePath(guide.slug)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {(!initialData || initialData.pagination.total > 0) && (
+        <section className="editorial-wrap border-t border-border py-10 md:py-14" aria-labelledby="stories-heading">
+          <h2 id="stories-heading" className="mb-8 text-2xl font-normal">More from the market</h2>
+          <BlogList initialData={initialData} />
+        </section>
+      )}
+
+      {fallbackGuides.length > 0 && (
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: 'FreshPick grocery guides',
+            itemListElement: fallbackGuides.map((guide, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              name: guide.title,
+              url: absoluteUrl(guidePath(guide.slug)),
+            })),
+          }}
+        />
+      )}
     </div>
   );
 }
