@@ -35,7 +35,14 @@ it('preserves paginated canonicals and excludes faceted catalogue URLs from inde
 
 it('keeps private pages out of indexing without blocking rendering assets', () => {
   expect(privateMetadata.robots).toMatchObject({ index: false, googleBot: { index: false } });
-  expect(robots()).toMatchObject({ sitemap: absoluteUrl('/sitemap.xml'), host: SITE_URL, rules: { userAgent: '*' } });
+  expect(robots()).toMatchObject({
+    sitemap: absoluteUrl('/sitemap.xml'),
+    host: SITE_URL,
+    rules: expect.arrayContaining([
+      expect.objectContaining({ userAgent: '*' }),
+      expect.objectContaining({ userAgent: expect.arrayContaining(['OAI-SearchBot', 'ChatGPT-User']) }),
+    ]),
+  });
   expect(JSON.stringify(robots())).not.toContain('/_next/');
   for (const path of ['/checkout', '/profile', '/auth/login']) expect(PUBLIC_PAGES.map(page => page.path)).not.toContain(path);
 });
