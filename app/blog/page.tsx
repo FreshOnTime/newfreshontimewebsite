@@ -26,6 +26,18 @@ export default async function BlogPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'Blog',
+          '@id': absoluteUrl('/blog#blog'),
+          name: 'The FreshPick blog',
+          url: absoluteUrl('/blog'),
+          description: 'Practical grocery delivery guides for Colombo, weekly shopping lists, Sri Lankan pantry ideas and recurring basket advice from FreshPick.',
+          publisher: { '@id': absoluteUrl('/#organization') },
+          inLanguage: 'en-LK',
+        }}
+      />
       <section className="border-b border-border">
         <div className="editorial-wrap grid items-center gap-8 py-9 md:grid-cols-[1.15fr_0.85fr] md:gap-14 md:py-12">
           <div>
