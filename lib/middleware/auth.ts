@@ -19,7 +19,9 @@ export function withAuth(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async (req: NextRequest, context?: any) => {
     try {
-      const accessToken = req.cookies.get('accessToken')?.value;
+      const authorization = req.headers.get('authorization');
+      const bearerToken = authorization?.startsWith('Bearer ') ? authorization.slice(7).trim() : undefined;
+      const accessToken = bearerToken || req.cookies.get('accessToken')?.value;
 
       if (!accessToken) {
         if (options.optional) {
