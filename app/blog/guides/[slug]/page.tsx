@@ -6,15 +6,20 @@ import prisma from '@/lib/prisma';
 
 type Props = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return editorialGuides.map(({ slug }) => ({ slug }));
-}
+// This route must not contact PostgreSQL while Vercel/Netlify are building a preview.
+// Whether a legacy guide has moved into the CMS is runtime state.
+export const dynamic = 'force-dynamic';
 
 async function managedGuide(slug: string) {
-  return prisma.blog.findUnique({
-    where: { slug },
-    select: { slug: true, published: true, isDeleted: true },
-  });
+  try {
+    return await prisma.blog.findUnique({
+      where: { slug },
+      select: { slug: true, published: true, isDeleted: true },
+    });
+  } catch (error) {
+    console.error('[Blog guide] Failed to check CMS ownership:', error);
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: Props) {
