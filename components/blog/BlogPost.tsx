@@ -60,7 +60,26 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
 
   return (
     <article className="min-h-screen bg-background">
-      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BlogPosting', '@id': absoluteUrl(`${path}#article`), headline: blog.title, description: blog.excerpt, mainEntityOfPage: absoluteUrl(path), image: absoluteUrl(image.url), datePublished: blog.publishedAt || undefined, dateModified: blog.updatedAt || undefined, author: { '@type': blog.authorName && blog.authorName !== 'FreshPick' ? 'Person' : 'Organization', name: blog.authorName || 'FreshPick' }, publisher: { '@id': absoluteUrl('/#organization') }, inLanguage: 'en-LK', articleSection: blog.category, wordCount: blog.content.split(/\s+/).length }} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        '@id': absoluteUrl(`${path}#article`),
+        url: absoluteUrl(path),
+        headline: blog.title,
+        description: blog.excerpt,
+        mainEntityOfPage: absoluteUrl(path),
+        image: absoluteUrl(image.url),
+        datePublished: blog.publishedAt || undefined,
+        dateModified: blog.updatedAt || undefined,
+        author: { '@type': blog.authorName && blog.authorName !== 'FreshPick' ? 'Person' : 'Organization', name: blog.authorName || 'FreshPick' },
+        publisher: { '@id': absoluteUrl('/#organization') },
+        isPartOf: { '@type': 'Blog', '@id': absoluteUrl('/blog#blog'), name: 'The FreshPick blog', url: absoluteUrl('/blog') },
+        inLanguage: 'en-LK',
+        articleSection: blog.category,
+        keywords: blog.tags,
+        about: blog.tags.map((tag) => ({ '@type': 'Thing', name: tag })),
+        wordCount: blog.content.split(/\s+/).length,
+      }} />
       <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(path) }]} />
       {/* Back Button - Minimalist */}
       <div className="w-full bg-background border-b border-border">
