@@ -176,7 +176,7 @@ Sources: [mailService.ts](../lib/services/mailService.ts), [emailOutboxService.t
 | [Admin data errors](../lib/adminApiErrors.ts) | `adminDataError` | Private database error response; missing schema returns actionable 503 without exposing database details |
 | [Server API](../lib/api/server.ts) | `serverApiFetch` | Server-side API request/base URL handling |
 | [Cookies](../lib/utils/cookies.ts) | `setCookie`, `deleteCookie`, `getCookie`, `setAuthCookies`, `clearAuthCookies` | Session cookie options and browser session lifecycle |
-| [Product image upload](../lib/productImageUpload.ts) | `readProductImage`, `storeProductImage` | Bound multipart body, validate signatures/size, write durable Azure or development storage |
+| [Product image upload](../lib/productImageUpload.ts) | `readProductImage`, `storeProductImage` | Bound multipart body, validate signatures/size, write durable Supabase or development storage |
 | [Taste graph](../lib/intelligence/tasteGraph.ts) | `getTasteProfile`, `getSmartBasket`, `getPersonalizedRecommendations`, `getTrendingProducts`, `getIntelligenceOverview` | Deterministic user/catalog recommendations from stored data; no LLM or automatic purchase |
 | [Operations intelligence](../lib/intelligence/operations.ts) | `getOperationsIntelligence` | Bounded catalog/history aggregation for stock risk, demand and supplier availability |
 | [MCP server](../lib/mcp/server.ts) | `createFreshPickMcpServer` | Register the three public read-only catalog tools |
