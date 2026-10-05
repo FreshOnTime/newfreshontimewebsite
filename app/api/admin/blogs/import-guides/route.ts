@@ -19,31 +19,30 @@ export const POST = requireAdminSimple(async request => {
       return NextResponse.json({ imported: 0 });
     }
 
-    await prisma.$transaction(
-      missing.map(guide =>
-        prisma.blog.create({
-          data: {
-            title: guide.title,
-            slug: guide.slug,
-            excerpt: guide.excerpt,
-            content: guide.content,
-            featuredImage: guide.featuredImage as Prisma.InputJsonValue,
-            category: guide.category,
-            tags: guide.tags,
-            published: true,
-            publishedAt: new Date(guide.publishedAt),
-            metaTitle: guide.title,
-            metaDescription: guide.excerpt,
-            metaKeywords: guide.tags,
-            authorId: request.user!.userId,
-            authorName: guide.authorName || 'FreshPick',
-          },
-        })
-      )
-    );
+    const result = await prisma.blog.createMany({
+      data: missing.map(guide => ({
+        title: guide.title,
+        slug: guide.slug,
+        excerpt: guide.excerpt,
+        content: guide.content,
+        featuredImage: guide.featuredImage as Prisma.InputJsonValue,
+        category: guide.category,
+        tags: guide.tags,
+        published: true,
+        publishedAt: new Date(guide.publishedAt),
+        metaTitle: guide.title,
+        metaDescription: guide.excerpt,
+        metaKeywords: guide.tags,
+        authorId: request.user!.userId,
+        authorName: guide.authorName || 'FreshPick',
+      })),
+      skipDuplicates: true,
+    });
 
-    revalidateJournal(...missing.map(guide => guide.slug));
-    return NextResponse.json({ imported: missing.length });
+    if (result.count > 0) {
+      revalidateJournal(...missing.map(guide => guide.slug));
+    }
+    return NextResponse.json({ imported: result.count });
   } catch (error) {
     console.error('Import editorial guides error:', error);
     return NextResponse.json({ error: 'Failed to import existing blog guides into the CMS' }, { status: 500 });
