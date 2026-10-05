@@ -158,7 +158,7 @@ export function CustomersPage() {
           <h1 className="text-3xl font-normal text-foreground">Customers</h1>
           <p className="text-muted-foreground mt-2">Manage your customer base</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
+        <Button onClick={() => { setEditingCustomer(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />
           Add Customer
         </Button>
