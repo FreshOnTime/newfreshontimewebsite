@@ -126,10 +126,10 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
               size="sm"
               className="w-full text-primary px-2 justify-start"
               variant={"ghost"}
-              onClick={() => { setAddAfterCreate(false); setShowCreateDialog(true); }}
+              onClick={() => { setAddAfterCreate(true); setShowCreateDialog(true); }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Create New Bag
+              Create New Bag & Add
             </Button>
           </DropdownMenuContent>
         </DropdownMenu>
