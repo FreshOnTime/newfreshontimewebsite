@@ -1,5 +1,6 @@
 'use client';
 
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -28,7 +29,7 @@ export default function AnalyticsPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/admin/analytics/overview', { credentials: 'include', signal: controller.signal });
+        const res = await authenticatedApiFetch('/api/admin/analytics/overview', { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setStats(data.stats || null);
