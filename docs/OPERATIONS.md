@@ -82,7 +82,7 @@ trigger refresh. An expired refresh session still requires signing in again.
 | `FRONTEND_URL` | HTTPS canonical site origin for email links |
 | `SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL` | SendGrid key and verified sender |
 | `NEWSLETTER_TOKEN_SECRET` | Optional separate 32+ character key; otherwise uses `JWT_SECRET` |
-| `AZURE_STORAGE_CONNECTION_STRING` | Durable product-photo storage; `product-images` container must permit public image reads or have a compatible public CDN |
+| `AZURE_STORAGE_CONNECTION_STRING` | Durable image storage; `product-images` and `blog-images` containers must permit public image reads or have a compatible public CDN |
 
 Test-only delivery fixtures remain Rs. 5/Rs. 50. They are not proposed business
 rates. Tax remains zero; obtain a business decision before changing tax behavior.
@@ -259,15 +259,20 @@ pages can remain available while failed regeneration is retried. Test these path
 with the deployment database before promoting; local unit checks cannot establish
 remote database availability. These changes do not alter page layouts or credentials.
 
-### Versioned FreshPick blog guides
+### FreshPick blog guide migration and editing
 
-Four editorial guides are stored in `content/blog/guides.json` and served under
-`/blog/guides/[slug]`. They ship with the deployment without a database seed or
-migration. Edit or remove them through the repository; the existing admin blog
-editor continues to manage database-backed stories under `/blog/[slug]`. The blog
-landing page links both sections, and the guides are included in the XML sitemap.
-Do not describe these guides as admin-editable database posts. Their dates are
-editorial publication/revision dates, not automatically refreshed build dates.
+Four editorial guides remain stored in `content/blog/guides.json` as deployment
+fallback content. On the first authenticated visit to `/admin/blogs`, missing guide
+slugs are imported into the Blog table and become normal CMS records. Existing,
+drafted or soft-deleted records with those slugs are never recreated. Once a guide
+is database-managed, the public fallback card and static sitemap entry are suppressed;
+the legacy `/blog/guides/[slug]` route redirects published records to `/blog/[slug]`
+and does not resurrect unpublished or deleted content.
+
+The admin editor supports formatting/preview, featured-image uploads and inline
+article-image uploads. Blog uploads are authenticated, limited to JPEG/PNG/WebP/AVIF
+within 4 MB, and stored in the dedicated `blog-images` Azure container in production
+or `public/uploads/blog-images` during local non-serverless development.
 
 Guide content provides planning examples, not fixed prices, delivery commitments,
 medical advice or claimed customer experiences. Recheck coverage, policy links and
