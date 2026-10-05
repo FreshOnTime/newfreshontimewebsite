@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { OrderDialog } from '@/components/admin/orders/OrderDialog';
 import { CreateOrderDialog } from '@/components/admin/orders/CreateOrderDialog';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 interface Order {
   _id: string;
@@ -58,7 +59,7 @@ export function OrdersPage() {
     try {
       setLoading(true);
   const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }), ...(isRecurring !== 'all' && { isRecurring }), ...(schedStatus !== 'all' && { scheduleStatus: schedStatus }), ...(sort && { sort }), ...(customerId ? { customerId } : {}) });
-      const res = await fetch(`/api/admin/orders?${params}`, { credentials: 'include' });
+      const res = await authenticatedApiFetch(`/api/admin/orders?${params}`);
       if (!res.ok) throw new Error('Failed');
       const data: OrdersResponse = await res.json();
       setItems(data.orders);
@@ -87,7 +88,7 @@ export function OrdersPage() {
   const remove = async (id: string) => {
     if (!confirm('Delete this order? This cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await authenticatedApiFetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Order deleted');
       fetchItems();

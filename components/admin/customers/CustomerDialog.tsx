@@ -21,9 +21,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 const customerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -36,7 +36,6 @@ const customerSchema = z.object({
     zipCode: z.string().optional(),
     country: z.string().optional(),
   }).optional(),
-  notes: z.string().max(1000).optional(),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
@@ -53,7 +52,6 @@ interface Customer {
     zipCode: string;
     country: string;
   };
-  notes?: string;
 }
 
 interface CustomerDialogProps {
@@ -81,7 +79,6 @@ export function CustomerDialog({ open, onOpenChange, customer, onSave, readOnly 
         zipCode: '',
         country: '',
       },
-      notes: '',
     },
   });
 
@@ -98,7 +95,6 @@ export function CustomerDialog({ open, onOpenChange, customer, onSave, readOnly 
           zipCode: customer.address?.zipCode || '',
           country: customer.address?.country || '',
         },
-        notes: customer.notes || '',
       });
     } else {
       form.reset({
@@ -112,7 +108,6 @@ export function CustomerDialog({ open, onOpenChange, customer, onSave, readOnly 
           zipCode: '',
           country: '',
         },
-        notes: '',
       });
     }
   }, [customer, form]);
@@ -127,14 +122,13 @@ export function CustomerDialog({ open, onOpenChange, customer, onSave, readOnly 
         address: data.address && Object.values(data.address).some(v => v) ? data.address : undefined,
       };
 
-      const response = await fetch(
+      const response = await authenticatedApiFetch(
         isEditing ? `/api/admin/customers/${customer._id}` : '/api/admin/customers',
         {
           method: isEditing ? 'PUT' : 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify(cleanData),
         }
       );
@@ -289,26 +283,6 @@ export function CustomerDialog({ open, onOpenChange, customer, onSave, readOnly 
                 )}
               />
             </div>
-
-              <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Additional notes about the customer..."
-                      className="resize-none"
-                      rows={3}
-                      {...field}
-                      disabled={readOnly}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <DialogFooter>
               <Button

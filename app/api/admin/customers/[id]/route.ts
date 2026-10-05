@@ -15,7 +15,6 @@ const updateCustomerSchema = z.object({
     zipCode: z.string(),
     country: z.string(),
   }).optional(),
-  notes: z.string().max(1000).optional(),
 });
 
 // A customer is a User with role 'customer'.

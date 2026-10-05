@@ -1,5 +1,6 @@
 'use client';
 
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -63,7 +64,7 @@ export function AdminOverview() {
 
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/admin/analytics/overview', { credentials: 'include' });
+        const response = await authenticatedApiFetch('/api/admin/analytics/overview');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (active) setStats(data.stats ?? null);
@@ -77,9 +78,7 @@ export function AdminOverview() {
 
     const fetchRecentCustomers = async () => {
       try {
-        const response = await fetch('/api/admin/customers?limit=5&sort=createdAt-desc', {
-          credentials: 'include',
-        });
+        const response = await authenticatedApiFetch('/api/admin/customers?limit=5&sort=createdAt-desc');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (active) setRecentCustomers(data.customers ?? data.data ?? []);

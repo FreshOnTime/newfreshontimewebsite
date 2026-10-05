@@ -1,5 +1,6 @@
 'use client';
 
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -64,7 +65,7 @@ export function NotificationsBell() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/activities?limit=10`, { credentials: 'include', signal });
+      const res = await authenticatedApiFetch(`/api/admin/activities?limit=10`, { signal });
       if (!res.ok) throw new Error(`Failed (${res.status})`);
       const data = await res.json();
       const incoming: Activity[] = data.activities ?? [];
