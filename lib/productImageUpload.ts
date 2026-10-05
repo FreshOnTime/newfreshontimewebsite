@@ -1,8 +1,3 @@
-import { randomUUID } from 'node:crypto';
-import {
-  getCategoryImageStorage as azureCategoryStorage,
-  getProductImageStorage as azureProductStorage,
-} from '@/lib/storage/azureStorage';
 import {
   getCategoryImageStorage as localCategoryStorage,
   getProductImageStorage as localProductStorage,
@@ -49,13 +44,13 @@ export async function readProductImage(request: Request) {
 }
 
 export async function storeProductImage(image: Awaited<ReturnType<typeof readProductImage>>) {
-  if (process.env.AZURE_STORAGE_CONNECTION_STRING) return azureProductStorage().uploadFile(image.filename, image.bytes, image.mimeType);
-  if (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') throw new ImageUploadError('Product image storage is not configured. Contact an administrator.', 503);
+  if (process.env.SUPABASE_URL && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) return supabaseProductStorage().uploadFile(image.filename, image.bytes, image.mimeType);
+  if (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') throw new ImageUploadError('Supabase image storage is not configured. Contact an administrator.', 503);
   return localProductStorage().uploadFile(image.filename, image.bytes, image.mimeType);
 }
 
 export async function storeCategoryImage(image: Awaited<ReturnType<typeof readProductImage>>) {
-  if (process.env.AZURE_STORAGE_CONNECTION_STRING) return azureCategoryStorage().uploadFile(image.filename, image.bytes, image.mimeType);
-  if (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') throw new ImageUploadError('Category image storage is not configured. Contact an administrator.', 503);
+  if (process.env.SUPABASE_URL && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) return supabaseCategoryStorage().uploadFile(image.filename, image.bytes, image.mimeType);
+  if (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') throw new ImageUploadError('Supabase image storage is not configured. Contact an administrator.', 503);
   return localCategoryStorage().uploadFile(image.filename, image.bytes, image.mimeType);
 }
