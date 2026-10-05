@@ -123,6 +123,7 @@ export class LocalStorageService {
 
 // Singleton instances for different storage containers
 let productImageStorage: LocalStorageService | null = null;
+let categoryImageStorage: LocalStorageService | null = null;
 let bannerImageStorage: LocalStorageService | null = null;
 let blogImageStorage: LocalStorageService | null = null;
 
@@ -131,6 +132,13 @@ export function getProductImageStorage(): LocalStorageService {
     productImageStorage = new LocalStorageService('product-images');
   }
   return productImageStorage;
+}
+
+export function getCategoryImageStorage(): LocalStorageService {
+  if (!categoryImageStorage) {
+    categoryImageStorage = new LocalStorageService('category-images');
+  }
+  return categoryImageStorage;
 }
 
 export function getBannerImageStorage(): LocalStorageService {
