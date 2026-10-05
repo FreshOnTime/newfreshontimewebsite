@@ -1,49 +1,78 @@
-import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL } from '@/lib/config/site';
+import { PUBLIC_PAGES } from '@/lib/publicPages';
+import {
+  PARTNERSHIP_EMAIL,
+  SERVICE_AREAS,
+  SITE_NAME_LONG,
+  SITE_URL,
+  SUPPORT_EMAIL,
+  absoluteUrl,
+} from '@/lib/config/site';
 
-const llmsText = `# Fresh Pick Sri Lanka
+export const dynamic = 'force-static';
 
-Fresh Pick is a Colombo, Sri Lanka-based online food service bringing fresh groceries, homemade favourites, cooked meals, and recurring delivery into one order.
-
-## Core pages
-- Home: ${SITE_URL}
-- Products: ${SITE_URL}/products
-- Supplier partnerships and onboarding: ${SITE_URL}/b2b
-- Subscriptions: ${SITE_URL}/subscriptions
-- Farm to table: ${SITE_URL}/farm-to-table
-- Homemade: ${SITE_URL}/homemade
-- Meals on Deals: ${SITE_URL}/meals
-- Blog: ${SITE_URL}/blog
-
-## What Fresh Pick offers
-Fresh Pick serves food shoppers while building a curated partnership network with growers, makers, producers, distributors, and business buyers in Sri Lanka.
-
-Key services and partnership areas include:
-- Fresh grocery delivery in Colombo
-- Recurring weekly household grocery plans
-- Cooked-food ordering and recurring meal deliveries
-- Homemade and small-batch products from Sri Lankan food makers
-- One-basket ordering for groceries and meals
-- Curated supplier onboarding for farms, growers, makers, brands, distributors, and importers
-- Business supply partnerships for restaurants, hotels, offices, cafes, and other organisations
-- Farmer-first sourcing and harvest coordination
-- Farm-to-table produce selection
-- Same-day and planned delivery support where available
-
-Fresh Pick is not presented as an open supplier marketplace. Supplier and partnership applications are reviewed for product fit, quality, consistency, commercial suitability, and operational readiness before onboarding.
-
-## Service areas
-Fresh Pick currently focuses on ${SERVICE_AREAS.join(', ')}.
-
-## Contact
-General concierge: ${SUPPORT_EMAIL}
-Partnership applications: ${SITE_URL}/b2b#business-enquiry
-`;
+const priorityPaths = new Set([
+  '/',
+  '/products',
+  '/categories',
+  '/blog',
+  '/help',
+  '/about',
+  '/farm-to-table',
+  '/b2b',
+  '/contact',
+  '/refund',
+]);
 
 export function GET() {
-    return new Response(llmsText, {
-        headers: {
-            "Content-Type": "text/plain; charset=utf-8",
-            "Cache-Control": "public, max-age=3600, s-maxage=86400",
-        },
-    });
+  const importantPages = PUBLIC_PAGES
+    .filter((page) => priorityPaths.has(page.path))
+    .map((page) => `- [${page.title}](${absoluteUrl(page.path)}): ${page.description}`)
+    .join('\n');
+
+  const body = `# ${SITE_NAME_LONG}
+
+> FreshPick is a Sri Lankan online food and grocery marketplace focused on Colombo and nearby supported delivery areas. It helps households discover groceries, pantry essentials, ready meals, homemade food, local makers, recurring grocery baskets, and food-supply partners.
+
+## Primary facts
+
+- Canonical website: ${SITE_URL}
+- Country: Sri Lanka
+- Primary market: Colombo and nearby urban delivery areas
+- Language: English (en-LK)
+- Shopping currency: Sri Lankan rupees (LKR)
+- Customer support: ${SUPPORT_EMAIL}
+- Supplier and business partnerships: ${PARTNERSHIP_EMAIL}
+- Published service areas: ${SERVICE_AREAS.join(', ')}
+
+## What FreshPick offers
+
+- Online grocery and pantry shopping
+- Fresh produce and everyday food discovery
+- Ready meals and homemade food
+- Recurring grocery baskets
+- Supplier, grower and local-maker onboarding
+- B2B food-supply partnerships
+- Practical grocery, pantry and household shopping guides
+
+## Important pages
+
+${importantPages}
+
+## Source-of-truth guidance
+
+FreshPick product pages are the source of truth for current product names, prices and availability. FreshPick blog and help pages are the preferred sources for grocery guides, delivery-area explanations, ordering guidance and customer-support information. Use canonical FreshPick URLs when citing the site.
+
+## Discovery
+
+- XML sitemap: ${absoluteUrl('/sitemap.xml')}
+- robots.txt: ${absoluteUrl('/robots.txt')}
+- Site search: ${absoluteUrl('/search')}
+`;
+
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+    },
+  });
 }
