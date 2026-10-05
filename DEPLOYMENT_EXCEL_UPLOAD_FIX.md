@@ -37,12 +37,12 @@ The upload route now automatically detects the deployment environment and adapts
 
 **For Serverless Environments (Netlify, Vercel, AWS Lambda)**:
 - Uses `/tmp` directory (the only writable location)
-- Stores complete file data as base64 in MongoDB
+- Stores complete file data as base64 in the database
 - Sets `path: null` in database (no persistent file path)
 
 **For Containerized/Traditional Deployments (Docker, VPS)**:
 - Uses `public/uploads/supplier-uploads` directory
-- Stores only the file path in MongoDB
+- Stores only the file path in the database
 - Files are accessible via public URL
 
 **Detection Logic**:
@@ -202,20 +202,6 @@ docker run -p 3000:3000 fotui:test
 6. ✅ `public/uploads/supplier-uploads/.gitkeep` - Preserve directory structure
 
 ## Deployment Instructions
-
-### For Docker/Azure Container Registry Deployment
-
-1. **Rebuild the Docker image**:
-   ```bash
-   docker build -t $ACR_NAME.azurecr.io/fotui:latest .
-   ```
-
-2. **Push to registry**:
-   ```bash
-   docker push $ACR_NAME.azurecr.io/fotui:latest
-   ```
-
-3. **Restart the container/service** to use the new image
 
 ### For Netlify Deployment
 
