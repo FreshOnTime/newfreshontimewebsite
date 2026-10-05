@@ -15,10 +15,10 @@ export default async function BlogPage() {
   const guideSlugs = editorialGuides.map(guide => guide.slug);
   const [initialData, managedGuides] = await Promise.all([
     firstJournalPage().catch(() => null),
-    prisma.blog.findMany({
+    Promise.resolve(prisma.blog.findMany({
       where: { slug: { in: guideSlugs } },
       select: { slug: true },
-    }).catch(() => []),
+    })).catch(() => []),
   ]);
 
   const managedSlugs = new Set(managedGuides.map(guide => guide.slug));
