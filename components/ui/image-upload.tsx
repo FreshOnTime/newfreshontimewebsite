@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { ImagePlus, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { FileRejection, useDropzone } from "react-dropzone";
+import { type FileRejection, useDropzone } from "react-dropzone";
 
 interface ImageUploadProps {
   onChange: (file: File | null) => void;
