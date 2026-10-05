@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 
-export const GET = requireAuth(async (request: NextRequest & { user?: { role?: string } }) => {
+export const GET = requireAdmin(async (request: NextRequest & { user?: { role?: string } }) => {
   try {
-    if (request.user?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const uploads = await prisma.supplierUpload.findMany({
       orderBy: { createdAt: 'desc' },
