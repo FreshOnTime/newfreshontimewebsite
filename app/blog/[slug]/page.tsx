@@ -16,7 +16,47 @@ interface BlogPageProps {
 // contradicts and overrides the `revalidate` directive.
 export const revalidate = 60;
 
-// Helper function to get blog data (shared between metadata and page)
+const emptyOptionalMetadata = {
+  authorName: null as string | null,
+  metaTitle: null as string | null,
+  metaDescription: null as string | null,
+  metaKeywords: [] as string[],
+  tags: [] as string[],
+};
+
+async function getOptionalBlogMetadata(id: string) {
+  try {
+    const metadata = await prisma.blog.findUnique({
+      where: { id },
+      select: {
+        authorName: true,
+        metaTitle: true,
+        metaDescription: true,
+        metaKeywords: true,
+        tags: true,
+      },
+    });
+
+    if (!metadata) return emptyOptionalMetadata;
+
+    return {
+      authorName: metadata.authorName ?? null,
+      metaTitle: metadata.metaTitle ?? null,
+      metaDescription: metadata.metaDescription ?? null,
+      metaKeywords: Array.isArray(metadata.metaKeywords) ? metadata.metaKeywords : [],
+      tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+    };
+  } catch (error) {
+    // Existing deployments can briefly have the core blog table before newer
+    // editorial/SEO columns are reconciled. The article itself should still render.
+    console.error('[Blog article] Optional metadata query failed; rendering core article data:', error);
+    return emptyOptionalMetadata;
+  }
+}
+
+// Helper function to get blog data (shared between metadata and page).
+// Keep the first query limited to long-standing article fields so an optional
+// editorial metadata schema mismatch cannot take the whole route down.
 const getBlogData = cache(async (slug: string) => {
   const blog = await prisma.blog.findFirst({
     where: {
@@ -31,66 +71,71 @@ const getBlogData = cache(async (slug: string) => {
       content: true,
       featuredImage: true,
       category: true,
-      tags: true,
       publishedAt: true,
-      views: true,
-      authorName: true,
-      metaTitle: true,
-      metaDescription: true,
-      metaKeywords: true,
       createdAt: true,
       updatedAt: true,
     },
   });
 
   if (!blog) return null;
-  return { ...blog, featuredImage: normalizeBlogImage(blog.featuredImage), _id: blog.id };
+
+  const optionalMetadata = await getOptionalBlogMetadata(blog.id);
+
+  return {
+    ...blog,
+    ...optionalMetadata,
+    views: 0,
+    featuredImage: normalizeBlogImage(blog.featuredImage),
+    _id: blog.id,
+  };
 });
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug } = await params;
 
-    const blogData = await getBlogData(slug);
+  const blogData = await getBlogData(slug);
 
-    if (!blogData) {
-      return {
-        title: 'Blog Post Not Found', robots: { index: false, follow: false },
-      };
-    }
-
-    const baseMetadata = pageMetadata({
-      title: blogData.metaTitle || blogData.title,
-      description: blogData.metaDescription || blogData.excerpt,
-      path: `/blog/${encodeURIComponent(blogData.slug)}`,
-      image: blogData.featuredImage?.url,
-      type: 'article',
-    });
-    const authorName = blogData.authorName || 'FreshPick Sri Lanka';
-    const tags = Array.from(new Set([...blogData.tags, ...blogData.metaKeywords]));
-
+  if (!blogData) {
     return {
-      ...baseMetadata,
-      authors: [{ name: authorName }],
-      creator: authorName,
-      publisher: 'FreshPick Sri Lanka',
-      category: blogData.category || 'Grocery guides',
-      keywords: tags,
-      openGraph: {
-        ...baseMetadata.openGraph,
-        type: 'article',
-        publishedTime: blogData.publishedAt?.toISOString(),
-        modifiedTime: blogData.updatedAt?.toISOString(),
-        authors: [authorName],
-        section: blogData.category || 'Grocery guides',
-        tags,
-      },
+      title: 'Blog Post Not Found',
+      robots: { index: false, follow: false },
     };
+  }
+
+  const baseMetadata = pageMetadata({
+    title: blogData.metaTitle || blogData.title,
+    description: blogData.metaDescription || blogData.excerpt,
+    path: `/blog/${encodeURIComponent(blogData.slug)}`,
+    image: blogData.featuredImage?.url,
+    type: 'article',
+  });
+  const authorName = blogData.authorName || 'FreshPick Sri Lanka';
+  const tags = Array.from(new Set([...(blogData.tags || []), ...(blogData.metaKeywords || [])]));
+
+  return {
+    ...baseMetadata,
+    authors: [{ name: authorName }],
+    creator: authorName,
+    publisher: 'FreshPick Sri Lanka',
+    category: blogData.category || 'Grocery guides',
+    keywords: tags,
+    openGraph: {
+      ...baseMetadata.openGraph,
+      type: 'article',
+      publishedTime: blogData.publishedAt?.toISOString(),
+      modifiedTime: blogData.updatedAt?.toISOString(),
+      authors: [authorName],
+      section: blogData.category || 'Grocery guides',
+      tags,
+    },
+  };
 }
 
 export default async function BlogPostPage({ params }: BlogPageProps) {
   const { slug } = await params;
   const blogData = await getBlogData(slug);
   if (!blogData) notFound();
+
   // Rendering and ISR must not count as reader views or write to the database.
   const serializedBlog = {
     ...blogData,
@@ -100,5 +145,6 @@ export default async function BlogPostPage({ params }: BlogPageProps) {
     updatedAt: blogData.updatedAt?.toISOString(),
     publishedAt: blogData.publishedAt?.toISOString(),
   };
+
   return <BlogPost blog={serializedBlog} />;
 }
