@@ -1,12 +1,13 @@
 import { GET } from '@/app/api/blogs/route';
 import { POST, GET as adminGET } from '@/app/api/admin/blogs/route';
 import { PUT, DELETE } from '@/app/api/admin/blogs/[id]/route';
+import { POST as importGuides } from '@/app/api/admin/blogs/import-guides/route';
 import { listPublishedJournalEntries } from '@/lib/journalService';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import prisma from '@/lib/prisma';
 
 jest.mock('next/cache', () => ({ unstable_cache: (fn: unknown) => fn, revalidatePath: jest.fn(), revalidateTag: jest.fn() }));
-jest.mock('@/lib/prisma', () => ({ __esModule: true, default: { blog: { findMany: jest.fn(), count: jest.fn(), findFirst: jest.fn(), create: jest.fn(), update: jest.fn() } } }));
+jest.mock('@/lib/prisma', () => ({ __esModule: true, default: { blog: { findMany: jest.fn(), count: jest.fn(), findFirst: jest.fn(), create: jest.fn(), createMany: jest.fn(), update: jest.fn() } } }));
 jest.mock('@/lib/middleware/adminAuth', () => ({ requireAdminSimple: (fn: unknown) => fn, requireAdmin: (fn: unknown) => fn, logAuditAction: jest.fn() }));
 
 const blog = prisma.blog as unknown as Record<string, jest.Mock>;
@@ -76,4 +77,42 @@ it('invalidates the homepage and deleted article after a soft delete', async () 
   expect(blog.update).toHaveBeenCalledWith({ where: { id: record.id }, data: { isDeleted: true } });
   expect(revalidatePath).toHaveBeenCalledWith('/');
   expect(revalidatePath).toHaveBeenCalledWith('/blog/market-notes');
+});
+
+
+it('accepts uploaded local blog image paths when creating a post', async () => {
+  blog.findFirst.mockResolvedValue(null);
+  blog.create.mockResolvedValue({
+    ...record,
+    featuredImage: { url: '/uploads/blog-images/test.webp', alt: 'Fresh vegetables' },
+  });
+
+  const response = await POST(request({
+    title: record.title,
+    excerpt: record.excerpt,
+    content: 'A sufficiently long article about good ingredients and everyday cooking.',
+    featuredImage: { url: '/uploads/blog-images/test.webp', alt: 'Fresh vegetables' },
+  }) as never);
+
+  expect(response.status).toBe(201);
+  expect(blog.create).toHaveBeenCalledWith(expect.objectContaining({
+    data: expect.objectContaining({
+      featuredImage: { url: '/uploads/blog-images/test.webp', alt: 'Fresh vegetables' },
+    }),
+  }));
+});
+
+it('imports repository-backed editorial guides into the CMS without duplicating existing slugs', async () => {
+  blog.findMany.mockResolvedValue([{ slug: 'grocery-delivery-colombo-checklist' }]);
+  blog.createMany.mockResolvedValue({ count: 3 });
+
+  const response = await importGuides(request({}) as never);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ imported: 3 });
+  expect(blog.createMany).toHaveBeenCalledWith(expect.objectContaining({
+    skipDuplicates: true,
+    data: expect.arrayContaining([
+      expect.objectContaining({ slug: 'weekly-grocery-list-sri-lankan-household', published: true }),
+    ]),
+  }));
 });
