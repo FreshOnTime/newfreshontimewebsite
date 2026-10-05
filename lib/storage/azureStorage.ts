@@ -85,6 +85,7 @@ export class AzureStorageService {
 
 // Singleton instances for different storage containers
 let productImageStorage: AzureStorageService | null = null;
+let categoryImageStorage: AzureStorageService | null = null;
 let bannerImageStorage: AzureStorageService | null = null;
 let blogImageStorage: AzureStorageService | null = null;
 
@@ -97,6 +98,17 @@ export function getProductImageStorage(): AzureStorageService {
     productImageStorage = new AzureStorageService(connectionString, 'product-images');
   }
   return productImageStorage;
+}
+
+export function getCategoryImageStorage(): AzureStorageService {
+  if (!categoryImageStorage) {
+    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if (!connectionString) {
+      throw new Error('AZURE_STORAGE_CONNECTION_STRING environment variable is required');
+    }
+    categoryImageStorage = new AzureStorageService(connectionString, 'category-images');
+  }
+  return categoryImageStorage;
 }
 
 export function getBannerImageStorage(): AzureStorageService {

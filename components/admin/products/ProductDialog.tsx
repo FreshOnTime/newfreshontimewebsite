@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
 type NamedId = { _id: string; name: string };
 const isNamedId = (x: unknown): x is NamedId => {
@@ -45,7 +46,22 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface Product { _id?: string; name: string; sku: string; slug?: string; description?: string; price: number; costPrice: number; categoryId: string; supplierId: string; stockQty: number; minStockLevel?: number; attributes?: Record<string, unknown>; }
+interface Product {
+  _id?: string;
+  name: string;
+  sku: string;
+  slug?: string;
+  description?: string;
+  price: number;
+  costPrice: number;
+  categoryId: string;
+  supplierId: string;
+  stockQty: number;
+  minStockLevel?: number;
+  attributes?: Record<string, unknown>;
+  image?: string | null;
+  images?: string[];
+}
 
 export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = false }: { open: boolean; onOpenChange: (o: boolean) => void; product?: Partial<Product> | null; onSave: () => void; readOnly?: boolean; }) {
   const isEditing = !!product?._id;
@@ -53,7 +69,6 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]);
   const [suppliers, setSuppliers] = useState<{ _id: string; name: string }[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>("");
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -66,8 +81,8 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
     const loadOptions = async () => {
       try {
         const [catRes, supRes] = await Promise.all([
-          fetch('/api/admin/categories?limit=1000', { credentials: 'include' }),
-          fetch('/api/admin/suppliers?limit=1000', { credentials: 'include' }),
+          authenticatedApiFetch('/api/admin/categories?limit=1000'),
+          authenticatedApiFetch('/api/admin/suppliers?limit=1000'),
         ]);
         const catsJson: unknown = catRes.ok ? await catRes.json() : {};
         const supsJson: unknown = supRes.ok ? await supRes.json() : {};
@@ -108,12 +123,10 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
   form.reset({ name: product.name, sku: product.sku, slug: product.slug || '', description: product.description || '', price: product.price, costPrice: product.costPrice, categoryId: product.categoryId, supplierId: product.supplierId, stockQty: product.stockQty, minStockLevel: product.minStockLevel ?? 5, unitOptions: mapped });
       // Reset image inputs when switching product
       setImageFile(null);
-      setImageUrl("");
       replace(mapped || []);
     } else {
   form.reset({ name: '', sku: '', slug: '', description: '', price: 0, costPrice: 0, categoryId: '', supplierId: '', stockQty: 0, minStockLevel: 5, unitOptions: [] });
       setImageFile(null);
-      setImageUrl("");
       replace([]);
     }
   }, [product, form, replace]);
@@ -137,34 +150,25 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
         },
       };
 
-      // Optional image handling: prefer uploaded file, else URL, else none
-      try {
-        if (imageFile) {
-          const fd = new FormData();
-          fd.append('image', imageFile);
-          const uploadRes = await fetch('/api/upload/images/products', { method: 'POST', body: fd, credentials: 'include' });
-          if (!uploadRes.ok) {
-            const err = await uploadRes.json().catch(() => ({}));
-            throw new Error(err?.message || 'Image upload failed');
-          }
-          const uploadJson = await uploadRes.json();
-          const url = uploadJson?.data?.url as string | undefined;
-          if (url) {
-            body.images = [url];
-            body.image = url;
-          }
-        } else if (imageUrl && imageUrl.trim().length > 0) {
-          body.images = [imageUrl.trim()];
-          body.image = imageUrl.trim();
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append('image', imageFile);
+        const uploadRes = await authenticatedApiFetch('/api/upload/images/products', {
+          method: 'POST',
+          body: fd,
+        });
+        const uploadJson = await uploadRes.json().catch(() => ({}));
+        if (!uploadRes.ok || !uploadJson?.data?.url) {
+          throw new Error(uploadJson?.error || 'Image upload failed');
         }
-      } catch (imgErr) {
-        // Non-fatal if user provided an image but upload failed; surface the error
-        throw imgErr instanceof Error ? imgErr : new Error('Image handling failed');
+        const url = uploadJson.data.url as string;
+        body.images = [url];
+        body.image = url;
       }
-      const res = await fetch(isEditing ? `/api/admin/products/${product!._id}` : '/api/admin/products', {
+
+      const res = await authenticatedApiFetch(isEditing ? `/api/admin/products/${product!._id}` : '/api/admin/products', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(body),
       });
       if (!res.ok) {
@@ -294,26 +298,18 @@ export function ProductDialog({ open, onOpenChange, product, onSave, readOnly = 
               </div>
             </div>
 
-            {/* Optional image section */}
-            <div className="space-y-3 border rounded-md p-3">
-              <h4 className="font-semibold">Product Image (optional)</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Upload image file</label>
-                  <ImageUpload value={imageFile} onChange={setImageFile} disabled={readOnly} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">or Image URL</label>
-                  <Input
-                    placeholder="https://..."
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    disabled={readOnly}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Provide a direct image URL if not uploading a file.</p>
-                </div>
+            <div className="space-y-3 rounded-md border p-4">
+              <div>
+                <h4 className="font-semibold">Product image</h4>
+                <p className="mt-1 text-xs text-muted-foreground">Upload the product image directly. A new upload replaces the current primary image.</p>
               </div>
-              <p className="text-xs text-muted-foreground">You can leave both empty. One image is optional for creating a product.</p>
+              <ImageUpload
+                value={imageFile}
+                onChange={setImageFile}
+                existingUrl={product?.image || product?.images?.[0] || null}
+                disabled={readOnly || loading}
+                aspectRatio={1}
+              />
             </div>
 
             <DialogFooter>
