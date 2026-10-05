@@ -1,6 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { getProductImageStorage as azureStorage } from '@/lib/storage/azureStorage';
-import { getProductImageStorage as localStorage } from '@/lib/storage/localStorage';
+import {
+  getCategoryImageStorage as azureCategoryStorage,
+  getProductImageStorage as azureProductStorage,
+} from '@/lib/storage/azureStorage';
+import {
+  getCategoryImageStorage as localCategoryStorage,
+  getProductImageStorage as localProductStorage,
+} from '@/lib/storage/localStorage';
 
 export class ImageUploadError extends Error {
   constructor(message: string, public status = 400) { super(message); }
@@ -43,7 +49,13 @@ export async function readProductImage(request: Request) {
 }
 
 export async function storeProductImage(image: Awaited<ReturnType<typeof readProductImage>>) {
-  if (process.env.AZURE_STORAGE_CONNECTION_STRING) return azureStorage().uploadFile(image.filename, image.bytes, image.mimeType);
+  if (process.env.AZURE_STORAGE_CONNECTION_STRING) return azureProductStorage().uploadFile(image.filename, image.bytes, image.mimeType);
   if (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') throw new ImageUploadError('Product image storage is not configured. Contact an administrator.', 503);
-  return localStorage().uploadFile(image.filename, image.bytes, image.mimeType);
+  return localProductStorage().uploadFile(image.filename, image.bytes, image.mimeType);
+}
+
+export async function storeCategoryImage(image: Awaited<ReturnType<typeof readProductImage>>) {
+  if (process.env.AZURE_STORAGE_CONNECTION_STRING) return azureCategoryStorage().uploadFile(image.filename, image.bytes, image.mimeType);
+  if (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') throw new ImageUploadError('Category image storage is not configured. Contact an administrator.', 503);
+  return localCategoryStorage().uploadFile(image.filename, image.bytes, image.mimeType);
 }
