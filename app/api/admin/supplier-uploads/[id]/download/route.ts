@@ -28,7 +28,7 @@ export const GET = requireAdmin(async (_request: NextRequest, context: { params:
 
     const originalName = upload.originalName || upload.filename || 'supplier-upload.xlsx';
     const safeAscii = originalName.replace(/[^a-zA-Z0-9._-]+/g, '_');
-    return new NextResponse(new Uint8Array(buffer), {
+    return new Response(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': upload.mimeType || 'application/octet-stream',
