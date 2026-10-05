@@ -13,6 +13,8 @@ import path from 'path';
 export const maxDuration = 60; // 60 seconds timeout
 export const dynamic = 'force-dynamic';
 
+const MAX_CATALOGUE_BYTES = 5 * 1024 * 1024;
+
 // Note: Next API routes with multipart parsing require custom handling.
 // Here we rely on a simple stream-based save for small files from the client.
 
@@ -172,14 +174,21 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       : `upload-${Date.now()}`;
     const originalName = path.basename(rawOriginalName);
     const safeOriginalName = originalName.replace(/[^a-zA-Z0-9.\-]+/g, '_');
+    const lowerName = safeOriginalName.toLowerCase();
     const mimeType = typeof fileLike?.type === 'string' && fileLike.type.trim()
       ? fileLike.type
       : '';
 
+    if (!lowerName.endsWith('.csv') && !lowerName.endsWith('.xlsx') && !lowerName.endsWith('.xls')) {
+      return NextResponse.json({ error: 'Upload a CSV or Excel catalogue (.csv, .xlsx or .xls).' }, { status: 400 });
+    }
+    if (buffer.length > MAX_CATALOGUE_BYTES) {
+      return NextResponse.json({ error: 'Catalogue files must be 5 MB or smaller.' }, { status: 413 });
+    }
+
     // Detect MIME type from extension if not provided
     let detectedMimeType = mimeType;
     if (!detectedMimeType) {
-      const lowerName = safeOriginalName.toLowerCase();
       if (lowerName.endsWith('.csv')) {
         detectedMimeType = 'text/csv';
       } else if (lowerName.endsWith('.xlsx')) {
@@ -207,7 +216,6 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     // parse preview depending on file type
     let previewRows: unknown[] = [];
     try {
-      const lowerName = safeOriginalName.toLowerCase();
       const isCsv = detectedMimeType === 'text/csv' || lowerName.endsWith('.csv');
       const isExcel = detectedMimeType.includes('spreadsheet') || detectedMimeType.includes('excel') || lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls');
 
@@ -234,7 +242,20 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
       }
     } catch (e) {
       console.error('[ERROR] /api/suppliers/upload - Failed to parse preview:', e);
-      previewRows = [];
+      return NextResponse.json({ error: 'The catalogue could not be read. Use the FreshPick CSV template or a valid Excel workbook.' }, { status: 400 });
+    }
+
+    if (previewRows.length === 0) {
+      return NextResponse.json({ error: 'The catalogue has no product rows. Add at least one product before uploading.' }, { status: 400 });
+    }
+
+    const firstRow = previewRows[0] as Record<string, unknown>;
+    const normalizedHeaders = new Set(Object.keys(firstRow).map(header => header.trim().toLowerCase()));
+    const missingHeaders = ['sku', 'name', 'price'].filter(header => !normalizedHeaders.has(header));
+    if (missingHeaders.length) {
+      return NextResponse.json({
+        error: `Catalogue columns are incorrect. Missing required column(s): ${missingHeaders.join(', ')}. Download the FreshPick template and keep the header row unchanged.`,
+      }, { status: 400 });
     }
 
     // attempt to include supplier's business name for easier admin display
