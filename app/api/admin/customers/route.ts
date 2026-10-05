@@ -15,7 +15,6 @@ const createCustomerSchema = z.object({
     zipCode: z.string(),
     country: z.string(),
   }).optional(),
-  notes: z.string().max(1000).optional(),
 });
 
 const querySchema = z.object({
