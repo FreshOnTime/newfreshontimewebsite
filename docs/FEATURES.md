@@ -79,7 +79,7 @@ Admin-created customer records are contact/account records without a password in
 5. The import creates new product rows for valid entries. It is not a SKU upsert: duplicate SKUs and invalid rows are reported separately. A batch can have partial success.
 6. Admin checks categories, prices, quantities and images before expecting the new products to make a useful customer-facing listing.
 
-Supplier records created manually and supplier login accounts are separate relationships. Review the linked user/supplier association when repairing an old upload. Spreadsheet originals can be stored inline or through the legacy file path; product-photo storage follows the Azure production configuration.
+Supplier records created manually and supplier login accounts are separate relationships. Review the linked user/supplier association when repairing an old upload. Spreadsheet originals can be stored inline or through the legacy file path; product-photo storage uses the configured Supabase Storage bucket in production.
 
 ## Content and communication
 
@@ -102,7 +102,7 @@ These are technical foundations, not a guarantee of rankings, answer-engine cita
 | Integration | Implemented purpose | Required operational setup |
 | --- | --- | --- |
 | PostgreSQL + Prisma | Accounts, stock, orders, subscriptions, content and inbox records | Migrations, backups and secure database connection |
-| Azure Blob Storage | Durable product photography | Server storage connection/container in production |
+| Supabase Storage | Durable product/category/blog photography | Server-only Supabase URL/secret plus the public image bucket |
 | SendGrid | Transactional messages from database outbox | API key, sender identity and scheduled outbox processing |
 | Firebase | Google identity verification | Matching client and server credentials |
 | Netlify Functions | Basket/recurring-order processing and mail worker | Published scheduled deployment; inspect worker logs |
