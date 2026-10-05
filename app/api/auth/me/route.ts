@@ -3,6 +3,8 @@ import { verifyToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
+  const authorization = req.headers.get('authorization');
+  const bearerToken = authorization?.startsWith('Bearer ') ? authorization.slice(7).trim() : undefined;
   const canRefresh = Boolean(req.cookies.get('refreshToken')?.value);
   const unauthenticated = () => NextResponse.json(
     { error: 'User not authenticated', canRefresh },
@@ -10,7 +12,7 @@ export async function GET(req: NextRequest) {
   );
 
   try {
-    const accessToken = req.cookies.get('accessToken')?.value;
+    const accessToken = bearerToken || req.cookies.get('accessToken')?.value;
     if (!accessToken) {
       return unauthenticated();
     }
