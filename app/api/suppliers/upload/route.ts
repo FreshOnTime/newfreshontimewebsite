@@ -215,7 +215,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
 
       if (isCsv) {
         const text = buffer.toString('utf8');
-        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+        const parsed = Papa.parse(text, { header: true, skipEmptyLines: 'greedy', comments: '#', transformHeader: header => header.trim() });
         previewRows = parsed.data as unknown[];
         console.log('[INFO] /api/suppliers/upload - CSV parsed, rows:', previewRows.length);
       } else if (isExcel) {
