@@ -120,14 +120,14 @@ export function BlogDialog({ open, onOpenChange, blog, onSave, readOnly }: BlogD
         excerpt: formData.excerpt.trim(),
         content: formData.content.trim(),
         featuredImage,
-        category: formData.category.trim() || undefined,
+        category: formData.category.trim() || (blog ? null : undefined),
         tags: formData.tags
           .split(',')
           .map(tag => tag.trim())
           .filter(Boolean),
         published: formData.published,
-        metaTitle: formData.metaTitle.trim() || undefined,
-        metaDescription: formData.metaDescription.trim() || undefined,
+        metaTitle: formData.metaTitle.trim() || (blog ? null : undefined),
+        metaDescription: formData.metaDescription.trim() || (blog ? null : undefined),
         metaKeywords: formData.metaKeywords
           .split(',')
           .map(keyword => keyword.trim())
