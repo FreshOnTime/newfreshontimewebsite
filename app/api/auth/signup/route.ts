@@ -28,7 +28,7 @@ async function handleSignup(request: NextRequest) {
     const result = await authService.signup(validation.data!);
 
     // Create response
-    const isMobileClient = request.headers.get('x-freshpick-client') === 'mobile';
+    const isMobileClient = request.headers?.get?.('x-freshpick-client') === 'mobile';
     const response = NextResponse.json(
       {
         message: 'User registered successfully',
