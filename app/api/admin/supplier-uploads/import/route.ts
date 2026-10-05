@@ -140,6 +140,13 @@ export const POST = requireAdmin(async (request: NextRequest & { user?: { role?:
         results.errors.push({ row: i + 2, reason: 'Missing price' });
         continue;
       }
+      const priceLooksNumeric = typeof rawPrice === 'number'
+        ? Number.isFinite(rawPrice)
+        : /\d/.test(String(rawPrice));
+      if (!priceLooksNumeric) {
+        results.errors.push({ row: i + 2, reason: 'Invalid price' });
+        continue;
+      }
       if (price < 0) {
         results.errors.push({ row: i + 2, reason: 'Price cannot be negative' });
         continue;
