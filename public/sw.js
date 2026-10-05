@@ -1,8 +1,7 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = "freshpick-v3";
-const STATIC_CACHE = "freshpick-static-v3";
-const DYNAMIC_CACHE = "freshpick-dynamic-v3";
+const STATIC_CACHE = "freshpick-static-v4";
+const DYNAMIC_CACHE = "freshpick-dynamic-v4";
 
 // These routes are public catalogue/marketing content. Account, bag, checkout,
 // order, dashboard, and admin pages are intentionally excluded so no
@@ -16,13 +15,21 @@ const PUBLIC_PAGE_PATHS = new Set([
     "/categories",
     "/deals",
     "/subscriptions",
-    "/meal-kits",
     "/about",
     "/b2b",
+    "/blog",
+    "/discover",
+    "/farm-to-table",
+    "/help",
 ]);
 
 function isCacheablePublicPage(url) {
-    return PUBLIC_PAGE_PATHS.has(url.pathname) || url.pathname.startsWith("/categories/");
+    return (
+        PUBLIC_PAGE_PATHS.has(url.pathname) ||
+        url.pathname.startsWith("/categories/") ||
+        url.pathname.startsWith("/products/") ||
+        url.pathname.startsWith("/blog/")
+    );
 }
 
 function staleWhileRevalidate(request) {
@@ -35,68 +42,47 @@ function staleWhileRevalidate(request) {
             })
             .catch(() => cached);
 
-        // A cached response makes repeat navigation immediate while the latest
-        // public content refreshes quietly in the background.
         return cached || network;
     });
 }
 
-// Static assets to cache immediately
 const STATIC_ASSETS = [
     "/offline",
     "/fresh-pick.svg",
     "/placeholder.svg",
 ];
 
-// Install event - cache static assets
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(STATIC_CACHE).then((cache) => {
-            console.log("[SW] Caching static assets");
             return cache.addAll(STATIC_ASSETS);
         })
     );
-    // Activate immediately
     self.skipWaiting();
 });
 
-// Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
                 keys
-                    .filter(
-                        (key) =>
-                            key !== STATIC_CACHE &&
-                            key !== DYNAMIC_CACHE &&
-                            key !== CACHE_NAME
-                    )
+                    .filter((key) => key !== STATIC_CACHE && key !== DYNAMIC_CACHE)
                     .map((key) => caches.delete(key))
             );
         })
     );
-    // Take control of all pages immediately
     self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
 self.addEventListener("fetch", (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Skip non-GET requests
     if (request.method !== "GET") return;
-
-    // Skip API requests (always network)
+    if (url.origin !== self.location.origin) return;
     if (url.pathname.startsWith("/api/")) return;
-
-    // Skip Chrome extension requests
     if (url.protocol === "chrome-extension:") return;
 
-    // Cache only explicitly public page HTML and Next RSC payloads. This is the
-    // path used by client-side navigation, so it removes the network wait after
-    // a visitor has opened a catalogue page once.
     if (request.mode === "navigate") {
         if (isCacheablePublicPage(url)) {
             event.respondWith(
@@ -104,31 +90,29 @@ self.addEventListener("fetch", (event) => {
             );
             return;
         }
-        event.respondWith(
-            fetch(request)
-                .catch(() => caches.match("/offline"))
-        );
+
+        event.respondWith(fetch(request).catch(() => caches.match("/offline")));
         return;
     }
 
-    if (request.headers.get("RSC") === "1" && isCacheablePublicPage(url)) {
-        event.respondWith(staleWhileRevalidate(request));
+    // Next.js client-side navigation requests RSC payloads. Only explicitly
+    // public routes are allowed into the dynamic cache. Private/account RSC
+    // responses must always remain network-only.
+    if (request.headers.get("RSC") === "1") {
+        if (isCacheablePublicPage(url)) {
+            event.respondWith(staleWhileRevalidate(request));
+        }
         return;
     }
 
-    // For static assets (images, scripts, styles)
-    if (
-        url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?)$/)
-    ) {
+    if (url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?)$/)) {
         event.respondWith(
             caches.match(request).then((cached) => {
-                // Return cached version, fetch update in background
                 const fetchPromise = fetch(request)
                     .then((response) => {
                         if (response.ok) {
-                            const responseClone = response.clone();
                             caches.open(STATIC_CACHE).then((cache) => {
-                                cache.put(request, responseClone);
+                                cache.put(request, response.clone());
                             });
                         }
                         return response;
@@ -141,23 +125,11 @@ self.addEventListener("fetch", (event) => {
         return;
     }
 
-    // Default: Network first
-    event.respondWith(
-        fetch(request)
-            .then((response) => {
-                if (response.ok) {
-                    const responseClone = response.clone();
-                    caches.open(DYNAMIC_CACHE).then((cache) => {
-                        cache.put(request, responseClone);
-                    });
-                }
-                return response;
-            })
-            .catch(() => caches.match(request))
-    );
+    // Everything else stays network-only. This intentionally avoids caching
+    // account-specific framework payloads, auth pages, and other GET responses
+    // that are not explicitly classified as public content.
 });
 
-// Handle push notifications (for future use)
 self.addEventListener("push", (event) => {
     const data = event.data?.json() ?? {};
     const title = data.title || "Fresh Pick";
@@ -174,22 +146,19 @@ self.addEventListener("push", (event) => {
     event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Handle notification click
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
-    const url = event.notification.data?.url || "/";
+    const targetUrl = new URL(event.notification.data?.url || "/", self.location.origin).href;
 
     event.waitUntil(
-        self.clients.matchAll({ type: "window" }).then((clients) => {
-            // Focus existing window if available
+        self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
             for (const client of clients) {
-                if (client.url === url && "focus" in client) {
+                if (client.url === targetUrl && "focus" in client) {
                     return client.focus();
                 }
             }
-            // Open new window
             if (self.clients.openWindow) {
-                return self.clients.openWindow(url);
+                return self.clients.openWindow(targetUrl);
             }
         })
     );
