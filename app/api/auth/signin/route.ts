@@ -24,10 +24,12 @@ async function handleLogin(request: NextRequest) {
     const result = await authService.login(validation.data!);
 
     // Create response
+    const isMobileClient = request.headers.get('x-freshpick-client') === 'mobile';
     const response = NextResponse.json(
       {
         message: 'Login successful',
-        user: result.user
+        user: result.user,
+        ...(isMobileClient ? { accessToken: result.accessToken, refreshToken: result.refreshToken } : {}),
       },
       { status: 200 }
     );
