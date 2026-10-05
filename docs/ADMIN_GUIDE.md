@@ -102,7 +102,7 @@ Product fields include name, SKU, slug, description, selling price, cost price, 
 1. Create or confirm the category and supplier.
 2. Choose a unique SKU and clear product name. State the package/unit honestly.
 3. Set approved price/cost and stock/minimum level. Unit options are metadata, not free-form fractional stock.
-4. Upload product photography or use a valid image URL. Production uploads require durable Azure configuration.
+4. Upload product photography or use a valid image URL. Production uploads require configured Supabase Storage.
 5. Save, inspect the public listing and verify the item can be found in its category.
 6. Archive unavailable/discontinued items when appropriate; keep historical references intact.
 
@@ -268,7 +268,7 @@ Daily checklist:
 | Database update required / 503 | Missing table/column; apply committed migrations to the deployed database. Netlify production builds now migrate before publishing; check Build and Functions database scopes |
 | 409 saving | Stale version/state, duplicate identifier, plan capacity or lifecycle conflict; reload and inspect |
 | Invalid product | Required supplier/category, unique SKU/slug, numeric limits, missing/archived mapped item |
-| Image upload failure | 4 MB/content type and production Azure credentials/container |
+| Image upload failure | 4 MB/content type and production Supabase URL/secret/public bucket configuration |
 | Published content missing | Draft/deleted/category restrictions and cache revalidation |
 | Missing confirmation/welcome | Database outbox, scheduled sender, provider identity and credentials |
 | Due baskets absent | Active plan/subscription, schedule, worker execution; check Needs attention |
