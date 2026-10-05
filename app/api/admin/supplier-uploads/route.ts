@@ -1,25 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
 
-export const GET = requireAdmin(async (request: NextRequest & { user?: { role?: string } }) => {
+export const GET = requireAdmin(async () => {
   try {
-
     const uploads = await prisma.supplierUpload.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { supplier: true },
+      select: {
+        id: true,
+        supplierId: true,
+        supplierName: true,
+        supplierCompany: true,
+        supplierEmail: true,
+        supplierPhone: true,
+        supplierContactName: true,
+        supplierStatus: true,
+        originalName: true,
+        filename: true,
+        mimeType: true,
+        size: true,
+        path: true,
+        preview: true,
+        createdAt: true,
+        supplier: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+            contactName: true,
+            status: true,
+          },
+        },
+      },
     });
 
-    // supplierId is now a real FK to Supplier, so the joined record is the source
-    // of truth. Prefer the persisted display name, then fall back to the live
-    // supplier record. (The old Mongo model had no companyName column; map it to
-    // the supplier name for backwards-compatible response shape.)
+    // Never return fileData from a list endpoint. Production uploads can store the
+    // full spreadsheet inline as base64 and returning every blob makes the admin
+    // queue unnecessarily large. The protected download endpoint streams the
+    // original file on demand.
     const result = uploads.map((u) => {
       const { supplier: s, ...rest } = u;
       return {
         ...rest,
         _id: u.id,
-        supplierId: u.supplierId,
         supplierName: u.supplierName || s?.name || null,
         supplierCompany: s?.name || u.supplierCompany || null,
         supplierEmail: s?.email || u.supplierEmail || null,
@@ -29,7 +52,10 @@ export const GET = requireAdmin(async (request: NextRequest & { user?: { role?: 
       };
     });
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json(
+      { success: true, data: result },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    );
   } catch (error) {
     console.error('Admin supplier uploads list error', error);
     return NextResponse.json({ error: 'Failed to list uploads' }, { status: 500 });
