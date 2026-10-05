@@ -4,7 +4,10 @@ import { setAuthCookies } from '@/lib/utils/cookies';
 
 export async function POST(request: NextRequest) {
   try {
-    const refreshToken = request.cookies.get('refreshToken')?.value;
+    const isMobileClient = request.headers.get('x-freshpick-client') === 'mobile';
+    const body = isMobileClient ? await request.json().catch(() => ({})) : {};
+    const refreshToken = request.cookies.get('refreshToken')?.value ||
+      (isMobileClient && typeof body?.refreshToken === 'string' ? body.refreshToken : undefined);
 
     if (!refreshToken) {
       return NextResponse.json(
@@ -19,7 +22,10 @@ export async function POST(request: NextRequest) {
 
       // Create response
       const response = NextResponse.json(
-        { message: 'Tokens refreshed successfully' },
+        {
+          message: 'Tokens refreshed successfully',
+          ...(isMobileClient ? { accessToken: result.accessToken, refreshToken: result.refreshToken } : {}),
+        },
         { status: 200 }
       );
 
