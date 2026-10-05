@@ -82,7 +82,7 @@ trigger refresh. An expired refresh session still requires signing in again.
 | `FRONTEND_URL` | HTTPS canonical site origin for email links |
 | `SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL` | SendGrid key and verified sender |
 | `NEWSLETTER_TOKEN_SECRET` | Optional separate 32+ character key; otherwise uses `JWT_SECRET` |
-| `AZURE_STORAGE_CONNECTION_STRING` | Durable image storage; `product-images` and `blog-images` containers must permit public image reads or have a compatible public CDN |
+| `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, optional `SUPABASE_STORAGE_BUCKET` | Durable runtime image storage. The server creates/uses a public `freshpick-images` bucket by default; keep the secret key server-only |
 
 Test-only delivery fixtures remain Rs. 5/Rs. 50. They are not proposed business
 rates. Tax remains zero; obtain a business decision before changing tax behavior.
@@ -91,11 +91,9 @@ Unsupported countries/cities are rejected before an order or subscription is sav
 
 The image API accepts authenticated admins, inventory managers and approved,
 active suppliers. It bounds streamed multipart bodies, limits images to 4 MB,
-checks JPEG/PNG/WebP/AVIF headers and gives each upload a random filename. Netlify
-and production require Azure; local disk is only a development fallback. Existing
+checks JPEG/PNG/WebP/AVIF headers and gives each upload a random filename. Netlify/Vercel production require Supabase Storage; local disk is only a development fallback. Existing
 inline `data:` image records are not converted automatically: re-upload them through
-the protected endpoint and replace their product references. Back up blob storage
-and enable its retention/versioning separately from database backups.
+the protected endpoint and replace their product references. Back up Supabase Storage and configure retention/versioning separately from database backups.
 
 ## Admin workflows
 
@@ -271,8 +269,8 @@ and does not resurrect unpublished or deleted content.
 
 The admin editor supports formatting/preview, featured-image uploads and inline
 article-image uploads. Blog uploads are authenticated, limited to JPEG/PNG/WebP/AVIF
-within 4 MB, and stored in the dedicated `blog-images` Azure container in production
-or `public/uploads/blog-images` during local non-serverless development.
+within 4 MB, and stored under `blog-images/` in the public Supabase Storage bucket in production
+or `public/uploads/blog-images` during local development.
 
 Guide content provides planning examples, not fixed prices, delivery commitments,
 medical advice or claimed customer experiences. Recheck coverage, policy links and
