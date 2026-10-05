@@ -33,7 +33,7 @@ it('stores validated category images and returns their durable URL', async () =>
     filename: 'category.webp',
     originalName: 'produce.webp',
   });
-  storeImage.mockResolvedValue('https://storage.blob.core.windows.net/category-images/category.webp');
+  storeImage.mockResolvedValue('https://project.supabase.co/storage/v1/object/public/freshpick-images/category-images/category.webp');
 
   const response = await POST(new Request('http://localhost/api/upload/images/categories', {
     method: 'POST',
@@ -43,7 +43,7 @@ it('stores validated category images and returns their durable URL', async () =>
   expect(storeImage).toHaveBeenCalledWith(expect.objectContaining({ filename: 'category.webp' }));
   expect(await response.json()).toMatchObject({
     success: true,
-    data: { url: 'https://storage.blob.core.windows.net/category-images/category.webp' },
+    data: { url: 'https://project.supabase.co/storage/v1/object/public/freshpick-images/category-images/category.webp' },
   });
 });
 
