@@ -38,10 +38,12 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
         description: product.description || `Fresh ${product.name} from Fresh Pick, available for delivery in Colombo.`,
         sku: product.sku,
         image,
-        brand: {
-            "@type": "Brand",
-            name: product.brand || SITE_NAME_LONG,
-        },
+        ...(product.brand ? {
+            brand: {
+                "@type": "Brand",
+                name: product.brand,
+            },
+        } : {}),
         category: product.category || "Groceries",
         offers: {
             "@type": "Offer",
@@ -53,6 +55,7 @@ export default function ProductJsonLd({ product }: ProductJsonLdProps) {
                 ? "https://schema.org/InStock"
                 : "https://schema.org/OutOfStock",
             seller: {
+                "@id": absoluteUrl('/#organization'),
                 "@type": "Organization",
                 name: SITE_NAME_LONG,
                 url: absoluteUrl(),

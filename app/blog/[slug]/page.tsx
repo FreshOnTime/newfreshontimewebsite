@@ -58,9 +58,32 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       };
     }
 
+    const baseMetadata = pageMetadata({
+      title: blogData.metaTitle || blogData.title,
+      description: blogData.metaDescription || blogData.excerpt,
+      path: `/blog/${encodeURIComponent(blogData.slug)}`,
+      image: blogData.featuredImage?.url,
+      type: 'article',
+    });
+    const authorName = blogData.authorName || 'FreshPick Sri Lanka';
+    const tags = Array.from(new Set([...blogData.tags, ...blogData.metaKeywords]));
+
     return {
-      ...pageMetadata({ title: blogData.metaTitle || blogData.title, description: blogData.metaDescription || blogData.excerpt, path: `/blog/${encodeURIComponent(blogData.slug)}`, image: blogData.featuredImage?.url, type: 'article' }),
-      keywords: blogData.metaKeywords,
+      ...baseMetadata,
+      authors: [{ name: authorName }],
+      creator: authorName,
+      publisher: 'FreshPick Sri Lanka',
+      category: blogData.category || 'Grocery guides',
+      keywords: tags,
+      openGraph: {
+        ...baseMetadata.openGraph,
+        type: 'article',
+        publishedTime: blogData.publishedAt?.toISOString(),
+        modifiedTime: blogData.updatedAt?.toISOString(),
+        authors: [authorName],
+        section: blogData.category || 'Grocery guides',
+        tags,
+      },
     };
 }
 
