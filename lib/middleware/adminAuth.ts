@@ -66,7 +66,7 @@ function adminFailure(error: unknown) {
  * Middleware to require admin authentication
  */
 export function requireAdmin<T extends Record<string, string>>(
-  handler: (req: AdminRequest, context: { params: Promise<T> }) => Promise<NextResponse>
+  handler: (req: AdminRequest, context: { params: Promise<T> }) => Promise<Response>
 ) {
   return async (request: NextRequest, context: { params: Promise<T> }) => {
     try {
@@ -91,7 +91,7 @@ export function requireAdmin<T extends Record<string, string>>(
 
 // For routes without parameters
 export function requireAdminSimple(
-  handler: (req: AdminRequest) => Promise<NextResponse>
+  handler: (req: AdminRequest) => Promise<Response>
 ) {
   return async (request: NextRequest) => {
     try {
