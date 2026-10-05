@@ -4,7 +4,10 @@ import { clearAuthCookies } from '@/lib/utils/cookies';
 
 export async function POST(request: NextRequest) {
   try {
-    const refreshToken = request.cookies.get('refreshToken')?.value;
+    const isMobileClient = request.headers.get('x-freshpick-client') === 'mobile';
+    const body = isMobileClient ? await request.json().catch(() => ({})) : {};
+    const refreshToken = request.cookies.get('refreshToken')?.value ||
+      (isMobileClient && typeof body?.refreshToken === 'string' ? body.refreshToken : undefined);
 
     if (refreshToken) {
       // Remove the refresh token from database
