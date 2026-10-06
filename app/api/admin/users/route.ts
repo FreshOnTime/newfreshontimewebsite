@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
@@ -14,11 +15,12 @@ const addressSchema = z.object({
   postalCode: z.string().min(1).max(100),
   countryCode: z.string().length(2).toUpperCase().default('LK'),
   phoneNumber: z.string().min(3),
-  type: z.enum(['Home','Business','School','Other']).default('Home'),
+  type: z.enum(['Home', 'Business', 'School', 'Other']).default('Home'),
 });
 
 const roles = [
   'customer',
+  'supplier',
   'admin',
   'manager',
   'delivery_staff',
@@ -28,34 +30,41 @@ const roles = [
   'inventory_manager',
 ] as const;
 
+const optionalEmail = z.union([z.string().trim().email(), z.literal(''), z.null()]).optional();
+const optionalPhone = z.union([z.string().trim().min(3), z.literal(''), z.null()]).optional();
+
 const createUserSchema = z.object({
-  userId: z.string().optional(),
-  firstName: z.string().min(1).max(30),
-  lastName: z.string().max(30).optional(),
-  email: z.string().email().optional(),
-  phoneNumber: z.string().min(3),
-  passwordHash: z.string().optional(),
+  firstName: z.string().trim().min(1).max(30),
+  lastName: z.string().trim().max(30).optional(),
+  email: optionalEmail,
+  phoneNumber: optionalPhone,
+  password: z.string().min(8).max(72).optional(),
   role: z.enum(roles).default('customer'),
   secondaryRoles: z.array(z.enum(roles)).optional(),
   isBanned: z.boolean().optional(),
   isEmailVerified: z.boolean().optional(),
   giftCardBalance: z.number().nonnegative().optional(),
-  registrationAddress: addressSchema,
-  addresses: z.array(addressSchema).optional(),
+  registrationAddress: addressSchema.optional(),
+}).superRefine((data, ctx) => {
+  if (!data.email && !data.phoneNumber) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['email'],
+      message: 'An email address or phone number is required',
+    });
+  }
 });
-
-// Note: Single-user update schema lives in [id]/route.ts
 
 const querySchema = z.object({
-  page: z.string().optional().transform((v) => (v ? parseInt(v) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),
+  page: z.string().optional().transform((v) => (v ? Math.max(parseInt(v, 10) || 1, 1) : 1)),
+  limit: z.string().optional().transform((v) => (v ? Math.min(Math.max(parseInt(v, 10) || 20, 1), 100) : 20)),
   search: z.string().optional(),
   role: z.enum(roles).optional(),
-  sortBy: z.enum(['createdAt','firstName','email']).optional().default('createdAt'),
-  sortOrder: z.enum(['asc','desc']).optional().default('desc'),
+  sortBy: z.enum(['createdAt', 'firstName', 'email']).optional().default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
-// Fields returned to the admin UI. passwordHash is intentionally excluded.
+// Fields returned to the admin UI. Sensitive authentication data is intentionally excluded.
 const userSelect = {
   id: true,
   firstName: true,
@@ -75,8 +84,6 @@ const userSelect = {
 
 type UserRow = Prisma.UserGetPayload<{ select: typeof userSelect }>;
 
-// Map a Prisma user row to the JSON shape the old Mongoose route returned.
-// IDs are UUIDs now; expose them as both `id`/`_id` and (for UI compat) `userId`.
 function serializeUser(u: UserRow) {
   return {
     ...u,
@@ -92,17 +99,17 @@ export const GET = requireAdminSimple(async (request) => {
     const query = querySchema.parse(Object.fromEntries(searchParams));
 
     const where: Prisma.UserWhereInput = {};
-    if (query.search) {
+    if (query.search?.trim()) {
+      const search = query.search.trim();
       where.OR = [
-        { firstName: { contains: query.search, mode: 'insensitive' } },
-        { lastName: { contains: query.search, mode: 'insensitive' } },
-        { email: { contains: query.search, mode: 'insensitive' } },
-        { phoneNumber: { contains: query.search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { phoneNumber: { contains: search, mode: 'insensitive' } },
+        { id: { contains: search, mode: 'insensitive' } },
       ];
     }
-    if (query.role) {
-      where.role = query.role;
-    }
+    if (query.role) where.role = query.role;
 
     const page = query.page;
     const limit = query.limit;
@@ -124,6 +131,9 @@ export const GET = requireAdminSimple(async (request) => {
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid query', details: error.errors }, { status: 400 });
+    }
     console.error('Get users error:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
@@ -131,46 +141,43 @@ export const GET = requireAdminSimple(async (request) => {
 
 export const POST = requireAdminSimple(async (request) => {
   try {
-    const body = await request.json();
-    const data = createUserSchema.parse(body);
+    const data = createUserSchema.parse(await request.json());
 
-    // Normalize email/phone
-    const email = data.email?.trim().toLowerCase();
-    const phone = data.phoneNumber.trim();
+    const email = data.email ? data.email.trim().toLowerCase() : null;
+    const phone = data.phoneNumber ? data.phoneNumber.trim() : null;
 
-    // Uniqueness checks
-    const existing = await prisma.user.findFirst({
-      where: {
-        OR: [
-          ...(email ? [{ email }] : []),
-          { phoneNumber: phone },
-        ],
-      },
-    });
-    if (existing) {
-      return NextResponse.json({ error: 'User with same ID, email, or phone already exists' }, { status: 400 });
+    const duplicateChecks: Prisma.UserWhereInput[] = [];
+    if (email) duplicateChecks.push({ email });
+    if (phone) duplicateChecks.push({ phoneNumber: phone });
+
+    if (duplicateChecks.length) {
+      const existing = await prisma.user.findFirst({ where: { OR: duplicateChecks } });
+      if (existing) {
+        return NextResponse.json({ error: 'A user with that email address or phone number already exists' }, { status: 409 });
+      }
     }
 
-    const { registrationAddress, addresses } = data;
+    const passwordHash = data.password ? await bcrypt.hash(data.password, 12) : null;
 
     const created = await prisma.user.create({
       data: {
         firstName: data.firstName,
-        lastName: data.lastName ?? null,
-        email: email ?? null,
+        lastName: data.lastName || null,
+        email,
         phoneNumber: phone,
-        passwordHash: data.passwordHash ?? null,
+        passwordHash,
         role: data.role,
         secondaryRoles: data.secondaryRoles ?? [],
         isBanned: data.isBanned ?? false,
         isEmailVerified: data.isEmailVerified ?? false,
         giftCardBalance: data.giftCardBalance ?? 0,
-        addresses: {
-          create: [
-            { ...registrationAddress, isRegistration: true },
-            ...(addresses ?? []).map((a) => ({ ...a, isRegistration: false })),
-          ],
-        },
+        ...(data.registrationAddress
+          ? {
+              addresses: {
+                create: [{ ...data.registrationAddress, isRegistration: true }],
+              },
+            }
+          : {}),
       },
       select: userSelect,
     });
@@ -192,7 +199,7 @@ export const POST = requireAdminSimple(async (request) => {
       return NextResponse.json({ error: 'Invalid input', details: error.errors }, { status: 400 });
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return NextResponse.json({ error: 'Duplicate key error' }, { status: 400 });
+      return NextResponse.json({ error: 'A user with that email address or phone number already exists' }, { status: 409 });
     }
     console.error('Create user error:', error);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
