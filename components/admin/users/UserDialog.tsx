@@ -11,52 +11,49 @@ type IUser = {
   _id?: string;
   userId?: string;
   firstName: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber: string;
+  lastName?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
   role: string;
   isBanned?: boolean;
   isEmailVerified?: boolean;
-  registrationAddress: {
-    recipientName: string;
-    streetAddress: string;
-    streetAddress2?: string;
-    town: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    countryCode: string;
-    phoneNumber: string;
-    type: 'Home' | 'Business' | 'School' | 'Other';
-  };
 };
 
-export function UserDialog({ open, onOpenChange, user, onSave, readOnly }: { open: boolean; onOpenChange: (v: boolean) => void; user?: Partial<IUser>; onSave: () => void; readOnly?: boolean; }) {
-  const [form, setForm] = useState<IUser>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    role: 'customer',
-    isBanned: false,
-    isEmailVerified: false,
-    registrationAddress: {
-      recipientName: '',
-      streetAddress: '',
-      streetAddress2: '',
-      town: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      countryCode: 'LK',
-      phoneNumber: '',
-      type: 'Home',
-    }
-  });
+const emptyUser: IUser = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phoneNumber: '',
+  role: 'customer',
+  isBanned: false,
+  isEmailVerified: false,
+};
+
+export function UserDialog({
+  open,
+  onOpenChange,
+  user,
+  onSave,
+  readOnly,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  user?: Partial<IUser>;
+  onSave: () => void;
+  readOnly?: boolean;
+}) {
+  const [form, setForm] = useState<IUser>(emptyUser);
+  const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (user) setForm({
+    setPassword('');
+    if (!user) {
+      setForm(emptyUser);
+      return;
+    }
+
+    setForm({
       firstName: user.firstName ?? '',
       lastName: user.lastName ?? '',
       email: user.email ?? '',
@@ -64,35 +61,77 @@ export function UserDialog({ open, onOpenChange, user, onSave, readOnly }: { ope
       role: user.role ?? 'customer',
       isBanned: user.isBanned ?? false,
       isEmailVerified: user.isEmailVerified ?? false,
-      registrationAddress: user.registrationAddress ?? form.registrationAddress,
       _id: user._id,
       userId: user.userId,
     });
-    else setForm((f) => ({ ...f, firstName: '', lastName: '', email: '', phoneNumber: '' }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, open]);
 
-  const roles = useMemo(() => [
-  'customer', 'supplier', 'admin', 'manager', 'delivery_staff', 'customer_support', 'marketing_specialist', 'order_processor', 'inventory_manager'
-  ], []);
+  const roles = useMemo(
+    () => [
+      'customer',
+      'supplier',
+      'admin',
+      'manager',
+      'delivery_staff',
+      'customer_support',
+      'marketing_specialist',
+      'order_processor',
+      'inventory_manager',
+    ],
+    []
+  );
 
   const submit = async () => {
-    if (readOnly) return onOpenChange(false);
+    if (readOnly) {
+      onOpenChange(false);
+      return;
+    }
+
+    if (!form.firstName.trim()) {
+      toast.error('First name is required');
+      return;
+    }
+    if (!form.email?.trim() && !form.phoneNumber?.trim()) {
+      toast.error('Add an email address or phone number');
+      return;
+    }
+    if (!form._id && password.length < 8) {
+      toast.error('New users need a password of at least 8 characters');
+      return;
+    }
+    if (password && password.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
     setSaving(true);
     try {
-      const payload = { ...form };
+      const payload = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName?.trim() || '',
+        email: form.email?.trim() || null,
+        phoneNumber: form.phoneNumber?.trim() || null,
+        role: form.role,
+        isBanned: !!form.isBanned,
+        isEmailVerified: !!form.isEmailVerified,
+        ...(password ? { password } : {}),
+      };
+
       const res = await fetch(form._id ? `/api/admin/users/${form._id}` : '/api/admin/users', {
         method: form._id ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Save failed');
-      toast.success('User saved');
+
+      const response = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(response.error || 'Unable to save user');
+
+      toast.success(form._id ? 'User updated' : 'User created');
       onSave();
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to save user');
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : 'Failed to save user');
     } finally {
       setSaving(false);
     }
@@ -100,119 +139,122 @@ export function UserDialog({ open, onOpenChange, user, onSave, readOnly }: { ope
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{readOnly ? 'View User' : form._id ? 'Edit User' : 'Add User'}</DialogTitle>
+          <DialogTitle>{readOnly ? 'View user' : form._id ? 'Edit user' : 'Add user'}</DialogTitle>
         </DialogHeader>
 
-        {form._id && <p className="break-all text-sm text-muted-foreground">Account ID: <span className="select-all">{form._id}</span></p>}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {form._id && (
+          <p className="break-all text-sm text-muted-foreground">
+            Account ID: <span className="select-all">{form._id}</span>
+          </p>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <Label>First name</Label>
-            <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} disabled={!!readOnly} />
+            <Label htmlFor="admin-user-first-name">First name</Label>
+            <Input
+              id="admin-user-first-name"
+              value={form.firstName}
+              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              disabled={!!readOnly}
+            />
           </div>
           <div>
-            <Label>Last name</Label>
-            <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} disabled={!!readOnly} />
+            <Label htmlFor="admin-user-last-name">Last name</Label>
+            <Input
+              id="admin-user-last-name"
+              value={form.lastName ?? ''}
+              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              disabled={!!readOnly}
+            />
           </div>
           <div>
-            <Label>Email</Label>
-            <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} disabled={!!readOnly} />
+            <Label htmlFor="admin-user-email">Email</Label>
+            <Input
+              id="admin-user-email"
+              type="email"
+              value={form.email ?? ''}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              disabled={!!readOnly}
+            />
           </div>
           <div>
-            <Label>Phone number</Label>
-            <Input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} disabled={!!readOnly} />
+            <Label htmlFor="admin-user-phone">Phone number</Label>
+            <Input
+              id="admin-user-phone"
+              value={form.phoneNumber ?? ''}
+              onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+              disabled={!!readOnly}
+            />
           </div>
           <div>
-            <Label>Role</Label>
-            <select className="border rounded-md px-3 py-2 w-full" value={form.role} disabled={!!readOnly}
-              onChange={(e) => setForm({ ...form, role: e.target.value })}>
-              {roles.map(r => <option key={r} value={r}>{r}</option>)}
+            <Label htmlFor="admin-user-role">Role</Label>
+            <select
+              id="admin-user-role"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={form.role}
+              disabled={!!readOnly}
+              onChange={(e) => setForm({ ...form, role: e.target.value })}
+            >
+              {roles.map((role) => (
+                <option key={role} value={role}>
+                  {role.replaceAll('_', ' ')}
+                </option>
+              ))}
             </select>
           </div>
-          <div className="flex items-center gap-3">
+
+          {!readOnly && (
+            <div>
+              <Label htmlFor="admin-user-password">{form._id ? 'New password' : 'Password'}</Label>
+              <Input
+                id="admin-user-password"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={form._id ? 'Leave blank to keep current password' : 'Minimum 8 characters'}
+              />
+            </div>
+          )}
+
+          <div className="flex items-center gap-5 md:col-span-2">
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={!!form.isEmailVerified} disabled={!!readOnly}
-                onChange={(e) => setForm({ ...form, isEmailVerified: e.target.checked })} />
+              <input
+                type="checkbox"
+                checked={!!form.isEmailVerified}
+                disabled={!!readOnly}
+                onChange={(e) => setForm({ ...form, isEmailVerified: e.target.checked })}
+              />
               Email verified
             </label>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={!!form.isBanned} disabled={!!readOnly}
-                onChange={(e) => setForm({ ...form, isBanned: e.target.checked })} />
+              <input
+                type="checkbox"
+                checked={!!form.isBanned}
+                disabled={!!readOnly}
+                onChange={(e) => setForm({ ...form, isBanned: e.target.checked })}
+              />
               Banned
             </label>
           </div>
-
-          <div className="md:col-span-2 pt-2">
-            <h4 className="font-medium mb-2">Registration address</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <Label>Recipient name</Label>
-                <Input value={form.registrationAddress.recipientName}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, recipientName: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>Phone</Label>
-                <Input value={form.registrationAddress.phoneNumber}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, phoneNumber: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div className="md:col-span-2">
-                <Label>Street</Label>
-                <Input value={form.registrationAddress.streetAddress}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, streetAddress: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>Town</Label>
-                <Input value={form.registrationAddress.town}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, town: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>City</Label>
-                <Input value={form.registrationAddress.city}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, city: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>State</Label>
-                <Input value={form.registrationAddress.state}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, state: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>Postal code</Label>
-                <Input value={form.registrationAddress.postalCode}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, postalCode: e.target.value } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>Country</Label>
-                <Input value={form.registrationAddress.countryCode}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, countryCode: e.target.value.toUpperCase().slice(0,2) } })}
-                  disabled={!!readOnly} />
-              </div>
-              <div>
-                <Label>Type</Label>
-                <select className="border rounded-md px-3 py-2 w-full" value={form.registrationAddress.type}
-                  disabled={!!readOnly}
-                  onChange={(e) => setForm({ ...form, registrationAddress: { ...form.registrationAddress, type: e.target.value as 'Home' | 'Business' | 'School' | 'Other' } })}>
-                  <option>Home</option>
-                  <option>Business</option>
-                  <option>School</option>
-                  <option>Other</option>
-                </select>
-              </div>
-            </div>
-          </div>
         </div>
 
+        {!readOnly && (
+          <p className="text-xs text-muted-foreground">
+            Changing a password signs that user out of existing refresh-token sessions. Accounts with related orders may be banned instead of deleted.
+          </p>
+        )}
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
           {!readOnly && (
-            <Button onClick={submit} disabled={saving}>{form._id ? 'Save changes' : 'Create user'}</Button>
+            <Button onClick={submit} disabled={saving}>
+              {saving ? 'Saving...' : form._id ? 'Save changes' : 'Create user'}
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>
