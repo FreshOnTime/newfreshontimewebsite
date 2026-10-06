@@ -15,6 +15,7 @@ const groups = [
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Categories', href: '/admin/categories', icon: Tags },
     { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
     { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
   ] },
