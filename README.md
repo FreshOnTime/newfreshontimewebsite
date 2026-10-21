@@ -1,6 +1,87 @@
 # FreshPick
 
-FreshPick is a Sri Lankan food marketplace with customer shopping, producer onboarding, Blog publishing and an admin panel. It runs as a Next.js application backed by PostgreSQL/Prisma, with transactional email, durable image storage and scheduled recurring deliveries.
+**A Sri Lankan online fresh-food marketplace connecting customers, local producers and the team operating grocery fulfilment.** FreshPick combines a consumer storefront, customer accounts and bags, producer onboarding, catalogue and editorial content, cash-on-delivery checkout, recurring baskets and an extensive back-office administration system.
+
+> **Scope:** This repository is the FreshPick **Next.js web application and its built-in API**, not merely a landing page. Features exist in code, but live fulfilment, external integrations, actual product availability and deployment readiness depend on production configuration and operational acceptance. No online card charging or automatic recurring payment collection is implemented.
+
+## What the application does
+
+FreshPick addresses a connected set of grocery commerce workflows:
+
+| Audience | Main jobs supported by the application |
+| --- | --- |
+| **Customers** | Browse fresh products by category, search and filter, maintain saved bags and wishlist, place cash-on-delivery orders, view order history, manage profile and addresses |
+| **Recurring basket customers** | Choose available basket plans, manage subscriptions, and use supported pause/skip/cancel flows |
+| **Producers and suppliers** | Register and submit a supplier application, access supplier areas and submit catalogue data for administrative review/import |
+| **Store operations / administrators** | Manage products, categories, suppliers, collections, bundles, orders, customers, stock-related flows, subscription deliveries and enquiries |
+| **Content and growth teams** | Publish blog content, curate product collections, maintain newsletter subscriptions, view reports and process business partnership enquiries |
+| **External catalogue clients** | Use the constrained, public, **read-only** MCP product discovery endpoint (not account or order access) |
+
+**Example customer journey:** A customer opens the FreshPick shop, browses a product category, adds several items to a saved bag, chooses a delivery address and completes a cash-on-delivery checkout. The server recalculates prices, validates the delivery policy and stock availability, and creates an order. Administrators then manage fulfilment. For recurring baskets, a separate scheduled workflow can produce delivery records and, only in stock-managed mode, reserve products and create associated COD orders.
+
+## Implemented architecture
+
+~~~mermaid
+flowchart TD
+  Visitor["Customer / producer / admin browser"] --> UI["Next.js App Router<br/>React + TypeScript + Tailwind CSS"]
+  UI --> API["Next.js app/api routes"]
+  MCP["Public read-only MCP client"] --> API
+  API --> Domain["Domain services<br/>authentication, catalogue, pricing,<br/>checkout, subscriptions, validation"]
+  Domain --> Prisma["Prisma ORM"]
+  Prisma --> PG[("PostgreSQL<br/>authoritative commerce records")]
+  API --> IMG["Supabase Storage<br/>persistent product/category/blog images"]
+  API --> AUTH["Password/JWT + optional<br/>Firebase-verified Google login"]
+  Worker["Netlify scheduled functions<br/>recurring orders, baskets, email"] --> Domain
+  PG --> Outbox["Durable email outbox"]
+  Outbox --> Mail["SendGrid email provider"]
+~~~
+
+**Key boundaries:** Customer and admin frontend pages call Next.js route handlers, which use server-side business logic and Prisma to operate on PostgreSQL. The checkout path has stock-guarded writes and idempotency logic. Basket and recurring-order processes are distinct. Scheduled Netlify functions are deployed workers, **not automatically running local development processes**. Outbox persistence does not guarantee that an external email has been delivered. Product/category/blog uploads need configured durable storage on serverless hosting.
+
+### Technology stack
+
+| Layer | Codebase technology | Purpose |
+| --- | --- | --- |
+| UI / application | **Next.js 16**, React 18, TypeScript | Storefront, accounts, producer and admin experiences; server routes |
+| Styling / components | Tailwind CSS, Radix UI components | Responsive commerce and administration interfaces |
+| Data | **PostgreSQL + Prisma 6** | Products, suppliers, customers, orders, stock, subscriptions, publishing and operational state |
+| Authentication | bcrypt, JWT access/refresh session flows; optional Firebase/Google | Password and external identity workflows; role-aware API guards |
+| External media | **Supabase Storage** | Durable runtime uploads for images (requires provider configuration) |
+| Email | SendGrid via database email outbox | Transactional and opted-in communications; background retry |
+| Scheduled jobs | Netlify functions | Recurring orders, basket deliveries and outbox processing on host schedules |
+| Other integration | MCP SDK, optional Google Analytics | Public read-only catalogue discovery and measurement |
+| Validation / QA | Jest, ESLint, TypeScript, PostgreSQL integrity scripts and CI | Business logic and migration/build regression checks |
+
+Although Firebase and older migration-oriented adapters remain in the dependency tree, **PostgreSQL/Prisma is the authoritative database** for this application. The presence of a dependency is not proof that a separately deployed service is configured or functional.
+
+### Source structure
+
+| Directory | Responsibility |
+| --- | --- |
+| **app/** | Storefront, accounts, bags, checkout, subscriptions, blog, admin pages and HTTP APIs |
+| **components/**, **contexts/** | UI controls, customer state and reusable interactions |
+| **lib/** | Catalog, pricing, delivery, authorization, email and integration helpers |
+| **prisma/** | Relational data model, versioned database migrations and seed support |
+| **netlify/functions/** | Scheduled operational jobs |
+| **public/** | Static public assets |
+| **scripts/**, **__tests__/** | Build/check scripts, browser/HTTP and financial/commerce integrity verification |
+| **docs/** | Product, admin, developer, data-flow, API, operations and release-readiness guides |
+
+## Feature maturity and product boundaries
+
+| Area | Implementation status |
+| --- | --- |
+| Browse/search catalogue, product details, bags, wishlist, customer profiles and order history | **Implemented in application** — populated catalogue and accounts required |
+| COD checkout, stock checks, addresses, order lifecycle and admin operations | **Implemented** — approved LKR delivery configuration and operational verification required |
+| Recurring orders and subscription baskets | **Implemented** — manual and stock-managed basket fulfilment are different modes; deployed scheduling must be verified |
+| Supplier applications, uploads and admin-managed product publishing | **Implemented** — approval/import is not automatic public listing |
+| Blog publishing, collections, enquiries, newsletter signup, dashboards | **Implemented** — campaign blast sender and external customer-reply automation not implied |
+| Transactional email, scheduled jobs and durable image uploads | **Provider-backed implementation** — SendGrid, Netlify and Supabase credentials/configuration required |
+| Read-only MCP product search, product lookup and category listing | **Implemented** — no purchase, private account or administrative action |
+| Card checkout, recurring card billing, live courier dispatch and omnichannel delivery tracking | **Not implemented** |
+| Universal fine-grained role enforcement across every legacy route | **Not certified** — review older guards before public enterprise use |
+
+**Production notice:** Running the application and passing unit/build/CI checks are different from validating real payment/fulfilment operations, images, email providers, cloud schedules, security posture or an actual live inventory dataset. Follow [Platform readiness](docs/PLATFORM_READINESS.md) and [Operations](docs/OPERATIONS.md) before handling real customer traffic.
 
 ## Documentation
 
