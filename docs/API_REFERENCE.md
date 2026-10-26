@@ -1,6 +1,6 @@
 # API reference
 
-This reference covers the App Router handlers at the revision in the [documentation index](README.md). The inventory below includes **113 route files and 190 exported HTTP handlers**, including compatibility aliases, disabled endpoints and MCP methods that intentionally return 405. Presence in the inventory is not an endorsement to use every legacy route.
+This reference covers the App Router handlers at the revision in the [documentation index](README.md). The inventory below includes **115 route files and 192 exported HTTP handlers**, including compatibility aliases, disabled endpoints and MCP methods that intentionally return 405. Presence in the inventory is not an endorsement to use every legacy route.
 
 ## Conventions
 
@@ -64,9 +64,32 @@ Authenticated bags and wishlist routes enforce ownership. Bag item mutations ope
 
 Returns `{ "success": true, "quote": ... }`, with server-priced lines, totals and fingerprint, and `Cache-Control: private, no-store`. Items: 1–100 rows, whole quantity 1–10,000. Duplicate products are merged; unavailable items/insufficient stock fail. Delivery area is checked if supplied. Quote does not reserve stock.
 
+### Catalogue-guided shopping assistant (customer-approved pilot)
+
+`POST /api/assistant/plan` requires an authenticated customer session. Request:
+
+```json
+{ "query": "tomatoes rice lentils", "budgetLkr": 3500, "maxItems": 6 }
+```
+
+The request must contain 3–300 characters, an LKR budget between 10 and 500,000, and at most 10 proposed products. The response has `{ success: true, data: { items, quote, budgetLkr, mode, message } }` where `quote` is an authoritative checkout quote or `null` when no suitable items exist. Suggestions are deterministic and catalogue-grounded; there is **no model integration** or guarantee of recipe completeness. Unverifiable allergen and ingredient exclusion claims are rejected with 422.
+
+`POST /api/assistant/confirm` saves the explicitly approved proposal as a **bag, not an order**. Request:
+
+```json
+{
+  "items": [{ "productId": "PRODUCT_UUID", "quantity": 1 }],
+  "budgetLkr": 3500,
+  "quoteFingerprint": "64_LOWERCASE_HEX_DIGITS_FROM_QUOTE",
+  "idempotencyKey": "4818b6d0-e90e-493e-8fb7-1ac6fbf1302a"
+}
+```
+
+The server verifies the authenticated bag owner, recomputes the checkout quote, checks its fingerprint and total against the budget, and persists a unique retry-safe bag ID. A repeated matching approval returns the same bag with `replayed: true` and status 200; a different payload with the same key or a stale quote returns 409. This does not reserve inventory or authorize COD checkout. Both endpoints return `Cache-Control: private, no-store`. The public MCP endpoint remains read-only.
+
 ### Ordinary order creation
 
-`POST /api/orders`, authenticated, with optional `Idempotency-Key` (the checkout UI sends one):
+`POST /api/orders`, authenticated, with a required `Idempotency-Key` (the checkout UI sends one):
 
 ```json
 {
@@ -228,6 +251,8 @@ The following table is generated from actual HTTP exports. Source signals are an
 
 | Route | Exported methods | Named guard signals in file | Handler source |
 | --- | --- | --- | --- |
+| `/api/assistant/confirm` | `POST` | `requireAuth` | [source](../app/api/assistant/confirm/route.ts) |
+| `/api/assistant/plan` | `POST` | `requireAuth` | [source](../app/api/assistant/plan/route.ts) |
 | `/api/b2b/leads` | `POST` | — | [source](../app/api/b2b/leads/route.ts) |
 | `/api/bags/[id]/items` | `POST`, `PATCH`, `DELETE` | `requireAuth` | [source](../app/api/bags/[id]/items/route.ts) |
 | `/api/bags/[id]` | `GET`, `PUT`, `DELETE` | `requireAuth` | [source](../app/api/bags/[id]/route.ts) |
