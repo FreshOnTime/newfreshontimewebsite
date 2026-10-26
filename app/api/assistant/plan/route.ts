@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 const input = z.object({
   query: z.string().trim().min(3).max(300),
-  budgetLkr: z.number().finite().min(100).max(500000),
+  budgetLkr: z.number().finite().min(10).max(500000),
   maxItems: z.number().int().min(1).max(10).default(6),
 }).strict();
 
