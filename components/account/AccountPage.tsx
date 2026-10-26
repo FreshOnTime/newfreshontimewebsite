@@ -13,6 +13,7 @@ const accountLinks = [
   { href: '/profile/notifications', label: 'Notifications' },
   { href: '/profile/subscriptions', label: 'Subscriptions' },
   { href: '/for-you', label: 'For you' },
+  { href: '/assistant', label: 'Plan a bag' },
 ];
 
 export function AccountPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {

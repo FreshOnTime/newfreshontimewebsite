@@ -95,7 +95,7 @@ export const POST = requireAuth(async (request: AuthedRequest) => {
         await tx.bagItem.upsert({
           where: { bagId_productId: { bagId: bag!.id, productId: product.id } },
           update: { quantity: nextQuantity, price: productUnitPrice(product) },
-          create: { bagId: bag!.id, productId: product.id, quantity: 1, price: product.price },
+          create: { bagId: bag!.id, productId: product.id, quantity: 1, price: productUnitPrice(product) },
         });
         added += 1;
       }
