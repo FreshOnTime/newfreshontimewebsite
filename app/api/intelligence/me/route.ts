@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { productUnitPrice } from "@/lib/commercePricing";
 import { BAG_INCLUDE, bagTotal, serializeBag } from "@/lib/bagSerializer";
 import { getIntelligenceOverview, getSmartBasket } from "@/lib/intelligence/tasteGraph";
 
@@ -71,12 +72,18 @@ export const POST = requireAuth(async (request: AuthedRequest) => {
     const productIds = eligible.map((candidate) => candidate.product._id);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, archived: false, stockQty: { gt: 0 } },
-      select: { id: true, price: true, stockQty: true },
+      select: { id: true, price: true, discountPercentage: true, stockQty: true },
     });
     const byId = new Map(products.map((product) => [product.id, product]));
 
     let added = 0;
     await prisma.$transaction(async (tx) => {
+      // Coordinate with ordinary bag item updates across all workers.
+      const owned = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM bags WHERE id = ${bag!.id} AND "userId" = ${userId}
+        AND "isActive" = true FOR UPDATE
+      `;
+      if (!owned.length) throw new Error('Bag is no longer available');
       for (const candidate of eligible) {
         const product = byId.get(candidate.product._id);
         if (!product || product.stockQty <= 0) continue;
@@ -87,7 +94,7 @@ export const POST = requireAuth(async (request: AuthedRequest) => {
         const nextQuantity = Math.min(product.stockQty, (existing?.quantity || 0) + 1);
         await tx.bagItem.upsert({
           where: { bagId_productId: { bagId: bag!.id, productId: product.id } },
-          update: { quantity: nextQuantity, price: product.price },
+          update: { quantity: nextQuantity, price: productUnitPrice(product) },
           create: { bagId: bag!.id, productId: product.id, quantity: 1, price: product.price },
         });
         added += 1;

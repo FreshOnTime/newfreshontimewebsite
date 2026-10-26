@@ -40,6 +40,13 @@ describe('Checkout integrity', () => {
   it.each([{ discount: 100 }, { paymentMethod: 'card' }, { items: [{ productId: 'p1', quantity: 0.5 }] }, { recurrence: { startDate: 'invalid' } }])('rejects unsafe checkout input %j before database writes', async (extra) => {
     expect((await POST(request({ ...body, ...extra }), undefined)).status).toBe(400); expect(db.$transaction).not.toHaveBeenCalled();
   });
+  it('requires a valid idempotency key before touching the database', async () => {
+    const missing = request();
+    missing.headers.delete('Idempotency-Key');
+    expect((await POST(missing, undefined)).status).toBe(400);
+    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(db.checkoutRequest.findUnique).not.toHaveBeenCalled();
+  });
   it('rejects stale quotes without reserving inventory', async () => {
     expect((await POST(request({ ...body, quoteFingerprint: '0'.repeat(64) }), undefined)).status).toBe(409);
     expect(db.$transaction).not.toHaveBeenCalled();
