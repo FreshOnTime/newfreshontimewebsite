@@ -1,6 +1,6 @@
 # FreshPick product roadmap: agentic commerce
 
-**Status:** Proposed implementation plan; not an announcement of shipped AI agents.  
+**Status:** Phased plan. The first catalogue-guided shopping planner and approval flow are being implemented; LLM chat, autonomous purchasing and external authenticated MCP remain future work.  
 **Reviewed:** 26 October 2026.  
 **Primary goal:** Make grocery shopping, replenishment, and store operations easier through narrowly scoped, auditable AI-assisted workflows while preserving the existing commerce domain's ownership, pricing, stock, and payment rules.  
 **Initial market:** Sri Lanka; quote and display prices in LKR; customer checkout remains cash on delivery (COD).
@@ -19,6 +19,8 @@
 | Automated agent workflow, LLM chat, authenticated write-capable MCP, online payments | **Not implemented** | Deliver in phases; no autonomous charges, payouts, supplier purchases, or order placement without approval |
 
 **Security baseline:** [PR #136](https://github.com/FreshOnTime/newfreshontimewebsite/pull/136) was merged and addressed role/permission API guards, archived public products, bag concurrency, and checkout retry requirements. It does **not** constitute a complete authorization/security certification.
+
+**Initial pilot implementation:** [Shopping assistant](../app/assistant/page.tsx) uses [the planning API](../app/api/assistant/plan/route.ts) and [explicit confirmation](../app/api/assistant/confirm/route.ts). This is a deterministic, no-model-cost shopping planner, **not yet a conversational LLM agent**. The separate public MCP endpoint remains read-only.
 
 ## 2. Prioritized outcomes
 
@@ -44,7 +46,7 @@ The ranges are **engineering effort estimates**, assuming one experienced full-s
 | --- | --- | --- | --- |
 | **0 — Commerce hardening** | 1–2 weeks | Remaining prerequisite defects, security and monitoring backlog | Stable verified quotes/units, authorized mutations, safe production configuration |
 | **1 — Agent foundation** | 1–2 weeks | Server-side orchestration, typed tools, permission checks, trace IDs, feature flag, evaluation harness | Read-only assistant cannot access another user's data or execute writes |
-| **2 — Customer shopping MVP** | 2–4 weeks | Chat UI, budget-aware basket planning, draft-bag tools, authoritative quote preview | Customer approves every bag change; prices match normal checkout |
+| **2 — Customer shopping MVP** | 2–4 weeks | Initial catalogue-guided budget planning, quote preview and explicit saved-bag approval; conversational model integration follows validation | Customer approves every bag change; prices match normal checkout |
 | **3 — Replenishment and meal planning** | 2–3 weeks | Opt-in reorder suggestions, preferences, substitutions and planned meal baskets | No unwanted repeat orders; measurable usefulness with user testing |
 | **4 — Operations and supplier copilots** | 2–4 weeks | Reorder proposals, supplier catalogue suggestions, ops exception summaries | Every inventory/supplier change is reviewed, authorized and audited |
 | **5 — Integration and B2B expansion** | 3–6+ weeks | Scoped external agent access, B2B drafts, support workflows | Threat model and tenant/permission tests pass before opening external writes |
