@@ -15,6 +15,7 @@ This is the documentation for the application implemented in this repository. Re
 | Maintainer | [Function reference](FUNCTION_REFERENCE.md) | All domain-service methods, critical helpers and admin action implementation map |
 | Production operator | [Operations runbook](OPERATIONS.md) | Backups, deployment, storage, outbox, cron and recovery |
 | Release owner | [Platform readiness](PLATFORM_READINESS.md) | Deployment evidence to gather and outstanding production requirements |
+| Product and engineering | [Product and agentic-commerce roadmap](ROADMAP.md) | Prioritized future AI features, phase-by-phase implementation, safety gates and backlog (not shipped features) |
 | MCP client integrator | [MCP](mcp.md) | Read-only product/category tools and transport configuration |
 
 ## Reading paths
@@ -22,6 +23,7 @@ This is the documentation for the application implemented in this repository. Re
 - **Run the market:** Admin handbook → Subscriptions → Operations. Begin with the handbook's daily checklist.
 - **Change the application:** Developer guide → Architecture → relevant function/API entries → tests and operations.
 - **Decide what to launch:** Features → subscription mode comparison → readiness gaps. Do not infer a payment gateway, campaign sender or permissions system from a form label alone.
+- **Plan agentic commerce:** Roadmap → Architecture → MCP → API reference → readiness; treat proposals and example module paths as future work, not current endpoints.
 
 The API inventory covers every `app/api/**/route.ts` handler at the reviewed revision. The function reference covers domain services and important shared functions, rather than enumerating every React render component. The admin handbook documents all 21 admin page routes, including tools retained outside the main sidebar.
 

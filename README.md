@@ -98,6 +98,7 @@ Start with the [complete documentation index](docs/README.md).
 | [Function reference](docs/FUNCTION_REFERENCE.md) | All public domain-service methods, critical helpers and admin actions |
 | [Operations](docs/OPERATIONS.md) | Backups, migrations, deployment, outbox, workers and recovery |
 | [Readiness](docs/PLATFORM_READINESS.md) | Production requirements and verification evidence |
+| [Product and agentic commerce roadmap](docs/ROADMAP.md) | Phased AI shopping, replenishment, supplier/operations copilots, safety gates and implementation tasks (**planned, not shipped**) |
 | [Public MCP](docs/mcp.md) | Read-only catalog tools and remote client connection |
 
 ## Local development
@@ -119,6 +120,10 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. An empty database has no published products or subscription plans. Read the [setup guide](docs/DEVELOPER_GUIDE.md) before seeding data or provisioning the first administrator.
+
+## Planned: agentic commerce
+
+The [FreshPick product and agentic-commerce roadmap](docs/ROADMAP.md) sets out the proposed implementation of a budget-aware grocery assistant, reviewable shopping bags, opt-in replenishment, operations/supplier copilots and a future authenticated agent integration. **These workflows are not implemented by the current read-only MCP server.** Existing pricing, stock checks, COD checkout, access controls and explicit user approval remain authoritative.
 
 ## Important product boundaries
 
