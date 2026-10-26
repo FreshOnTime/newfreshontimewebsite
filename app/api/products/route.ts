@@ -23,14 +23,14 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const categoryId = searchParams.get('categoryId');
     const supplierId = searchParams.get('supplierId');
-    const archivedParam = searchParams.get('archived');
     const minPriceParam = searchParams.get('minPrice');
     const maxPriceParam = searchParams.get('maxPrice');
     const inStockParam = searchParams.get('inStock');
     const sortParam = searchParams.get('sort');
 
     const where: Prisma.ProductWhereInput = {
-      archived: archivedParam ? archivedParam === 'true' : false,
+      // Archived catalogue entries must never be exposed through the public API.
+      archived: false,
     };
 
     if (search) {

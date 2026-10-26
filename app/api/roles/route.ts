@@ -1,35 +1,33 @@
-import { NextRequest } from "next/server";
-import { roleService } from "@/lib/services/roleService";
-import { sendSuccess, sendInternalError, sendCreated, sendBadRequest } from "@/lib/utils/apiResponses";
+import { NextRequest } from 'next/server';
+import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth';
+import { roleService } from '@/lib/services/roleService';
+import { sendSuccess, sendInternalError, sendCreated, sendBadRequest } from '@/lib/utils/apiResponses';
 
-// GET - Get all roles
-export async function GET() {
+const roleInput = z.object({
+  name: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(1000).nullable().optional(),
+  permissions: z.array(z.string().min(1)).max(100).optional(),
+});
+
+export const GET = requireAdmin(async (_request: NextRequest) => {
   try {
-    const roles = await roleService.getAllRoles();
-    return sendSuccess("Roles retrieved successfully", roles);
+    return sendSuccess('Roles retrieved successfully', await roleService.getAllRoles());
   } catch (error) {
-    console.error("Error fetching roles:", error);
-    return sendInternalError("Failed to fetch roles");
+    console.error('Error fetching roles:', error);
+    return sendInternalError('Failed to fetch roles');
   }
-}
+});
 
-// POST - Create a new role
-export async function POST(req: NextRequest) {
+export const POST = requireAdmin(async (request: NextRequest) => {
   try {
-    const roleData = await req.json();
-    
-    // Basic validation
-    if (!roleData.name) {
-      return sendBadRequest("Role name is required");
-    }
-
-    const role = await roleService.createRole(roleData);
-    return sendCreated("Role created successfully", role);
+    const body = roleInput.parse(await request.json());
+    const role = await roleService.createRole(body);
+    return sendCreated('Role created successfully', role);
   } catch (error) {
-    console.error("Error creating role:", error);
-    if (error instanceof Error && error.message.includes("already exists")) {
-      return sendBadRequest(error.message);
-    }
-    return sendInternalError("Failed to create role");
+    if (error instanceof z.ZodError || error instanceof SyntaxError) return sendBadRequest('Invalid role input');
+    if (error instanceof Error && error.message.includes('already exists')) return sendBadRequest(error.message);
+    console.error('Error creating role:', error);
+    return sendInternalError('Failed to create role');
   }
-}
+});

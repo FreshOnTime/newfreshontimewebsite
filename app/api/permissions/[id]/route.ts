@@ -1,64 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
+import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth';
+import { permissionService } from '@/lib/services/permissionService';
+import { sendSuccess, sendInternalError, sendNotFound, sendBadRequest } from '@/lib/utils/apiResponses';
 
-const BACKEND_DOMAIN = process.env.BACKEND_DOMAIN;
+type Context = { params: Promise<{ id: string }> };
+const updateInput = z.object({
+  resource: z.string().trim().min(1).max(120).optional(),
+  operation: z.string().trim().min(1).max(120).optional(),
+  description: z.string().trim().min(1).max(1000).optional(),
+}).refine((value) => Object.keys(value).length > 0, 'No permission changes provided');
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PUT = requireAdmin(async (request: NextRequest, context: Context) => {
   try {
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
-    const body = await request.json();
-
-    const response = await fetch(`${BACKEND_DOMAIN}/api/permissions/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to update permission");
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error updating permission:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to update permission" },
-      { status: 500 }
+    const updated = await permissionService.updatePermission(
+      (await context.params).id, updateInput.parse(await request.json()),
     );
+    return updated ? sendSuccess('Permission updated successfully', updated) : sendNotFound('Permission not found');
+  } catch (error) {
+    if (error instanceof z.ZodError || error instanceof SyntaxError) return sendBadRequest('Invalid permission update');
+    if (error instanceof Error && error.message.includes('already exists')) return sendBadRequest(error.message);
+    console.error('Error updating permission:', error);
+    return sendInternalError('Failed to update permission');
   }
-}
+});
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = requireAdmin(async (_request: NextRequest, context: Context) => {
   try {
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
-
-    const response = await fetch(`${BACKEND_DOMAIN}/api/permissions/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to delete permission");
-    }
-
-    return NextResponse.json({ success: true });
+    await permissionService.deletePermission((await context.params).id);
+    return sendSuccess('Permission deleted successfully');
   } catch (error) {
-    console.error("Error deleting permission:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to delete permission" },
-      { status: 500 }
-    );
+    if (error instanceof Error && error.message.includes('not found')) return sendNotFound('Permission not found');
+    console.error('Error deleting permission:', error);
+    return sendInternalError('Failed to delete permission');
   }
-}
+});
