@@ -18,7 +18,7 @@ const key = '4818b6d0-e90e-493e-8fb7-1ac6fbf1302a';
 const lines = [{ productId: 'p1', quantity: 1 }];
 const request = (payload: unknown, userId = 'owner') =>
   ({ user: { userId }, json: async () => payload }) as unknown as NextRequest;
-const fakeBag = (data: Record<string, any>) => ({
+const fakeBag = (data: { id: string; userId: string; name: string; description: string; tags: string[] }) => ({
   id: data.id, userId: data.userId, name: data.name, description: data.description,
   tags: data.tags, isActive: true, createdAt: new Date(), updatedAt: new Date(),
   items: [{ id: 'item1', quantity: 1, price: 15, product: { ...prod, images: [], image: null } }],
