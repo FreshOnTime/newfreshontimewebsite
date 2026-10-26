@@ -24,10 +24,16 @@ jest.mock('@/lib/services/permissionService', () => ({ permissionService: {
 
 const db = prisma as unknown as { user: { findUnique: jest.Mock }; product: { findMany: jest.Mock } };
 const context = { params: Promise.resolve({ id: 'role1', permissionId: 'perm1' }) };
-const req = (authenticated: boolean, method: string) => new NextRequest('https://freshpick.lk/api/roles', {
-  method, headers: authenticated ? { cookie: 'accessToken=valid', 'content-type': 'application/json' } : { 'content-type': 'application/json' },
-  ...(method === 'POST' || method === 'PUT' ? { body: JSON.stringify({ name: 'staff', resource: 'orders:read', operation: 'read', description: 'Read orders', permissionId: 'perm1' }) } : {}),
-});
+// jest.setup.js mocks NextRequest as an empty constructor, so use a typed
+// request-shaped fixture with the cookie accessor the shared auth guard needs.
+const req = (authenticated: boolean, method: string) => ({
+  url: 'https://freshpick.lk/api/roles',
+  headers: new Headers(authenticated ? { cookie: 'accessToken=valid' } : {}),
+  cookies: { get: (name: string) => authenticated && name === 'accessToken' ? { value: 'valid' } : undefined },
+  json: async () => ({ name: 'staff', resource: 'orders:read', operation: 'read',
+    description: 'Read orders', permissionId: 'perm1' }),
+  method,
+}) as unknown as NextRequest;
 const mutations = [
   ['create role', createRole, 'POST'], ['update role', updateRole, 'PUT'], ['delete role', removeRole, 'DELETE'],
   ['grant permission', grantPermission, 'POST'], ['revoke permission', revokePermission, 'DELETE'],
@@ -68,7 +74,7 @@ describe('Role/permission APIs are administrator-only', () => {
 
 it('never exposes archived products via public query parameters', async () => {
   db.product.findMany.mockResolvedValue([]);
-  const response = await listProducts(new NextRequest('https://freshpick.lk/api/products?archived=true'));
+  const response = await listProducts({ url: 'https://freshpick.lk/api/products?archived=true' } as NextRequest);
   expect(response.status).toBe(200);
   expect(db.product.findMany).toHaveBeenCalledWith(expect.objectContaining({
     where: expect.objectContaining({ archived: false }),
