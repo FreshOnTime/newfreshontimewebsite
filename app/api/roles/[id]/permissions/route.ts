@@ -1,38 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth';
+import { roleService } from '@/lib/services/roleService';
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+type Context = { params: Promise<{ id: string }> };
+const input = z.object({ permissionId: z.string().trim().min(1).max(200) });
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = requireAdmin(async (request: NextRequest, context: Context) => {
   try {
-    const resolvedParams = await params;
-    const roleId = resolvedParams.id;
-    const body = await request.json();
-
-    const response = await fetch(
-      `${BACKEND_URL}/api/roles/${roleId}/permissions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to add permission to role");
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to add permission to role" },
-      { status: 500 }
-    );
+    const { id } = await context.params;
+    const { permissionId } = input.parse(await request.json());
+    const role = await roleService.addPermissionToRole(id, permissionId);
+    return role
+      ? NextResponse.json({ success: true, data: role })
+      : NextResponse.json({ error: 'Role or permission not found' }, { status: 404 });
+  } catch (error) {
+    if (error instanceof z.ZodError || error instanceof SyntaxError)
+      return NextResponse.json({ error: 'A valid permission ID is required' }, { status: 400 });
+    console.error('Failed to add role permission:', error);
+    return NextResponse.json({ error: 'Failed to add permission to role' }, { status: 500 });
   }
-}
+});

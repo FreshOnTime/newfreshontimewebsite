@@ -27,15 +27,24 @@ export const GET = requireAuth(async (request: NextRequest & { user?: { userId: 
 export const POST = requireAuth(async (request: NextRequest & { user?: { userId: string; role: string; mongoId?: string } }) => {
   try {
     const userId = request.user?.mongoId || request.user?.userId;
-    const body = await request.json();
-    const { name, description, items, tags } = body;
+    const body = await request.json().catch(() => null);
+    const { name, description, items, tags } = body || {};
 
-    if (!userId || !name || !items || !Array.isArray(items)) {
-      return NextResponse.json({ error: 'Authentication, name, and items are required' }, { status: 400 });
+    if (!userId || typeof name !== 'string' || !name.trim() || name.length > 120 ||
+        !Array.isArray(items) || items.length > 100 ||
+        (description !== undefined && (typeof description !== 'string' || description.length > 1000)) ||
+        (tags !== undefined && (!Array.isArray(tags) || tags.length > 20 ||
+          tags.some((tag: unknown) => typeof tag !== 'string' || tag.length > 60)))) {
+      return NextResponse.json({ error: 'Invalid bag details or items' }, { status: 400 });
     }
 
-    const validatedItems: Array<{ productId: string; quantity: number; price: number }> = [];
+    // Merge duplicate IDs/aliases into one canonical product entry so the
+    // unique (bagId, productId) constraint cannot produce an opaque 500.
+    const merged = new Map<string, { productId: string; quantity: number; price: number; stock: number; name: string }>();
     for (const item of items) {
+      if (typeof item?.productId !== 'string' || !item.productId.trim() || item.productId.length > 200) {
+        return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
+      }
       const qty = Number(item.quantity);
       if (!Number.isSafeInteger(qty) || qty > 10000 || qty <= 0) {
         return NextResponse.json({ error: 'Invalid item quantity' }, { status: 400 });
@@ -46,17 +55,21 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
       if (!product) {
         return NextResponse.json({ error: `Product with ID ${item.productId} not found` }, { status: 400 });
       }
-      if (product.stockQty < qty) {
+      const existing = merged.get(product.id);
+      const combined = (existing?.quantity || 0) + qty;
+      if (combined > 10000 || product.stockQty < combined) {
         return NextResponse.json({ error: `Insufficient stock for product ${product.name}` }, { status: 400 });
       }
-      validatedItems.push({ productId: product.id, quantity: qty, price: productUnitPrice(product) });
+      merged.set(product.id, { productId: product.id, quantity: combined,
+        price: productUnitPrice(product), stock: product.stockQty, name: product.name });
     }
 
+    const validatedItems = Array.from(merged.values()).map(({ productId, quantity, price }) => ({ productId, quantity, price }));
     const bag = await prisma.bag.create({
       data: {
         userId,
-        name,
-        description: description || null,
+        name: name.trim(),
+        description: description?.trim() || null,
         tags: Array.isArray(tags) ? tags : [],
         totalAmount: bagTotal(validatedItems),
         items: { create: validatedItems },

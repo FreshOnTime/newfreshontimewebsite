@@ -1,67 +1,47 @@
-import { NextRequest } from "next/server";
-import { roleService } from "@/lib/services/roleService";
-import { sendSuccess, sendInternalError, sendNotFound, sendBadRequest } from "@/lib/utils/apiResponses";
+import { NextRequest } from 'next/server';
+import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth';
+import { roleService } from '@/lib/services/roleService';
+import { sendSuccess, sendInternalError, sendNotFound, sendBadRequest } from '@/lib/utils/apiResponses';
 
-// GET - Get a single role
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Context = { params: Promise<{ id: string }> };
+const roleUpdate = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  description: z.string().trim().max(1000).nullable().optional(),
+  permissions: z.array(z.string().min(1)).max(100).optional(),
+}).refine((value) => Object.keys(value).length > 0, 'No role changes provided');
+
+export const GET = requireAdmin(async (_request: NextRequest, context: Context) => {
   try {
-    const id = (await params).id;
+    const { id } = await context.params;
     const role = await roleService.getRoleById(id);
-    
-    if (!role) {
-      return sendNotFound("Role not found");
-    }
-    
-    return sendSuccess("Role retrieved successfully", role);
+    return role ? sendSuccess('Role retrieved successfully', role) : sendNotFound('Role not found');
   } catch (error) {
-    console.error("Error fetching role:", error);
-    return sendInternalError("Failed to fetch role");
+    console.error('Error fetching role:', error);
+    return sendInternalError('Failed to fetch role');
   }
-}
+});
 
-// PUT - Update a role
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PUT = requireAdmin(async (request: NextRequest, context: Context) => {
   try {
-    const id = (await params).id;
-    const updateData = await request.json();
-    
-    const role = await roleService.updateRole(id, updateData);
-    
-    if (!role) {
-      return sendNotFound("Role not found");
-    }
-    
-    return sendSuccess("Role updated successfully", role);
+    const { id } = await context.params;
+    const role = await roleService.updateRole(id, roleUpdate.parse(await request.json()));
+    return role ? sendSuccess('Role updated successfully', role) : sendNotFound('Role not found');
   } catch (error) {
-    console.error("Error updating role:", error);
-    if (error instanceof Error && error.message.includes("already exists")) {
-      return sendBadRequest(error.message);
-    }
-    return sendInternalError("Failed to update role");
+    if (error instanceof z.ZodError || error instanceof SyntaxError) return sendBadRequest('Invalid role update');
+    if (error instanceof Error && error.message.includes('already exists')) return sendBadRequest(error.message);
+    console.error('Error updating role:', error);
+    return sendInternalError('Failed to update role');
   }
-}
+});
 
-// DELETE - Delete a role
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = requireAdmin(async (_request: NextRequest, context: Context) => {
   try {
-    const id = (await params).id;
-    await roleService.deleteRole(id);
-    
-    return sendSuccess("Role deleted successfully");
+    await roleService.deleteRole((await context.params).id);
+    return sendSuccess('Role deleted successfully');
   } catch (error) {
-    console.error("Error deleting role:", error);
-    if (error instanceof Error && error.message.includes("not found")) {
-      return sendNotFound("Role not found");
-    }
-    return sendInternalError("Failed to delete role");
+    if (error instanceof Error && error.message.includes('not found')) return sendNotFound('Role not found');
+    console.error('Error deleting role:', error);
+    return sendInternalError('Failed to delete role');
   }
-}
+});

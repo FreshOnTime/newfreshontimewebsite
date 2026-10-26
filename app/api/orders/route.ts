@@ -131,7 +131,8 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
     const customerId = authUser?.mongoId || authUser?.userId;
     if (!customerId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     const key = request.headers.get('Idempotency-Key');
-    if (key && !/^[A-Za-z0-9_-]{8,128}$/.test(key)) return NextResponse.json({ error: 'Invalid checkout retry key' }, { status: 400 });
+    // Every checkout must be retry-safe, including mobile and agent callers.
+    if (!key || !/^[A-Za-z0-9_-]{8,128}$/.test(key)) return NextResponse.json({ error: 'A valid Idempotency-Key is required for checkout' }, { status: 400 });
     if (key) {
       retryIdentity = { customerId, key, fingerprint: checkoutRequestHash(body) };
       const previous = await prisma.checkoutRequest.findUnique({ where: { customerId_key: { customerId, key } } });

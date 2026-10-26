@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { productUnitPrice } from '@/lib/commercePricing';
 import { requireAuth } from '@/lib/auth';
@@ -7,123 +8,140 @@ import { BAG_INCLUDE, serializeBag, bagTotal } from '@/lib/bagSerializer';
 type Ctx = { params: Promise<{ id: string }> };
 type AuthedReq = NextRequest & { user?: { userId: string; role: string; mongoId?: string } };
 
-async function recomputeAndReturn(bagId: string) {
-  const items = await prisma.bagItem.findMany({ where: { bagId }, select: { price: true, quantity: true } });
-  await prisma.bag.update({
-    where: { id: bagId },
-    data: { totalAmount: bagTotal(items.map((i) => ({ price: Number(i.price), quantity: i.quantity }))) },
+class BagMutationError extends Error {
+  constructor(message: string, public status = 400) { super(message); }
+}
+
+function failure(error: unknown, action: string) {
+  if (error instanceof BagMutationError) return NextResponse.json({ error: error.message }, { status: error.status });
+  console.error(`Error ${action} bag item:`, error);
+  return NextResponse.json({ error: 'Could not update this bag' }, { status: 500 });
+}
+
+function validQuantity(value: unknown, allowZero = false) {
+  const quantity = Number(value);
+  if (!Number.isSafeInteger(quantity) || quantity > 10000 || quantity < (allowZero ? 0 : 1)) {
+    throw new BagMutationError('Choose a valid whole-number quantity');
+  }
+  return quantity;
+}
+
+// Serialize every mutation for a bag across serverless instances by locking
+// the owning bag row. Reads, writes and total recalculation share one transaction.
+async function withLockedBag(
+  userId: string,
+  bagId: string,
+  operation: (tx: Prisma.TransactionClient) => Promise<void>,
+) {
+  return prisma.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM bags WHERE id = ${bagId} AND "userId" = ${userId}
+      AND "isActive" = true FOR UPDATE
+    `;
+    if (!rows.length) throw new BagMutationError('Bag not found', 404);
+
+    await operation(tx);
+    const items = await tx.bagItem.findMany({
+      where: { bagId }, select: { price: true, quantity: true },
+    });
+    const bag = await tx.bag.update({
+      where: { id: bagId },
+      data: { totalAmount: bagTotal(items.map((item) => ({
+        price: Number(item.price), quantity: item.quantity,
+      }))) },
+      include: BAG_INCLUDE,
+    });
+    return serializeBag(bag);
   });
-  const bag = await prisma.bag.findUnique({ where: { id: bagId }, include: BAG_INCLUDE });
-  return bag ? serializeBag(bag) : null;
 }
 
-async function getOwnedBagAndProduct(userId: string | undefined, bagId: string, productId: string, allowArchived = false) {
-  if (!userId) return { bag: null, product: null };
-
-  const [bag, product] = await Promise.all([
-    prisma.bag.findFirst({ where: { id: bagId, userId }, select: { id: true } }),
-    prisma.product.findFirst({
-      where: { ...(allowArchived ? {} : { archived: false }), OR: [{ id: productId }, { sku: productId }, { slug: productId }] },
-    }),
-  ]);
-
-  return { bag, product };
+async function findProduct(tx: Prisma.TransactionClient, productId: string, allowArchived = false) {
+  return tx.product.findFirst({
+    where: {
+      ...(allowArchived ? {} : { archived: false }),
+      OR: [{ id: productId }, { sku: productId }, { slug: productId }],
+    },
+  });
 }
 
-// POST - Add an item to a bag (owner only)
+async function bodyValues(request: NextRequest, allowZero = false) {
+  const body = await request.json().catch(() => null);
+  if (typeof body?.productId !== 'string' || !body.productId.trim() || body.productId.length > 200) {
+    throw new BagMutationError('Product ID is required');
+  }
+  return { productId: body.productId, quantity: validQuantity(body.quantity, allowZero) };
+}
+
 export const POST = requireAuth(async (request: AuthedReq, context: Ctx) => {
   try {
+    const { productId, quantity } = await bodyValues(request);
     const userId = request.user?.mongoId || request.user?.userId;
+    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     const { id: bagId } = await context.params;
-    const { productId, quantity } = await request.json();
-    const qty = Number(quantity);
 
-    if (!productId || !Number.isSafeInteger(qty) || qty > 10000 || qty <= 0) {
-      return NextResponse.json({ error: 'Product ID and valid quantity are required' }, { status: 400 });
-    }
-
-    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId);
-    if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
-    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-
-    const existingItem = await prisma.bagItem.findUnique({
-      where: { bagId_productId: { bagId, productId: product.id } },
+    const data = await withLockedBag(userId, bagId, async (tx) => {
+      const product = await findProduct(tx, productId);
+      if (!product) throw new BagMutationError('Product not found', 404);
+      const existing = await tx.bagItem.findUnique({
+        where: { bagId_productId: { bagId, productId: product.id } },
+        select: { quantity: true },
+      });
+      const nextQuantity = (existing?.quantity || 0) + quantity;
+      if (nextQuantity > 10000 || nextQuantity > product.stockQty) {
+        throw new BagMutationError('Insufficient stock for requested quantity', 409);
+      }
+      await tx.bagItem.upsert({
+        where: { bagId_productId: { bagId, productId: product.id } },
+        update: { quantity: { increment: quantity }, price: productUnitPrice(product) },
+        create: { bagId, productId: product.id, quantity, price: productUnitPrice(product) },
+      });
     });
-    const newQuantity = (existingItem?.quantity || 0) + qty;
-    if (product.stockQty < newQuantity) {
-      return NextResponse.json({ error: 'Insufficient stock for requested quantity' }, { status: 400 });
-    }
-
-    await prisma.bagItem.upsert({
-      where: { bagId_productId: { bagId, productId: product.id } },
-      update: { quantity: newQuantity, price: productUnitPrice(product) },
-      create: { bagId, productId: product.id, quantity: qty, price: productUnitPrice(product) },
-    });
-
-    return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('Error adding item to bag:', error);
-    return NextResponse.json({ error: 'Failed to add item to bag' }, { status: 500 });
+    return failure(error, 'adding');
   }
 });
 
-// PATCH - Set an item's absolute quantity in one request (owner only)
 export const PATCH = requireAuth(async (request: AuthedReq, context: Ctx) => {
   try {
+    const { productId, quantity } = await bodyValues(request, true);
     const userId = request.user?.mongoId || request.user?.userId;
+    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     const { id: bagId } = await context.params;
-    const { productId, quantity } = await request.json();
-    const qty = Number(quantity);
-
-    if (!productId || !Number.isSafeInteger(qty) || qty > 10000 || qty < 0) {
-      return NextResponse.json({ error: 'Product ID and a non-negative quantity are required' }, { status: 400 });
-    }
-
-    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId, qty === 0);
-    if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
-    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-
-    if (qty === 0) {
-      await prisma.bagItem.deleteMany({ where: { bagId, productId: product.id } });
-    } else {
-      if (product.stockQty < qty) {
-        return NextResponse.json({ error: 'Insufficient stock for requested quantity' }, { status: 400 });
+    const data = await withLockedBag(userId, bagId, async (tx) => {
+      const product = await findProduct(tx, productId, quantity === 0);
+      if (!product) throw new BagMutationError('Product not found', 404);
+      if (quantity === 0) {
+        await tx.bagItem.deleteMany({ where: { bagId, productId: product.id } });
+      } else {
+        if (quantity > product.stockQty) throw new BagMutationError('Insufficient stock for requested quantity', 409);
+        await tx.bagItem.upsert({
+          where: { bagId_productId: { bagId, productId: product.id } },
+          update: { quantity, price: productUnitPrice(product) },
+          create: { bagId, productId: product.id, quantity, price: productUnitPrice(product) },
+        });
       }
-
-      await prisma.bagItem.upsert({
-        where: { bagId_productId: { bagId, productId: product.id } },
-        update: { quantity: qty, price: productUnitPrice(product) },
-        create: { bagId, productId: product.id, quantity: qty, price: productUnitPrice(product) },
-      });
-    }
-
-    return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
+    });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('Error updating bag item:', error);
-    return NextResponse.json({ error: 'Failed to update bag item' }, { status: 500 });
+    return failure(error, 'updating');
   }
 });
 
-// DELETE - Remove an item from a bag (owner only)
 export const DELETE = requireAuth(async (request: AuthedReq, context: Ctx) => {
   try {
     const userId = request.user?.mongoId || request.user?.userId;
+    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     const { id: bagId } = await context.params;
-    const { searchParams } = new URL(request.url);
-    const productId = searchParams.get('productId');
+    const productId = new URL(request.url).searchParams.get('productId');
+    if (!productId || productId.length > 200) return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
 
-    if (!productId) return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
-
-    const { bag, product } = await getOwnedBagAndProduct(userId, bagId, productId, true);
-    if (!bag) return NextResponse.json({ error: 'Bag not found' }, { status: 404 });
-
-    if (product) {
-      await prisma.bagItem.deleteMany({ where: { bagId, productId: product.id } });
-    }
-
-    return NextResponse.json({ success: true, data: await recomputeAndReturn(bagId) });
+    const data = await withLockedBag(userId, bagId, async (tx) => {
+      const product = await findProduct(tx, productId, true);
+      if (product) await tx.bagItem.deleteMany({ where: { bagId, productId: product.id } });
+    });
+    return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('Error removing item from bag:', error);
-    return NextResponse.json({ error: 'Failed to remove item from bag' }, { status: 500 });
+    return failure(error, 'removing');
   }
 });

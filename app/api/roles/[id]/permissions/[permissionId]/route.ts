@@ -1,35 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
+import { roleService } from '@/lib/services/roleService';
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+type Context = { params: Promise<{ id: string; permissionId: string }> };
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; permissionId: string }> }
-) {
+export const DELETE = requireAdmin(async (_request: NextRequest, context: Context) => {
   try {
-    const resolvedParams = await params;
-    const { id, permissionId } = resolvedParams;
-
-    const response = await fetch(
-      `${BACKEND_URL}/api/roles/${id}/permissions/${permissionId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to remove permission from role");
-    }
-
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to remove permission from role" },
-      { status: 500 }
-    );
+    const { id, permissionId } = await context.params;
+    if (!id || !permissionId) return NextResponse.json({ error: 'Role and permission IDs required' }, { status: 400 });
+    const role = await roleService.removePermissionFromRole(id, permissionId);
+    return role
+      ? NextResponse.json({ success: true, data: role })
+      : NextResponse.json({ error: 'Role or permission not found' }, { status: 404 });
+  } catch (error) {
+    console.error('Failed to remove role permission:', error);
+    return NextResponse.json({ error: 'Failed to remove permission from role' }, { status: 500 });
   }
-}
+});
