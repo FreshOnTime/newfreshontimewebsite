@@ -51,10 +51,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="bg-background pb-10 text-foreground">
-      <section className="border-b border-border bg-card px-5 py-10 md:px-8 md:py-6">
+      <section className="border-b border-brand-green/10 bg-brand-cream px-5 py-12 md:px-8 md:py-16">
         <div className="mx-auto max-w-7xl">
           <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Search FreshPick</span>
-          <h1 className="mt-4 max-w-4xl font-serif text-3xl font-normal leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">
+          <h1 className="mt-5 max-w-4xl font-heading text-[clamp(2.6rem,5vw,5.25rem)] font-semibold leading-[1.06] tracking-[-.05em] text-brand-green-deep">
             {query ? <>Results for <span className="not-italic text-brand-green">“{query}”</span></> : <>What are you <span className="not-italic text-brand-green">looking for?</span></>}
           </h1>
           <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">
@@ -62,10 +62,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </p>
 
           <form action="/search" className="mt-8 max-w-2xl">
-            <div className="flex h-14 items-center rounded-lg border border-border bg-background px-5 transition-colors focus-within:border-primary focus-within:bg-card">
+            <div className="flex min-h-14 items-center rounded-2xl border border-brand-green/20 bg-white px-3 shadow-sm transition-colors focus-within:border-brand-green sm:px-5">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
               <input aria-label="Search FreshPick products" name="q" defaultValue={query} autoFocus={!query} placeholder="Try dinner, mango, pasta, tea…" className="ml-3 min-w-0 flex-1 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground" />
-              <button type="submit" className="ml-3 rounded-lg bg-brand-leaf px-5 py-2 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Search</button>
+              <button type="submit" className="ml-2 min-h-11 rounded-xl bg-brand-green-deep px-4 py-2 text-sm font-semibold text-white hover:bg-brand-green sm:ml-3 sm:px-6">Search</button>
             </div>
           </form>
 
@@ -81,7 +81,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               ["Just browsing?", "Open Discover for moods, makers and ready food.", "/discover"],
               ["Know the list?", "Go straight to the live market and its filters.", "/products"],
             ].map(([title, copy, href]) => (
-              <Link key={href} href={href} className="group border-t border-border py-5 transition-colors">
+              <Link key={href} href={href} className="editorial-card group p-6">
                 <h2 className="text-xl font-normal text-brand-green">{title}</h2>
                 <p className="mt-3 text-sm font-normal leading-6 text-muted-foreground">{copy}</p>
                 <span className="mt-7 inline-flex items-center gap-2 text-xs font-semibold text-brand-green">Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span>
@@ -89,10 +89,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             ))}
           </section>
         ) : total === 0 ? (
-          <section className="rounded-lg border border-border bg-card p-10 text-center md:p-16">
+          <section className="editorial-card p-10 text-center md:p-16">
             <h2 className="font-serif text-2xl font-normal text-foreground">Nothing exact yet.</h2>
             <p className="mx-auto mt-4 max-w-lg text-sm font-normal leading-7 text-muted-foreground">Try a broader food name or move into Discover, where you can start from a craving or meal instead of a product keyword.</p>
-            <Link href="/discover" className="mt-7 inline-flex rounded-lg bg-brand-leaf px-6 py-3 text-sm font-semibold text-brand-ink hover:bg-brand-leaf/85">Open Discover</Link>
+            <Link href="/discover" className="editorial-button mt-7">Open Discover</Link>
           </section>
         ) : (
           <div className="space-y-16">

@@ -1,33 +1,71 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 interface PremiumPageHeaderProps {
-  title: string; subtitle?: string; backgroundImage?: string | null; backgroundColor?: string;
-  count?: number; isLoading?: boolean; eyebrow?: string;
-  imageLayout?: 'feature' | 'compact';
+  title: string;
+  subtitle?: string;
+  backgroundImage?: string | null;
+  backgroundColor?: string;
+  count?: number;
+  isLoading?: boolean;
+  eyebrow?: string;
+  imageLayout?: "feature" | "compact";
 }
 
-/** Editorial introductions; browsing pages can keep their photography compact. */
-export default function PremiumPageHeader({ title, subtitle, backgroundImage, count, isLoading = false, eyebrow, imageLayout = 'feature' }: PremiumPageHeaderProps) {
-  const compact = imageLayout === 'compact';
+/** A consistent editorial introduction, shared by public market, discovery, and information pages. */
+export default function PremiumPageHeader({
+  title,
+  subtitle,
+  backgroundImage,
+  count,
+  isLoading = false,
+  eyebrow,
+  imageLayout = "feature",
+}: PremiumPageHeaderProps) {
+  const compact = imageLayout === "compact";
   return (
-    <section className="border-b border-border bg-background">
-      <div className="editorial-wrap py-9 md:py-14">
-        {isLoading ? <div className="max-w-xl animate-pulse" role="status" aria-label="Loading page"><div className="h-12 w-3/4 bg-muted" /><div className="mt-5 h-4 w-1/2 bg-muted" /></div> : <>
-          <div className={compact && backgroundImage ? 'grid items-center gap-7 md:grid-cols-[1fr_0.45fr] md:gap-12' : ''}>
-            <div>
-              {eyebrow && <p className="editorial-label mb-5">{eyebrow}</p>}
-              <div className={!compact && backgroundImage ? 'grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:items-end md:gap-14' : ''}>
-                <h1 className={compact ? 'max-w-4xl font-heading text-[clamp(2.2rem,5vw,4.5rem)] font-normal leading-[1.1] text-foreground' : 'max-w-5xl font-heading text-[clamp(2.4rem,6vw,5.5rem)] font-normal leading-[1.1] text-foreground'}>{title}</h1>
-                {(subtitle || count !== undefined) && <div className={backgroundImage && !compact ? '' : 'mt-5'}>
-                  {subtitle && <p className="max-w-xl text-base leading-7 text-muted-foreground md:text-lg">{subtitle}</p>}
-                  {count !== undefined && <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">{count} {count === 1 ? 'item' : 'items'}</p>}
-                </div>}
+    <section className="relative isolate overflow-hidden border-b border-border bg-brand-cream" aria-label="Page introduction">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_86%_0%,rgba(132,151,122,.18),transparent_44%)]" />
+      <div className="editorial-wrap relative py-8 sm:py-12 lg:py-16">
+        {isLoading ? (
+          <div className="max-w-xl space-y-5" role="status" aria-label="Loading page">
+            <div className="h-4 w-40 animate-pulse rounded-full bg-brand-green/10 motion-reduce:animate-none" />
+            <div className="h-16 w-3/4 animate-pulse rounded-xl bg-brand-green/10 motion-reduce:animate-none" />
+            <div className="h-5 w-2/3 animate-pulse rounded-full bg-brand-green/10 motion-reduce:animate-none" />
+          </div>
+        ) : (
+          <div className={backgroundImage ? "grid min-w-0 items-center gap-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.91fr)] lg:gap-14" : "grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,.7fr)] lg:items-end"}>
+            <div className="min-w-0 py-3 lg:py-8">
+              <div className="mb-6 flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-green">
+                <span className="inline-block h-2 w-2 rounded-full bg-brand-amber" aria-hidden="true" />
+                <span>{eyebrow || "The FreshPick market"}</span>
+                <span className="h-px w-8 bg-brand-green/25" aria-hidden="true" />
+                <span className="text-muted-foreground">Colombo, Sri Lanka</span>
+              </div>
+              <h1 className="max-w-[16ch] font-heading text-[clamp(2.65rem,6.2vw,6.15rem)] font-semibold leading-[1.025] tracking-[-0.055em] text-brand-green-deep [text-wrap:balance]">{title}</h1>
+              {subtitle && <p className="mt-6 max-w-[47ch] text-base leading-[1.8] text-foreground/75 sm:text-lg">{subtitle}</p>}
+              {count !== undefined && <p className="mt-6 inline-flex rounded-full border border-brand-green/15 bg-white/70 px-4 py-2 text-xs font-semibold text-brand-green" aria-live="polite">{count} {count === 1 ? "item" : "items"} in this selection</p>}
+              <div className="mt-8 flex flex-wrap items-center gap-5 text-sm">
+                <Link href="/products" className="inline-flex min-h-11 items-center gap-2 font-semibold text-brand-green underline decoration-brand-green/30 underline-offset-8 transition-colors hover:decoration-brand-green">Explore the market <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+                <span className="text-xs text-muted-foreground">Thoughtfully selected for everyday life</span>
               </div>
             </div>
-            {backgroundImage && compact && <div className="relative aspect-[16/9] max-h-48 overflow-hidden rounded-xl bg-secondary"><Image src={backgroundImage} alt="" fill sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 30vw, 395px" className="object-cover" /></div>}
+            {backgroundImage ? (
+              <div className={"relative isolate overflow-hidden rounded-[1.5rem] bg-secondary shadow-[0_20px_70px_-35px_rgba(16,46,30,.3)] " + (compact ? "aspect-[5/3] lg:aspect-[5/4]" : "aspect-[4/3] lg:aspect-[5/4]")}>
+                <Image src={backgroundImage} alt="" fill sizes="(max-width: 1023px) 100vw, 48vw" className="object-cover transition-transform duration-700 motion-safe:hover:scale-[1.025]" priority={false} />
+                <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-brand-green-deep/55 to-transparent" />
+                <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between gap-4 text-xs font-semibold tracking-[.08em] text-white sm:bottom-7 sm:left-7 sm:right-7">
+                  <span>FROM THE MARKET</span><span>FRESH PICK · COLOMBO</span>
+                </div>
+              </div>
+            ) : (
+              <div aria-hidden="true" className="hidden min-h-48 items-end justify-end border-l border-brand-green/15 px-10 py-6 lg:flex">
+                <p className="max-w-[18ch] text-right font-heading text-4xl font-medium leading-tight tracking-[-.05em] text-brand-green/20">Good food belongs in every kitchen.</p>
+              </div>
+            )}
           </div>
-          {backgroundImage && !compact && <div className="relative mt-9 aspect-[4/3] overflow-hidden rounded-xl bg-secondary md:aspect-[2.4/1]"><Image src={backgroundImage} alt="" fill sizes="(max-width: 1440px) 100vw, 1360px" className="object-cover" /></div>}
-        </>}
+        )}
       </div>
     </section>
   );

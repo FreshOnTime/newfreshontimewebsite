@@ -48,10 +48,10 @@ export default async function SubscriptionsPage() {
         <div className="min-h-screen bg-background text-foreground">
             <PremiumPageHeader title="Make it a regular thing." eyebrow="Your weekly basket" subtitle="Choose a grocery plan that suits your household and set up a recurring delivery." backgroundImage="/images/editorial/kitchen-basket.webp" />
 
-            <section className="relative py-8 md:py-8">
-                <div className="container mx-auto px-4">
+            <section className="relative py-12 md:py-16">
+                <div className="editorial-wrap">
                     {plans.length > 0 ? (
-                        <div className="relative z-20 mx-auto mt-6 grid max-w-[1400px] grid-cols-1 gap-5 md:mt-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                        <div className="relative z-20 mx-auto grid max-w-[1400px] grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
                             {plans.map((plan) => (
                                 <SubscriptionPlanCard key={plan._id} plan={plan} />
                             ))}
@@ -76,12 +76,12 @@ export default async function SubscriptionsPage() {
                 </div>
             </section>
 
-            <section className="bg-background py-8 md:py-10">
+            <section className="bg-background py-12 md:py-16">
                 <div className="container mx-auto max-w-7xl px-4 md:px-8">
                     <div className="mb-6 grid gap-7 md:grid-cols-[1fr_0.62fr] md:items-end">
                         <div>
                             <span className="text-xs font-bold normal-case text-brand-green">How Smart Basket works</span>
-                            <h2 className="mt-5 text-balance font-serif text-2xl font-normal leading-tight text-foreground md:text-2xl">A basket that fits your routine.</h2>
+                            <h2 className="editorial-title mt-5">A basket that fits your routine.</h2>
                         </div>
                         <p className="max-w-xl text-sm font-normal leading-7 text-muted-foreground md:justify-self-end">
                             Choose the basket that suits your household, then select a delivery schedule at checkout.
@@ -125,7 +125,7 @@ export default async function SubscriptionsPage() {
                 <div className="container mx-auto max-w-3xl px-4">
                     <div className="mb-10">
                         <span className="text-xs font-bold normal-case text-brand-green">Support</span>
-                        <h2 className="mt-4 font-serif text-2xl font-normal text-foreground">Common questions</h2>
+                        <h2 className="editorial-title mt-4">Common questions</h2>
                     </div>
                     <div className="overflow-hidden border-y border-border bg-background">
                         {faqs.map((item) => (

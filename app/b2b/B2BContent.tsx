@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
 import PartnershipRequestForm from './PartnershipRequestForm';
+import AnswerSection from '@/components/seo/AnswerSection';
+import { BUSINESS_FAQS } from '@/lib/answerContent';
 
 const paths = [
   { id: 'for-buyers', label: 'For kitchens & workplaces', title: 'Source for your business.', copy: 'Buying for a restaurant, café, hotel or workplace? Tell us what you need, how often and in what quantities. We’ll discuss availability, delivery and a suitable arrangement.', image: '/images/editorial/restaurant-kitchen.webp', alt: 'Food preparation in a professional kitchen', action: 'Discuss your supply needs', href: '#business-enquiry' },
@@ -24,5 +26,6 @@ export default function B2BContent() {
         <div><p className="editorial-label">Business & supplier enquiries</p><h2 className="editorial-title mt-5">Tell us a little about yourself.</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">Our team will review your enquiry and discuss the next steps. For a supplier account, use the application above; for an initial conversation, use this form.</p></div><PartnershipRequestForm />
       </section>
     </div>
+    <AnswerSection title="Partnerships, explained." eyebrow="Business questions" questions={BUSINESS_FAQS} path="/b2b" />
   </div>;
 }

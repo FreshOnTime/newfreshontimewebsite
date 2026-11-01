@@ -15,8 +15,8 @@ import { getPriceRange, updateProductFilters } from "@/lib/productFilters";
 type Category = { _id: string; name: string };
 const CACHE_KEY = "freshpick_filter_categories_v2";
 const TAGS = ["Organic", "Gluten-Free", "Vegan", "Keto", "Halal", "Local", "Imported"];
-const CONTROL = "h-11 rounded-lg border-border bg-background shadow-none focus:ring-brand-green";
-const FILTER = CONTROL + " shrink-0 border px-3 text-sm font-medium hover:bg-secondary hover:text-brand-green";
+const CONTROL = "h-11 rounded-xl border-brand-green/15 bg-white/90 shadow-sm focus:ring-brand-green";
+const FILTER = CONTROL + " shrink-0 border px-3 text-sm font-semibold hover:border-brand-green/40 hover:bg-brand-cream hover:text-brand-green";
 const SELECTED = " border-brand-green bg-brand-green/5 text-brand-green";
 
 function parseCategories(source: unknown): Category[] {
@@ -92,13 +92,13 @@ export default function ProductsFilterBar() {
   ];
 
   return (
-    <section aria-label="Product filters" aria-busy={pending} className="border-y border-border py-5">
+    <section aria-label="Product filters" aria-busy={pending} className="rounded-2xl border border-brand-green/10 bg-white/60 p-3 sm:p-5">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row">
           <form className="relative flex min-w-0 flex-1 items-center" onSubmit={(event) => { event.preventDefault(); apply({ search: search.trim() || null }); }}>
             <Search strokeWidth={1.75} aria-hidden="true" className="pointer-events-none absolute left-3.5 h-4 w-4 text-muted-foreground" />
             <Input className={CONTROL + " pl-10 pr-24 text-sm focus-visible:ring-brand-green"} aria-label="Search products" placeholder="Find something fresh" value={search} onChange={(event) => setSearch(event.target.value)} />
-            <button type="submit" disabled={pending} className="absolute right-1 h-9 rounded-md px-3 text-sm font-medium text-brand-green hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green disabled:opacity-50">Search</button>
+            <button type="submit" disabled={pending} className="absolute right-1 h-9 rounded-lg bg-brand-green-deep px-3 text-sm font-semibold text-white hover:bg-brand-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green disabled:opacity-50">Search</button>
           </form>
           <Select disabled={pending} value={categoryId || "all"} onValueChange={(value) => apply({ categoryId: value === "all" ? null : value })}>
             <SelectTrigger aria-label="Category" className={CONTROL + " w-full sm:w-[190px]"}><SelectValue placeholder="All categories" /></SelectTrigger>

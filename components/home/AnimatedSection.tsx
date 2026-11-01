@@ -1,51 +1,20 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface AnimatedSectionProps {
-    children: ReactNode;
-    className?: string;
-    delay?: number;
+  children: ReactNode;
+  className?: string;
+  delay?: number;
 }
 
-export function AnimatedSection({
-  children,
-  className = "",
-  delay: _delay = 0,
-}: AnimatedSectionProps) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-    );
+/** Progressive scroll-reveal; content remains visible when unsupported or JS is disabled. */
+export function AnimatedSection({ children, className = "", delay = 0 }: AnimatedSectionProps) {
+  return <div className={"scroll-reveal " + className} style={{ animationDelay: delay + "ms" }}>{children}</div>;
 }
 
-interface AnimatedProductGridProps {
-    children: ReactNode;
-    className?: string;
+export function AnimatedProductGrid({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={className}>{children}</div>;
 }
 
-export function AnimatedProductGrid({
-  children,
-  className = "",
-}: AnimatedProductGridProps) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-    );
-}
-
-interface AnimatedProductItemProps {
-    children: ReactNode;
-    index: number;
-}
-
-export function AnimatedProductItem({
-  children,
-  index: _index,
-}: AnimatedProductItemProps) {
-  return (
-    <div>
-      {children}
-    </div>
-  );
+export function AnimatedProductItem({ children, index }: { children: ReactNode; index: number }) {
+  return <div className="scroll-reveal" style={{ animationDelay: Math.min(index, 8) * 60 + "ms" }}>{children}</div>;
 }

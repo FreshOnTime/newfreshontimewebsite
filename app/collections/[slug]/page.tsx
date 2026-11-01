@@ -1,4 +1,6 @@
 import { pageMetadata } from '@/lib/seo';
+import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
+import { absoluteUrl } from "@/lib/config/site";
 
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import type { Metadata } from "next";
@@ -27,6 +29,7 @@ export default async function CollectionPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
+      <BreadcrumbJsonLd items={[{ name: "Home", url: absoluteUrl("/") }, { name: "Collections", url: absoluteUrl("/collections") }, { name: collection.title, url: absoluteUrl(`/collections/${encodeURIComponent(collection.slug)}`) }]} />
       <PremiumPageHeader title={collection.title} subtitle={collection.excerpt} backgroundImage={collection.featuredImage?.url} />
 
       {collection.story && (

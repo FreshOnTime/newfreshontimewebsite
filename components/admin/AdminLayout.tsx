@@ -37,11 +37,11 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-brand-cream">
       <AdminSidebar />
       <div className="lg:pl-64">
         <AdminHeader />
-        <div className="min-w-0 p-5 md:p-8">
+        <div className="min-w-0 p-4 sm:p-6 xl:p-9">
           {children}
         </div>
       </div>

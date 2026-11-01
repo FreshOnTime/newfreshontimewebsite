@@ -38,7 +38,7 @@ export default function BottomNav() {
     return (
         <nav
             aria-label="Mobile navigation"
-            className="fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
+            className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-green/10 bg-brand-cream/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-12px_32px_-22px_rgba(16,46,30,.35)] backdrop-blur-xl md:hidden"
         >
             <div className={`mx-auto grid h-[4.5rem] max-w-lg items-center px-2 ${hasDashboard ? "grid-cols-6" : "grid-cols-5"} `}>
                 {navItems.map(({ href, icon: Icon, label, showBadge }) => {
@@ -57,13 +57,14 @@ export default function BottomNav() {
                         >
                             <div
                                 className={`relative flex h-10 w-10 items-center justify-center transition-colors duration-200 ${isActive
-                                    ? "border-t-2 border-primary"
-                                    : "group-hover:bg-background"
+                                    ? "rounded-xl bg-brand-green/10 text-brand-green"
+                                    : "rounded-xl group-hover:bg-brand-green/5"
                                     } `}
                             >
                                 <Icon
                                     className="h-5 w-5 transition-transform duration-200 group-active:scale-90"
                                     strokeWidth={1.5}
+                                    aria-hidden="true"
                                 />
                                 {showBadge && itemCount > 0 && (
                                     <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-primary px-1 text-xs font-bold text-accent-foreground shadow-sm">

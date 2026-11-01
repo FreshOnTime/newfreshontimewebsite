@@ -1,14 +1,44 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState, type KeyboardEvent } from 'react';
-import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, Pause, Play, ArrowUpRight } from "lucide-react";
 
 const slides = [
-  { id: 'produce', eyebrow: 'Fresh vegetables · The FreshPick market', title: ['Fresh picks.', 'Full of flavour.'], description: 'Leafy greens, everyday vegetables and fresh ingredients for your kitchen. Start with what you love.', image: '/images/home/market-produce-box.webp', alt: 'A kraft produce box with aubergines, cabbage, carrots, green beans, pumpkin, limes and avocados', action: 'Explore the market', href: '#categories-title' },
-  { id: 'fruit', eyebrow: 'Fruit, colour & everyday goodness', title: ['A brighter', 'kind of fresh.'], description: 'Tropical fruit, citrus and fresh favourites. Explore the range and find your next pick.', image: '/images/home/fresh-market-hero.webp', alt: 'Papaya, bananas, limes, carrots and leafy greens on a warm stone surface', action: 'Shop by category', href: '/categories' },
-  { id: 'pantry', eyebrow: 'Pantry essentials, tea & more', title: ['Good things.', 'Every day.'], description: 'Rice, pulses, spices and drinks alongside fresh produce, bakery and food from local kitchens.', image: '/images/home/market-pantry.webp', alt: 'Uncooked rice, lentils, coconut, spices and loose tea in a natural pantry still life', action: 'Shop all food', href: '/products' },
+  {
+    id: "produce",
+    eyebrow: "An everyday market, thoughtfully put together",
+    title: "Fresh food. Better everyday.",
+    description: "Vegetables for tonight, fruit for the family, pantry essentials and food from local kitchens. Discover your next good thing.",
+    image: "/images/home/market-produce-box.webp",
+    alt: "A basket of aubergines, cabbage, carrots, green beans and tropical produce",
+    action: "Shop the market",
+    href: "/products",
+    caption: "Fresh vegetables & greens",
+  },
+  {
+    id: "fruit",
+    eyebrow: "A little more colour in your kitchen",
+    title: "Make room for something fresh.",
+    description: "Explore fruit, vibrant produce and ingredients for the meals you look forward to making.",
+    image: "/images/home/fresh-market-hero.webp",
+    alt: "Papaya, bananas, limes, carrots and leafy greens",
+    action: "Browse categories",
+    href: "/categories",
+    caption: "Fruit & market favourites",
+  },
+  {
+    id: "pantry",
+    eyebrow: "The good things you come back to",
+    title: "For the meals that matter.",
+    description: "Rice, pulses, spices and drinks alongside fresh produce, bakery and food from neighbourhood makers.",
+    image: "/images/home/market-pantry.webp",
+    alt: "Rice, lentils, coconut and spices laid out as an everyday pantry selection",
+    action: "Explore food",
+    href: "/discover",
+    caption: "Everyday pantry essentials",
+  },
 ] as const;
 
 export default function HeroSection() {
@@ -19,51 +49,62 @@ export default function HeroSection() {
   const slide = slides[active];
 
   useEffect(() => {
-    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updateMotion = () => setPlaying(!motion.matches);
-    const updateVisibility = () => setVisible(document.visibilityState === 'visible');
+    const updateVisibility = () => setVisible(document.visibilityState === "visible");
     updateMotion();
     updateVisibility();
-    motion.addEventListener('change', updateMotion);
-    document.addEventListener('visibilitychange', updateVisibility);
-    return () => { motion.removeEventListener('change', updateMotion); document.removeEventListener('visibilitychange', updateVisibility); };
+    motion.addEventListener("change", updateMotion);
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => {
+      motion.removeEventListener("change", updateMotion);
+      document.removeEventListener("visibilitychange", updateVisibility);
+    };
   }, []);
 
   useEffect(() => {
     if (!playing || hovered || !visible) return;
-    const timer = window.setInterval(() => setActive(index => (index + 1) % slides.length), 8000);
-    return () => window.clearInterval(timer);
+    const interval = window.setInterval(() => setActive((index) => (index + 1) % slides.length), 9500);
+    return () => window.clearInterval(interval);
   }, [playing, hovered, visible]);
 
-  function select(index: number) {
-    setPlaying(false);
+  const select = (index: number) => {
     setActive((index + slides.length) % slides.length);
-  }
-  function keyboard(event: KeyboardEvent<HTMLElement>) {
-    if (event.target !== event.currentTarget) return;
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      event.preventDefault();
-      select(active + (event.key === 'ArrowRight' ? 1 : -1));
-    }
-  }
+    setPlaying(false);
+  };
 
   return (
-    <section aria-label="FreshPick highlights" aria-roledescription="carousel" tabIndex={0} onKeyDown={keyboard} onFocusCapture={event => { if (!(event.target as HTMLElement).closest('[data-carousel-playback]')) setPlaying(false); }} onPointerEnter={event => { if (event.pointerType === 'mouse') setHovered(true); }} onPointerLeave={() => setHovered(false)} className="outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green">
-      <div className="relative isolate flex min-h-[590px] items-end overflow-hidden bg-brand-green-deep sm:min-h-[640px] lg:min-h-[620px] xl:min-h-[680px]">
-        {slides.map((item, index) => <div key={item.id} hidden={index !== active} className="absolute inset-0"><Image src={item.image} alt={item.alt} fill priority={index === 0} sizes="100vw" className="object-cover object-[60%_center] md:object-center" /></div>)}
-        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(16,46,30,0.62),rgba(16,46,30,0.08)_80%),linear-gradient(0deg,rgba(16,46,30,0.45),transparent_75%)]" />
-        <div className="editorial-wrap relative z-10 w-full pb-28 pt-16 md:pb-32" aria-live={playing ? 'off' : 'polite'} aria-atomic="true">
-          <p className="max-w-sm text-[11px] font-medium uppercase leading-5 tracking-[0.14em] text-brand-cream/90 md:max-w-none md:text-xs">{slide.eyebrow}</p>
-          <h1 id="home-title" className="mt-5 max-w-2xl text-[clamp(2.25rem,6vw,5rem)] font-medium leading-[1.02] tracking-[-0.045em] !text-brand-cream">{slide.title.map(line => <span key={line} className="block whitespace-nowrap">{line}</span>)}</h1>
-          <p className="mt-6 max-w-[24rem] text-base leading-7 text-brand-cream/95 md:max-w-[28rem] md:text-lg">{slide.description}</p>
-          <Link href={slide.href} className="editorial-button mt-7">{slide.action}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+    <section aria-label="FreshPick market highlights" aria-roledescription="carousel" onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setPlaying(false)} className="relative overflow-hidden border-b border-border bg-brand-cream">
+      <div className="editorial-wrap grid min-w-0 items-stretch gap-0 py-7 sm:py-10 lg:min-h-[660px] lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-12 lg:py-12">
+        <div className="flex min-w-0 flex-col justify-center py-6 lg:py-12">
+          <p className="max-w-md text-xs font-medium uppercase leading-5 tracking-[.12em] text-muted-foreground" aria-live="off">{slide.eyebrow}</p>
+          <h1 className="mt-5 max-w-[12ch] font-heading text-[clamp(2.9rem,6vw,6.4rem)] font-semibold leading-[.99] tracking-[-.06em] text-brand-green-deep [text-wrap:balance]" aria-live="off">{slide.title}</h1>
+          <p className="mt-7 max-w-[45ch] text-base leading-[1.85] text-foreground/75 sm:text-lg">{slide.description}</p>
+          <div className="mt-8 flex flex-wrap items-center gap-5">
+            <Link href={slide.href} className="editorial-button">{slide.action}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link href="/about" className="editorial-link">Our story <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+          </div>
+          <div className="mt-10 flex flex-wrap items-center gap-4 border-t border-brand-green/15 pt-6 text-xs text-muted-foreground lg:mt-14"><span>01 / Fresh groceries</span><span className="h-1 w-1 rounded-full bg-brand-amber" aria-hidden="true" /><span>02 / Local makers</span><span className="h-1 w-1 rounded-full bg-brand-amber" aria-hidden="true" /><span>03 / Your routine</span></div>
         </div>
-        <div className="editorial-wrap absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-4 pb-6 text-brand-cream md:pb-8">
-          <div className="flex items-center gap-2" aria-label="Choose a highlight">{slides.map((item, index) => <button key={item.id} type="button" onClick={() => select(index)} aria-label={`Show highlight ${index + 1}: ${item.title.join(' ')}`} aria-current={index === active ? 'true' : undefined} className={`flex h-11 w-11 items-center justify-center border-b text-xs tabular-nums transition-colors ${index === active ? 'border-brand-amber text-brand-amber' : 'border-brand-cream/30 text-brand-cream hover:border-brand-cream'}`}>{String(index + 1).padStart(2, '0')}</button>)}</div>
-          <div className="flex items-center gap-1 sm:gap-3">{[{ id: 'previous', label: 'Previous highlight', icon: ArrowLeft, action: () => select(active - 1) }, { id: 'playback', label: playing ? 'Pause highlights' : 'Play highlights', icon: playing ? Pause : Play, action: () => setPlaying(value => !value) }, { id: 'next', label: 'Next highlight', icon: ArrowRight, action: () => select(active + 1) }].map(({ id, label, icon: Icon, action }) => <button key={id} type="button" onClick={action} data-carousel-playback={id === 'playback' ? 'true' : undefined} aria-label={label} className="flex h-11 w-11 items-center justify-center rounded-full border border-brand-cream/40 bg-brand-green-deep/15 text-brand-cream hover:bg-brand-green-deep/40"><Icon className="pointer-events-none h-4 w-4" aria-hidden="true" /></button>)}</div>
+        <div className="relative isolate min-h-[355px] overflow-hidden rounded-[1.5rem] bg-brand-green-deep sm:min-h-[460px] lg:min-h-full lg:rounded-[2rem]">
+          {slides.map((item, index) => <div key={item.id} hidden={index !== active} className="absolute inset-0"><Image src={item.image} alt={item.alt} fill priority={index === 0} sizes="(max-width: 1023px) 100vw, 52vw" className="object-cover" /></div>)}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-brand-green-deep/75 via-brand-green-deep/15 to-transparent" aria-hidden="true" />
+          <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-5 sm:bottom-7 sm:left-7 sm:right-7">
+            <div className="max-w-[15rem] text-white">
+              <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-white/75">From the market</p>
+              <p className="mt-2 font-heading text-2xl font-semibold leading-tight tracking-[-.04em] sm:text-3xl">{slide.caption}</p>
+            </div>
+            <div className="flex items-center gap-2 text-white">
+              <button type="button" onClick={() => select(active - 1)} aria-label="Previous highlight" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-brand-green-deep/30 backdrop-blur-md transition-colors hover:bg-brand-green-deep/70"><ArrowLeft className="h-4 w-4" aria-hidden="true" /></button>
+              <button type="button" onClick={() => setPlaying((value) => !value)} aria-label={playing ? "Pause highlights" : "Play highlights"} aria-pressed={playing} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-brand-green-deep/30 backdrop-blur-md transition-colors hover:bg-brand-green-deep/70">{playing ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}</button>
+              <button type="button" onClick={() => select(active + 1)} aria-label="Next highlight" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-brand-green-deep/30 backdrop-blur-md transition-colors hover:bg-brand-green-deep/70"><ArrowRight className="h-4 w-4" aria-hidden="true" /></button>
+            </div>
+          </div>
         </div>
       </div>
-      <nav aria-label="More ways to shop" className="editorial-wrap flex flex-wrap justify-between gap-x-5 border-b border-border py-3 text-sm font-medium text-brand-green">{[['Shop all food', '/products'], ['Explore categories', '/categories'], ['Weekly baskets', '/subscriptions']].map(([label, href]) => <Link key={href} href={href} className="inline-flex min-h-11 items-center gap-3 hover:underline underline-offset-4">{label}<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>)}</nav>
+      <nav aria-label="More ways to shop" className="editorial-wrap grid grid-cols-1 divide-y divide-border border-t border-border text-sm font-medium text-brand-green sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        {[["Explore fresh food", "/products"], ["Shop by category", "/categories"], ["Recurring baskets", "/subscriptions"]].map(([label, href]) => <Link key={href} href={href} className="group flex min-h-16 items-center justify-between gap-3 px-2 py-3 transition-colors hover:bg-brand-green/5 sm:px-5 first:sm:pl-0 last:sm:pr-0">{label}<ArrowUpRight className="h-4 w-4 transition-transform motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5" aria-hidden="true" /></Link>)}
+      </nav>
     </section>
   );
 }

@@ -10,6 +10,8 @@ import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL, SOCIAL_LINKS } from "@/lib/conf
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
+  category: 'shopping',
+  keywords: ['FreshPick', 'fresh groceries Colombo', 'Sri Lankan local food'],
   title: { default: 'Fresh groceries and local food in Colombo | FreshPick', template: '%s | FreshPick' },
   description: 'Shop groceries, bakery, pantry essentials and local food with FreshPick in Colombo, Sri Lanka.',
   openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'FreshPick groceries and local food in Colombo' }] },

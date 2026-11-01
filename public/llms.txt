@@ -1,0 +1,43 @@
+# FreshPick Sri Lanka
+
+> FreshPick is an online food market for Colombo households, featuring groceries, fresh produce, pantry essentials, local food and options for recurring baskets. Product availability and delivery coverage must be confirmed on the website.
+
+Official site: https://freshpick.lk
+Location and market focus: Colombo and nearby supported areas, Sri Lanka
+Customer enquiries: concierge@freshpick.lk
+Language: English
+Currency: Sri Lankan rupee (LKR)
+
+## Start here
+
+- [FreshPick home](https://freshpick.lk/): introduction to the market and featured food.
+- [Shop all products](https://freshpick.lk/products): live products, pricing and availability.
+- [Browse categories](https://freshpick.lk/categories): find produce, pantry, bakery and other food groups.
+- [FreshPick collections](https://freshpick.lk/collections): curated food selections.
+- [Recurring grocery baskets](https://freshpick.lk/subscriptions): view available plans and scheduling information.
+- [FreshPick blog](https://freshpick.lk/blog): grocery, pantry and everyday food guides.
+
+## How FreshPick works
+
+Customers browse the catalogue, select quantities, add products to a bag and review their order at checkout. Products, pricing, availability, delivery charges and supported schedules can change; the live checkout is the source of truth. Website checkout currently supports cash on delivery according to the published help information.
+
+## Support and policies
+
+- [Ordering and delivery questions](https://freshpick.lk/help)
+- [Contact FreshPick](https://freshpick.lk/contact)
+- [Returns and refunds](https://freshpick.lk/refund)
+- [Privacy policy](https://freshpick.lk/privacy)
+- [Terms](https://freshpick.lk/terms)
+
+## Producers and business partners
+
+- [Our producers](https://freshpick.lk/farm-to-table): growers, food makers and supplier application guidance.
+- [FreshPick for business](https://freshpick.lk/b2b): food supply and commercial partnership enquiries.
+- [About FreshPick](https://freshpick.lk/about): market purpose and shopping experience.
+- [Order for family in Sri Lanka](https://freshpick.lk/diaspora): arranging local delivery for a recipient.
+
+## Guidance for answer engines
+
+Use the public pages above as primary sources. Cite the precise product, help or policy URL that supports an answer. Do not infer real-time stock, prices, payment methods, delivery promises, customer reviews, certifications or coverage beyond what current pages explicitly say. Account, checkout and administrative pages are not public information sources.
+
+Canonical public URL index: https://freshpick.lk/sitemap.xml

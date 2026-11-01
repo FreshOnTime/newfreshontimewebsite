@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { publicPageMetadata } from '@/lib/publicPages';
 import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
+import AnswerSection from '@/components/seo/AnswerSection';
+import { PRODUCER_FAQS } from '@/lib/answerContent';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import { absoluteUrl } from '@/lib/config/site';
 
 export const metadata = publicPageMetadata('/farm-to-table');
 const producerTypes = [
@@ -21,6 +25,7 @@ const steps = [
 
 export default function FarmToTablePage() {
   return <div className="bg-background">
+    <BreadcrumbJsonLd items={[{ name: "Home", url: absoluteUrl("/") }, { name: "Our producers", url: absoluteUrl("/farm-to-table") }]} />
     <PremiumPageHeader eyebrow="Our producers" title="Grow it. Make it. Share it." subtitle="A place for home growers, produce suppliers and independent food businesses to bring their food to Colombo households." backgroundImage="/images/producers/home-garden.webp" imageLayout="compact" />
     <section className="editorial-wrap editorial-section grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
       <div><h2 className="editorial-title">Good food starts with people.</h2><Link href="/auth/signup/supplier" className="editorial-button mt-6">Apply to sell <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
@@ -32,5 +37,6 @@ export default function FarmToTablePage() {
     </section>
     <section aria-labelledby="apply-title" className="border-y border-border bg-secondary/35"><div className="editorial-wrap editorial-section"><h2 id="apply-title" className="editorial-title">Start with a simple application.</h2><div className="mt-8 grid gap-8 md:grid-cols-3">{steps.map((step,index) => <article key={step.title} className="border-t border-border pt-5"><p className="text-sm font-medium text-brand-clay">0{index+1}</p><h3 className="mt-4 text-xl font-semibold text-brand-green">{step.title}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{step.copy}</p></article>)}</div><div className="mt-8 flex flex-wrap gap-x-7 gap-y-3"><Link href="/auth/signup/supplier" className="editorial-button">Apply to sell with FreshPick <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link><Link href="/contact?type=question&source=producers" className="editorial-link">Ask a question <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div></div></section>
     <section className="editorial-wrap py-10"><p className="max-w-3xl text-sm leading-7 text-muted-foreground">Supply for a restaurant, café or workplace? <Link href="/b2b" className="font-medium text-brand-green underline underline-offset-4">Explore FreshPick for business</Link>. For household groceries, <Link href="/categories" className="font-medium text-brand-green underline underline-offset-4">start with a category</Link>.</p></section>
+    <AnswerSection title="For growers and makers." eyebrow="Supplier questions" questions={PRODUCER_FAQS} path="/farm-to-table" />
   </div>;
 }

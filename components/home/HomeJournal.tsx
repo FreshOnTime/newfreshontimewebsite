@@ -6,7 +6,7 @@ import type { JournalSummary } from '@/models/journal';
 
 export default function HomeJournal({ posts }: { posts: JournalSummary[] }) {
   return (
-    <section aria-labelledby="blog-title" className="editorial-wrap editorial-section">
+    <section aria-labelledby="blog-title" className="editorial-wrap editorial-section scroll-reveal">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-5 md:mb-12">
         <div><p className="editorial-label mb-3">Stories, ingredients and ideas</p><h2 id="blog-title" className="editorial-title">From the blog.</h2></div>
         <Link href="/blog" className="editorial-link">All stories <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>

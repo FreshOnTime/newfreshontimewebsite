@@ -19,14 +19,14 @@ export function DashboardHeader({ title }: { title: string }) {
   };
 
   return (
-    <header className="hidden h-16 items-center justify-between border-b border-border bg-background px-6 lg:flex lg:px-8">
+    <header className="hidden h-16 items-center justify-between border-b border-brand-green/10 bg-brand-cream px-6 lg:flex lg:px-8">
       <div>
         <p className="text-xs font-bold normal-case text-brand-green">FreshPick workspace</p>
         <p className="mt-1 text-sm font-normal text-foreground">{title}</p>
       </div>
 
       <div className="flex items-center gap-2">
-        <Link href="/profile" className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-4 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:text-brand-green">
+        <Link href="/profile" className="inline-flex h-10 items-center gap-2 rounded-xl border border-brand-green/15 bg-white px-4 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:text-brand-green">
           <UserRound className="h-3.5 w-3.5" /> {user?.firstName || 'Profile'}
         </Link>
         <button onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-md px-4 text-xs font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-700">
