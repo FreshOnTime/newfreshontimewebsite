@@ -19,7 +19,7 @@ export default function ProductGrid({
     <div
       className={
         className ??
-        "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:grid-cols-4"
+        "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4"
       }
     >
       {products.map((p, index) => (
