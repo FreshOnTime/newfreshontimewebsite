@@ -77,7 +77,7 @@ export function BlogList({ initialData, featuredSlug }: { initialData?: JournalP
           <Input
             type="search"
             aria-label="Search journal stories"
-            placeholder="Search stories and guides"
+            placeholder="Search published stories"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
