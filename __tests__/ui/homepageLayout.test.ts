@@ -15,13 +15,13 @@ describe("FreshPick editorial homepage", () => {
       "<HomeJournal posts={journal} />",
       "loadStorefrontHome",
       "getHomeData()",
-    ]) {
-      expect(page).toContain(marker);
-    }
+    ]) expect(page).toContain(marker);
   });
 
-  it("uses a single static photographic masthead with a real shop CTA", () => {
+  it("renders a branded, full-width photographic masthead with accessible real CTAs", () => {
     const hero = read("components/home/HeroSection.tsx");
+    expect(hero).toContain('import Wordmark from "@/components/brand/Wordmark"');
+    expect(hero).toContain("<Wordmark");
     expect(hero).toContain("A whole market.");
     expect(hero).toContain("For every table.");
     expect(hero).toContain('href="/products"');
@@ -29,12 +29,13 @@ describe("FreshPick editorial homepage", () => {
     expect(hero).toContain('href="/categories"');
     expect(hero).toContain("MARKET_HERO_PHOTO");
     expect(hero).toContain("images.unsplash.com/photo-1595275522477-c3ce3ca9714b");
-    expect(hero).toContain("priority");
     expect(hero).toContain('sizes="100vw"');
+    expect(hero).toContain("priority");
+    expect(hero).toContain("bg-gradient-to-r");
     expect(hero).not.toContain("useState");
     expect(hero).not.toContain("setInterval(");
     expect(hero).not.toContain("marketSelections.map");
-    expect(hero).not.toContain("aria-roledescription=\"carousel\"");
+    expect(hero).not.toContain('aria-roledescription="carousel"');
   });
 
   it("shows real approved categories and safe search fallbacks across the full food market", () => {
