@@ -8,7 +8,7 @@ import { ProductErrorBoundary } from "@/components/products/ProductErrorBoundary
 
 import HeroSection from "@/components/home/HeroSection";
 import CategoryBento from "@/components/home/CategoryBento";
-import BrandStory from "@/components/home/BrandStory";
+import BrandStory, { BusinessStory } from "@/components/home/BrandStory";
 import { unstable_cache } from "next/cache";
 import { loadStorefrontHome } from "@/lib/storefrontData";
 import { listPublishedJournalEntries } from "@/lib/journalService";
@@ -39,7 +39,7 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-5 md:px-10">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 id="market-title" className="editorial-title">Fresh picks.</h2>
+              <h2 id="market-title" className="editorial-title">The market, right now.</h2>
               <p className="mt-2 text-sm text-muted-foreground">Browse the current selection, then build a bag for your kitchen.</p>
             </div>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
@@ -47,7 +47,7 @@ export default async function Home() {
 
           <ProductErrorBoundary>
             {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
                 {products.slice(0, 8).map((product) => (
                   <div key={product.sku}>
                     <ProductCard
@@ -78,6 +78,7 @@ export default async function Home() {
       </section>
 
       <BrandStory />
+      <BusinessStory />
       <HomeJournal posts={journal} />
       <HomeHelp />
     </div>
