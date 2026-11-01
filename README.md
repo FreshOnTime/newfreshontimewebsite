@@ -89,6 +89,8 @@ Start with the [complete documentation index](docs/README.md).
 
 | Guide | Contents |
 | --- | --- |
+| [Customer handbook](docs/CUSTOMER_GUIDE.md) | Customer journey, COD checkout, recurring baskets, fulfilment and refunds; on-site at /how-it-works/customers |
+| [Supplier handbook](docs/SUPPLIER_GUIDE.md) | Supplier application, review, catalogue upload/import and operational boundaries; on-site at /how-it-works/suppliers |
 | [Platform features](docs/FEATURES.md) | Customer journeys, producers, communication, discovery and implemented limits |
 | [Admin panel handbook](docs/ADMIN_GUIDE.md) | All 21 admin pages, every operational workflow, daily checklist and troubleshooting |
 | [Subscriptions and recurring orders](docs/SUBSCRIPTIONS.md) | Basket plans, pause/skip/cancel, pricing, stock, scheduling and delivery queue |

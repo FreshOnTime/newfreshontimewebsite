@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Wordmark from '@/components/brand/Wordmark';
-import { Bell, Heart, LayoutDashboard, Mail, Menu, Package, Repeat, ShoppingBag, ShoppingCart, UserRound, X } from 'lucide-react';
+import { Bell, BookOpen, Heart, LayoutDashboard, Mail, Menu, Package, Repeat, ShoppingBag, ShoppingCart, UserRound, X } from 'lucide-react';
 
 type IconType = React.ComponentType<{ className?: string }>;
 type NavItem = { name: string; icon: IconType; section?: string; href?: string };
@@ -13,6 +13,7 @@ const supplierNav: NavItem[] = [
   { name: 'Overview', section: 'overview', icon: LayoutDashboard },
   { name: 'Products', section: 'products', icon: Package },
   { name: 'Messages', section: 'messages', icon: Mail },
+  { name: 'Supplier guide', href: '/how-it-works/suppliers', icon: BookOpen },
   { name: 'Notifications', href: '/profile/notifications', icon: Bell },
   { name: 'Profile', section: 'profile', icon: UserRound },
 ];
@@ -25,6 +26,7 @@ const customerNav: NavItem[] = [
   { name: 'Messages', href: '/profile/messages', icon: Mail },
   { name: 'Notifications', href: '/profile/notifications', icon: Bell },
   { name: 'Shopping bags', href: '/bags', icon: ShoppingCart },
+  { name: 'Customer guide', href: '/how-it-works/customers', icon: BookOpen },
   { name: 'Profile', href: '/profile', icon: UserRound },
 ];
 

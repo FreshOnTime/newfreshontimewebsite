@@ -5,9 +5,9 @@ import { SERVICE_AREAS, SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
 
 const groups = [
   { title: 'The market', links: [['Categories','/categories'],['Shop all','/products'],['Weekly baskets','/subscriptions'],['Saved products','/wishlist']] },
-  { title: 'FreshPick', links: [['About FreshPick','/about'],['Our producers','/farm-to-table'],['Blog','/blog']] },
-  { title: 'For business', links: [['For business','/b2b'],['Get in touch','/contact']] },
-  { title: 'Here to help', links: [['Help','/help'],['Your orders','/orders'],['Returns & refunds','/refund'],['Contact','/contact']] },
+  { title: 'FreshPick', links: [['About FreshPick','/about'],['Our producers','/farm-to-table'],['How it works','/how-it-works'],['Blog','/blog']] },
+  { title: 'For business', links: [['For business','/b2b'],['Supplier guide','/how-it-works/suppliers'],['Get in touch','/contact']] },
+  { title: 'Here to help', links: [['Help','/help'],['Customer guide','/how-it-works/customers'],['Your orders','/orders'],['Returns & refunds','/refund'],['Contact','/contact']] },
 ];
 export function Footer() {
   return (
