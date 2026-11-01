@@ -2,37 +2,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-/** An editorial entry to the actual recurring-basket catalogue, without implying automatic card billing. */
+/** A Natoora-inspired editorial feature, linked to real subscription plans. */
 export default function HomeBasketFeature() {
   return (
-    <section aria-labelledby="basket-feature-title" className="editorial-wrap py-9 md:py-12">
-      <div className="grid min-w-0 overflow-hidden rounded-[1.75rem] bg-brand-green-deep text-white lg:grid-cols-[1.04fr_.96fr]">
-        <div className="flex flex-col justify-center px-7 py-11 sm:px-11 sm:py-14 xl:px-16">
-          <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-white/75">For your weekly routine</p>
-          <h2 id="basket-feature-title" className="mt-4 max-w-[16ch] font-heading text-3xl font-semibold leading-[1.1] tracking-[-.045em] text-white sm:text-4xl xl:text-5xl">
-            A little less planning. A lot more good food.
-          </h2>
-          <p className="mt-5 max-w-lg text-base leading-7 text-white/80">
-            Explore available recurring grocery baskets for the everyday essentials. Choose a plan that fits your home and manage it from your account.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-5">
-            <Link href="/subscriptions" className="inline-flex min-h-12 items-center gap-3 rounded-full bg-white px-7 py-3 text-sm font-semibold text-brand-green-deep transition-colors hover:bg-brand-cream">
-              Explore basket plans <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link href="/how-it-works/customers" className="inline-flex min-h-11 items-center text-sm font-medium text-white underline decoration-white/45 underline-offset-4 hover:decoration-white">
-              How it works
-            </Link>
-          </div>
-          <p className="mt-5 text-xs leading-6 text-white/65">Available plans only. Cash on delivery, with no automatic card billing.</p>
-        </div>
-        <div className="relative min-h-[260px] bg-brand-green sm:min-h-[320px] lg:min-h-[390px]">
+    <section aria-labelledby="basket-feature-title" className="editorial-wrap py-12 md:py-20">
+      <div className="grid min-w-0 gap-0 border-y border-brand-green-deep/20 md:grid-cols-2">
+        <div className="relative min-h-[285px] bg-secondary sm:min-h-[365px] lg:min-h-[480px]">
           <Image
-            src="/images/home/market-bag.webp"
-            alt="A bag of groceries selected for home cooking"
+            src="/images/editorial/kitchen-basket.webp"
+            alt="A food basket for home cooking"
             fill
-            sizes="(max-width: 1023px) 100vw, 50vw"
+            sizes="(max-width: 767px) 100vw, 50vw"
             className="object-cover"
           />
+        </div>
+        <div className="flex flex-col justify-center bg-brand-cream px-5 py-10 sm:px-8 lg:px-14 lg:py-16">
+          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-brand-green">A regular ritual</p>
+          <h2 id="basket-feature-title" className="mt-5 max-w-[15ch] font-heading text-[clamp(2.2rem,4vw,4.8rem)] font-semibold uppercase leading-[1.02] tracking-[-.055em] text-brand-green-deep">
+            Good food. On your schedule.
+          </h2>
+          <p className="mt-6 max-w-[43ch] text-base leading-8 text-foreground/75">
+            Browse available recurring baskets and choose what works for your home. Manage your schedule in your FreshPick account.
+          </p>
+          <Link href="/subscriptions" className="mt-7 inline-flex min-h-12 w-fit items-center gap-3 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.13em] text-brand-green-deep">
+            Browse basket plans <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+          <p className="mt-7 text-xs leading-6 text-muted-foreground">
+            Available plans only. Cash on delivery, with no automatic card billing.
+          </p>
         </div>
       </div>
     </section>
