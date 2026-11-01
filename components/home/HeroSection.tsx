@@ -77,7 +77,6 @@ export default function HeroSection() {
     <section aria-label="FreshPick market highlights" aria-roledescription="carousel" onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setPlaying(false)} className="relative overflow-hidden border-b border-border bg-brand-cream">
       <div className="editorial-wrap grid min-w-0 items-stretch gap-0 py-7 sm:py-10 lg:min-h-[660px] lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-12 lg:py-12">
         <div className="flex min-w-0 flex-col justify-center py-6 lg:py-12">
-          <p className="mb-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[.16em] text-brand-green"><span className="h-2 w-2 rounded-full bg-brand-amber" aria-hidden="true" />FreshPick / Colombo</p>
           <p className="max-w-md text-xs font-medium uppercase leading-5 tracking-[.12em] text-muted-foreground" aria-live="off">{slide.eyebrow}</p>
           <h1 className="mt-5 max-w-[12ch] font-heading text-[clamp(2.9rem,6vw,6.4rem)] font-semibold leading-[.99] tracking-[-.06em] text-brand-green-deep [text-wrap:balance]" aria-live="off">{slide.title}</h1>
           <p className="mt-7 max-w-[45ch] text-base leading-[1.85] text-foreground/75 sm:text-lg">{slide.description}</p>
@@ -90,7 +89,6 @@ export default function HeroSection() {
         <div className="relative isolate min-h-[355px] overflow-hidden rounded-[1.5rem] bg-brand-green-deep sm:min-h-[460px] lg:min-h-full lg:rounded-[2rem]">
           {slides.map((item, index) => <div key={item.id} hidden={index !== active} className="absolute inset-0"><Image src={item.image} alt={item.alt} fill priority={index === 0} sizes="(max-width: 1023px) 100vw, 52vw" className="object-cover" /></div>)}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-brand-green-deep/75 via-brand-green-deep/15 to-transparent" aria-hidden="true" />
-          <div className="absolute left-5 top-5 rounded-full border border-white/30 bg-brand-green-deep/55 px-4 py-2 text-[10px] font-semibold uppercase tracking-[.15em] text-white backdrop-blur-md sm:left-7 sm:top-7">The FreshPick edit</div>
           <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-5 sm:bottom-7 sm:left-7 sm:right-7">
             <div className="max-w-[15rem] text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-white/75">From the market</p>
