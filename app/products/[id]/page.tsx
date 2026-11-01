@@ -114,7 +114,7 @@ export default async function ProductPage({
           <section aria-labelledby="product-details-title" className="mt-10 grid gap-6 border-t border-border pt-8 md:mt-14 md:grid-cols-[1fr_2fr] md:gap-16 md:pt-10">
             <h2 id="product-details-title" className="text-2xl font-normal text-brand-green">Product details</h2>
             <div className="space-y-6">
-              {product.description && <div className="prose max-w-none text-sm leading-7 text-muted-foreground prose-headings:font-medium prose-headings:text-brand-green prose-a:text-brand-green"><Markdown rehypePlugins={[rehypeSanitize]}>{product.description}</Markdown></div>}
+              {product.description && <div className="prose max-w-none text-sm leading-7 text-muted-foreground prose-headings:font-medium prose-headings:text-brand-green prose-a:text-brand-green"><Markdown rehypePlugins={[rehypeSanitize]} components={{ h1: ({ children }) => <h3>{children}</h3>, h2: ({ children }) => <h3>{children}</h3> }}>{product.description}</Markdown></div>}
               {product.ingredients && <div><h3 className="text-base font-medium text-brand-green">Ingredients</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">{product.ingredients}</p></div>}
               {product.nutritionFacts && <div><h3 className="text-base font-medium text-brand-green">Nutrition</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">{product.nutritionFacts}</p></div>}
             </div>
