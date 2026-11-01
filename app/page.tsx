@@ -1,4 +1,6 @@
 import HomeHelp from '@/components/home/HomeHelp';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import { absoluteUrl } from '@/lib/config/site';
 import { publicPageMetadata } from '@/lib/publicPages';
 import { Metadata } from "next";
 import Link from "next/link";
@@ -32,6 +34,7 @@ export default async function Home() {
 
   return (
     <div className="bg-background">
+      <BreadcrumbJsonLd items={[{ name: "FreshPick", url: absoluteUrl("/") }]} />
       <HeroSection />
       <CategoryBento categories={categories} />
 

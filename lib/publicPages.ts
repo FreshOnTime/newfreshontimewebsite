@@ -27,8 +27,23 @@ export const PUBLIC_PAGES = [
   { path: '/landing', title: 'Welcome to FreshPick', description: 'Shop the FreshPick market as a customer or learn how to apply as a supplier.' },
 ] as const;
 
+/** Search intent groups, chosen for the actual content rather than keyword stuffing. */
+const SEARCH_TERMS: Record<string, readonly string[]> = {
+  '/': ['FreshPick', 'online groceries Colombo', 'fresh food Sri Lanka'],
+  '/products': ['groceries Colombo', 'fresh vegetables', 'online grocery shopping Sri Lanka'],
+  '/categories': ['grocery categories', 'fresh produce Colombo', 'pantry staples'],
+  '/subscriptions': ['recurring grocery baskets', 'weekly grocery shopping Colombo'],
+  '/farm-to-table': ['Sri Lankan food suppliers', 'home growers', 'sell food online'],
+  '/b2b': ['food supply partnerships Sri Lanka', 'business food sourcing Colombo'],
+  '/about': ['about FreshPick', 'local food market Colombo'],
+  '/contact': ['contact FreshPick', 'FreshPick customer support'],
+  '/help': ['FreshPick delivery areas', 'grocery ordering help'],
+  '/blog': ['grocery guides Sri Lanka', 'Colombo food shopping tips'],
+  '/diaspora': ['groceries for family in Sri Lanka', 'Colombo grocery delivery'],
+};
+
 export function publicPageMetadata(path: string) {
   const page = PUBLIC_PAGES.find(page => page.path === path);
   if (!page) throw new Error(`No public page metadata for ${path}`);
-  return pageMetadata(page);
+  return pageMetadata({ ...page, keywords: SEARCH_TERMS[path] });
 }

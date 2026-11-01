@@ -129,7 +129,7 @@
   .editorial-link { @apply inline-flex min-h-11 items-center gap-2 border-b border-brand-green/30 text-sm font-semibold tracking-normal text-brand-green transition-colors hover:border-brand-green; }
   .editorial-button { @apply inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-brand-green-deep px-7 py-3 text-sm font-semibold tracking-normal text-white transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-brand-green hover:shadow-lg active:translate-y-0 disabled:translate-y-0 disabled:opacity-50; }
   .editorial-card { @apply overflow-hidden rounded-2xl border border-brand-green/10 bg-white/75 shadow-[0_12px_45px_-32px_rgba(16,46,30,.35)] transition-[transform,box-shadow,border-color] duration-300 motion-safe:hover:-translate-y-1 hover:border-brand-green/25 hover:shadow-[0_24px_55px_-32px_rgba(16,46,30,.4)]; }
-  .freshpick-market h1, .freshpick-market h2 { font-family: var(--font-heading); letter-spacing: -0.045em; }
+  .freshpick-market h1, .freshpick-market h2 { font-family: var(--font-heading); font-weight: 600; letter-spacing: -0.045em; }
   .freshpick-market h1 { overflow-wrap: anywhere; }
 }
 @layer utilities {

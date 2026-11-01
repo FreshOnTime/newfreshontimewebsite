@@ -4,12 +4,17 @@ import type { Metadata } from "next";
 
 import Link from "next/link";
 import { ArrowRight, MapPin, RefreshCw, ShoppingBasket } from "lucide-react";
+import AnswerSection from "@/components/seo/AnswerSection";
+import { DIASPORA_FAQS } from "@/lib/answerContent";
+import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
+import { absoluteUrl } from "@/lib/config/site";
 
 export const metadata: Metadata = publicPageMetadata('/diaspora');
 
 export default function DiasporaPage() {
   return (
     <div className="min-h-screen bg-background pb-10 text-foreground">
+      <BreadcrumbJsonLd items={[{ name: "Home", url: absoluteUrl("/") }, { name: "Order for family", url: absoluteUrl("/diaspora") }]} />
       <PremiumPageHeader title="Send a little home" subtitle="Order groceries for family and friends in Colombo." backgroundImage="/images/editorial/kitchen-basket.webp" />
 
       <div className="mx-auto max-w-6xl px-5 pt-14 md:px-8 md:pt-8">
@@ -36,6 +41,7 @@ export default function DiasporaPage() {
           </div>
         </section>
       </div>
+      <AnswerSection title="Shopping for someone else." eyebrow="Good to know" questions={DIASPORA_FAQS} path="/diaspora" />
     </div>
   );
 }

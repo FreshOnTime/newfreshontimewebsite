@@ -4,6 +4,10 @@ import { ArrowRight } from 'lucide-react';
 import { publicPageMetadata } from '@/lib/publicPages';
 import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
 import Wordmark from '@/components/brand/Wordmark';
+import AnswerSection from '@/components/seo/AnswerSection';
+import { ABOUT_FAQS } from '@/lib/answerContent';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import { absoluteUrl } from '@/lib/config/site';
 
 export const metadata = publicPageMetadata('/about');
 const householdNeeds = [
@@ -19,6 +23,7 @@ const shoppingSteps = [
 
 export default function AboutPage() {
   return <div className="bg-background text-foreground">
+    <BreadcrumbJsonLd items={[{ name: "Home", url: absoluteUrl("/") }, { name: "About FreshPick", url: absoluteUrl("/about") }]} />
     <PremiumPageHeader eyebrow="About FreshPick" title="Good food. Everyday life." subtitle="A simpler way for Colombo households to shop for fresh groceries, pantry essentials and local food." backgroundImage="/images/about/everyday-kitchen.webp" />
     <section className="editorial-wrap editorial-section grid gap-8 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
       <div><Wordmark className="text-3xl md:text-4xl" /><h2 className="mt-5 text-2xl font-semibold leading-tight text-brand-green md:text-3xl">Built around what a home needs.</h2></div>
@@ -35,5 +40,6 @@ export default function AboutPage() {
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary"><Image src="/images/producers/home-garden.webp" alt="Leafy greens, aubergines and chillies growing in a small home garden" fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
       <div><p className="editorial-label mb-4">A place for local food businesses</p><h2 className="editorial-title">Small beginnings. Good food.</h2><p className="mt-5 text-base leading-7 text-muted-foreground">You do not have to start with a large farm or a long product list. Tell us what you grow or make, how much you can supply and where you are based. Our producer page explains the kinds of food businesses we welcome and how to apply.</p><Link href="/farm-to-table" className="editorial-link mt-5">Explore our producers <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link><p className="mt-7 text-sm leading-7 text-muted-foreground">Have a question about an order? Check <Link href="/help" className="font-medium text-brand-green underline underline-offset-4">delivery and ordering help</Link> or <Link href="/contact" className="font-medium text-brand-green underline underline-offset-4">contact FreshPick</Link>.</p></div>
     </section>
+    <AnswerSection title="FreshPick, explained." eyebrow="At a glance" questions={ABOUT_FAQS} path="/about" />
   </div>;
 }
