@@ -165,135 +165,141 @@ export function OrdersPage() {
   const reload = () => setRefreshKey((value) => value + 1);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-normal text-foreground">Orders</h1>
-          <p className="text-muted-foreground mt-2">Review and manage orders</p>
+    <main className="mx-auto max-w-[1520px] space-y-7 pb-12 sm:space-y-8">
+      <header className="flex flex-col gap-5 border-b border-brand-green/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="font-heading text-[clamp(2.35rem,3.6vw,3.45rem)] font-semibold leading-[1.08] tracking-[-.05em] text-brand-green-deep">Orders</h1>
+          <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">Review purchases, track fulfilment and manage recurring deliveries.</p>
         </div>
-  <Button onClick={create}>
-          <Plus className="h-4 w-4 mr-1" /> New Order
+        <Button type="button" onClick={create} className="h-12 w-full shrink-0 rounded-xl bg-brand-green-deep px-6 text-sm font-semibold text-white hover:bg-brand-green sm:w-auto">
+          <Plus className="mr-1 h-4 w-4" aria-hidden="true" /> New order
         </Button>
-      </div>
+      </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Orders</CardTitle>
-          <CardDescription>Recent orders</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {customerId && (
-            <div className="flex items-center justify-between bg-secondary border border-border text-brand-green rounded-md px-3 py-2 mb-3 text-sm">
-              <div>
-                Filtering by customer ID: <span className="font-mono">{customerId}</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => { setCustomerId(''); router.push('/admin/orders'); }}>Clear</Button>
+      <section aria-labelledby="orders-list-title" className="min-w-0 overflow-hidden rounded-[1.5rem] border border-brand-green/10 bg-white/95 shadow-[0_16px_55px_-36px_rgba(16,46,30,.24)]">
+        <div className="border-b border-brand-green/10 px-5 py-6 sm:px-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 id="orders-list-title" className="font-heading text-xl font-semibold tracking-[-.035em] text-brand-green-deep sm:text-2xl">Order management</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Find and manage customer orders in one place.</p>
             </div>
-          )}
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search by order number..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10" />
-            </div>
-            <select className="border rounded px-2 py-1" value={isRecurring} onChange={(e) => { setIsRecurring(e.target.value as 'all'|'true'|'false'); setPage(1); }}>
-              <option value="all">All</option>
-              <option value="true">Recurring</option>
-              <option value="false">One-time</option>
-            </select>
-            <select className="border rounded px-2 py-1" value={schedStatus} onChange={(e) => { setSchedStatus(e.target.value as 'all'|'active'|'paused'|'ended'); setPage(1); }}>
-              <option value="all">Any schedule</option>
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="ended">Ended</option>
-            </select>
-            <select className="border rounded px-2 py-1" value={sort} onChange={(e) => { setSort(e.target.value as 'created-desc'|'created-asc'|'next-asc'|'next-desc'); setPage(1); }}>
-              <option value="created-desc">Newest</option>
-              <option value="created-asc">Oldest</option>
-              <option value="next-asc">Next delivery ↑</option>
-              <option value="next-desc">Next delivery ↓</option>
-            </select>
+            {!loading && !error && <span role="status" aria-live="polite" className="rounded-full border border-brand-green/15 bg-brand-cream px-3 py-1.5 text-xs font-semibold text-brand-green">{pagination.total.toLocaleString('en-LK')} {pagination.total === 1 ? 'order' : 'orders'}</span>}
           </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order #</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Shipping</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Payment</TableHead>
-                    <TableHead>Recurring</TableHead>
-                    <TableHead>Next delivery</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="w-[70px]" />
+          {customerId && (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-green/15 bg-brand-cream px-4 py-3 text-sm">
+              <p className="min-w-0 break-all text-brand-green">Customer filter: <span className="font-mono font-semibold">{customerId}</span></p>
+              <button type="button" onClick={() => { setCustomerId(''); router.replace('/admin/orders'); }} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 font-semibold text-brand-green hover:bg-brand-green/10"><X className="h-4 w-4" aria-hidden="true" /> Remove</button>
+            </div>
+          )}
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1.6fr)_minmax(140px,.85fr)_minmax(150px,.95fr)_minmax(140px,.85fr)]">
+            <label className="block min-w-0">
+              <span className="mb-2 block text-xs font-semibold text-foreground/75">Search orders</span>
+              <span className="relative block">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-green" aria-hidden="true" />
+                <Input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search by order number" className="h-12 w-full rounded-xl border-brand-green/15 bg-white pl-11 shadow-sm" />
+              </span>
+            </label>
+            <FilterSelect label="Order type" value={isRecurring} onChange={(value) => { setIsRecurring(value as 'all' | 'true' | 'false'); setPage(1); }} options={[
+              { value: 'all', label: 'All orders' }, { value: 'true', label: 'Recurring' }, { value: 'false', label: 'One-time' },
+            ]} />
+            <FilterSelect label="Schedule" value={schedStatus} onChange={(value) => { setSchedStatus(value as 'all' | 'active' | 'paused' | 'ended'); setPage(1); }} options={[
+              { value: 'all', label: 'Any schedule' }, { value: 'active', label: 'Active' }, { value: 'paused', label: 'Paused' }, { value: 'ended', label: 'Ended' },
+            ]} />
+            <FilterSelect label="Sort by" value={sort} onChange={(value) => { setSort(value as 'created-desc' | 'created-asc' | 'next-asc' | 'next-desc'); setPage(1); }} options={[
+              { value: 'created-desc', label: 'Newest first' }, { value: 'created-asc', label: 'Oldest first' },
+              { value: 'next-asc', label: 'Next delivery ↑' }, { value: 'next-desc', label: 'Next delivery ↓' },
+            ]} />
+          </div>
+          {filtersActive && <div className="mt-4 flex justify-end"><button type="button" onClick={clearFilters} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-brand-green hover:bg-brand-cream"><X className="h-4 w-4" aria-hidden="true" /> Clear filters</button></div>}
+        </div>
+
+        {loading ? (
+          <div role="status" aria-label="Loading orders" className="space-y-3 px-5 py-9 sm:px-7">
+            {Array.from({ length: 3 }, (_, index) => <div key={index} className="flex items-center gap-5 rounded-xl border border-brand-green/10 p-4"><div className="h-10 w-10 shrink-0 animate-pulse rounded-xl bg-secondary motion-reduce:animate-none" /><div className="h-4 w-32 animate-pulse rounded-lg bg-secondary motion-reduce:animate-none" /><div className="ml-auto h-4 w-20 animate-pulse rounded-lg bg-secondary motion-reduce:animate-none" /></div>)}
+            <p className="sr-only">Loading orders</p>
+          </div>
+        ) : error ? (
+          <div role="alert" className="flex flex-col items-center px-6 py-14 text-center sm:py-20">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-700"><AlertCircle className="h-8 w-8" aria-hidden="true" /></div>
+            <h3 className="mt-5 font-heading text-2xl font-semibold text-brand-green-deep">We couldn’t load the orders.</h3>
+            <p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">Check your connection and try again. No order data has been changed.</p>
+            <Button type="button" variant="outline" className="mt-6 rounded-xl" onClick={reload}><RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" /> Try again</Button>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center px-6 py-14 text-center sm:py-20">
+            <div className="flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-brand-green/10 bg-brand-cream text-brand-green"><PackageOpen className="h-9 w-9" strokeWidth={1.5} aria-hidden="true" /></div>
+            <h3 className="mt-6 font-heading text-2xl font-semibold tracking-[-.035em] text-brand-green-deep sm:text-3xl">{filtersActive ? 'No matching orders' : 'No orders yet'}</h3>
+            <p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground sm:text-base">{filtersActive ? 'Try changing the search or filters to find what you need.' : 'Customer orders will appear here once they are placed. You can also create an order manually.'}</p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              {filtersActive ? <Button type="button" variant="outline" onClick={clearFilters} className="h-11 rounded-xl">Clear filters</Button>
+                : <Button type="button" onClick={create} className="h-11 rounded-xl bg-brand-green-deep text-white hover:bg-brand-green"><Plus className="mr-2 h-4 w-4" aria-hidden="true" /> Create an order</Button>}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="divide-y divide-brand-green/10 xl:hidden">
+              {items.map((order) => (
+                <article key={order._id} className="px-5 py-5 sm:px-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <button type="button" onClick={() => view(order)} className="text-left text-base font-semibold text-brand-green-deep underline-offset-4 hover:underline">{order.orderNumber}</button>
+                      <p className="mt-1 truncate text-sm text-muted-foreground">{order.customerName || order.customerId}</p>
+                    </div>
+                    <OrderMenu number={order.orderNumber} onView={() => view(order)} onDelete={() => void remove(order._id)} />
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-lg font-semibold tabular-nums text-brand-green-deep">{currency(order.total)}</p>
+                    <StatusTag status={order.status} />
+                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 border-t border-brand-green/10 pt-4 text-sm">
+                    <div><dt className="text-xs text-muted-foreground">Payment</dt><dd className="mt-1"><StatusTag status={order.paymentStatus} /></dd></div>
+                    <div><dt className="text-xs text-muted-foreground">Schedule</dt><dd className="mt-1"><OrderSchedule order={order} /></dd></div>
+                    <div><dt className="text-xs text-muted-foreground">Placed</dt><dd className="mt-1 text-foreground">{shortDate(order.createdAt)}</dd></div>
+                    <div className="min-w-0"><dt className="text-xs text-muted-foreground">Shipping</dt><dd className="mt-1 truncate text-foreground">{order.shippingAddress?.city || order.shippingAddress?.street || '—'}</dd></div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+            <div className="hidden min-w-0 xl:block">
+              <Table className="min-w-[1030px]">
+                <TableHeader className="bg-brand-cream/70">
+                  <TableRow className="border-b border-brand-green/10 hover:bg-transparent">
+                    {['Order', 'Customer / shipping', 'Total', 'Order status', 'Payment', 'Schedule', 'Placed'].map((label) => <TableHead key={label} className="h-12 whitespace-nowrap px-5 text-xs font-semibold text-foreground/65">{label}</TableHead>)}
+                    <TableHead className="w-14 px-4"><span className="sr-only">Actions</span></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((o) => (
-                    <TableRow key={o._id}>
-                      <TableCell className="font-medium">{o.orderNumber}</TableCell>
-                      <TableCell>{o.customerName || o.customerId}</TableCell>
-                      <TableCell className="max-w-[260px]">
-                        {o.shippingAddress ? (
-                          <div className="text-sm text-foreground truncate">
-                            {o.shippingAddress.name || '—'}
-                            { (o.shippingAddress.city || o.shippingAddress.street) && (
-                              <span className="text-muted-foreground"> • {(o.shippingAddress.city || o.shippingAddress.street) as string}</span>
-                            )}
-                          </div>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>{currency(o.total)}</TableCell>
-                      <TableCell><Badge variant="secondary">{o.status}</Badge></TableCell>
-                      <TableCell><Badge variant={o.paymentStatus === 'paid' ? 'secondary' : 'outline'}>{o.paymentStatus}</Badge></TableCell>
-                      <TableCell>
-                        {o.isRecurring ? <Badge variant="secondary">{o.scheduleStatus || 'active'}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
-                      </TableCell>
-                      <TableCell>{o.nextDeliveryAt ? new Date(o.nextDeliveryAt).toLocaleDateString() : '—'}</TableCell>
-                      <TableCell>{new Date(o.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => view(o)}>
-                              <Eye className="h-4 w-4 mr-2" /> View
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" onClick={() => remove(o._id)}>
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                  {items.map((order) => (
+                    <TableRow key={order._id} className="border-brand-green/10 hover:bg-brand-cream/45">
+                      <TableCell className="px-5 py-5"><button type="button" onClick={() => view(order)} className="whitespace-nowrap text-sm font-semibold text-brand-green-deep underline-offset-4 hover:underline">{order.orderNumber}</button></TableCell>
+                      <TableCell className="max-w-[230px] px-5 py-5"><div className="truncate text-sm font-medium text-foreground">{order.customerName || order.customerId}</div><div className="mt-1 truncate text-xs text-muted-foreground">{[order.shippingAddress?.name, order.shippingAddress?.city || order.shippingAddress?.street].filter(Boolean).join(' · ') || 'No shipping address'}</div></TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-5 text-sm font-semibold tabular-nums text-brand-green-deep">{currency(order.total)}</TableCell>
+                      <TableCell className="px-5 py-5"><StatusTag status={order.status} /></TableCell>
+                      <TableCell className="px-5 py-5"><StatusTag status={order.paymentStatus} /></TableCell>
+                      <TableCell className="px-5 py-5"><OrderSchedule order={order} /></TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-5 text-sm text-foreground/75">{shortDate(order.createdAt)}</TableCell>
+                      <TableCell className="px-4 py-5"><OrderMenu number={order.orderNumber} onView={() => view(order)} onDelete={() => void remove(order._id)} /></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </div>
+            <div className="flex flex-col gap-4 border-t border-brand-green/10 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+              <p className="text-sm text-muted-foreground">Showing <span className="font-semibold text-foreground">{((pagination.page - 1) * pagination.limit) + 1}–{Math.min(pagination.page * pagination.limit, pagination.total)}</span> of <span className="font-semibold text-foreground">{pagination.total}</span> orders</p>
+              {pagination.pages > 1 && <nav aria-label="Order pagination" className="flex items-center gap-3">
+                <Button type="button" variant="outline" size="sm" className="h-10 rounded-xl" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1}><ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" /> Previous</Button>
+                <span className="text-sm font-medium tabular-nums text-brand-green-deep" aria-live="polite">{page} / {pagination.pages}</span>
+                <Button type="button" variant="outline" size="sm" className="h-10 rounded-xl" onClick={() => setPage((current) => Math.min(pagination.pages, current + 1))} disabled={page >= pagination.pages}>Next <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" /></Button>
+              </nav>}
+            </div>
+          </>
+        )}
+      </section>
 
-              {items.length === 0 && <div className="text-center py-8 text-muted-foreground">No orders found</div>}
-
-              {pagination.pages > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-foreground">Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} orders</div>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" onClick={() => setPage(page - 1)} disabled={page <= 1}>Previous</Button>
-                    <Button variant="outline" onClick={() => setPage(page + 1)} disabled={page >= pagination.pages}>Next</Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-  <OrderDialog open={open} onOpenChange={setOpen} order={selected} onSave={saved} />
-  <CreateOrderDialog open={openCreate} onOpenChange={setOpenCreate} onSaved={() => { setOpenCreate(false); fetchItems(); }} />
-    </div>
+      <OrderDialog open={open} onOpenChange={setOpen} order={selected} onSave={saved} />
+      <CreateOrderDialog open={openCreate} onOpenChange={setOpenCreate} onSaved={() => { setOpenCreate(false); reload(); }} />
+    </main>
   );
 }
