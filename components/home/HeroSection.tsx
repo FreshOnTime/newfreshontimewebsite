@@ -71,23 +71,18 @@ export default function HeroSection() {
           aria-label="FreshPick market photography"
           className="relative isolate min-h-[350px] overflow-hidden rounded-[1.5rem] border border-brand-green/10 bg-brand-green-deep shadow-[0_22px_70px_-40px_rgba(16,46,30,.5)] sm:min-h-[465px] lg:min-h-[500px] lg:rounded-[2rem]"
         >
-          {slides.map((item, index) => (
-            <div
-              key={item.id}
-              className={"absolute inset-0 transition-opacity duration-700 motion-reduce:transition-none " + (active === index ? "opacity-100" : "pointer-events-none opacity-0")}
-              aria-hidden={index !== active}
-            >
-              <Image
-                src={item.image}
-                alt={active === index ? item.alt : ""}
-                fill
-                priority={index === 0}
-                sizes="(max-width: 1023px) calc(100vw - 32px), (max-width: 1439px) 50vw, 700px"
-                className="object-cover"
-                style={{ objectPosition: item.position }}
-              />
-            </div>
-          ))}
+          <div className="absolute inset-0">
+            <Image
+              key={slide.id}
+              src={slide.image}
+              alt={slide.alt}
+              fill
+              priority={active === 0}
+              sizes="(max-width: 1023px) calc(100vw - 32px), (max-width: 1439px) 50vw, 700px"
+              className="object-cover"
+              style={{ objectPosition: slide.position }}
+            />
+          </div>
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-brand-green-deep/90 via-brand-green-deep/45 to-transparent" />
 
           <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-white sm:inset-x-7 sm:bottom-7 lg:inset-x-8 lg:bottom-8">
