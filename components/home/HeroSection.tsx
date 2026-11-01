@@ -21,7 +21,7 @@ export default function HeroSection() {
           className="mx-auto max-w-[17ch] font-heading text-[clamp(2.65rem,6.6vw,6.6rem)] font-semibold uppercase leading-[.99] tracking-[-.065em] text-brand-green-deep"
         >
           A whole market.
-          <span className="mt-1 block font-serif font-normal normal-case italic tracking-[-.065em] text-brand-green">
+          <span className="mt-1 block font-normal normal-case italic tracking-[-.065em] text-brand-green" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
             For every table.
           </span>
         </h1>

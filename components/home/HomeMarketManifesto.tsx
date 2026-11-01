@@ -13,7 +13,7 @@ export default function HomeMarketManifesto() {
           </h2>
         </div>
         <div>
-          <p className="max-w-[46ch] font-serif text-[clamp(1.4rem,2.4vw,2.2rem)] leading-[1.3] text-brand-green-deep">
+          <p className="max-w-[46ch] text-[clamp(1.4rem,2.4vw,2.2rem)] leading-[1.3] text-brand-green-deep" style={{ fontFamily: "Georgia, Times New Roman, serif" }}>
             From the ingredients for tonight&apos;s dinner to the small makers worth discovering. One market, with room for it all.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3">
