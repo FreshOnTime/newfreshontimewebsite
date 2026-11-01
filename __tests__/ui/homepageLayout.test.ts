@@ -15,18 +15,29 @@ describe('FreshPick homepage editorial layout', () => {
     expect(page).toContain('getHomeData()');
   });
 
-  it('uses one high-impact, accessible image without slideshow controls', () => {
+  it('shows multiple FreshPick categories rather than a produce-only slideshow', () => {
     const hero = read('components/home/HeroSection.tsx');
-    expect(hero).toContain('src="/images/home/fresh-market-hero.webp"');
-    expect(hero).toContain('priority');
-    expect(hero).toContain('sizes="100vw"');
-    expect(hero).toContain('<h1');
+    expect(hero).toContain('marketSelections.map');
+    expect(hero).toContain('aria-label="Explore FreshPick by food type"');
     expect(hero).toContain('href="/products"');
     expect(hero).toContain('href="/how-it-works"');
+    expect(hero).toContain('A whole market.');
+    expect(hero).not.toContain('setInterval(');
     expect(hero).not.toContain('useState');
     expect(hero).not.toContain('aria-roledescription="carousel"');
-    expect(hero).not.toContain('setInterval(');
-    expect(existsSync(join(process.cwd(), 'public/images/home/fresh-market-hero.webp'))).toBe(true);
+    for (const path of [
+      'public/images/categories/cooked-food.webp',
+      'public/images/categories/bakery.webp',
+      'public/images/categories/pantry-staples.webp',
+      'public/images/categories/dairy-eggs.webp',
+      'public/images/categories/beverages.webp',
+      'public/images/editorial/market-crates.webp',
+    ]) {
+      expect(existsSync(join(process.cwd(), path))).toBe(true);
+    }
+    for (const name of ['Ready meals', 'Bakery', 'Pantry staples', 'Fresh produce', 'Dairy & eggs', 'Beverages']) {
+      expect(hero).toContain(name);
+    }
   });
 
   it('does not fabricate published categories and keeps image tiles compact', () => {
