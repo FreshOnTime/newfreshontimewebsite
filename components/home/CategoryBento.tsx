@@ -19,7 +19,7 @@ export default function CategoryBento({ categories }: { categories: Category[] }
   const featured = produce ? [produce, ...categories.filter(category => category !== produce)] : categories;
   const tiles = featured.length ? featured.slice(0, 6).map(category => ({ name: category.name, href: `/categories/${encodeURIComponent(category.slug)}`, image: getCategoryImage(category.slug, category.imageUrl) })) : marketEdits;
   return (
-    <section aria-labelledby="categories-title" className="editorial-wrap editorial-section">
+    <section aria-labelledby="categories-title" className="editorial-wrap editorial-section scroll-reveal">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
         <div><h2 id="categories-title" className="editorial-title scroll-mt-32">Shop by category.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">Start with what you need. Find the ingredients, essentials and little extras for your home.</p></div>
         <Link href="/categories" className="editorial-link">All categories <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>

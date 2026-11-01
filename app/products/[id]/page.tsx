@@ -90,16 +90,16 @@ export default async function ProductPage({
           {product.category?.slug && <Link href={`/categories/${product.category.slug}`} className="border-l border-border pl-4 hover:text-brand-green">{product.category.name}</Link>}
         </nav>
         <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-secondary [&_img]:mix-blend-multiply lg:sticky lg:top-40">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-brand-green/10 bg-secondary [&_img]:mix-blend-multiply lg:sticky lg:top-40">
             <ProductImage src={product.image?.url || ""} alt={product.name} priority sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 576px" />
             {showDiscount && <span className="absolute right-4 top-4 bg-brand-amber px-3 py-1.5 text-xs font-semibold text-foreground">{product.discountPercentage}% off</span>}
           </div>
           <div className="lg:py-4">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{product.isBundle ? "Market bundle" : "From the market"}</p>
-            <h1 className="mt-4 text-3xl font-normal leading-tight tracking-[-0.035em] text-brand-green md:text-5xl">{product.name}</h1>
+            <h1 className="mt-4 font-heading text-[clamp(2.4rem,4.5vw,4.8rem)] font-semibold leading-[1.07] tracking-[-.05em] text-brand-green-deep">{product.name}</h1>
             <p className="mt-3 text-sm text-muted-foreground">{product.isOutOfStock ? "Currently unavailable" : "In stock"} · SKU {product.sku}</p>
             <div className="mt-6 flex flex-wrap items-baseline gap-3">
-              <span className="text-2xl font-semibold text-foreground">Rs. {discountedPrice.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-3xl font-semibold tracking-[-.035em] text-brand-green-deep">Rs. {discountedPrice.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               {showDiscount && <span className="text-sm text-muted-foreground line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>}
               <span className="text-sm text-muted-foreground">{product.isSoldAsUnit ? "Each" : `Per ${product.baseMeasurementQuantity}${product.measurementUnit}`}</span>
             </div>

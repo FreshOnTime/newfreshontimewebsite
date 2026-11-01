@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export default function BrandStory() {
-  return <section aria-labelledby="sourcing-title" className="editorial-wrap py-12 md:py-16">
+  return <section aria-labelledby="sourcing-title" className="editorial-wrap py-12 md:py-16 scroll-reveal">
     <div className="grid items-center gap-8 border-t border-border pt-10 md:grid-cols-2 md:gap-14">
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary"><Image src="/images/about/everyday-kitchen.webp" alt="Fresh vegetables, fruit and rice ready for cooking in a home kitchen" fill sizes="(max-width: 767px) calc(100vw - 40px), 50vw" className="object-cover" /></div>
       <div><p className="editorial-label mb-4">FreshPick, for your everyday</p><h2 id="sourcing-title" className="editorial-title">A market that fits your home.</h2><p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">The vegetables for dinner. Fruit for the family. Pantry staples, something homemade and a drink to share. FreshPick brings everyday food shopping together, with room for the growers and small businesses behind it.</p><div className="mt-5 flex flex-wrap gap-x-7 gap-y-2"><Link href="/about" className="editorial-link">About FreshPick <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link><Link href="/farm-to-table" className="editorial-link">Our producers <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div></div>

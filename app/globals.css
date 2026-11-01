@@ -148,3 +148,15 @@
   .hover-lift:hover, .card-hover-premium:hover { transform: none; }
   .editorial-button:hover { transform: none; }
 }
+
+
+/* Progressive scroll-linked reveal: safe default is fully rendered content. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-reveal {
+      animation: freshpick-reveal both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
