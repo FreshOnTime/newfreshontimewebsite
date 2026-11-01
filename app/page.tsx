@@ -1,4 +1,5 @@
 import HomeHelp from '@/components/home/HomeHelp';
+import HomeBasketFeature from '@/components/home/HomeBasketFeature';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { absoluteUrl } from '@/lib/config/site';
 import { publicPageMetadata } from '@/lib/publicPages';
@@ -38,12 +39,13 @@ export default async function Home() {
       <HeroSection />
       <CategoryBento categories={categories} />
 
-      <section aria-labelledby="market-title" className="bg-background pb-14 md:pb-20">
-        <div className="mx-auto max-w-7xl px-5 md:px-10">
+      <section aria-labelledby="market-title" className="bg-background pb-8 md:pb-12">
+        <div className="editorial-wrap">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 id="market-title" className="editorial-title">The market, right now.</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Browse the current selection, then build a bag for your kitchen.</p>
+              <p className="editorial-label mb-3">Available in the market</p>
+              <h2 id="market-title" className="editorial-title">Good things for your basket.</h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">Explore what is currently listed and choose what your kitchen needs.</p>
             </div>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </div>
@@ -71,7 +73,7 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-lg border border-border bg-card px-6 py-6 text-center">
+              <div className="rounded-2xl border border-border bg-card px-6 py-10 text-center">
                 <p className="text-xl font-semibold text-brand-green">The market is being refreshed.</p>
                 <Link href="/products" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
               </div>
@@ -80,6 +82,7 @@ export default async function Home() {
         </div>
       </section>
 
+      <HomeBasketFeature />
       <BrandStory />
       <BusinessStory />
       <HomeJournal posts={journal} />

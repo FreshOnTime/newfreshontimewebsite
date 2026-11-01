@@ -1,105 +1,61 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, CirclePlay } from "lucide-react";
 
 /**
- * A deliberately manual carousel. Keeping the heading and calls to action
- * stable avoids moving targets, unexpected motion and layout shifts.
+ * One still photograph and two clear actions.
+ * Keep this server-rendered hero free of carousel state and layout-shifting controls.
+ * The licensed photo is from Unsplash; see docs/HOMEPAGE_HERO.md.
  */
-const slides = [
-  {
-    id: "produce",
-    image: "/images/home/market-produce-box.webp",
-    alt: "Market basket with carrots, aubergines, cabbage, green beans and limes",
-    caption: "Fresh vegetables & greens",
-    position: "center center",
-  },
-  {
-    id: "fruit",
-    image: "/images/home/fresh-market-hero.webp",
-    alt: "A colourful selection of papaya, bananas, limes and leafy greens",
-    caption: "Fruit & market favourites",
-    position: "center center",
-  },
-  {
-    id: "pantry",
-    image: "/images/home/market-pantry.webp",
-    alt: "Rice, lentils, coconut and spices for everyday cooking",
-    caption: "Pantry essentials",
-    position: "center center",
-  },
-] as const;
+const MARKET_HERO_PHOTO =
+  "https://images.unsplash.com/photo-1595275522477-c3ce3ca9714b?auto=format&fit=crop&w=1440&q=85";
 
 export default function HeroSection() {
-  const [active, setActive] = useState(0);
-  const slide = slides[active];
-  const goTo = (direction: -1 | 1) => setActive((index) => (index + direction + slides.length) % slides.length);
-
-  const arrowClass = "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/45 bg-brand-green-deep/35 text-white backdrop-blur-md transition-colors hover:border-white/80 hover:bg-brand-green-deep/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
-
   return (
-    <section className="relative isolate overflow-hidden border-b border-brand-green/10 bg-brand-cream" aria-label="FreshPick market introduction">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_100%,rgba(121,147,108,.10),transparent_50%)]" />
-
-      <div className="editorial-wrap relative grid min-w-0 items-stretch gap-9 py-9 sm:gap-11 sm:py-12 lg:min-h-[600px] lg:grid-cols-[minmax(0,.94fr)_minmax(0,1.06fr)] lg:gap-14 lg:py-14">
-        <div className="flex min-w-0 flex-col justify-center py-2 sm:py-5 lg:py-10">
-          <h1 className="max-w-[12ch] font-heading text-[clamp(3.15rem,5.4vw,6.1rem)] font-semibold leading-[1.035] tracking-[-.06em] text-brand-green-deep [text-wrap:balance]">
-            Good food,
-            <span className="block text-brand-green">every day.</span>
-          </h1>
-
-          <p className="mt-7 max-w-[43ch] text-base leading-[1.8] text-foreground/75 sm:mt-8 sm:text-lg sm:leading-[1.8]">
-            Fresh vegetables, fruit, pantry staples and food from local makers. All the everyday good things, in one easy-to-shop market.
+    <section
+      aria-label="FreshPick food market introduction"
+      className="relative overflow-hidden border-b border-brand-green/10 bg-brand-cream"
+    >
+      <div className="editorial-wrap grid min-w-0 items-center gap-9 py-10 sm:gap-12 sm:py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-14 lg:py-16">
+        <div className="min-w-0">
+          <p className="mb-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[.17em] text-brand-green">
+            <span className="h-[2px] w-7 bg-brand-green" aria-hidden="true" />
+            Sri Lanka&apos;s online food market
           </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 sm:mt-9">
-            <Link href="/products" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-brand-green-deep px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_-18px_rgba(16,46,30,.55)] transition-[transform,background-color,box-shadow] duration-200 hover:bg-brand-green hover:shadow-[0_18px_36px_-18px_rgba(16,46,30,.5)] motion-safe:hover:-translate-y-0.5">
+          <h1 className="max-w-[13ch] font-heading text-[clamp(2.9rem,5.6vw,5.75rem)] font-semibold leading-[1.035] tracking-[-.055em] text-brand-green-deep">
+            A whole market.
+            <span className="block italic font-medium text-brand-green">For every table.</span>
+          </h1>
+          <p className="mt-6 max-w-[48ch] text-base leading-[1.75] text-foreground/75 sm:mt-7 sm:text-lg">
+            Fresh produce, dairy, bakery, pantry essentials, ready meals and food from local makers. Everything you need, in one easy-to-shop market.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+            <Link
+              href="/products"
+              className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-brand-green-deep px-7 py-3 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-brand-green motion-safe:hover:-translate-y-0.5"
+            >
               Shop the market <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link href="/categories" className="inline-flex min-h-12 items-center gap-2 border-b border-brand-green/35 text-sm font-semibold text-brand-green transition-colors hover:border-brand-green">
-              Browse categories <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <Link
+              href="/how-it-works"
+              className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full border border-brand-green/35 px-6 py-3 text-sm font-semibold text-brand-green-deep transition-colors hover:border-brand-green hover:bg-brand-green/5"
+            >
+              <CirclePlay className="h-4 w-4" aria-hidden="true" />
+              How it works
             </Link>
           </div>
         </div>
 
-        <div
-          role="region"
-          aria-roledescription="carousel"
-          aria-label="FreshPick market photography"
-          className="relative isolate min-h-[350px] overflow-hidden rounded-[1.5rem] border border-brand-green/10 bg-brand-green-deep shadow-[0_22px_70px_-40px_rgba(16,46,30,.5)] sm:min-h-[465px] lg:min-h-[500px] lg:rounded-[2rem]"
-        >
-          <div className="absolute inset-0">
+        <div className="relative min-w-0">
+          <div className="relative aspect-[5/4] overflow-hidden rounded-[1.5rem] bg-secondary shadow-[0_22px_70px_-45px_rgba(16,46,30,.33)] sm:aspect-[4/3] lg:aspect-[6/5]">
             <Image
-              key={slide.id}
-              src={slide.image}
-              alt={slide.alt}
+              src={MARKET_HERO_PHOTO}
+              alt="A selection of groceries including fresh bread, milk, eggs, fruit and other everyday food"
               fill
-              priority={active === 0}
+              priority
               sizes="(max-width: 1023px) calc(100vw - 32px), (max-width: 1439px) 50vw, 700px"
-              className="object-cover"
-              style={{ objectPosition: slide.position }}
+              className="object-cover object-center"
             />
-          </div>
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-brand-green-deep/90 via-brand-green-deep/45 to-transparent" />
-
-          <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-white sm:inset-x-7 sm:bottom-7 lg:inset-x-8 lg:bottom-8">
-            <div className="min-w-0 max-w-[60%]">
-              <p className="font-heading text-lg font-semibold leading-snug tracking-[-.035em] sm:text-xl lg:text-2xl" aria-live="polite" aria-atomic="true">{slide.caption}</p>
-              <p className="mt-2 text-xs font-medium tabular-nums text-white/80" aria-label={"Image " + (active + 1) + " of " + slides.length}>
-                {String(active + 1).padStart(2, "0")} <span aria-hidden="true" className="px-1 text-white/55">/</span> {String(slides.length).padStart(2, "0")}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <button type="button" className={arrowClass} onClick={() => goTo(-1)} aria-label="Previous market image">
-                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              </button>
-              <button type="button" className={arrowClass} onClick={() => goTo(1)} aria-label="Next market image">
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
           </div>
         </div>
       </div>
