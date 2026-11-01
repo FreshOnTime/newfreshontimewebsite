@@ -38,14 +38,14 @@ export default async function BlogPage() {
           inLanguage: 'en-LK',
         }}
       />
-      <section className="border-b border-border">
-        <div className="editorial-wrap grid items-center gap-8 py-9 md:grid-cols-[1.15fr_0.85fr] md:gap-14 md:py-12">
+      <section className="border-b border-border bg-brand-cream">
+        <div className="editorial-wrap grid items-center gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:py-16">
           <div>
             <p className="editorial-label mb-4">The FreshPick blog</p>
-            <h1 className="font-heading text-4xl font-normal leading-tight md:text-5xl">Good food starts with a little planning.</h1>
+            <h1 className="max-w-[14ch] font-heading text-[clamp(2.8rem,5vw,5.5rem)] font-semibold leading-[1.05] tracking-[-.055em] text-brand-green-deep">Good food starts with a little planning.</h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">Practical grocery guides, pantry ideas and everyday cooking inspiration for households in Colombo and Sri Lanka.</p>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-secondary shadow-[0_18px_60px_-35px_rgba(16,46,30,.35)]">
             <BlogImage src="/images/home/produce-basket.webp" alt="A basket filled with fresh vegetables for everyday grocery shopping" priority sizes="(max-width: 767px) calc(100vw - 40px), 45vw" />
           </div>
         </div>

@@ -92,7 +92,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
       </div>
 
       {/* Hero Section */}
-      <div className="pt-12 pb-8 md:pt-12 md:pb-10 bg-background border-b border-border">
+      <div className="border-b border-brand-green/10 bg-brand-cream py-14 md:py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             {/* Meta Info */}
@@ -108,7 +108,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-normal text-foreground leading-[1.1] tracking-tight">
+            <h1 className="font-heading text-[clamp(2.65rem,5vw,5.4rem)] font-semibold leading-[1.05] tracking-[-.05em] text-brand-green-deep">
               {blog.title}
             </h1>
 
@@ -121,7 +121,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
       </div>
 
       <figure className="mx-auto mt-8 max-w-5xl px-5 md:px-8">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary md:aspect-[3/2]">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-secondary shadow-[0_20px_50px_-35px_rgba(16,46,30,.35)] md:aspect-[3/2]">
           <BlogImage src={image.url} alt={image.alt || blog.title} priority contain
             sizes="(max-width: 1024px) calc(100vw - 40px), 960px" />
         </div>
@@ -129,7 +129,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
 
       {/* Content */}
       <div className="bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-12 md:py-16">
           <div className="max-w-3xl mx-auto">
             <div className="prose prose-base md:prose-lg prose-zinc max-w-[68ch] mx-auto break-words [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_pre]:overflow-x-auto prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:font-normal prose-p:leading-[1.8] prose-p:text-muted-foreground prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-img:rounded-sm prose-img:shadow-none">
               <ReactMarkdown
@@ -158,7 +158,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
       </div>
 
       {/* Footer CTA - Minimalist */}
-      <div className="bg-secondary text-foreground py-10">
+      <div className="bg-brand-cream py-14 text-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-2xl font-serif mb-6">Continue Reading</h2>
           <p className="text-muted-foreground text-lg mb-10 max-w-xl mx-auto font-normal">

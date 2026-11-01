@@ -8,8 +8,8 @@ export default function AuthFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const signingUp = pathname.includes('signup') || pathname === '/auth/register';
   return (
-    <div className="account-form editorial-wrap grid items-start gap-6 py-6 md:py-9 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 xl:gap-20">
-      <aside className="overflow-hidden rounded-2xl bg-secondary lg:sticky lg:top-32">
+    <div className="account-form editorial-wrap grid items-start gap-8 py-8 md:py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 xl:gap-20">
+      <aside className="overflow-hidden rounded-[1.75rem] border border-brand-green/10 bg-secondary shadow-[0_20px_55px_-35px_rgba(16,46,30,.35)] lg:sticky lg:top-32">
         <div className="relative h-40 sm:h-52 lg:h-[440px] xl:h-[500px]">
           <Image
             src={signingUp ? '/images/auth/market-bag.webp' : '/images/auth/market-still-life.webp'}
@@ -18,9 +18,9 @@ export default function AuthFrame({ children }: { children: ReactNode }) {
             className="object-cover object-[center_60%]"
           />
         </div>
-        <div className="hidden bg-brand-green p-8 text-white lg:block xl:p-10">
+        <div className="hidden bg-brand-green-deep p-8 text-white lg:block xl:p-10">
           <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-white/80">Your everyday market</p>
-          <h2 className="mt-3 text-3xl leading-tight xl:text-4xl">{signingUp ? 'Good food starts here.' : 'Welcome back to good food.'}</h2>
+          <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-.04em] xl:text-4xl">{signingUp ? 'Good food starts here.' : 'Welcome back to good food.'}</h2>
           <p className="mt-4 max-w-sm text-sm leading-7 text-white/85">Save your favourites, plan a regular basket and keep your orders in one place.</p>
         </div>
       </aside>
