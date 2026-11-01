@@ -15,18 +15,18 @@ describe('FreshPick homepage editorial layout', () => {
     expect(page).toContain('getHomeData()');
   });
 
-  it('uses a manual hero carousel with accessible selectors and real shop links', () => {
+  it('uses one high-impact, accessible image without slideshow controls', () => {
     const hero = read('components/home/HeroSection.tsx');
-    expect(hero).toContain('aria-roledescription="carousel"');
-    expect(hero).toContain('aria-pressed={active === index}');
-    expect(hero).toContain('onClick={() => goTo(-1)}');
-    expect(hero).toContain('onClick={() => goTo(1)}');
-    expect(hero).toContain('href={slide.href}');
+    expect(hero).toContain('src="/images/home/fresh-market-hero.webp"');
+    expect(hero).toContain('priority');
+    expect(hero).toContain('sizes="100vw"');
+    expect(hero).toContain('<h1');
+    expect(hero).toContain('href="/products"');
+    expect(hero).toContain('href="/how-it-works"');
+    expect(hero).not.toContain('useState');
+    expect(hero).not.toContain('aria-roledescription="carousel"');
     expect(hero).not.toContain('setInterval(');
-    expect(hero).not.toContain('autoplay');
-    for (const name of ['market-produce-box.webp', 'fresh-market-hero.webp', 'market-pantry.webp']) {
-      expect(existsSync(join(process.cwd(), 'public/images/home', name))).toBe(true);
-    }
+    expect(existsSync(join(process.cwd(), 'public/images/home/fresh-market-hero.webp'))).toBe(true);
   });
 
   it('does not fabricate published categories and keeps image tiles compact', () => {
