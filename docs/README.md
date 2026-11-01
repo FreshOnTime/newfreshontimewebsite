@@ -6,6 +6,8 @@ This is the documentation for the application implemented in this repository. Re
 
 | Reader | Guide | What it covers |
 | --- | --- | --- |
+| Customer | [Customer handbook](CUSTOMER_GUIDE.md) | Shopping, COD checkout, orders, recurring baskets and after-sales help; public website guide also available |
+| Supplier | [Supplier handbook](SUPPLIER_GUIDE.md) | Application, approval, uploads, publishing, operations and settlement boundaries; public website guide also available |
 | Owner or product team | [Features](FEATURES.md) | Customer journeys, suppliers, publishing, integrations and limitations |
 | Store administrator | [Admin panel handbook](ADMIN_GUIDE.md) | Every main and secondary admin page, controls, workflows and troubleshooting |
 | Basket operator or developer | [Subscriptions](SUBSCRIPTIONS.md) | Plans, recurring baskets, stock, scheduling, delivery queue and separate recurring orders |

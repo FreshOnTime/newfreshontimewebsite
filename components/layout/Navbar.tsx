@@ -12,7 +12,7 @@ import { useBag } from "@/contexts/BagContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const links = MARKET_NAVIGATION;
-const moreLinks = [{ label: 'Contact', href: '/contact' }];
+const moreLinks = [{ label: 'How it works', href: '/how-it-works' }, { label: 'Contact', href: '/contact' }];
 const iconButton = "flex h-11 w-9 max-[359px]:w-8 sm:w-11 items-center justify-center rounded-lg text-brand-green transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green";
 
 export function Navbar() {

@@ -123,6 +123,7 @@ export function SupplierSignupForm() {
             <span className="text-xs font-bold normal-case text-brand-green">Partner application</span>
             <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Create a supplier account</h1>
             <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">This creates your account and sends the supplier details needed for onboarding. The FreshPick team reviews your application before enabling catalogue uploads.</p>
+            <p className="mt-3 text-sm text-muted-foreground">Need more detail? <Link href="/how-it-works/suppliers" className="font-medium text-brand-green underline underline-offset-4">Read the complete supplier guide</Link> before applying.</p>
             {accountCreated && <p role="status" className="mt-4 rounded-lg bg-secondary px-4 py-3 text-sm text-brand-green">Your login account is connected. Complete the business details below to save your supplier application.</p>}
           </div>
 
