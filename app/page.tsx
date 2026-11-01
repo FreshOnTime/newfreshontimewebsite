@@ -1,5 +1,6 @@
 import HomeHelp from '@/components/home/HomeHelp';
 import HomeBasketFeature from '@/components/home/HomeBasketFeature';
+import HomeMarketManifesto from '@/components/home/HomeMarketManifesto';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { absoluteUrl } from '@/lib/config/site';
 import { publicPageMetadata } from '@/lib/publicPages';
@@ -37,17 +38,18 @@ export default async function Home() {
     <div className="bg-background">
       <BreadcrumbJsonLd items={[{ name: "FreshPick", url: absoluteUrl("/") }]} />
       <HeroSection />
+      <HomeMarketManifesto />
       <CategoryBento categories={categories} />
 
-      <section aria-labelledby="market-title" className="bg-background pb-8 md:pb-12">
+      <section aria-labelledby="market-title" className="bg-background pb-12 md:pb-20">
         <div className="editorial-wrap">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-5 border-b border-brand-green-deep/20 pb-6">
             <div>
-              <p className="editorial-label mb-3">Available in the market</p>
-              <h2 id="market-title" className="editorial-title">Good things for your basket.</h2>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">Explore what is currently listed and choose what your kitchen needs.</p>
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-[.22em] text-brand-green">From the shelves</p>
+              <h2 id="market-title" className="font-heading text-[clamp(2.15rem,4vw,4.2rem)] font-semibold uppercase leading-none tracking-[-.06em] text-brand-green-deep">Shop the market.</h2>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">Discover products from the currently available FreshPick catalogue.</p>
             </div>
-            <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-sm font-medium text-brand-green hover:underline">Shop all <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">See all products <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </div>
 
           <ProductErrorBoundary>
