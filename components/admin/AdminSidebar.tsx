@@ -45,10 +45,10 @@ export function AdminSidebar() {
   }, []);
 
   return <>
-    <aside aria-label="Administration" className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col border-r border-border bg-background px-6 overflow-y-auto">
+    <aside aria-label="Administration" className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col border-r border-brand-green/10 bg-brand-cream px-6 overflow-y-auto">
       <SidebarContent pathname={pathname} />
     </aside>
-    <div className="sticky top-0 z-40 flex items-center gap-4 border-b border-border bg-background px-4 py-3 sm:px-6 lg:hidden">
+    <div className="sticky top-0 z-40 flex items-center gap-4 border-b border-brand-green/10 bg-brand-cream px-4 py-3 sm:px-6 lg:hidden">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild><button type="button" aria-label="Open admin navigation" className="flex h-11 w-11 items-center justify-center text-foreground"><Menu className="h-5 w-5" aria-hidden="true" /></button></DialogTrigger>
         <DialogContent className="left-0 top-0 block h-[100svh] max-h-none w-[min(320px,100vw)] max-w-none translate-x-0 translate-y-0 rounded-none border-0 px-6 py-0 sm:max-h-none sm:rounded-none [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:items-center [&>button]:justify-center [&>button]:right-2 [&>button]:top-2">
@@ -70,7 +70,7 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{group.name}</p>
         <ul className="-mx-2 space-y-1">{group.items.map(item => {
           const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/subscriptions' && pathname === '/admin/subscription-deliveries') || (item.href === '/admin/suppliers' && ['/admin/supplier-uploads', '/admin/supplier-applications'].includes(pathname));
-          return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 px-2 py-2 text-sm font-medium transition-colors', active ? 'bg-secondary text-brand-green' : 'text-foreground hover:bg-secondary hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
+          return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors', active ? 'bg-brand-green-deep text-white' : 'text-foreground hover:bg-brand-green/10 hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
         })}</ul>
       </div>)}
       <Link href="/" onClick={onNavigate} className="flex min-h-11 items-center justify-between border-t border-border pt-4 text-xs font-semibold uppercase text-brand-green">View store <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>

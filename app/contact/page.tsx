@@ -65,8 +65,8 @@ export default function ContactPage() {
         eyebrow="Contact FreshPick"
       />
 
-      <section className="px-4 py-10 md:py-12">
-        <div className="container mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.65fr_1.35fr]">
+      <section className="editorial-wrap py-12 md:py-20">
+        <div className="grid min-w-0 gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
           <aside>
             <span className="text-xs font-bold normal-case text-brand-green">Your enquiry</span>
             <h2 className="mt-7 font-serif text-2xl font-normal leading-tight md:text-2xl">
@@ -78,7 +78,7 @@ export default function ContactPage() {
             </div>
           </aside>
 
-          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-7 rounded-lg border border-border bg-background p-5 md:grid-cols-2 md:p-8"><legend className="sr-only">Send an enquiry to FreshPick</legend>
+          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-7 rounded-[1.75rem] border border-brand-green/10 bg-white/80 p-5 shadow-[0_18px_50px_-32px_rgba(16,46,30,.25)] md:grid-cols-2 md:p-9"><legend className="sr-only">Send an enquiry to FreshPick</legend>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Name
               <Input className={` ${fieldClass} mt-2`} autoComplete="name" maxLength={100} value={name} onChange={(event) => setName(event.target.value)} required />
@@ -118,7 +118,7 @@ export default function ContactPage() {
             </label>
 
             <div className="col-span-1 flex flex-wrap items-center gap-4 md:col-span-2">
-              <Button type="submit" className="h-14 rounded-md bg-brand-leaf px-8 text-xs font-bold normal-case text-brand-ink hover:bg-brand-leaf/85" disabled={status === "sending"}>
+              <Button type="submit" className="h-12 rounded-xl bg-brand-green-deep px-8 text-sm font-semibold text-white hover:bg-brand-green" disabled={status === "sending"}>
                 {status === "sending" ? "Sending…" : "Send enquiry"}
               </Button>
               <p role={status === "error" ? "alert" : "status"} aria-live="polite" className={`text-sm ${status === "error" ? "text-red-600" : "text-brand-green"} `}>

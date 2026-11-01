@@ -154,7 +154,9 @@
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .scroll-reveal {
-      animation: freshpick-reveal both;
+      animation-name: freshpick-reveal;
+      animation-duration: 1s;
+      animation-fill-mode: both;
       animation-timeline: view();
       animation-range: entry 0% entry 70%;
     }

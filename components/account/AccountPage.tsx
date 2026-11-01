@@ -19,12 +19,12 @@ export function AccountPage({ title, description, action, children }: { title: s
   const pathname = usePathname();
   return (
     <div className="bg-background pb-12 text-foreground">
-      <header className="border-b border-border">
+      <header className="border-b border-brand-green/10 bg-brand-cream">
         <div className="mx-auto max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
           <div className="flex flex-wrap items-end justify-between gap-5 pb-7 md:pb-8">
             <div className="min-w-0 max-w-full">
               <p className="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Your account</p>
-              <h1 className="break-words text-3xl font-normal leading-tight tracking-[-0.035em] text-brand-green md:text-4xl">{title}</h1>
+              <h1 className="break-words font-heading text-[clamp(2.6rem,4.5vw,4.8rem)] font-semibold leading-[1.07] tracking-[-.05em] text-brand-green-deep">{title}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
             </div>
             {action}
@@ -44,7 +44,7 @@ export function AccountPage({ title, description, action, children }: { title: s
 
 export function AccountState({ title, description, action, error = false }: { title: string; description?: string; action?: ReactNode; error?: boolean }) {
   return (
-    <section role={error ? 'alert' : undefined} className="rounded-lg border border-border px-6 py-10 md:px-8 md:py-12">
+    <section role={error ? 'alert' : undefined} className="editorial-card px-6 py-10 md:px-8 md:py-12">
       <h2 className="text-xl font-normal text-brand-green">{title}</h2>
       {description && <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">{description}</p>}
       {action && <div className="mt-6 flex flex-wrap gap-3">{action}</div>}
@@ -56,5 +56,5 @@ export function AccountLoading({ label }: { label: string }) {
   return <div role="status" className="flex items-center gap-3 py-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{label}</div>;
 }
 
-export const accountButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-leaf px-5 py-2.5 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-leaf/90 disabled:opacity-50';
-export const accountSecondaryButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-brand-green transition-colors hover:border-brand-green disabled:opacity-50';
+export const accountButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-green-deep px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-green disabled:opacity-50';
+export const accountSecondaryButton = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-brand-green/20 bg-white px-5 py-2.5 text-sm font-semibold text-brand-green transition-colors hover:border-brand-green disabled:opacity-50';
