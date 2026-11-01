@@ -2,8 +2,7 @@ import Link from 'next/link';
 import BlogImage from './BlogImage';
 import { normalizeBlogImage } from '@/lib/blogImages';
 
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
@@ -81,22 +80,18 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
         wordCount: blog.content.split(/\s+/).length,
       }} />
       <BreadcrumbJsonLd items={[{ name: 'Home', url: absoluteUrl('/') }, { name: 'Blog', url: absoluteUrl('/blog') }, { name: blog.title, url: absoluteUrl(path) }]} />
-      {/* Back Button - Minimalist */}
-      <div className="w-full bg-background border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/blog" className="inline-flex items-center text-xs font-bold normal-case text-muted-foreground hover:text-brand-green transition-colors">
-            <ArrowLeft className="h-3 w-3 mr-2" />
-            Back to Blog
+      <nav aria-label="Article navigation" className="border-b border-brand-green/10 bg-brand-cream">
+        <div className="editorial-wrap py-3">
+          <Link href="/blog" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand-green transition-colors hover:text-brand-green-deep">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to the journal
           </Link>
         </div>
-      </div>
+      </nav>
 
-      {/* Hero Section */}
-      <div className="border-b border-brand-green/10 bg-brand-cream py-14 md:py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            {/* Meta Info */}
-            <div className="flex flex-wrap justify-center items-center gap-4 text-xs font-bold normal-case text-brand-green">
+      <header className="border-b border-brand-green/10 bg-brand-cream py-12 sm:py-16 lg:py-20">
+        <div className="editorial-wrap">
+          <div className="mx-auto max-w-4xl">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-brand-green">
               {blog.category && (
                 <span>{blog.category}</span>
               )}
@@ -107,31 +102,29 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
               )}
             </div>
 
-            {/* Title */}
-            <h1 className="font-heading text-[clamp(2.65rem,5vw,5.4rem)] font-semibold leading-[1.05] tracking-[-.05em] text-brand-green-deep">
+            <h1 className="mt-7 max-w-[21ch] font-heading text-[clamp(2.75rem,5.4vw,5.7rem)] font-semibold leading-[1.06] tracking-[-.052em] text-brand-green-deep">
               {blog.title}
             </h1>
 
-            {/* Excerpt */}
-            <p className="text-base md:text-lg text-muted-foreground font-normal leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-7 max-w-[65ch] text-lg leading-[1.8] text-foreground/75 md:text-xl">
               {blog.excerpt}
             </p>
+            <a href="#article-content" className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-brand-green/35 text-sm font-semibold text-brand-green hover:border-brand-green">Read article <ArrowRight className="h-4 w-4" aria-hidden="true" /></a>
           </div>
         </div>
-      </div>
+      </header>
 
-      <figure className="mx-auto mt-8 max-w-5xl px-5 md:px-8">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-secondary shadow-[0_20px_50px_-35px_rgba(16,46,30,.35)] md:aspect-[3/2]">
-          <BlogImage src={image.url} alt={image.alt || blog.title} priority contain
+      <figure className="editorial-wrap mx-auto mt-8 max-w-[1160px] md:mt-12">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-secondary shadow-[0_20px_50px_-35px_rgba(16,46,30,.35)] md:aspect-[16/9] md:rounded-[2rem]">
+          <BlogImage src={image.url} alt={image.alt || blog.title} priority
             sizes="(max-width: 1024px) calc(100vw - 40px), 960px" />
         </div>
       </figure>
 
-      {/* Content */}
-      <div className="bg-background">
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="max-w-3xl mx-auto">
-            <div className="prose prose-base md:prose-lg prose-zinc max-w-[68ch] mx-auto break-words [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_pre]:overflow-x-auto prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:font-normal prose-p:leading-[1.8] prose-p:text-muted-foreground prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:not-italic prose-blockquote:text-foreground prose-img:rounded-sm prose-img:shadow-none">
+      <section id="article-content" aria-label="Article content" className="scroll-mt-32 bg-background">
+        <div className="editorial-wrap py-12 md:py-20">
+          <div className="mx-auto max-w-[770px]">
+            <div className="prose prose-base max-w-none break-words text-foreground/85 md:prose-lg prose-headings:font-heading prose-headings:font-semibold prose-headings:leading-[1.2] prose-headings:tracking-[-.035em] prose-headings:text-brand-green-deep prose-h2:mb-5 prose-h2:mt-12 prose-h2:text-3xl prose-h3:mt-9 prose-h3:text-2xl prose-p:leading-[1.95] prose-p:text-foreground/80 prose-strong:text-brand-green-deep prose-a:font-semibold prose-a:text-brand-green prose-a:underline prose-a:decoration-brand-green/30 prose-a:underline-offset-4 hover:prose-a:decoration-brand-green prose-li:leading-[1.85] prose-blockquote:rounded-r-xl prose-blockquote:border-l-4 prose-blockquote:border-brand-amber prose-blockquote:bg-white/75 prose-blockquote:px-6 prose-blockquote:py-4 prose-blockquote:not-italic prose-blockquote:text-brand-green-deep [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_pre]:overflow-x-auto prose-img:rounded-2xl">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}
@@ -143,10 +136,10 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
 
             {/* Tags */}
             {blog.tags && blog.tags.length > 0 && (
-              <div className="mt-8 pt-8 border-t border-border">
+              <div className="mt-12 border-t border-brand-green/15 pt-8">
                 <div className="flex flex-wrap gap-2">
                   {blog.tags.map((tag, index) => (
-                    <span key={index} className="px-3 py-1 bg-background text-muted-foreground text-xs font-medium normal-case rounded-sm">
+                    <span key={index} className="rounded-full border border-brand-green/15 bg-white px-4 py-2 text-xs font-medium text-brand-green">
                       #{tag}
                     </span>
                   ))}
@@ -155,20 +148,20 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
             )}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer CTA - Minimalist */}
-      <div className="bg-brand-cream py-14 text-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-2xl font-serif mb-6">Continue Reading</h2>
-          <p className="text-muted-foreground text-lg mb-10 max-w-xl mx-auto font-normal">
-            Explore more insights from our collection of curated articles.
-          </p>
-          <Button asChild size="lg" className="bg-background text-foreground hover:bg-secondary rounded-lg px-12 py-6 normal-case text-xs font-bold transition-all">
-              <Link href="/blog">View All Articles</Link>
-            </Button>
+      <section className="border-t border-brand-green/10 bg-brand-cream py-14 md:py-20" aria-labelledby="keep-reading-heading">
+        <div className="editorial-wrap grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,.8fr)] md:items-end">
+          <div>
+            <h2 id="keep-reading-heading" className="max-w-[15ch] font-heading text-[clamp(2.2rem,4vw,3.7rem)] font-semibold leading-[1.1] tracking-[-.045em] text-brand-green-deep">There’s more at the market.</h2>
+            <p className="mt-5 max-w-lg text-base leading-8 text-muted-foreground">Keep exploring practical guides and ingredients for everyday cooking.</p>
+          </div>
+          <nav aria-label="Keep exploring" className="flex flex-col gap-3 sm:flex-row md:justify-end">
+            <Link href="/blog" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-brand-green/25 bg-white px-6 py-3 text-sm font-semibold text-brand-green hover:border-brand-green">More stories <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link href="/products" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-green-deep px-6 py-3 text-sm font-semibold text-white hover:bg-brand-green">Shop the market <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+          </nav>
         </div>
-      </div>
+      </section>
     </article>
   );
 }
