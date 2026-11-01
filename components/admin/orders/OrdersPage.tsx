@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, MoreHorizontal, Eye, Trash2, Plus } from 'lucide-react';
+import { Search, MoreHorizontal, Eye, Trash2, Plus, ChevronDown, PackageOpen, AlertCircle, RefreshCw, X, ArrowLeft, ArrowRight } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { OrderDialog } from '@/components/admin/orders/OrderDialog';
 import { CreateOrderDialog } from '@/components/admin/orders/CreateOrderDialog';
 import { toast } from 'sonner';
@@ -39,10 +38,70 @@ interface Order {
 
 interface OrdersResponse { orders: Order[]; pagination: { page: number; limit: number; total: number; pages: number } }
 
+const selectStyle = 'h-12 w-full appearance-none rounded-xl border border-brand-green/15 bg-white px-3.5 pr-9 text-sm font-medium text-foreground shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green';
+const pillStyles: Record<Order['status'] | Order['paymentStatus'], string> = {
+  pending: 'border-amber-200 bg-amber-50 text-amber-900',
+  confirmed: 'border-sky-200 bg-sky-50 text-sky-900',
+  processing: 'border-indigo-200 bg-indigo-50 text-indigo-900',
+  shipped: 'border-blue-200 bg-blue-50 text-blue-900',
+  delivered: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  cancelled: 'border-slate-200 bg-slate-100 text-slate-700',
+  refunded: 'border-violet-200 bg-violet-50 text-violet-900',
+  paid: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  failed: 'border-rose-200 bg-rose-50 text-rose-900',
+};
+const scheduleStyles: Record<'active' | 'paused' | 'ended', string> = {
+  active: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+  paused: 'border-amber-200 bg-amber-50 text-amber-900',
+  ended: 'border-slate-200 bg-slate-100 text-slate-700',
+};
+function StatusTag({ status, schedule = false }: { status: Order['status'] | Order['paymentStatus'] | 'active' | 'paused' | 'ended'; schedule?: boolean }) {
+  const colors = schedule
+    ? scheduleStyles[status as 'active' | 'paused' | 'ended']
+    : pillStyles[status as Order['status'] | Order['paymentStatus']];
+  return <span className={'inline-flex w-fit rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ' + colors}>{status}</span>;
+}
+function shortDate(value?: string) {
+  if (!value) return '—';
+  const date = new Date(value);
+  return Number.isFinite(date.getTime())
+    ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Colombo' }).format(date)
+    : '—';
+}
+function OrderSchedule({ order }: { order: Order }) {
+  if (!order.isRecurring) return <span className="text-sm text-muted-foreground">One-time</span>;
+  return <div className="flex flex-col items-start gap-1.5">
+    <StatusTag status={order.scheduleStatus || 'active'} schedule />
+    {order.nextDeliveryAt && <span className="text-xs text-muted-foreground">Next: {shortDate(order.nextDeliveryAt)}</span>}
+  </div>;
+}
+function OrderMenu({ number, onView, onDelete }: { number: string; onView: () => void; onDelete: () => void }) {
+  return <DropdownMenu>
+    <DropdownMenuTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl" aria-label={'Actions for order ' + number}><MoreHorizontal className="h-5 w-5" aria-hidden="true" /></Button></DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-44 rounded-xl p-1.5">
+      <DropdownMenuItem className="min-h-10 cursor-pointer rounded-lg" onSelect={onView}><Eye className="mr-2 h-4 w-4" aria-hidden="true" />View details</DropdownMenuItem>
+      <DropdownMenuItem className="min-h-10 cursor-pointer rounded-lg text-rose-700 focus:text-rose-700" onSelect={onDelete}><Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />Delete order</DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>;
+}
+function FilterSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (next: string) => void; options: ReadonlyArray<{ value: string; label: string }> }) {
+  return <label className="block min-w-0">
+    <span className="mb-2 block text-xs font-semibold text-foreground/75">{label}</span>
+    <span className="relative block">
+      <select className={selectStyle} value={value} onChange={(e) => onChange(e.target.value)}>{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-green" aria-hidden="true" />
+    </span>
+  </label>;
+}
+
 export function OrdersPage() {
   const [items, setItems] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const latestRequest = useRef(0);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
   const [isRecurring, setIsRecurring] = useState<'all'|'true'|'false'>('all');
@@ -56,18 +115,21 @@ export function OrdersPage() {
   const router = useRouter();
 
   const fetchItems = async () => {
+    const request = ++latestRequest.current;
     try {
       setLoading(true);
-  const params = new URLSearchParams({ page: String(page), limit: '20', ...(search && { search }), ...(isRecurring !== 'all' && { isRecurring }), ...(schedStatus !== 'all' && { scheduleStatus: schedStatus }), ...(sort && { sort }), ...(customerId ? { customerId } : {}) });
+      setError(false);
+  const params = new URLSearchParams({ page: String(page), limit: '20', ...(debouncedSearch.trim() && { search: debouncedSearch.trim() }), ...(isRecurring !== 'all' && { isRecurring }), ...(schedStatus !== 'all' && { scheduleStatus: schedStatus }), ...(sort && { sort }), ...(customerId ? { customerId } : {}) });
       const res = await authenticatedApiFetch(`/api/admin/orders?${params}`);
       if (!res.ok) throw new Error('Failed');
       const data: OrdersResponse = await res.json();
+      if (request !== latestRequest.current) return;
       setItems(data.orders);
       setPagination(data.pagination);
     } catch {
-      toast.error('Failed to load orders');
+      if (request === latestRequest.current) setError(true);
     } finally {
-      setLoading(false);
+      if (request === latestRequest.current) setLoading(false);
     }
   };
 
@@ -79,7 +141,7 @@ export function OrdersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  useEffect(() => { fetchItems(); }, [page, search, isRecurring, schedStatus, sort, customerId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchItems(); }, [page, debouncedSearch, isRecurring, schedStatus, sort, customerId, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const view = (o: Order) => { setSelected(o); setOpen(true); };
   const saved = () => { setOpen(false); setSelected(null); fetchItems(); };
@@ -97,7 +159,10 @@ export function OrdersPage() {
     }
   };
 
-  const currency = (v: number) => `Rs. ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)}`;
+  const currency = (v: number) => 'Rs. ' + new Intl.NumberFormat('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+  const filtersActive = !!(debouncedSearch.trim() || isRecurring !== 'all' || schedStatus !== 'all' || customerId);
+  const clearFilters = () => { setSearch(''); setPage(1); setIsRecurring('all'); setSchedStatus('all'); setSort('created-desc'); setCustomerId(''); router.replace('/admin/orders'); };
+  const reload = () => setRefreshKey((value) => value + 1);
 
   return (
     <div className="space-y-6">
