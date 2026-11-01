@@ -153,7 +153,8 @@ export function OrdersPage() {
       const res = await authenticatedApiFetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Order deleted');
-      fetchItems();
+      if (page > 1 && items.length === 1) setPage(page - 1);
+      else fetchItems();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Delete failed');
     }
@@ -165,7 +166,7 @@ export function OrdersPage() {
   const reload = () => setRefreshKey((value) => value + 1);
 
   return (
-    <main className="mx-auto max-w-[1520px] space-y-7 pb-12 sm:space-y-8">
+    <div className="mx-auto max-w-[1520px] space-y-7 pb-12 sm:space-y-8">
       <header className="flex flex-col gap-5 border-b border-brand-green/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="font-heading text-[clamp(2.35rem,3.6vw,3.45rem)] font-semibold leading-[1.08] tracking-[-.05em] text-brand-green-deep">Orders</h1>
@@ -300,6 +301,6 @@ export function OrdersPage() {
 
       <OrderDialog open={open} onOpenChange={setOpen} order={selected} onSave={saved} />
       <CreateOrderDialog open={openCreate} onOpenChange={setOpenCreate} onSaved={() => { setOpenCreate(false); reload(); }} />
-    </main>
+    </div>
   );
 }
