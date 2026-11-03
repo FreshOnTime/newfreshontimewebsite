@@ -1,30 +1,37 @@
-# FreshPick full-bleed branded homepage hero
+# FreshPick produce-box subscription homepage hero
 
-The homepage uses one dominant full-width food-market photograph, an overlaid FreshPick brand mark, and readable, server-rendered campaign typography. It is an original FreshPick execution of an editorial market look, not a copied Natoora photo or layout.
+The homepage hero now introduces FreshPick's **existing grocery box subscriptions** first, rather than leading with a general food-market campaign. It uses an original, locally hosted produce-box illustration, full-bleed photography treatment, centered live typography, and a clear link to the actual subscription-plan listing.
 
-## Photograph and credit
+## Image and provenance
 
-- Image: `https://images.unsplash.com/photo-1595275522477-c3ce3ca9714b`
-- Photographer: Gorrin Bel (@gorrinbel)
-- Source: https://unsplash.com/photos/bread-beside-glass-jar-with-milk-1kDKct0-Wgo
-- License: https://unsplash.com/license
-- The image is illustrative; not actual published products or supplier assets.
-- Next/Image optimizes the remote image through the already configured `images.unsplash.com` remote pattern.
+- Asset: `/images/home/market-produce-box.webp` (1672 × 941 WebP).
+- Original FreshPick AI-generated editorial illustration, created October 3, 2026.
+- Generation prompt and usage notes: [EDITORIAL_MARKET.md](EDITORIAL_MARKET.md); ownership/source notes: [CREDITS.md](../public/images/home/CREDITS.md).
+- No reference-site photography, text or branding is copied, embedded or hotlinked.
+- Illustration is **not** a real product photo, promise of specific items, or evidence of currently available stock.
 
-## Brand treatment
+## Design
 
-- The photographed food and product assortment is the focal point. On top is a fully editable brand block using `components/brand/Wordmark.tsx`, plus the campaign text `A whole market. For every table.`
-- Photo and FreshPick SVG wordmark are separate layers. The FreshPick logo is **overlaid on the image**, not physically printed on a grocery bag.
-- A left-to-right and bottom gradient ensure cream/white text legibility. Static composition prevents carousel CLS and unnecessary JavaScript.
-- Mobile image crop uses the photograph focal point; the logo badge is hidden at small widths to avoid competing with the headline.
-- No claims of same-day shipping, supplier payouts, certified organic status or card payments.
+- Full-bleed produce box with a dark, restrained scrim to keep text legible on all crops.
+- Small eyebrow: “FreshPick · Recurring grocery boxes”.
+- Headline: “The FreshPick Box.”
+- Supporting text: “Fresh food for your routine. Explore our available grocery boxes and choose a delivery schedule that works for you.”
+- Primary action: **Explore subscription boxes** (real route: `/subscriptions`).
+- Secondary action: **Shop the market** (`/products`).
+- Heading and controls remain semantic HTML over a `next/image` layer, never baked into the artwork.
+- Responsive centered layout; mobile uses a produce-focused crop with a stronger legibility scrim. Fixed minimum heights avoid layout shifts.
+- Static hero avoids carousel JavaScript, autoplay, timer controls and related performance costs.
 
-## Functional links
+## Subscription behavior and truthfulness
 
-- Primary CTA: `/products`
-- Secondary CTA: `/how-it-works`
-- Lower tertiary link: `/categories`
+The homepage hero is **merchandising, not a checkout form**. The `/subscriptions` page loads active plans from the database, shows plan details and starts the existing authenticated subscription/checkout process. When no active plans exist, it shows the site's existing truthful empty state and product/contact alternatives.
 
-## Visual QA before release
+The hero does **not** claim a fixed box price, guaranteed selection, shipping timeframe, automatically charged card, or active availability of a particular plan. See [SUBSCRIPTIONS.md](SUBSCRIPTIONS.md) for actual cadence and fulfilment behavior.
 
-At 320, 375, 390, 768, 1024 and 1440px, review heading line wrapping, dark overlay contrast, background cropping, nav-over-hero spacing, footer-of-hero category link, and image load behavior. Test keyboard tab order and reduced-motion preferences. Run CI lint, tests, production build and deployed-browser smoke checks.
+## Release checks
+
+1. Test at 320, 375, 390, 768, 1024 and 1440px: crop, headline wrapping, contrast and nav overlap.
+2. Check both actions by keyboard and pointer, including focus visibility.
+3. Validate `/subscriptions` for available plans and for the no-active-plan state.
+4. Check that the artwork loads locally in production and the hero is visible before any JS hydration.
+5. Run lint, the targeted homepage UI test, and the build before merging.
