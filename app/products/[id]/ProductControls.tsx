@@ -78,8 +78,8 @@ export const ProductControls = ({ product }: { product: Product }) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <div className="sm:w-36">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[190px_minmax(0,1fr)] sm:items-stretch">
+        <div className="min-w-0">
           <QuantityInputLarge
             value={quantity}
             onChange={(value) => setQuantity(value)}
@@ -88,12 +88,12 @@ export const ProductControls = ({ product }: { product: Product }) => {
             step={derivedProduct.stepQuantity}
             unit={derivedProduct.isSoldAsUnit ? "" : derivedProduct.measurementUnit}
             isDiscreteItem={derivedProduct.isSoldAsUnit}
-            className="h-12 w-full rounded-lg"
+            className="h-12 w-full"
             key={`${selectedOptionIndex}-${effectiveUnit}-${effectiveBaseQty}`}
           />
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <AddToBagButton product={derivedProduct} quantity={validQuantity} />
         </div>
       </div>
