@@ -68,10 +68,10 @@ export const ProductControls = ({ product }: { product: Product }) => {
         <div className={` ${!derivedProduct.isSoldAsUnit ? "pt-4" : ""} flex items-end justify-between gap-4`}>
           <span className="text-xs font-bold normal-case text-muted-foreground">Item total</span>
           <div className="text-right">
-            <span className="font-sans text-2xl text-foreground">Rs. {total.toFixed(2)}</span>
+            <span className="font-sans text-2xl text-foreground">Rs. {total.toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             {savings > 0 && (
               <div className="mt-1 text-xs font-medium text-brand-green">
-                Save Rs. {savings.toFixed(2)}
+                Save Rs. {savings.toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             )}
           </div>
