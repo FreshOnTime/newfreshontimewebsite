@@ -68,18 +68,18 @@ export const ProductControls = ({ product }: { product: Product }) => {
         <div className={` ${!derivedProduct.isSoldAsUnit ? "pt-4" : ""} flex items-end justify-between gap-4`}>
           <span className="text-xs font-bold normal-case text-muted-foreground">Item total</span>
           <div className="text-right">
-            <span className="font-sans text-2xl text-foreground">Rs. {total.toFixed(2)}</span>
+            <span className="font-sans text-2xl text-foreground">Rs. {total.toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             {savings > 0 && (
               <div className="mt-1 text-xs font-medium text-brand-green">
-                Save Rs. {savings.toFixed(2)}
+                Save Rs. {savings.toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <div className="sm:w-36">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[190px_minmax(0,1fr)] sm:items-stretch">
+        <div className="min-w-0">
           <QuantityInputLarge
             value={quantity}
             onChange={(value) => setQuantity(value)}
@@ -88,12 +88,12 @@ export const ProductControls = ({ product }: { product: Product }) => {
             step={derivedProduct.stepQuantity}
             unit={derivedProduct.isSoldAsUnit ? "" : derivedProduct.measurementUnit}
             isDiscreteItem={derivedProduct.isSoldAsUnit}
-            className="h-12 w-full rounded-lg"
+            className="h-12 w-full"
             key={`${selectedOptionIndex}-${effectiveUnit}-${effectiveBaseQty}`}
           />
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <AddToBagButton product={derivedProduct} quantity={validQuantity} />
         </div>
       </div>
