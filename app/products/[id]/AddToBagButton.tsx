@@ -89,50 +89,57 @@ export default function AddToBagButton(props: IAddToBagButtonProps) {
     selectBag(bagId);
   };
 
+  const canChooseBag = Boolean(user) && !authLoading && !product.isOutOfStock;
+  const validQuantity = Number.isSafeInteger(quantity) && quantity >= 1 && quantity <= 10000;
+
   return (
     <>
-      <div className="w-full flex">
+      <div className="flex w-full min-w-0">
         <Button
-          className="h-12 w-full rounded-l-lg rounded-r-none bg-brand-leaf px-4 text-xs font-bold uppercase leading-tight text-brand-ink hover:bg-brand-leaf/85"
-          disabled={product.isOutOfStock || authLoading || loading || !Number.isFinite(quantity) || quantity <= 0}
+          className={`h-12 min-w-0 flex-1 rounded-lg bg-brand-leaf px-4 text-xs font-bold uppercase leading-tight text-brand-ink hover:bg-brand-leaf/85 ${canChooseBag ? "rounded-r-none" : ""}`}
+          disabled={product.isOutOfStock || authLoading || loading || !validQuantity}
           onClick={handleAddToBag}
         >
-          <span className="line-clamp-2">
-            {product.isOutOfStock ? "Currently unavailable" : !user ? "Sign in to add" : selectedBag ? `Add to ${selectedBag.name}` : "Create a bag to add"}
+          <span className="line-clamp-2 text-center">
+            {product.isOutOfStock ? "Currently unavailable" : !user ? "Sign in to add to bag" : selectedBag ? `Add to ${selectedBag.name}` : "Create a bag to add"}
           </span>
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className="rounded-r-lg border-l border-foreground/20 bg-brand-amber px-4 text-foreground transition-colors hover:bg-brand-amber/85"
-            disabled={loading || !user || product.isOutOfStock}
-            aria-label="Choose shopping bag"
-          >
-            <ChevronDown className="h-5 w-5" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Select Bag</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={selectedBagId}
-              onValueChange={handleBagSelect}
+        {canChooseBag && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-r-lg border border-l-0 border-brand-green-deep/20 bg-brand-cream text-brand-green-deep transition-colors hover:bg-white disabled:opacity-50"
+              disabled={loading || !validQuantity}
+              aria-label="Choose shopping bag"
             >
-              {bags.map((bag) => (
-                <DropdownMenuRadioItem key={bag.id} value={bag.id}>
-                  {bag.name} ({bag.items?.length || 0} items)
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <Button
-              size="sm"
-              className="w-full text-primary px-2 justify-start"
-              variant={"ghost"}
-              onClick={() => { setAddAfterCreate(true); setShowCreateDialog(true); }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create New Bag & Add
-            </Button>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <ChevronDown className="h-5 w-5" aria-hidden="true" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Select shopping bag</DropdownMenuLabel>
+              {bags.length > 0 && (
+                <>
+                  <DropdownMenuRadioGroup value={selectedBagId} onValueChange={handleBagSelect}>
+                    {bags.map((bag) => (
+                      <DropdownMenuRadioItem key={bag.id} value={bag.id}>
+                        {bag.name} ({bag.items?.length || 0} items)
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                className="w-full justify-start px-2 text-primary"
+                variant="ghost"
+                onClick={() => { setAddAfterCreate(true); setShowCreateDialog(true); }}
+              >
+                <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                Create new bag & add
+              </Button>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
