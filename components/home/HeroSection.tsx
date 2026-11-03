@@ -1,15 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import Wordmark from "@/components/brand/Wordmark";
 
 /**
- * Full-bleed, static FreshPick campaign masthead.
- * Overlay copy and brand artwork remain real DOM/SVG, never baked into the photo.
- * Photo attribution: docs/HOMEPAGE_HERO.md.
+ * A static, subscription-first FreshPick campaign masthead.
+ *
+ * The locally hosted, original produce-box illustration is deliberately
+ * separate from the heading and links, keeping everything accessible,
+ * responsive, and editable. See docs/HOMEPAGE_HERO.md for asset provenance.
  */
-const MARKET_HERO_PHOTO =
-  "https://images.unsplash.com/photo-1595275522477-c3ce3ca9714b?auto=format&fit=crop&w=1920&q=86";
+const SUBSCRIPTION_BOX_PHOTO = "/images/home/market-produce-box.webp";
 
 export default function HeroSection() {
   return (
@@ -17,80 +17,55 @@ export default function HeroSection() {
       aria-labelledby="home-hero-heading"
       className="relative isolate overflow-hidden bg-brand-green-deep text-white"
     >
-      <div className="absolute inset-0">
-        <Image
-          src={MARKET_HERO_PHOTO}
-          alt="Fresh bread, milk, eggs, fruit and other everyday foods arranged on a market table"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[63%_center] sm:object-center"
-        />
-      </div>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#092318]/95 via-[#102e1e]/80 to-[#102e1e]/25 lg:from-[#092318]/95 lg:via-[#102e1e]/75 lg:to-[#102e1e]/10"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#061c11]/75 via-transparent to-transparent"
+      <Image
+        src={SUBSCRIPTION_BOX_PHOTO}
+        alt="An illustrated kraft produce box filled with fresh vegetables and greens"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-[59%_center] sm:object-center"
       />
 
-      <div className="editorial-wrap relative z-10 flex min-h-[590px] flex-col justify-center py-20 sm:min-h-[620px] lg:min-h-[660px] lg:py-24 xl:min-h-[700px]">
-        <div className="max-w-[750px]">
-          <p className="mb-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.18em] text-white/85 sm:mb-7 sm:text-xs">
-            <span aria-hidden="true" className="h-[2px] w-8 bg-brand-amber" />
-            FreshPick · Sri Lanka&apos;s online food market
+      {/* Keep large live text readable without hiding the produce box. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[#081b11]/50 sm:bg-[#081b11]/40"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#081b11]/75 via-transparent to-[#081b11]/15"
+      />
+
+      <div className="editorial-wrap relative z-10 flex min-h-[580px] flex-col items-center justify-center py-20 text-center sm:min-h-[650px] lg:min-h-[730px] lg:py-28">
+        <div className="mx-auto w-full max-w-[1050px]">
+          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-white/95 sm:text-xs">
+            FreshPick · Recurring grocery boxes
           </p>
           <h1
             id="home-hero-heading"
-            className="max-w-[13ch] font-heading text-[clamp(3rem,6.8vw,6.75rem)] font-semibold leading-[1.02] tracking-[-.06em] text-white"
+            className="mx-auto mt-5 max-w-[17ch] font-heading text-[clamp(3.2rem,8vw,7.5rem)] font-bold uppercase leading-[.95] tracking-[-.065em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.3)]"
           >
-            A whole market.
-            <span
-              className="mt-2 block font-normal italic tracking-[-.06em] text-[#e0ecd6]"
-              style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
-            >
-              For every table.
-            </span>
+            The FreshPick Box.
           </h1>
-          <p className="mt-6 max-w-[49ch] text-base leading-[1.8] text-white/90 sm:mt-8 sm:text-lg">
-            Fresh produce, bakery, dairy, pantry essentials, ready meals and food from local makers.
-            All in one easy-to-shop market.
+          <p className="mx-auto mt-6 max-w-[43ch] text-base leading-7 text-white/95 sm:mt-8 sm:text-lg sm:leading-8">
+            Fresh food for your routine. Explore our available grocery boxes
+            and choose a delivery schedule that works for you.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3 sm:mt-10 sm:gap-4">
+          <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:mt-10 sm:flex-row sm:gap-6">
+            <Link
+              href="/subscriptions"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-brand-cream bg-brand-cream px-7 py-3 text-xs font-bold uppercase tracking-[.11em] text-brand-green-deep transition-colors hover:border-white hover:bg-white sm:w-auto"
+            >
+              Explore subscription boxes
+              <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            </Link>
             <Link
               href="/products"
-              className="inline-flex min-h-12 items-center justify-center gap-3 bg-brand-cream px-7 py-3 text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep transition-colors hover:bg-white"
+              className="inline-flex min-h-12 items-center justify-center gap-2 border-b border-white/75 px-2 text-xs font-bold uppercase tracking-[.11em] text-white transition-colors hover:border-white"
             >
-              Shop the market <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              Shop the market
+              <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             </Link>
-            <Link
-              href="/how-it-works"
-              className="inline-flex min-h-12 items-center justify-center gap-3 border border-white/75 px-7 py-3 text-xs font-bold uppercase tracking-[.1em] text-white transition-colors hover:bg-white hover:text-brand-green-deep"
-            >
-              How it works <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10">
-        <div className="editorial-wrap flex items-end justify-between gap-5 pb-6 sm:pb-8">
-          <Link
-            href="/categories"
-            className="pointer-events-auto inline-flex min-h-11 items-center gap-2 border-b border-white/65 text-[11px] font-semibold uppercase tracking-[.15em] text-white hover:border-white"
-          >
-            Explore categories <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-          <div
-            aria-label="FreshPick branded food market"
-            className="hidden shrink-0 items-center gap-3 bg-brand-cream/95 px-5 py-3 text-brand-green-deep shadow-lg sm:flex"
-          >
-            <Wordmark className="text-[28px]" />
-            <span className="border-l border-brand-green/20 pl-3 text-[10px] font-semibold uppercase leading-4 tracking-[.13em]">
-              Food for<br />every table
-            </span>
           </div>
         </div>
       </div>
