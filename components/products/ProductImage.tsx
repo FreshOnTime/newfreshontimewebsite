@@ -23,6 +23,27 @@ function isUsableImageSource(src: string) {
 }
 
 /**
+ * The Next.js optimizer permits only the configured remote hosts/paths.
+ * Other HTTP image URLs (including signed Supabase URLs) should load directly;
+ * the onError fallback still handles missing/expired files.
+ */
+function needsUnoptimizedImage(src: string) {
+  if (src.startsWith("data:")) return true;
+  if (!/^https?:\/\//i.test(src)) return false;
+  try {
+    const url = new URL(src);
+    if (url.protocol !== "https:") return true;
+    const host = url.hostname;
+    if (host === "images.unsplash.com" || host === "plus.unsplash.com") return false;
+    if (host === "lh3.googleusercontent.com" || host.endsWith(".googleusercontent.com")) return false;
+    if (host.endsWith(".supabase.co") && url.pathname.startsWith("/storage/v1/object/public/")) return false;
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+/**
  * A real product image when supplied, or a restrained fallback when the
  * catalogue has no photo or a remote photo fails to load.
  *
@@ -55,6 +76,7 @@ export default function ProductImage({
           fill
           priority={priority}
           sizes={sizes}
+          unoptimized={needsUnoptimizedImage(normalizedSrc)}
           onError={() => setFailedSrc(normalizedSrc)}
           className={isDetail ? "object-contain p-5 sm:p-8" : "object-contain p-2 sm:p-3"}
         />
