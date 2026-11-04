@@ -100,9 +100,10 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     console.log('[DEBUG] /api/suppliers/upload - File object type check:', typeof file);
 
     // Determine upload directory based on environment
-    // In serverless environments (Netlify, Vercel), use /tmp directory which is writable
-    // In containerized environments, use public/uploads
-    const isServerless = process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+    // In hosted production environments (including Kubernetes), /tmp is temporary;
+    // the database is the durable copy. Only local development uses public/uploads.
+    // Pods are ephemeral too: keep the full supplier file in PostgreSQL, not a pod filesystem.
+    const isServerless = process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production';
     let uploadsDir: string;
     let shouldStoreInDB = false;
 
