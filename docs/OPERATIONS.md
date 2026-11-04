@@ -288,3 +288,24 @@ SEO includes canonical metadata, article/breadcrumb markup, indexable HTML,
 internal links and sitemap entries. No special AI-search markup or ranking promise
 is implied. Useful, accurate, crawlable content follows Google's guidance:
 https://developers.google.com/search/docs/appearance/ai-features
+
+
+## OpenChoreo and Kubernetes migration notes (2026-11-04)
+
+The Docker production target enables Next.js standalone output independently of
+Netlify. The default image runs `node server.js` on port 3000. A distinct
+`migrate` target provides the Prisma CLI for a reviewed, operator-controlled
+migration job before deploying the new app. The `recurring` and `outbox`
+targets contain a one-shot worker CLI using the existing business services.
+
+Kubernetes pod filesystems are not durable: production supplier catalogue uploads
+persist their contents in `SupplierUpload.fileData` instead of relying on
+`public/uploads`. Product/category/blog images require configured Supabase
+Storage. Existing disk-backed supplier upload rows from earlier deployments must
+be reviewed/migrated before removing the original filesystem. Keep database
+backups and data retention policies proportional to supplier file size.
+
+Refer to [the OpenChoreo deployment guide](../deploy/openchoreo/README.md)
+for Docker build commands, environment/secret requirements, scheduled-task
+configuration, safe Netlify-to-Kubernetes handoff and staging verification.
+No live application deployment has been made by this change.

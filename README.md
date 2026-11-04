@@ -103,6 +103,10 @@ Start with the [complete documentation index](docs/README.md).
 | [Product and agentic commerce roadmap](docs/ROADMAP.md) | Phased AI shopping, replenishment, supplier/operations copilots, safety gates and implementation tasks (**planned, not shipped**) |
 | [Public MCP](docs/mcp.md) | Read-only catalog tools and remote client connection |
 
+## Container and OpenChoreo deployment
+
+The Dockerfile has separate image targets for the Next.js web app, recurring scheduled jobs, email-outbox scheduled jobs, and a one-off Prisma migration runner. Netlify deployment is unchanged. See [FreshPick on OpenChoreo](deploy/openchoreo/README.md) for container build targets, configuration, migration order, scheduling and staging acceptance checks. Never run Netlify and OpenChoreo schedulers concurrently against the same database.
+
 ## Local development
 
 Use Node.js 20.17.0 (the current CI runtime), npm and a dedicated PostgreSQL database.
