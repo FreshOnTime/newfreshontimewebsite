@@ -60,3 +60,6 @@ CMD ["node", "dist/jobs/run.cjs", "recurring"]
 
 FROM jobs AS outbox
 CMD ["node", "dist/jobs/run.cjs", "outbox"]
+
+# Keep plain `docker build .` backward-compatible with the storefront image.
+FROM runner AS production
