@@ -206,12 +206,16 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { mongoId
     const filename = `${uniqueSuffix}-${safeOriginalName}`;
     const destPath = path.join(uploadsDir, filename);
 
-    try {
-      await fs.promises.writeFile(destPath, buffer);
-      console.log('[DEBUG] /api/suppliers/upload - File written to:', destPath);
-    } catch (writeErr) {
-      console.error('[ERROR] /api/suppliers/upload - Failed to write file:', writeErr);
-      throw new Error('Failed to write file to disk: ' + (writeErr instanceof Error ? writeErr.message : String(writeErr)));
+    // Hosted deployments persist the buffer directly in PostgreSQL. Avoid
+    // leaving redundant copies in /tmp for every supplier upload.
+    if (!shouldStoreInDB) {
+      try {
+        await fs.promises.writeFile(destPath, buffer);
+        console.log('[DEBUG] /api/suppliers/upload - File written to:', destPath);
+      } catch (writeErr) {
+        console.error('[ERROR] /api/suppliers/upload - Failed to write file:', writeErr);
+        throw new Error('Failed to write file to disk: ' + (writeErr instanceof Error ? writeErr.message : String(writeErr)));
+      }
     }
 
     // parse preview depending on file type
