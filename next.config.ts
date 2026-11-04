@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable the output expected by the Dockerfile without changing Netlify's build mode.
+  output: process.env.FRESHPICK_STANDALONE === 'true' ? 'standalone' : undefined,
   poweredByHeader: false,
   async redirects() {
     return [
