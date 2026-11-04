@@ -43,7 +43,7 @@ RUN ./node_modules/.bin/prisma generate
 COPY lib ./lib
 COPY scripts/jobs ./scripts/jobs
 RUN node scripts/jobs/build.cjs
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev --legacy-peer-deps
 
 FROM node:20-alpine AS jobs
 RUN apk add --no-cache openssl
