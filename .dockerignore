@@ -1,0 +1,17 @@
+# Never bake local credentials, build products or git history into images.
+.git
+.github
+node_modules
+.next
+out
+dist
+coverage
+test-results
+playwright-report
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
