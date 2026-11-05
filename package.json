@@ -24,7 +24,8 @@
     "db:studio": "prisma studio",
     "test:unit": "jest --testPathIgnorePatterns=__tests__/smoke",
     "test:checkout-db": "node scripts/verify-checkout-integrity.cjs",
-    "check:production": "node scripts/check-platform-readiness.cjs"
+    "check:production": "node scripts/check-platform-readiness.cjs",
+    "catalog:market:import": "node -r esbuild-register scripts/import-market-catalog.ts"
   },
   "prisma": {
     "seed": "node -r esbuild-register prisma/seed.ts"
