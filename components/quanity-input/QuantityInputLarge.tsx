@@ -15,13 +15,11 @@ interface QuantityInputLargeProps {
 }
 
 export default function QuantityInputLarge(props: QuantityInputLargeProps) {
-  const { className } = props;
-
   return (
     <div
       className={cn(
-        "flex items-center max-w-44 space-x-3 border border-primary rounded-md overflow-hidden",
-        className
+        "flex w-full min-w-0 items-center overflow-hidden rounded-lg border border-brand-green-deep/45 bg-background",
+        props.className
       )}
     >
       <QuantityInputBase {...props} />

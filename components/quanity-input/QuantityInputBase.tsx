@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Minus, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface QuantityInputBaseProps {
   value: number | string;
@@ -25,79 +25,64 @@ export default function QuantityInputBase({
   isDiscreteItem,
 }: QuantityInputBaseProps) {
   const [quantity, setQuantity] = useState<string | number>(value);
-  const validQuantity = parseFloat(quantity as string) || 0;
 
-  //   const handleToasts = (value: number | undefined) => {
-  //     if (value === undefined) {
-  //       toast.error(`Invalid quantity`);
-  //     } else if (value < min) {
-  //       toast.error(`Invalid quantity`, {
-  //         description: `Minimum order quantity is ${min}`,
-  //       });
-  //     } else
-  //     }
-  //   };
+  // Keep the input aligned with the parent when the selected size changes.
+  useEffect(() => {
+    setQuantity(value);
+  }, [value]);
 
-  const adjustQuantity = (value: number) => {
-    if (isDiscreteItem) {
-      const rounded = Math.round(value);
-      const bounded = Math.min(Math.max(rounded, min), max);
-      setQuantity(bounded);
-      onChange(bounded);
-    } else {
-      const rounded = Math.round(value / step) * step;
-      const bounded = Math.min(Math.max(rounded, min), max);
-      setQuantity(Number(bounded.toFixed(2)));
-      onChange(Number(bounded.toFixed(2)));
-    }
+  const validQuantity = Number(quantity) || 0;
+
+  const adjustQuantity = (next: number) => {
+    const rounded = isDiscreteItem
+      ? Math.round(next)
+      : Math.round(next / step) * step;
+    const bounded = Math.min(Math.max(rounded, min), max);
+    const normalized = isDiscreteItem ? bounded : Number(bounded.toFixed(2));
+    setQuantity(normalized);
+    onChange(normalized);
   };
 
-  const handleInputChange = (value: string) => {
-    if (value === "") {
+  const handleInputChange = (next: string) => {
+    if (next === "") {
       setQuantity("");
-    } else if (!isNaN(Number(value)) && Number(value) >= 0) {
-      setQuantity(value);
+    } else if (!Number.isNaN(Number(next)) && Number(next) >= 0) {
+      setQuantity(next);
     }
   };
 
   const handleInputBlur = () => {
-    const value = Number(quantity);
+    const next = Number(quantity);
 
-    if (value < min) {
-      toast.error(`Invalid quantity`, {
-        description: `Minimum order quantity is ${min}${unit}`,
-      });
-    } else if (value > max) {
-      toast.error(`Invalid quantity`, {
-        description: `Maximum order quantity is ${max}${unit}`,
+    if (quantity === "" || !Number.isFinite(next)) {
+      adjustQuantity(min);
+      return;
+    }
+    if (next < min || next > max) {
+      toast.error("Invalid quantity", {
+        description: next < min
+          ? `Minimum order quantity is ${min}${unit}`
+          : `Maximum order quantity is ${max}${unit}`,
       });
     }
-
-    if (quantity === "" || isNaN(value)) {
-      setQuantity(min);
-      onChange(min);
-    } else {
-      adjustQuantity(value);
-    }
+    adjustQuantity(next);
   };
 
   return (
-    <div className="flex items-center gap-1 flex-1">
+    <div className="flex min-w-0 w-full flex-1 items-center justify-between gap-0">
       <Button
+        type="button"
         variant="ghost"
         size="icon"
+        className="h-11 w-11 shrink-0 rounded-none"
         aria-label="Decrease quantity"
-        onClick={() =>
-          adjustQuantity(
-            isDiscreteItem ? validQuantity - 1 : validQuantity - step
-          )
-        }
+        onClick={() => adjustQuantity(isDiscreteItem ? validQuantity - 1 : validQuantity - step)}
         disabled={validQuantity <= min}
       >
-        <Minus className="h-4 w-4" />
+        <Minus className="h-4 w-4" aria-hidden="true" />
       </Button>
 
-      <label className="flex items-center gap-1 flex-1">
+      <label className="flex min-w-0 flex-1 items-center justify-center gap-1">
         <Input
           type="text"
           inputMode={isDiscreteItem ? "numeric" : "decimal"}
@@ -105,33 +90,26 @@ export default function QuantityInputBase({
           value={quantity}
           onChange={(e) => handleInputChange(e.target.value)}
           onBlur={handleInputBlur}
-          step={step}
-          min={min}
-          max={max}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur();
-            }
+            if (e.key === "Enter") e.currentTarget.blur();
           }}
-          className="text-right w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none px-0"
+          className="h-11 min-w-0 w-full border-none bg-transparent px-0 text-center font-semibold tabular-nums shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
-        <span className="text-sm text-muted-foreground">
-          {unit !== "ea" && unit}
-        </span>
+        {unit !== "ea" && unit !== "" && (
+          <span className="shrink-0 pr-2 text-xs text-muted-foreground">{unit}</span>
+        )}
       </label>
 
       <Button
+        type="button"
         variant="ghost"
         size="icon"
+        className="h-11 w-11 shrink-0 rounded-none"
         aria-label="Increase quantity"
-        onClick={() =>
-          adjustQuantity(
-            isDiscreteItem ? validQuantity + 1 : validQuantity + step
-          )
-        }
+        onClick={() => adjustQuantity(isDiscreteItem ? validQuantity + 1 : validQuantity + step)}
         disabled={validQuantity >= max}
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   );

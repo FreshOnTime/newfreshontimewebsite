@@ -90,8 +90,8 @@ export default async function ProductPage({
           {product.category?.slug && <Link href={`/categories/${product.category.slug}`} className="border-l border-border pl-4 hover:text-brand-green">{product.category.name}</Link>}
         </nav>
         <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-brand-green/10 bg-secondary [&_img]:mix-blend-multiply lg:sticky lg:top-40">
-            <ProductImage src={product.image?.url || ""} alt={product.name} priority sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 576px" />
+          <div className="relative aspect-square overflow-hidden rounded-2xl border border-brand-green/10 bg-secondary lg:sticky lg:top-28">
+            <ProductImage src={product.image?.url || ""} alt={product.name} variant="detail" priority sizes="(max-width: 1023px) 100vw, (max-width: 1280px) 50vw, 576px" />
             {showDiscount && <span className="absolute right-4 top-4 bg-brand-amber px-3 py-1.5 text-xs font-semibold text-foreground">{product.discountPercentage}% off</span>}
           </div>
           <div className="lg:py-4">
