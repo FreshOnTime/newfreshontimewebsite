@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { MCP_SCOPES, oauthProvider } from '@/lib/mcp/oauth';
+import { MCP_SCOPES, oauthProvider, oauthConfigurationStatus } from '@/lib/mcp/oauth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,7 +7,13 @@ export const dynamic = 'force-dynamic';
 // Do not run a home-grown authorization server inside Next.js.
 export async function GET() {
   const provider = oauthProvider();
-  if (!provider) return NextResponse.json({ error: 'OAuth account linking is not configured' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+  if (!provider) {
+    const status = oauthConfigurationStatus();
+    return NextResponse.json({
+      error: status === 'disabled' ? 'OAuth account linking is not configured' : 'OAuth configuration is incomplete or invalid',
+      code: status === 'disabled' ? 'OAUTH_NOT_CONFIGURED' : 'OAUTH_CONFIGURATION_INVALID',
+    }, { status: status === 'disabled' ? 404 : 503, headers: { 'Cache-Control': 'no-store' } });
+  }
   return NextResponse.json({
     resource: provider.resource,
     authorization_servers: [provider.issuer],

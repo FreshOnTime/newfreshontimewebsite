@@ -85,6 +85,24 @@ it('advertises customer tools to an anonymous OAuth client but challenges their 
   expect(db.bag.create).not.toHaveBeenCalled();
 });
 
+it('rejects broken OAuth settings without breaking anonymous catalog discovery', async () => {
+  const saved = process.env.MCP_OAUTH_ISSUER;
+  process.env.MCP_OAUTH_ISSUER = 'http://invalid-issuer.example.test';
+  try {
+    const metadata = await resourceMetadata();
+    expect(metadata.status).toBe(503);
+    expect(await metadata.json()).toMatchObject({ code: 'OAUTH_CONFIGURATION_INVALID' });
+    const listed = await rpc('tools/list');
+    expect(listed.result.tools.map((t: { name: string }) => t.name)).toEqual(
+      expect.arrayContaining(['search_products', 'list_subscription_plans']),
+    );
+    expect(listed.result.tools.map((t: { name: string }) => t.name)).not.toContain('create_bag');
+  } finally {
+    if (saved === undefined) delete process.env.MCP_OAUTH_ISSUER;
+    else process.env.MCP_OAUTH_ISSUER = saved;
+  }
+});
+
 it('verifies OAuth signature, issuer, audience, scope and linked customer identity', async () => {
   const result = await authenticateOAuthAgent(sign('bags:read bags:write'));
   expect(result).toEqual({ userId: 'customer-1', scopes: ['bags:read', 'bags:write'] });
