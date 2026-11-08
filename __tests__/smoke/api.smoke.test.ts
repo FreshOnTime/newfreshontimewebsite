@@ -31,8 +31,11 @@ describe('Smoke Tests - Critical API Endpoints', () => {
       );
     }, timeout);
 
-    it('serves OAuth resource metadata or an explicit configuration response', async () => {
-      const response = await fetch(`${BASE_URL}/.well-known/oauth-protected-resource`);
+    it.each([
+      '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-protected-resource/api/mcp',
+    ])('serves OAuth discovery at %s without relying on dot-prefixed bundles', async (path) => {
+      const response = await fetch(`${BASE_URL}${path}`);
       // 404 = not configured; 503 = malformed settings; 200 = correctly configured.
       expect([200, 404]).toContain(response.status);
       const body = await response.json();
