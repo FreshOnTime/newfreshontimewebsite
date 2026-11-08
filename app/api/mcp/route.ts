@@ -71,18 +71,26 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
   }
   const origin = new URL(request.url).origin;
-  const server = createFreshPickMcpServer(agent ? { userId: agent.userId, origin, scopes: agent.scopes } : undefined, origin);
   // A new server and transport per request: no session affinity or customer state.
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined, enableJsonResponse: true, maxRequestBodySize: 65536,
-  });
+  // Keep initialization in the same catch boundary as request processing: a bad
+  // deployment must never leak a Next.js HTML 500 body to an MCP JSON-RPC client.
+  let server: ReturnType<typeof createFreshPickMcpServer> | undefined;
   try {
+    server = createFreshPickMcpServer(agent ? { userId: agent.userId, origin, scopes: agent.scopes } : undefined, origin);
+    const transport = new WebStandardStreamableHTTPServerTransport({
+      sessionIdGenerator: undefined, enableJsonResponse: true, maxRequestBodySize: 65536,
+    });
     await server.connect(transport);
     return responseHeaders(await transport.handleRequest(request), request);
-  } catch {
+  } catch (error) {
+    // Logs are server-side only. Do not print request headers or Bearer tokens.
+    console.error('MCP handler failed:', error);
     return responseHeaders(protocolError(500, 'FreshPick could not process this MCP request.'), request);
   } finally {
-    await server.close();
+    if (server) {
+      try { await server.close(); }
+      catch (error) { console.error('MCP shutdown failed:', error); }
+    }
   }
 }
 
