@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   // Enable the output expected by the Dockerfile without changing Netlify's build mode.
   output: process.env.FRESHPICK_STANDALONE === 'true' ? 'standalone' : undefined,
   poweredByHeader: false,
+  // Netlify's pinned Next.js adapter omits dot-prefixed app directories from its
+  // serverless bundle. Keep both standard OAuth URLs publicly accessible but serve
+  // them from a normal API route (which is reliably included in the function).
+  async rewrites() {
+    return [
+      { source: '/.well-known/oauth-protected-resource', destination: '/api/mcp/oauth-resource-metadata' },
+      { source: '/.well-known/oauth-protected-resource/api/mcp', destination: '/api/mcp/oauth-resource-metadata' },
+    ];
+  },
   async redirects() {
     return [
       { source: '/recipes/:path*', destination: '/products', permanent: true },
