@@ -38,7 +38,7 @@ it('does not let a customer login cookie authenticate a remote MCP agent', async
 
 it('authenticates only a hashed, unexpired token belonging to a non-banned user', async () => {
   db.agentAccessToken.findUnique.mockResolvedValue({ userId: 'customer-a', expiresAt: new Date(Date.now() + 60000), user: { isBanned: false } });
-  expect(await authenticateMcpAgent(new Request('https://freshpick.lk/api/mcp', { headers: { Authorization: 'Bearer ' + secret } }))).toEqual({ userId: 'customer-a' });
+  expect(await authenticateMcpAgent(new Request('https://freshpick.lk/api/mcp', { headers: { Authorization: 'Bearer ' + secret } }))).toEqual({ userId: 'customer-a', scopes: expect.arrayContaining(['bags:write', 'orders:read']) });
   expect(db.agentAccessToken.findUnique).toHaveBeenCalledWith(expect.objectContaining({
     where: { tokenHash: createHash('sha256').update(secret).digest('hex') },
   }));
