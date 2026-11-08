@@ -1,5 +1,5 @@
 import 'server-only';
-import { createHash, createPublicKey } from 'node:crypto';
+import { createHash, createPublicKey, type JsonWebKey as NodeJsonWebKey } from 'node:crypto';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import prisma from '@/lib/prisma';
 
@@ -68,7 +68,7 @@ async function providerKey(discovery: Discovery, token: string) {
   }
   const key = jwksCache.keys.find(k => k.kid === decoded.header.kid && k.kty === 'RSA' && (k.alg == null || k.alg === 'RS256') && (k.use == null || k.use === 'sig'));
   if (!key) throw new Error('Unknown OAuth signing key.');
-  return createPublicKey({ key: key as JsonWebKey, format: 'jwk' });
+  return createPublicKey({ key: key as NodeJsonWebKey, format: 'jwk' });
 }
 
 export async function verifyProviderToken(token: string, audience: string): Promise<JwtPayload> {
