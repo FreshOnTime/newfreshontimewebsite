@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 const mockPrisma = {
   product: { findFirst: jest.fn(), findMany: jest.fn() },
   category: { findMany: jest.fn() },
+  subscriptionPlan: { findMany: jest.fn() },
   bag: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), updateMany: jest.fn(), update: jest.fn() },
   bagItem: { findUnique: jest.fn(), findMany: jest.fn(), upsert: jest.fn(), deleteMany: jest.fn() },
   wishlistItem: { findMany: jest.fn(), upsert: jest.fn(), deleteMany: jest.fn() },
@@ -45,7 +46,7 @@ async function tool(name: string, args: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockAuthenticate.mockResolvedValue({ userId: 'customer-1' });
+  mockAuthenticate.mockResolvedValue({ userId: 'customer-1', scopes: ['catalog:read', 'bags:read', 'bags:write', 'wishlist:read', 'wishlist:write', 'orders:read'] });
   mockPrisma.bag.findFirst.mockResolvedValue(bag());
   mockPrisma.bag.findMany.mockResolvedValue([bag()]);
   mockPrisma.bag.update.mockResolvedValue(bag());
@@ -60,10 +61,24 @@ beforeEach(() => {
   mockQuote.mockResolvedValue({ quote: { items: [{ name: 'Tomatoes', price: 90, quantity: 2, total: 180 }], subtotal: 180, shipping: 0, tax: 0, total: 180, fingerprint: 'abc' } });
 });
 
-it('keeps anonymous MCP limited to the original three public catalog tools', async () => {
+it('keeps anonymous MCP limited to the public read-only catalog and subscription plan tools', async () => {
   const { body } = await tools(false);
-  expect(body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'search_products']);
+  expect(body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'list_subscription_plans', 'search_products']);
   expect(mockAuthenticate).not.toHaveBeenCalled();
+});
+
+it('returns subscription plan checkout links but does not subscribe the customer', async () => {
+  mockPrisma.subscriptionPlan.findMany.mockResolvedValue([{
+    id: 'plan-1', name: 'Weekly vegetables', slug: 'weekly-veggies',
+    description: 'Seasonal produce', shortDescription: 'Vegetable box',
+    price: 1800, frequency: 'weekly', features: ['Fresh vegetables'],
+    maxSubscribers: null, currentSubscribers: 0,
+  }]);
+  const { body } = await tool('list_subscription_plans');
+  const plan = body.result.structuredContent.plans[0];
+  expect(plan.checkoutUrl).toBe('https://freshpick.lk/checkout?plan=weekly-veggies');
+  expect(plan.subscriptionCreated).toBe(false);
+  expect(plan.requiresCustomerAction).toBe(true);
 });
 
 it('rejects an invalid agent credential without exposing account tools', async () => {
@@ -104,6 +119,13 @@ it('rejects additions exceeding stock', async () => {
   const { body } = await tool('add_to_bag', { bagId: id, productId: 'tomato', quantity: 4 });
   expect(body.result.isError).toBe(true);
   expect(mockPrisma.bagItem.upsert).not.toHaveBeenCalled();
+});
+
+it('does not allow reordering without separate order-history permission', async () => {
+  mockAuthenticate.mockResolvedValue({ userId: 'customer-1', scopes: ['bags:write'] });
+  const { body } = await tool('prepare_reorder_bag', { orderId: otherId });
+  expect(body.result.isError).toBe(true);
+  expect(mockPrisma.order.findFirst).not.toHaveBeenCalled();
 });
 
 it('quotes and hands off checkout without creating an order or payment', async () => {
