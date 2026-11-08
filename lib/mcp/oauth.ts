@@ -19,12 +19,33 @@ function httpsUrl(value: string): URL {
   return url;
 }
 
+/** Invalid configuration must never take down anonymous MCP catalog tools. */
+export function oauthConfigurationStatus(): 'disabled' | 'incomplete' | 'invalid' | 'ready' {
+  const values = [
+    process.env.MCP_OAUTH_ISSUER, process.env.MCP_OAUTH_LINK_CLIENT_ID,
+    process.env.MCP_OAUTH_LINK_CLIENT_SECRET, process.env.MCP_OAUTH_RESOURCE,
+  ].map(value => value?.trim() || '');
+  if (values.every(value => !value)) return 'disabled';
+  if (values.some(value => !value)) return 'incomplete';
+  try {
+    const issuer = httpsUrl(values[0]);
+    const resource = httpsUrl(values[3]);
+    if (issuer.search || resource.search || !resource.pathname.endsWith('/api/mcp')) return 'invalid';
+    return 'ready';
+  } catch {
+    return 'invalid';
+  }
+}
+
 export function oauthProvider(): ProviderConfig | null {
-  const { MCP_OAUTH_ISSUER, MCP_OAUTH_LINK_CLIENT_ID, MCP_OAUTH_LINK_CLIENT_SECRET, MCP_OAUTH_RESOURCE } = process.env;
-  if (!MCP_OAUTH_ISSUER || !MCP_OAUTH_LINK_CLIENT_ID || !MCP_OAUTH_LINK_CLIENT_SECRET || !MCP_OAUTH_RESOURCE) return null;
-  const issuer = httpsUrl(MCP_OAUTH_ISSUER).toString();
-  const resource = httpsUrl(MCP_OAUTH_RESOURCE).toString();
-  return { issuer, resource, clientId: MCP_OAUTH_LINK_CLIENT_ID, clientSecret: MCP_OAUTH_LINK_CLIENT_SECRET };
+  if (oauthConfigurationStatus() !== 'ready') return null;
+  // Presence and URL shape are validated above, without printing credentials.
+  return {
+    issuer: httpsUrl(process.env.MCP_OAUTH_ISSUER!).toString(),
+    resource: httpsUrl(process.env.MCP_OAUTH_RESOURCE!).toString(),
+    clientId: process.env.MCP_OAUTH_LINK_CLIENT_ID!.trim(),
+    clientSecret: process.env.MCP_OAUTH_LINK_CLIENT_SECRET!,
+  };
 }
 
 export function oauthMetadataUrl(provider: ProviderConfig) {
