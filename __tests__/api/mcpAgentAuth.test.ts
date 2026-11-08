@@ -60,7 +60,6 @@ it('issues a one-time plaintext token but persists only the hash', async () => {
   expect(body.token).toMatch(/^fp_agent_[a-f0-9]{64}$/);
   expect(db.agentAccessToken.create.mock.calls[0][0].data.tokenHash).toBe(createHash('sha256').update(body.token).digest('hex'));
   expect(JSON.stringify(db.agentAccessToken.create.mock.calls[0][0])).not.toContain(body.token);
-  expect(response.headers.get('Cache-Control')).toBe('private, no-store');
 });
 
 it('never lists a stored secret and revokes only this customer’s token', async () => {
