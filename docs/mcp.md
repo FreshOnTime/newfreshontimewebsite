@@ -83,6 +83,30 @@ The new agent-key table requires running the included Prisma migration before th
 - Requests are capped at 64 KiB. Origin and host validation applies; extra production origins go in `MCP_ALLOWED_ORIGINS`. The current 60 req/min/IP limiter is **per warm instance**; deploy a shared rate limiter and monitor key creation and use for high-volume production.
 - Credential creation/revocation requires the customer's normal login cookie and a matching same-origin browser request. Keys are never returned by GET after creation.
 
+## Netlify OAuth discovery compatibility
+
+On November 8, 2026 Netlify function logs showed `MODULE_NOT_FOUND` for
+`/var/task/.next/server/app/.well-known/oauth-protected-resource/route.js`.
+The repository's lockfile pins `@netlify/plugin-nextjs` to 5.13.0, whose
+OpenNext bundling excludes dot-prefixed route directories. The upstream fix
+landed in 5.13.2. To avoid relying on the adapter version, the public
+OAuth metadata URLs now rewrite to the normal packaged Next.js route
+`/api/mcp/oauth-resource-metadata`:
+
+- `/.well-known/oauth-protected-resource`
+- `/.well-known/oauth-protected-resource/api/mcp`
+
+Both must return the same OAuth metadata (HTTP 200 when OAuth is
+configured, HTTP 404 when intentionally disabled). A successful
+`GET /api/mcp` will **not** return tools: this is a stateless MCP server
+and intentionally returns HTTP 405 with a JSON-RPC error. To list tools,
+POST an MCP JSON-RPC `tools/list` request instead.
+
+After merging, publish a **new Netlify production deploy** and test
+both public discovery URLs and POST `/api/mcp`. If an old
+`MODULE_NOT_FOUND` error persists, verify the production deploy SHA
+and run **Clear cache and deploy**. Do not disclose OAuth secrets in logs.
+
 ## Troubleshooting production HTTP 500 after merging the OAuth PR
 
 GitHub Actions checks code and runs local HTTP smoke tests; it does **not**
