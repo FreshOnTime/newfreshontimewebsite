@@ -8,8 +8,11 @@ const noStore = { 'Cache-Control': 'private, no-store' };
 
 /** Creating or revoking delegation requires a signed-in *browser*, not another agent. */
 function browserWriteAllowed(request: NextRequest) {
-  return Boolean(request.cookies.get('accessToken')?.value)
-    && request.headers.get('origin') === new URL(request.url).origin;
+  // Some compatible Request adapters expose raw Cookie headers without
+  // NextRequest.cookies. verifyToken still validates the signed session.
+  const hasCookie = Boolean(request.cookies?.get('accessToken')?.value)
+    || /(?:^|;\s*)accessToken=[^;]+/.test(request.headers.get('cookie') || '');
+  return hasCookie && request.headers.get('origin') === new URL(request.url).origin;
 }
 
 export async function GET(request: NextRequest) {

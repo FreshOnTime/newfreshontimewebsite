@@ -15,7 +15,7 @@ it('product cards expose bag selection and create-new-bag actions', () => {
 
 it('product detail create-bag action adds the current product immediately', () => {
   const detail = source('app/products/[id]/AddToBagButton.tsx');
-  expect(detail).toContain('Create New Bag & Add');
+  expect(detail).toContain('Create new bag & add');
   expect(detail).toContain('setAddAfterCreate(true)');
 });
 
