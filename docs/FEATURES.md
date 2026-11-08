@@ -93,7 +93,7 @@ Supplier records created manually and supplier login accounts are separate relat
 
 ## Discovery, SEO, GEO and AEO
 
-Public pages have canonical metadata, an XML sitemap, robots rules and structured-data helpers. Product data supports price/availability information; site and FAQ schemas support machine-readable discovery. Private administration/account surfaces use no-index metadata. `llms.txt` publishes factual catalog/site context, and the public MCP endpoint exposes read-only catalog queries.
+Public pages have canonical metadata, an XML sitemap, robots rules and structured-data helpers. Product data supports price/availability information; site and FAQ schemas support machine-readable discovery. Private administration/account surfaces use no-index metadata. `llms.txt` publishes factual catalog/site context, and the public MCP endpoint exposes read-only catalog and subscription-plan queries; scoped customer tools require agent keys or configured OAuth account linking.
 
 These are technical foundations, not a guarantee of rankings, answer-engine citations or service coverage. Keep prices, stock, structured data, factual content, company details and real delivery areas consistent. Avoid using marketing page geography as a substitute for checkout's configured delivery policy.
 
