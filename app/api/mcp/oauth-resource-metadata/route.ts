@@ -3,7 +3,9 @@ import { MCP_SCOPES, oauthProvider, oauthConfigurationStatus } from '@/lib/mcp/o
 
 export const dynamic = 'force-dynamic';
 
-// RFC 9728: this resource advertises the *external*, reviewed OAuth provider.
+// RFC 9728: public /.well-known URLs rewrite here to avoid Netlify adapter 5.13.0 dropping dot-prefixed route bundles.
+// This is the only runtime handler for both root and MCP-specific protected-resource discovery.
+// The metadata advertises the *external*, reviewed OAuth provider.
 // Do not run a home-grown authorization server inside Next.js.
 export async function GET() {
   const provider = oauthProvider();
