@@ -3,6 +3,7 @@ import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import { createFreshPickMcpServer } from '@/lib/mcp/server';
 import { authenticateMcpAgent } from '@/lib/mcp/agentAuth';
+import { oauthChallenge, oauthProvider } from '@/lib/mcp/oauth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -59,13 +60,18 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
   // Public catalog tools need no token. Customer tools require an explicitly
   // delegated bearer credential; browser cookies never grant MCP access.
-  let agent: { userId: string } | null = null;
+  let agent: { userId: string; scopes: string[] } | null = null;
   if (request.headers.has('authorization')) {
     try { agent = await authenticateMcpAgent(request); }
     catch { return responseHeaders(protocolError(503, 'Customer authorization is temporarily unavailable.'), request); }
-    if (!agent) return responseHeaders(protocolError(401, 'Invalid or expired agent credential.', { 'WWW-Authenticate': 'Bearer realm="FreshPick"' }), request);
+    if (!agent) {
+      const provider = oauthProvider();
+      const challenge = provider ? oauthChallenge(provider, 'bags:read', 'Sign in to your linked FreshPick account.') : 'Bearer realm="FreshPick"';
+      return responseHeaders(protocolError(401, 'Invalid or expired agent credential.', { 'WWW-Authenticate': challenge }), request);
+    }
   }
-  const server = createFreshPickMcpServer(agent ? { userId: agent.userId, origin: new URL(request.url).origin } : undefined);
+  const origin = new URL(request.url).origin;
+  const server = createFreshPickMcpServer(agent ? { userId: agent.userId, origin, scopes: agent.scopes } : undefined, origin);
   // A new server and transport per request: no session affinity or customer state.
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined, enableJsonResponse: true, maxRequestBodySize: 65536,
