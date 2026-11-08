@@ -143,3 +143,19 @@ request, inspect the Netlify function logs at that request's timestamp
 for a module initialization error, missing `DATABASE_URL` or a
 Prisma initialization failure. The GitHub CI environment does not prove
 Netlify's Functions scope has the same runtime environment variables.
+
+## Netlify: public OAuth resource false-positive during secret scanning
+
+Netlify may fail an otherwise successful Next.js build when scanning finds
+`MCP_OAUTH_RESOURCE=https://freshpick.lk/api/mcp` in the source and build
+artifacts. This value is the **public OAuth audience**, intentionally exposed in
+protocol metadata, documentation and code. It is not a credential.
+
+The repository config sets `SECRETS_SCAN_OMIT_KEYS=MCP_OAUTH_RESOURCE` in
+`netlify.toml`. Do **not** disable scanning globally. Keep
+`MCP_OAUTH_LINK_CLIENT_SECRET`, `JWT_SECRET`, `DATABASE_URL` and all other actual
+credentials protected. The OAuth issuer and public client ID are not passwords.
+
+After merging the config, trigger a new production deploy on Netlify and confirm
+that secrets scanning finishes successfully. If Netlify reports a *different*
+variable, investigate that value independently before adding exceptions.
