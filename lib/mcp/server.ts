@@ -96,6 +96,28 @@ export function createFreshPickMcpServer(agent?: { userId: string; origin: strin
 
   // Advertise protected tools to anonymous ChatGPT clients only after OAuth is configured.
   // Their invocation then returns an MCP OAuth challenge, never customer data.
+  server.registerTool('list_subscription_plans', {
+    title: 'Browse recurring grocery plans',
+    description: 'View active FreshPick subscription plans, prices, frequency and a website checkout link. The customer must personally review and confirm any recurring subscription. This tool never subscribes or charges anyone.',
+    inputSchema: {},
+    annotations: readOnly,
+    _meta: { securitySchemes: [{ type: 'noauth' }] },
+  }, async () => result(async () => {
+    const rows = await prisma.subscriptionPlan.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, slug: true, description: true, shortDescription: true, price: true, frequency: true, features: true, maxSubscribers: true, currentSubscribers: true },
+      orderBy: [{ isFeatured: 'desc' }, { name: 'asc' }], take: 40,
+    });
+    const site = agent?.origin || anonymousOrigin || 'https://freshpick.lk';
+    return { currency: 'LKR', plans: rows.map((plan) => ({
+      id: plan.id, name: plan.name, description: plan.shortDescription || plan.description,
+      price: Number(plan.price), frequency: plan.frequency, features: plan.features,
+      available: plan.maxSubscribers == null || plan.currentSubscribers < plan.maxSubscribers,
+      checkoutUrl: new URL('/checkout?plan=' + encodeURIComponent(plan.slug), site).toString(),
+      requiresCustomerAction: true, subscriptionCreated: false,
+    })) };
+  }));
+
   if (agent || (oauthProvider() && anonymousOrigin)) {
     registerShoppingTools(server, agent?.userId || '', agent?.origin || anonymousOrigin!, agent?.scopes || []);
   }
