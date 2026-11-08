@@ -7,6 +7,11 @@
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_OPTIONS = "--max-old-space-size=4096"
 
+  # Public OAuth audience/identifier appears intentionally in source, documentation and
+  # client-side MCP URL references. It is not a secret. Retain scanning for all
+  # credentials, including MCP_OAUTH_LINK_CLIENT_SECRET, JWT_SECRET and DATABASE_URL.
+  SECRETS_SCAN_OMIT_KEYS = "MCP_OAUTH_RESOURCE"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
