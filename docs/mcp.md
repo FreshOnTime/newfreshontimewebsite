@@ -1,6 +1,6 @@
 # FreshPick MCP: catalog and customer-delegated shopping
 
-FreshPick exposes a stateless Streamable HTTP MCP server at `/api/mcp` on its storefront deployment. The three public catalog tools require no login; all customer shopping tools require an independent, revocable agent key created by that customer on FreshPick.
+FreshPick exposes a stateless Streamable HTTP MCP server at `/api/mcp` on its storefront deployment. Three public catalog tools and one subscription-plan browsing tool require no login. Customer shopping tools require either a revocable customer agent key or a configured, verified OAuth account link.
 
 ## MCP endpoint
 
@@ -15,8 +15,9 @@ Production callers use Streamable HTTP and POST JSON-RPC requests with `Accept: 
 | `search_products` | Search current catalogue by name, SKU or description |
 | `get_product` | Fetch one active product |
 | `list_categories` | Browse active grocery categories |
+| `list_subscription_plans` | Browse active recurring plans; returns links for customer-only subscription checkout |
 
-## Customer tools (requires Bearer agent key)
+## Customer tools (requires customer-issued agent key or linked, scoped OAuth access token)
 
 | Tool | Action |
 | --- | --- |
@@ -43,7 +44,25 @@ No tool submits an order, confirms an address, starts a payment, modifies an exi
 3. Configure an MCP client that can set a custom authorization header: `Authorization: Bearer fp_agent_...`. Never paste the key in chat messages or include it in a URL.
 4. Revoke access from the account page at any time. Keys expire after 30 days. A customer can have up to five active keys.
 
-**Important ChatGPT limitation:** The public no-auth MCP works in ChatGPT today, but the customer-scoped actions require a client that can send a Bearer header. ChatGPT's OAuth-based custom connector flow needs a separate, standards-compliant OAuth authorization server; supplying this Bearer-key feature does not itself add ChatGPT account-linking or automatically authorize ChatGPT to edit bags. Do not expose the write tools anonymously as a shortcut.
+## ChatGPT account linking (managed OAuth provider)
+
+An external, standards-compliant OAuth 2.1 / OIDC provider (for example Auth0) is **required**; this application does not issue OAuth tokens. Configure these server-side variables together:
+
+- `MCP_OAUTH_ISSUER`: exact HTTPS OIDC issuer URI (including its trailing slash if present).
+- `MCP_OAUTH_RESOURCE=https://freshpick.lk/api/mcp`: must match the API audience issued by the provider.
+- `MCP_OAUTH_LINK_CLIENT_ID` and `MCP_OAUTH_LINK_CLIENT_SECRET`: confidential OIDC application for linking signed-in FreshPick customers to their provider identity.
+- Allow `https://freshpick.lk/api/profile/mcp-oauth/callback` as an exact redirect URI for the linking application.
+
+In the provider, enable Authorization Code + PKCE S256, its OIDC discovery/JWKS, the OAuth `resource` parameter and API audience binding, and supported ChatGPT client registration (CIMD, DCR or pre-registered client). Configure these API permissions: `catalog:read`, `bags:read`, `bags:write`, `wishlist:read`, `wishlist:write`, `orders:read`. **Do not grant order-placement, payment or subscription-create scopes.**
+
+1. A customer signs into FreshPick and opens `/profile/agent-access`, then selects **Link account** and completes the provider login. Only a verified provider subject is linked; email matching is never used.
+2. In ChatGPT, reconnect or refresh the existing FreshPick MCP plugin at `https://freshpick.lk/api/mcp`. Authorize using the external provider's client flow and the exact redirect URI ChatGPT displays.
+3. ChatGPT discovers `/.well-known/oauth-protected-resource` and sees customer tools with `oauth2` scope declarations. Unauthenticated tool calls produce `mcp/www_authenticate` challenges. The server validates signed token issuer, audience, expiry, subject and scope before any customer operation.
+4. **Disconnect account** on FreshPick removes the provider-to-customer mapping, immediately denying subsequent customer tool calls even if provider tokens have not expired. To fully disconnect, also revoke the OAuth grant with the identity provider.
+
+OAuth account linking and integration are **disabled until the variables are configured**. Legacy bearer keys remain supported. The external provider must complete OAuth consent, refresh and revocation; these are not implemented by this storefront.
+
+See [OpenAI's plugin OAuth authentication guide](https://developers.openai.com/plugins/build/auth) and use an OAuth-capable MCP Inspector to verify the flow before connecting a production customer.
 
 The new agent-key table requires running the included Prisma migration before the updated server can accept customer access: `npx prisma migrate deploy`.
 
