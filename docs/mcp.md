@@ -82,3 +82,40 @@ The new agent-key table requires running the included Prisma migration before th
 - Product descriptions are untrusted catalogue data, not agent instructions.
 - Requests are capped at 64 KiB. Origin and host validation applies; extra production origins go in `MCP_ALLOWED_ORIGINS`. The current 60 req/min/IP limiter is **per warm instance**; deploy a shared rate limiter and monitor key creation and use for high-volume production.
 - Credential creation/revocation requires the customer's normal login cookie and a matching same-origin browser request. Keys are never returned by GET after creation.
+
+## Troubleshooting production HTTP 500 after merging the OAuth PR
+
+GitHub Actions checks code and runs local HTTP smoke tests; it does **not**
+publish Netlify. In Netlify, check **Deploys → Production deploy** and
+**Logs → Functions**, and confirm that the deployed commit contains the
+MCP fixes. Check that the production database migrations were applied.
+
+These checks require no customer credentials:
+
+```bash
+curl -i https://freshpick.lk/api/mcp
+# Expect HTTP 405 with a JSON-RPC error; a generic 500 indicates a deployment/runtime failure.
+
+curl -i -X POST https://freshpick.lk/api/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'MCP-Protocol-Version: 2025-11-25' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+# Expect HTTP 200 and list_subscription_plans among the public tool names.
+
+curl -i https://freshpick.lk/.well-known/oauth-protected-resource
+# 200: OAuth configured; 404: OAuth disabled; 503: incomplete/invalid settings.
+```
+
+`MCP_OAUTH_ISSUER` and `MCP_OAUTH_RESOURCE` must be full HTTPS
+URLs; the resource must end with `/api/mcp` and exactly match the
+OAuth provider's access-token audience. All four MCP_OAUTH_* variables
+are required to enable OAuth; an incomplete or invalid setup now fails
+closed, leaving anonymous browsing usable. Never paste keys or tokens
+into chats or GitHub issues.
+
+If production returns a plain HTML 500 even for an anonymous `tools/list`
+request, inspect the Netlify function logs at that request's timestamp
+for a module initialization error, missing `DATABASE_URL` or a
+Prisma initialization failure. The GitHub CI environment does not prove
+Netlify's Functions scope has the same runtime environment variables.
