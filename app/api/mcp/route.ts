@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import { createFreshPickMcpServer } from '@/lib/mcp/server';
+import { authenticateMcpAgent } from '@/lib/mcp/agentAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -56,7 +57,15 @@ export async function POST(request: NextRequest): Promise<Response> {
     const ms = (error as { msBeforeNext?: number }).msBeforeNext || 60000;
     return responseHeaders(protocolError(429, 'Too many MCP requests. Please retry later.', { 'Retry-After': String(Math.ceil(ms / 1000)) }), request);
   }
-  const server = createFreshPickMcpServer();
+  // Public catalog tools need no token. Customer tools require an explicitly
+  // delegated bearer credential; browser cookies never grant MCP access.
+  let agent: { userId: string } | null = null;
+  if (request.headers.has('authorization')) {
+    try { agent = await authenticateMcpAgent(request); }
+    catch { return responseHeaders(protocolError(503, 'Customer authorization is temporarily unavailable.'), request); }
+    if (!agent) return responseHeaders(protocolError(401, 'Invalid or expired agent credential.', { 'WWW-Authenticate': 'Bearer realm="FreshPick"' }), request);
+  }
+  const server = createFreshPickMcpServer(agent ? { userId: agent.userId, origin: new URL(request.url).origin } : undefined);
   // A new server and transport per request: no session affinity or customer state.
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined, enableJsonResponse: true, maxRequestBodySize: 65536,
@@ -82,7 +91,7 @@ export async function OPTIONS(request: Request): Promise<Response> {
   if (rejected) return rejected;
   return responseHeaders(new Response(null, { status: 204, headers: {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Accept, MCP-Protocol-Version, MCP-Session-Id',
+    'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization, MCP-Protocol-Version, MCP-Session-Id',
     'Access-Control-Max-Age': '600',
   } }), request);
 }

@@ -149,6 +149,7 @@ export default function ProfilePage() {
               <AccountLink href="/profile/messages" title="Messages" copy="Read updates from the FreshPick team" />
               <AccountLink href="/profile/notifications" title="Notifications" copy="Read FreshPick announcements and account updates" />
               <AccountLink href="/bags" title="Shopping bags" copy="Continue a saved or active bag" />
+              <AccountLink href="/profile/agent-access" title="AI shopping assistants" copy="Authorize or revoke an agent to prepare your bags" />
             </section>
           </aside>
         </div>
