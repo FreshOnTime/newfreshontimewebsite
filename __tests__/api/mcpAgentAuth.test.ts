@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 const db = {
   agentAccessToken: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn(), create: jest.fn(), deleteMany: jest.fn() },
@@ -14,10 +14,10 @@ import { POST, DELETE, GET } from '@/app/api/profile/agent-tokens/route';
 
 const secret = 'fp_agent_' + 'b'.repeat(64);
 function browser(method: string, body?: unknown, origin = 'https://freshpick.lk') {
-  return new NextRequest('https://freshpick.lk/api/profile/agent-tokens', {
+  return new Request('https://freshpick.lk/api/profile/agent-tokens', {
     method, headers: { Cookie: 'accessToken=browser-secret', Origin: origin, 'Content-Type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
+  }) as NextRequest;
 }
 
 beforeEach(() => {
