@@ -13,7 +13,7 @@ jest.mock('server-only', () => ({}), { virtual: true });
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: db }));
 
 import { authenticateOAuthAgent } from '@/lib/mcp/oauth';
-import { GET as resourceMetadata } from '@/app/.well-known/oauth-protected-resource/route';
+import { GET as resourceMetadata } from '@/app/api/mcp/oauth-resource-metadata/route';
 import { POST as mcpPost } from '@/app/api/mcp/route';
 
 const issuer = 'https://identity.example.test/';
