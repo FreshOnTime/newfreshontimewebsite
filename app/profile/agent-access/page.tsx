@@ -14,6 +14,7 @@ export default function AgentAccessPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [tokens, setTokens] = useState<AgentToken[]>([]);
+  const [oauth, setOauth] = useState<{ configured: boolean; linked: boolean } | null>(null);
   const [name, setName] = useState('');
   const [secret, setSecret] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -21,7 +22,7 @@ export default function AgentAccessPage() {
 
   useEffect(() => {
     if (!loading && !user) router.replace('/auth/login?redirect=/profile/agent-access');
-    if (user) void refresh();
+    if (user) { void refresh(); void refreshOAuth(); }
   }, [loading, user, router]);
 
   async function refresh() {
@@ -31,6 +32,24 @@ export default function AgentAccessPage() {
       const data = await response.json();
       setTokens(data.tokens || []);
     } catch { setError('Could not load your connected agents.'); }
+  }
+
+  async function refreshOAuth() {
+    try {
+      const response = await authenticatedApiFetch('/api/profile/mcp-oauth', { credentials: 'include' });
+      if (response.ok) setOauth(await response.json());
+    } catch { /* Keep bearer-key access visible even if OAuth status is unavailable. */ }
+  }
+
+  async function disconnectOAuth() {
+    if (busy || !window.confirm('Disconnect this linked account from ChatGPT and other OAuth shopping assistants?')) return;
+    setBusy(true); setError(null);
+    try {
+      const response = await authenticatedApiFetch('/api/profile/mcp-oauth', { method: 'DELETE', credentials: 'include' });
+      if (!response.ok) throw new Error('Could not disconnect');
+      await refreshOAuth();
+    } catch { setError('Could not disconnect the linked OAuth account.'); }
+    finally { setBusy(false); }
   }
 
   async function create(event: React.FormEvent) {
@@ -66,6 +85,18 @@ export default function AgentAccessPage() {
   if (loading || !user) return <div className="mx-auto max-w-5xl px-5 py-12 text-muted-foreground">Loading agent access…</div>;
   return <AccountPage title="AI shopping assistants" description="Let an assistant prepare your bags. Only you can finish checkout." action={<Link className="inline-flex items-center gap-2 text-sm text-brand-green" href="/profile"><ArrowLeft className="h-4 w-4" /> Account</Link>}>
     <div className="max-w-3xl space-y-6">
+      {oauth?.configured && <section className="rounded-lg border border-border bg-background p-6">
+        <h2 className="text-lg font-medium text-brand-green">Connect ChatGPT securely</h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Sign in to your linked OAuth provider to authorize FreshPick shopping tools. ChatGPT can prepare bags and read only the scopes you grant. Payments, placing orders and recurring subscription creation stay on the website.
+        </p>
+        <p className="mt-3 text-sm font-medium">{oauth.linked ? 'OAuth account linked' : 'OAuth account not linked yet'}</p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {!oauth.linked
+            ? <a href="/api/profile/mcp-oauth/link" className="inline-flex h-11 items-center rounded-lg bg-brand-leaf px-5 text-sm font-semibold text-brand-ink">Link account</a>
+            : <button type="button" disabled={busy} onClick={() => void disconnectOAuth()} className="inline-flex h-11 items-center rounded-lg border border-border px-5 text-sm font-semibold text-destructive disabled:opacity-50">Disconnect account</button>}
+        </div>
+      </section>}
       <section className="rounded-lg border border-border bg-background p-6">
         <h2 className="flex items-center gap-2 text-lg font-medium text-brand-green"><KeyRound className="h-5 w-5" /> Connect an agent</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">Each agent receives a revocable key that can view your orders and wishlists, and create, edit or delete shopping bags. Agents cannot place orders, choose payments or start checkout. Only use clients you trust. Access expires after 30 days.</p>
