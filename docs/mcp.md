@@ -1,43 +1,65 @@
-# FreshPick MCP
+# FreshPick MCP: catalog and customer-delegated shopping
 
-The public, read-only MCP endpoint is `/api/mcp` on the same deployment as the storefront. It uses the official MCP TypeScript SDK and stateless Streamable HTTP with JSON responses, so Netlify workers do not need sticky sessions.
+FreshPick exposes a stateless Streamable HTTP MCP server at `/api/mcp` on its storefront deployment. The three public catalog tools require no login; all customer shopping tools require an independent, revocable agent key created by that customer on FreshPick.
 
-## Connect after deployment
+## MCP endpoint
 
-Use your deployed website's HTTPS origin followed by `/api/mcp`, for example `https://freshpicknew.netlify.app/api/mcp` or `https://freshpick.lk/api/mcp` once that domain's HTTPS certificate is working. This endpoint becomes available when this branch is deployed; adding code does not connect your ChatGPT account automatically.
+`https://freshpick.lk/api/mcp`
 
-For a client that supports remote MCP servers:
+Production callers use Streamable HTTP and POST JSON-RPC requests with `Accept: application/json, text/event-stream`. No SSE GET stream or persisted MCP sessions. Public catalog tools remain available to anonymous agents.
 
-```json
-{
-  "mcpServers": {
-    "freshpick": {
-      "url": "https://freshpicknew.netlify.app/api/mcp"
-    }
-  }
-}
-```
+## Public tools
 
-Select Streamable HTTP and no authentication. Use the client's configuration format if it differs from this example. A local dev endpoint is `http://localhost:3000/api/mcp`.
+| Tool | Action |
+| --- | --- |
+| `search_products` | Search current catalogue by name, SKU or description |
+| `get_product` | Fetch one active product |
+| `list_categories` | Browse active grocery categories |
 
-## Tools
+## Customer tools (requires Bearer agent key)
 
-| Tool | Arguments | Result |
-| --- | --- | --- |
-| `search_products` | `query`, optional `categorySlug`, `inStockOnly`, `page` (1–100), `limit` (1–20) | Public, non-archived products with LKR prices, availability and storefront paths |
-| `get_product` | `sku` | A public product's description, price and availability |
-| `list_categories` | None | Active category slugs and storefront paths |
+| Tool | Action |
+| --- | --- |
+| `list_my_bags` | Read this customer's active bags |
+| `get_my_bag` | Read one bag |
+| `create_bag` | Create a named bag, optionally with items |
+| `add_to_bag` | Add an incremental quantity to a bag |
+| `set_bag_item_quantity` | Set absolute quantity, remove at zero |
+| `update_bag_details` | Rename or describe a bag |
+| `delete_bag` | Soft-delete a bag |
+| `get_checkout_handoff` | Revalidate a quote and return a customer checkout link |
+| `list_my_wishlist` | Read saved wishlist |
+| `add_to_wishlist` | Save a product |
+| `remove_from_wishlist` | Remove a saved product |
+| `list_my_orders` | View past order summaries, read-only |
+| `prepare_reorder_bag` | Prepare a bag from a previous order, with current stock and prices |
 
-Example prompts: “Find tomatoes in stock on FreshPick”; “Show FreshPick's grocery categories”; “Find pantry products on FreshPick.” Prices and availability may change; confirm on the storefront before purchasing.
+No tool submits an order, confirms an address, starts a payment, modifies an existing order or creates a subscription. The customer must personally follow the checkout URL to review their delivery details, confirm the final quote and place the order in the website.
 
-## Transport and data boundaries
+## Granting and revoking agent access
 
-- Clients initialize normally, then POST JSON-RPC messages with `Accept: application/json, text/event-stream`. Responses use JSON. Initialized notifications return HTTP 202.
-- GET and DELETE return HTTP 405; standalone SSE and stored sessions are not offered.
-- Tools cannot access customer accounts, bags, orders, payment information, admin fields or write operations. Product descriptions are untrusted data, not instructions.
-- Queries and page sizes are bounded. Request bodies are limited to 64 KiB. Database failures return a generic tool error instead of connection details.
-- Host and Origin validation permits the FreshPick domains, configured Netlify deployment URLs, and `NEXT_PUBLIC_SITE_URL`. Localhost is permitted during development only. Browser clients or additional production origins must be explicitly added to the comma-separated `MCP_ALLOWED_ORIGINS` environment variable.
-- A dedicated in-memory quota limits a client to 60 requests per minute **per warm worker**. It is not a deployment-wide rate limit; use hosting-level or shared rate limiting if traffic requires a global quota.
-- The public tools require no API key. Customer-specific or purchase tools would require a separate authenticated authorization design.
+1. Sign into the customer website and visit **Account → AI shopping assistants** at `/profile/agent-access`.
+2. Name the agent and create a key. The plaintext key is displayed only once; its SHA-256 hash is kept in Postgres.
+3. Configure an MCP client that can set a custom authorization header: `Authorization: Bearer fp_agent_...`. Never paste the key in chat messages or include it in a URL.
+4. Revoke access from the account page at any time. Keys expire after 30 days. A customer can have up to five active keys.
 
-No MCP details are shown in the customer shopping interface.
+**Important ChatGPT limitation:** The public no-auth MCP works in ChatGPT today, but the customer-scoped actions require a client that can send a Bearer header. ChatGPT's OAuth-based custom connector flow needs a separate, standards-compliant OAuth authorization server; supplying this Bearer-key feature does not itself add ChatGPT account-linking or automatically authorize ChatGPT to edit bags. Do not expose the write tools anonymously as a shortcut.
+
+The new agent-key table requires running the included Prisma migration before the updated server can accept customer access: `npx prisma migrate deploy`.
+
+## Example prompts
+
+- "Find tomatoes and bananas, then create a Weekly groceries bag with two of each."
+- "Put three more packets of oats in my Weekly groceries bag."
+- "Build a fresh bag from my previous order."
+- "Show me a breakdown of my groceries and a link to check out myself."
+
+## Security and operating boundaries
+
+- Public tools cannot access user identity or personal state. The customer tools are registered **only** after verifying a customer-issued credential against a hashed token in the database, and checking expiry and account bans.
+- Each customer query and mutation is scoped to that credential's user ID, not a user ID supplied by the agent. Browser cookies and standard browser login JWTs do not grant MCP shopping access.
+- Item additions and replacements acquire the owning bag row lock, honor stock constraints and apply current sale prices. Bag creation merges product aliases; all totals are server-calculated in LKR.
+- The checkout handoff uses the normal server quote calculation but never reserves stock. Prices and availability are checked again by the customer-facing checkout API.
+- Product descriptions are untrusted catalogue data, not agent instructions.
+- Requests are capped at 64 KiB. Origin and host validation applies; extra production origins go in `MCP_ALLOWED_ORIGINS`. The current 60 req/min/IP limiter is **per warm instance**; deploy a shared rate limiter and monitor key creation and use for high-volume production.
+- Credential creation/revocation requires the customer's normal login cookie and a matching same-origin browser request. Keys are never returned by GET after creation.

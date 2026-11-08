@@ -159,6 +159,7 @@ model User {
 
   addresses        Address[]
   refreshTokens    RefreshToken[]
+  agentAccessTokens AgentAccessToken[]
   oauthIdentities  OAuthIdentity[]
   orders           Order[]
   checkoutRequests CheckoutRequest[]
@@ -195,6 +196,20 @@ model RefreshToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+model AgentAccessToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("agent_access_tokens")
 }
 
 // A provider subject, rather than an email address, is the durable identity
