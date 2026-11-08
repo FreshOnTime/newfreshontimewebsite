@@ -80,6 +80,9 @@ jobs:
       env:
         NODE_ENV: production
         BASE_URL: http://localhost:3000
+        # Only the isolated CI server may accept localhost MCP Host headers.
+        # Production retains the explicit public-domain allowlist.
+        MCP_ALLOWED_ORIGINS: http://localhost:3000
       run: |
         npm start > /tmp/freshpick-server.log 2>&1 &
         server_pid=$!
