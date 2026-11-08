@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-const mockPrisma = { product: { findMany: jest.fn(), findFirst: jest.fn() }, category: { findMany: jest.fn() } };
+const mockPrisma = { product: { findMany: jest.fn(), findFirst: jest.fn() }, category: { findMany: jest.fn() }, subscriptionPlan: { findMany: jest.fn() } };
 jest.mock('server-only', () => ({}), { virtual: true });
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: mockPrisma }));
 
@@ -24,10 +24,11 @@ beforeEach(() => {
   mockPrisma.product.findMany.mockResolvedValue([product]);
   mockPrisma.product.findFirst.mockResolvedValue(product);
   mockPrisma.category.findMany.mockResolvedValue([]);
+  mockPrisma.subscriptionPlan.findMany.mockResolvedValue([]);
 });
 
 describe('FreshPick MCP protocol and public data boundaries', () => {
-  it('initializes, accepts initialized notifications and lists only three catalogue read tools', async () => {
+  it('initializes, accepts initialized notifications and lists the public catalogue and subscription read tools', async () => {
     const init = await rpc('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'test-client', version: '1.0' } });
     expect(init.response.status).toBe(200);
     expect(init.body.result.serverInfo.name).toBe('freshpick');
@@ -35,7 +36,7 @@ describe('FreshPick MCP protocol and public data boundaries', () => {
     const notification = await POST(request({ jsonrpc: '2.0', method: 'notifications/initialized' }));
     expect(notification.status).toBe(202);
     const listed = await rpc('tools/list');
-    expect(listed.body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'search_products']);
+    expect(listed.body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'list_subscription_plans', 'search_products']);
     expect(listed.body.result.tools.every((t: { annotations: { readOnlyHint: boolean; destructiveHint: boolean } }) => t.annotations.readOnlyHint && !t.annotations.destructiveHint)).toBe(true);
   });
 
