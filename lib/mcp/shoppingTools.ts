@@ -78,16 +78,17 @@ async function editItem(userId: string, id: string, productId: string, quantity:
 
 export function registerShoppingTools(server: McpServer, userId: string, origin: string, grantedScopes: string[] = []) {
   const allowed = new Set(grantedScopes);
-  const toolMetadata = (scope: string) => oauthProvider()
-    ? { _meta: { securitySchemes: [{ type: 'oauth2' as const, scopes: [scope] }] } }
+  const toolMetadata = (scope: string | string[]) => oauthProvider()
+    ? { _meta: { securitySchemes: [{ type: 'oauth2' as const, scopes: Array.isArray(scope) ? scope : [scope] }] } }
     : {};
-  const protectedReply = (scope: string, fn: () => Promise<Record<string, unknown>>): Promise<CallToolResult> => {
-    if (userId && allowed.has(scope)) return reply(fn);
+  const protectedReply = (scope: string | string[], fn: () => Promise<Record<string, unknown>>): Promise<CallToolResult> => {
+    const required = Array.isArray(scope) ? scope : [scope];
+    if (userId && required.every(s => allowed.has(s))) return reply(fn);
     const provider = oauthProvider();
     return Promise.resolve({
       isError: true,
       content: [{ type: 'text', text: 'Connect your FreshPick account to use this shopping tool.' }],
-      ...(provider ? { _meta: { 'mcp/www_authenticate': [oauthChallenge(provider, scope)] } } : {}),
+      ...(provider ? { _meta: { 'mcp/www_authenticate': [oauthChallenge(provider, required.join(' '))] } } : {}),
     });
   };
 
@@ -221,8 +222,8 @@ export function registerShoppingTools(server: McpServer, userId: string, origin:
   server.registerTool('prepare_reorder_bag', {
     title: 'Build a bag from my previous order',
     description: 'Prepare a fresh shopping bag with new stock and price checks from a previous order. Never purchases.',
-    inputSchema: { orderId: z.string().uuid() }, annotations: add, ...toolMetadata('bags:write'),
-  }, async ({ orderId }) => protectedReply('bags:write', async () => {
+    inputSchema: { orderId: z.string().uuid() }, annotations: add, ...toolMetadata(['bags:write', 'orders:read']),
+  }, async ({ orderId }) => protectedReply(['bags:write', 'orders:read'], async () => {
     const order = await prisma.order.findFirst({ where: { id: orderId, customerId: userId }, include: { items: true } });
     if (!order) throw new ShoppingError('Order not found.');
     if (!order.items.length || order.items.length > 100) throw new ShoppingError('This order cannot be reused.');

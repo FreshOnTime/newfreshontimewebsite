@@ -121,6 +121,13 @@ it('rejects additions exceeding stock', async () => {
   expect(mockPrisma.bagItem.upsert).not.toHaveBeenCalled();
 });
 
+it('does not allow reordering without separate order-history permission', async () => {
+  mockAuthenticate.mockResolvedValue({ userId: 'customer-1', scopes: ['bags:write'] });
+  const { body } = await tool('prepare_reorder_bag', { orderId: otherId });
+  expect(body.result.isError).toBe(true);
+  expect(mockPrisma.order.findFirst).not.toHaveBeenCalled();
+});
+
 it('quotes and hands off checkout without creating an order or payment', async () => {
   const { body } = await tool('get_checkout_handoff', { bagId: id });
   expect(body.result.structuredContent.checkoutUrl).toBe('https://freshpick.lk/checkout?bagId=' + id);
