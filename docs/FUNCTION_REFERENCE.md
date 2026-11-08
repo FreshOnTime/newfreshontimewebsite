@@ -179,7 +179,7 @@ Sources: [mailService.ts](../lib/services/mailService.ts), [emailOutboxService.t
 | [Product image upload](../lib/productImageUpload.ts) | `readProductImage`, `storeProductImage` | Bound multipart body, validate signatures/size, write durable Supabase or development storage |
 | [Taste graph](../lib/intelligence/tasteGraph.ts) | `getTasteProfile`, `getSmartBasket`, `getPersonalizedRecommendations`, `getTrendingProducts`, `getIntelligenceOverview` | Deterministic user/catalog recommendations from stored data; no LLM or automatic purchase |
 | [Operations intelligence](../lib/intelligence/operations.ts) | `getOperationsIntelligence` | Bounded catalog/history aggregation for stock risk, demand and supplier availability |
-| [MCP server](../lib/mcp/server.ts) | `createFreshPickMcpServer` | Register the three public read-only catalog tools |
+| [MCP server](../lib/mcp/server.ts) | `createFreshPickMcpServer` | Register public read-only product/category/subscription discovery tools and gated customer shopping tools |
 
 The remaining helper exports and precise overloads are visible in the linked sources. Test any new call at the transaction/authorization boundary where it is used, not only by mocking its internal implementation.
 
