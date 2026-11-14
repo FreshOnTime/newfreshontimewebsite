@@ -12,6 +12,7 @@ Read this alongside the [documentation index](README.md). This is the implemente
 | Product `/products/[id]` | See image, description, price, unit information and availability; add to bag/save | Public product lookup supports compatibility identifiers; catalog UUID/SKU/slug handling lives in the API |
 | Search `/search` | Find products by a query | Catalog search routes; results reflect published catalog data |
 | Deals `/deals` | Find catalog promotions | Product promotional price fields; checkout recalculates current price |
+| Shopping assistant `/assistant` | Signed-in, catalogue-grounded grocery suggestions within an LKR budget; explicit approval saves an idempotent bag | Guided deterministic planner (not an LLM agent); checkout still validates pricing, delivery and stock |
 | Discover `/discover`, For you `/for-you` | Explore curated/recommended products | Deterministic catalog and purchase-history helpers; no LLM buying agent |
 | Collections `/collections`, `/collections/[slug]` | Browse themed groups of individually sold products | Collection publishing; does not create a discounted basket or reserve stock |
 | Weekly baskets `/subscriptions` | Select a fixed-price recurring basket plan | Active subscription plans and fulfilment mode; see [Subscriptions](SUBSCRIPTIONS.md) |

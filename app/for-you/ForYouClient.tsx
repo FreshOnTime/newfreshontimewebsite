@@ -107,7 +107,7 @@ export default function ForYouClient() {
     .filter((item, index, array) => array.findIndex((candidate) => candidate.label === item.label) === index).slice(0, 7) : [];
 
   return (
-    <AccountPage title="For you" description="Favourites and repeat essentials, based on your shopping history." action={<Link href="/products" className={accountSecondaryButton}>Shop the market</Link>}>
+    <AccountPage title="For you" description="Favourites and repeat essentials, based on your shopping history." action={<div className="flex flex-wrap gap-2"><Link href="/assistant" className={accountButton}>Plan a grocery bag</Link><Link href="/products" className={accountSecondaryButton}>Shop the market</Link></div>}>
       {authLoading || status === 'loading' ? <AccountLoading label="Loading your picks…" /> : status === 'guest' ? (
         <AccountState title="Your personal picks" description="Sign in to see recommendations and repeat purchases." action={<Link href="/auth/login?redirect=/for-you" className={accountButton}>Sign in</Link>} />
       ) : status === 'error' || !data ? (

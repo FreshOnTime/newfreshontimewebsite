@@ -141,7 +141,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       pathname.startsWith('/dashboard') ||
       pathname.startsWith('/bags') ||
       pathname.startsWith('/wishlist') ||
-      pathname.startsWith('/checkout');
+      pathname.startsWith('/checkout') ||
+      pathname.startsWith('/assistant');
 
     if (shouldCheckImmediately) {
       checkAuth();
