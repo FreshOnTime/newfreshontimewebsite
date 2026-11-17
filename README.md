@@ -109,7 +109,7 @@ The Dockerfile has separate image targets for the Next.js web app, recurring sch
 
 ## Local development
 
-Use Node.js 20.17.0 (the current CI runtime), npm and a dedicated PostgreSQL database.
+Use Node.js 20.9.0 or newer, npm and a dedicated PostgreSQL database. CI uses Node.js 20.17.0.
 
 ```bash
 git clone https://github.com/FreshOnTime/newfreshontimewebsite.git

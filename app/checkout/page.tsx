@@ -76,6 +76,8 @@ export default function CheckoutPage() {
   const {
     bags,
     currentBag,
+    error: bagError,
+    fetchBags,
     loading: bagsLoading,
     updating: bagUpdating,
     removeFromBag,
@@ -286,7 +288,7 @@ export default function CheckoutPage() {
   );
 
   const itemsKey = JSON.stringify(effectiveItems.map((item) => ({ productId: item.product.id, quantity: item.quantity })));
-  const retryScope = `freshpick-checkout:${user?._id || ""}:${effectiveBagId || quickSku || "default"}`;
+  const retryScope = `freshpick-checkout:${user?._id || ""}:${effectiveBagId || quickSku || bagId || "default"}`;
   const accountAddress = registrationAddressToOrderAddress(user?.registrationAddress, { name: user?.firstName, phone: user?.phoneNumber });
   const areaKey = JSON.stringify({ city: useAccountAddress ? accountAddress?.city || '' : shipCity, country: useAccountAddress ? accountAddress?.country || 'LK' : shipCountry });
   const quoteKey = JSON.stringify([itemsKey, areaKey]);
@@ -376,8 +378,8 @@ export default function CheckoutPage() {
       setError("Please choose at least one delivery day.");
       return;
     }
-    if (isRecurring && startDate && endDate && endDate < startDate) {
-      setError("The end date must be on or after the start date.");
+    if (isRecurring && startDate && endDate && endDate <= startDate) {
+      setError("Choose an end date after the start date. Recurring orders need at least two future deliveries.");
       return;
     }
     if (isWhatsapp && !WHATSAPP_NUMBER) {
@@ -507,6 +509,22 @@ export default function CheckoutPage() {
 
   if (previewLoading || (!previewBag && !quickSku && !planSlug && bagsLoading)) {
     return <LoadingState message={planSlug ? "Loading the current subscription plan…" : "Loading your bag…"} />;
+  }
+
+  if (!planSlug && recovering) return <LoadingState message="Checking your previous checkout…" />;
+
+  const failedBagLoad = !planSlug && !quickSku && !effectiveItems.length && bagError;
+  if ((!planSlug && recoveryError) || failedBagLoad) {
+    const retryReceipt = !planSlug && Boolean(recoveryError);
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center gap-4 px-5 text-center">
+        <h1 className="text-2xl text-brand-green">{retryReceipt ? "We couldn’t confirm your previous order." : "We couldn’t load your bag."}</h1>
+        <p role="alert" className="text-sm text-muted-foreground">{retryReceipt ? recoveryError : bagError}</p>
+        <Button onClick={() => retryReceipt ? setRecoveryVersion((version) => version + 1) : void fetchBags()}>
+          {retryReceipt ? "Check previous order again" : "Retry loading bag"}
+        </Button>
+      </div>
+    );
   }
 
   if (effectiveItems.length === 0) {
@@ -811,8 +829,6 @@ export default function CheckoutPage() {
                     </div>
                     {!planSlug && !quote && !quoteError && <p className="text-sm text-muted-foreground">Confirming prices and availability…</p>}
                     {quoteError && <div role="alert" className="text-sm text-destructive"><p>{quoteError}</p><button type="button" disabled={submitting} onClick={() => setQuoteVersion((version) => version + 1)} className="mt-2 underline">Check total again</button></div>}
-                    {recovering && <p className="text-sm text-muted-foreground">Checking your previous checkout…</p>}
-                    {recoveryError && <div role="alert" className="text-sm text-destructive"><p>{recoveryError}</p><button type="button" onClick={() => setRecoveryVersion((version) => version + 1)} className="mt-2 underline">Check previous order again</button></div>}
                   </div>
 
                   <p className="mt-5 text-sm text-muted-foreground">Payment: cash on delivery</p>

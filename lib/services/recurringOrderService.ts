@@ -69,9 +69,17 @@ export class RecurringOrderService {
     // A date picked in the UI is stored at midnight; treat it as inclusive for
     // the entire calendar day so a scheduled delivery later that day is valid.
     const endDate = recurrence.endDate
-      ? new Date(new Date(recurrence.endDate).setHours(23, 59, 59, 999))
+      ? new Date(new Date(recurrence.endDate).setUTCHours(23, 59, 59, 999))
       : undefined;
     if (endDate && currentDate > endDate) return null;
+
+    const calendarDay = (date: Date) => date.toISOString().slice(0, 10);
+    const excluded = new Set((recurrence.excludeDates || []).map(calendarDay));
+    const searchStart = recurrence.startDate && recurrence.startDate > currentDate ? recurrence.startDate : currentDate;
+    const explicit = [...(recurrence.selectedDates || []), ...(recurrence.includeDates || [])]
+      .filter((d) => d > currentDate && d >= searchStart && !excluded.has(calendarDay(d)) && (!endDate || d <= endDate))
+      .sort((a, b) => +a - +b);
+    const extra = explicit[0] ?? null;
 
     if (recurrence.rruleString) {
       try {
@@ -88,29 +96,32 @@ export class RecurringOrderService {
         const searchAfter = recurrence.startDate && recurrence.startDate > currentDate
           ? new Date(recurrence.startDate.getTime() - 1)
           : currentDate;
-        const next = rrulestr(ruleString).after(searchAfter);
-        if (next && (!endDate || next <= endDate)) return next;
+        const rule = rrulestr(ruleString);
+        let next = rule.after(searchAfter);
+        while (next && excluded.has(calendarDay(next))) {
+          const endOfExcludedDay = new Date(next);
+          endOfExcludedDay.setUTCHours(23, 59, 59, 999);
+          next = rule.after(endOfExcludedDay);
+        }
+        if (!next || (endDate && next > endDate)) return extra;
+        // A date added explicitly and by the rule represents one delivery.
+        return extra && calendarDay(extra) < calendarDay(next) ? extra : next;
       } catch (e) {
         console.error('Error parsing RRULE:', e);
       }
     }
 
-    const excluded = new Set((recurrence.excludeDates || []).map((d) => d.toDateString()));
-    const searchStart = recurrence.startDate && recurrence.startDate > currentDate ? recurrence.startDate : currentDate;
-    const explicit = [...(recurrence.selectedDates || []), ...(recurrence.includeDates || [])]
-      .filter((d) => d > currentDate && d >= searchStart && !excluded.has(d.toDateString()) && (!endDate || d <= endDate))
-      .sort((a, b) => +a - +b);
-    if (explicit.length) return explicit[0];
-
     const days = recurrence.daysOfWeek || [];
-    if (!days.length) return null;
+    if (!days.length) return extra;
     for (let i = searchStart > currentDate ? 0 : 1; i <= 366; i++) {
       const nextDate = new Date(searchStart);
-      nextDate.setDate(searchStart.getDate() + i);
-      if (endDate && nextDate > endDate) return null;
-      if (days.includes(nextDate.getDay()) && !excluded.has(nextDate.toDateString())) return nextDate;
+      nextDate.setUTCDate(searchStart.getUTCDate() + i);
+      if (endDate && nextDate > endDate) break;
+      if (days.includes(nextDate.getUTCDay()) && !excluded.has(calendarDay(nextDate))) {
+        return extra && calendarDay(extra) < calendarDay(nextDate) ? extra : nextDate;
+      }
     }
-    return null;
+    return extra;
   }
 
   static async createNextOrderInstance(orderId: string) {
