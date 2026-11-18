@@ -14,12 +14,12 @@ export default async function Experiences({ searchParams }: { searchParams: Prom
   const sessions = await listSessions({ occasion: selected, page });
   const items = selected ? experiences.filter(item => item.occasions.includes(selected)) : experiences;
   return <section className="editorial-wrap py-12 md:py-20">
-    <h1 className="font-serif text-5xl md:text-7xl">Explore experiences</h1>
-    <p className="mt-4 max-w-xl leading-7">Choose a published session to reserve places with the host, or explore ideas for a future occasion.</p>
-    <nav aria-label="Filter experiences by occasion" className="my-8 flex flex-wrap gap-2">
+    <h1 className="section-masthead">Experiences</h1>
+
+    <nav aria-label="Filter experiences by occasion" className="occasion-tabs">
       {['All occasions', ...occasions].map((name, index) => {
         const active = selected ? name === selected : index === 0;
-        return <Link key={name} aria-current={active ? 'page' : undefined} href={index ? { pathname: '/experiences', query: { occasion: name } } : '/experiences'} className={`rounded-full border px-5 py-3 text-sm ${active ? 'bg-brand-green-deep text-white' : 'border-border'}`}>{name}</Link>;
+        return <Link key={name} aria-current={active ? 'page' : undefined} href={index ? { pathname: '/experiences', query: { occasion: name } } : '/experiences'} className="occasion-tab">{name}</Link>;
       })}
     </nav>
     <h2 className="mb-4 text-3xl">Book with a host</h2>

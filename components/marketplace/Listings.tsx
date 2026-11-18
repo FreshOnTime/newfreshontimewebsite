@@ -1,14 +1,16 @@
 import Link from 'next/link';
-import { ArrowUpRight, Store } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import type { listSessions, listShops } from '@/lib/marketplace';
 
 export const dateLabel = (date: Date) => date.toLocaleString('en-LK', { timeZone: 'Asia/Colombo', dateStyle: 'medium', timeStyle: 'short' });
 export const pageNumber = (input?: string) => Math.max(1, Math.min(1000, Number.parseInt(input || '1', 10) || 1));
 
 export function ShopList({ shops }: { shops: Awaited<ReturnType<typeof listShops>> }) {
-  return <div className="listing-grid">{shops.map(shop => <Link className="listing-tile" key={shop.id} href={'/shops/' + encodeURIComponent(shop.id)}>
-    <Store size={24} aria-hidden="true" /><h3>{shop.name}</h3>{shop.city && <p>{shop.city}</p>}<span className="inline-flex items-center gap-1">View shop <ArrowUpRight size={14} aria-hidden="true" /></span>
-  </Link>)}</div>;
+  return <div className="shop-directory">{shops.map(shop => (
+    <Link className="directory-entry" key={shop.id} href={'/shops/' + encodeURIComponent(shop.id)}>
+      <h3>{shop.name}</h3>{shop.city && <span>{shop.city}</span>}<ArrowUpRight size={19} aria-hidden="true" />
+    </Link>
+  ))}</div>;
 }
 
 export function SessionList({ sessions }: { sessions: Awaited<ReturnType<typeof listSessions>> }) {
