@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const publicNavItems = [
     { href: "/", icon: House, label: "Home" },
     { href: "/search", icon: Search, label: "Search" },
-    { href: "/categories", icon: LayoutGrid, label: "Categories" },
+    { href: "/experiences", icon: LayoutGrid, label: "Explore" },
     { href: "/bags", icon: ShoppingBag, label: "Cart", showBadge: true },
     { href: "/profile", icon: CircleUserRound, label: "Profile" },
 ];

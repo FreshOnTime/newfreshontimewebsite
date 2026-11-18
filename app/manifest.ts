@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'FreshPick — Fresh food in Colombo',
+    name: 'FreshPick — Experiences in Colombo',
     short_name: 'FreshPick',
-    description: 'Fresh groceries, pantry staples and local food delivered in Colombo, Sri Lanka.',
+    description: 'Discover food, gifts and experiences in Colombo.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F8F7F2',
@@ -19,7 +19,7 @@ export default function manifest(): MetadataRoute.Manifest {
     })),
     shortcuts: [
       { name: 'Shop products', short_name: 'Products', url: '/products' },
-      { name: 'View deals', short_name: 'Deals', url: '/deals' },
+      { name: 'Explore experiences', short_name: 'Experiences', url: '/experiences' },
       { name: 'My orders', short_name: 'Orders', url: '/orders' },
     ].map(shortcut => ({ ...shortcut, icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }] })),
   };

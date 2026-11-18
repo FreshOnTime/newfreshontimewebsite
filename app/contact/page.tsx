@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { apiFetch } from "@/lib/api/client";
+import { experiences } from "@/lib/experiences";
 import { contactSchema, enquiryReference, enquiryTypes, type EnquiryType } from "@/lib/contactEnquiries";
 
 export default function ContactPage() {
@@ -29,6 +30,11 @@ export default function ContactPage() {
     const requestedType = searchParams.get("type");
     if (requestedType === "suggest") { setType("suggestion"); }
     else if (enquiryTypes.includes(requestedType as EnquiryType)) setType(requestedType as EnquiryType);
+    const experience = experiences.find(item => item.slug === searchParams.get("experience"));
+    if (experience) {
+      const topic = searchParams.get("gift") === "1" ? "Gift enquiry" : "Experience enquiry";
+      setSubject(topic + " – " + experience.title);
+    }
     if (source === "producers") setSubject((current) => current || "Selling with FreshPick");
   }, [searchParams, source]);
 

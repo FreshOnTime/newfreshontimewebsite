@@ -17,7 +17,7 @@ describe('customer and supplier website guides', () => {
     }
   });
   it('exposes all guide pages through the public metadata/sitemap inventory', () => {
-    const paths = new Set(PUBLIC_PAGES.map(page => page.path));
+    const paths = new Set<string>(PUBLIC_PAGES.map(page => page.path));
     ['/how-it-works', '/how-it-works/customers', '/how-it-works/suppliers'].forEach(path => expect(paths.has(path)).toBe(true));
   });
   it('does not imply automated card charging or supplier self-publication', () => {

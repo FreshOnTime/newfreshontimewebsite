@@ -7,17 +7,18 @@ import AnswerSection from '@/components/seo/AnswerSection';
 import { BUSINESS_FAQS } from '@/lib/answerContent';
 
 const paths = [
+  { id: 'for-hosts', label: 'For restaurants & hosts', title: 'Host an experience.', copy: 'Offer a dinner, a hands-on class or a food gift. Tell us what guests receive, your location, group size, price and available dates.', image: '/images/experiences/table.webp', alt: 'A table set for guests', action: 'Propose an experience', href: '#business-enquiry' },
   { id: 'for-buyers', label: 'For kitchens & workplaces', title: 'Source for your business.', copy: 'Buying for a restaurant, café, hotel or workplace? Tell us what you need, how often and in what quantities. We’ll discuss availability, delivery and a suitable arrangement.', image: '/images/editorial/restaurant-kitchen.webp', alt: 'Food preparation in a professional kitchen', action: 'Discuss your supply needs', href: '#business-enquiry' },
   { id: 'for-suppliers', label: 'For growers, makers & brands', title: 'Supply the market.', copy: 'Home-grown vegetables, homemade food, bakery, beverages or pantry products: share what you make or grow. Supplier applications are reviewed for quality, consistency and fit.', image: '/images/editorial/hands-at-work.webp', alt: 'Dough being prepared by hand', action: 'Apply as a supplier', href: '/auth/signup/supplier' },
 ];
 
 export default function B2BContent() {
   return <div className="bg-background">
-    <PremiumPageHeader eyebrow="FreshPick for business" title="Good food. A bigger table." subtitle="One place for businesses buying food and producers bringing their products to the FreshPick market." backgroundImage="/images/editorial/restaurant-kitchen.webp" />
+    <PremiumPageHeader eyebrow="FreshPick for business" title="Good food. A bigger table." subtitle="Partner with FreshPick to host an experience, share food gifts or supply the market." backgroundImage="/images/editorial/restaurant-kitchen.webp" />
     <div className="editorial-wrap editorial-section">
       <section aria-labelledby="business-paths-title">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-5"><h2 id="business-paths-title" className="editorial-title">For business.</h2><Link href="#business-enquiry" className="editorial-link">Start a conversation<ArrowDown className="h-4 w-4" aria-hidden="true" /></Link></div>
-        <div className="grid gap-12 md:grid-cols-2 md:gap-10">{paths.map(path => <article id={path.id} key={path.id} className="scroll-mt-28">
+        <div className="grid gap-12 md:grid-cols-3 md:gap-10">{paths.map(path => <article id={path.id} key={path.id} className="scroll-mt-28">
           <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-secondary"><Image src={path.image} alt={path.alt} fill sizes="(max-width: 767px) calc(100vw - 40px), 50vw" className="object-cover" /></div>
           <p className="editorial-label mt-6">{path.label}</p><h3 className="mt-3 text-3xl font-normal tracking-tight text-brand-green">{path.title}</h3><p className="mt-4 max-w-xl text-base leading-8 text-muted-foreground">{path.copy}</p><Link href={path.href} className="editorial-link mt-5">{path.action}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </article>)}</div>

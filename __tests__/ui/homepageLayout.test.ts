@@ -4,8 +4,14 @@ import { join } from "node:path";
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 describe("FreshPick editorial homepage", () => {
+  it("opens with occasion discovery and links to food, gifts and groceries", () => {
+    const home = read("app/page.tsx");
+    for (const path of ["/experiences", "/meals", "/gifts", "/products"]) expect(home).toContain(path);
+    expect(home).toContain("<ExperienceCards");
+  });
+
   it("retains database-backed products and existing shopping journeys", () => {
-    const page = read("app/page.tsx");
+    const page = read("app/market/page.tsx");
     for (const marker of [
       "<HeroSection />",
       "<HomeMarketManifesto />",

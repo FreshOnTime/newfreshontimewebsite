@@ -3,6 +3,8 @@ import { unstable_cache } from "next/cache";
 import { ArrowRight, Search } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
+import { experiences } from "@/lib/experiences";
+import ExperienceCards from "@/components/experiences/ExperienceCards";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Product } from "@/models/product";
 import { privateMetadata } from '@/lib/seo';
@@ -47,7 +49,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const query = (getString(params.q) || "").trim();
   const [products, categories] = query ? await Promise.all([searchProducts(query), searchCategories(query)]) : [[], []];
-  const total = products.length + categories.length;
+  const matches = query ? experiences.filter(item =>
+    [item.title, item.kind, item.summary, ...item.occasions].join(" ").toLowerCase().includes(query.toLowerCase())
+  ) : [];
+  const total = products.length + categories.length + matches.length;
 
   return (
     <div className="bg-background pb-10 text-foreground">
@@ -58,13 +63,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             {query ? <>Results for <span className="not-italic text-brand-green">“{query}”</span></> : <>What are you <span className="not-italic text-brand-green">looking for?</span></>}
           </h1>
           <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">
-            Find food, drinks and categories in one search.
+            Find experiences, food and groceries in one search.
           </p>
 
           <form action="/search" className="mt-8 max-w-2xl">
             <div className="flex min-h-14 items-center rounded-2xl border border-brand-green/20 bg-white px-3 shadow-sm transition-colors focus-within:border-brand-green sm:px-5">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <input aria-label="Search FreshPick products" name="q" defaultValue={query} autoFocus={!query} placeholder="Try dinner, mango, pasta, tea…" className="ml-3 min-w-0 flex-1 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground" />
+              <input aria-label="Search FreshPick" name="q" defaultValue={query} autoFocus={!query} placeholder="Try dinner, mango, pasta, tea…" className="ml-3 min-w-0 flex-1 bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground" />
               <button type="submit" className="ml-2 min-h-11 rounded-xl bg-brand-green-deep px-4 py-2 text-sm font-semibold text-white hover:bg-brand-green sm:ml-3 sm:px-6">Search</button>
             </div>
           </form>
@@ -78,7 +83,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <section className="grid gap-4 md:grid-cols-3">
             {[
               ["Food for your table", "Browse the market by category.", "/categories"],
-              ["Just browsing?", "Open Discover for moods, makers and ready food.", "/discover"],
+              ["Plan an occasion", "Explore dinners, workshops and family occasions.", "/experiences"],
               ["Know the list?", "Go straight to the live market and its filters.", "/products"],
             ].map(([title, copy, href]) => (
               <Link key={href} href={href} className="editorial-card group p-6">
@@ -96,6 +101,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </section>
         ) : (
           <div className="space-y-16">
+            {matches.length > 0 && <section><h2 className="mb-5 font-serif text-2xl">Experiences</h2><ExperienceCards items={matches} /></section>}
             {categories.length > 0 && <section aria-labelledby="search-categories-title"><h2 id="search-categories-title" className="font-serif text-2xl text-brand-green">Categories</h2><nav aria-label="Matching categories" className="mt-5 flex flex-wrap gap-4">{categories.map(category => <Link key={category.slug} href={`/categories/${encodeURIComponent(category.slug)}`} className="editorial-link">{category.name}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>)}</nav></section>}
             {products.length > 0 && (
               <section>

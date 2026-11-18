@@ -1,11 +1,7 @@
-/** Shared desktop and mobile destinations, in shopping-first order. */
 export const MARKET_NAVIGATION = [
-  { label: 'Categories', href: '/categories' },
-  { label: 'Shop all', href: '/products' },
-  { label: 'Weekly baskets', href: '/subscriptions' },
-  { label: 'Our producers', href: '/farm-to-table' },
-  { label: 'How it works', href: '/how-it-works' },
-  { label: 'About', href: '/about' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'For business', href: '/b2b' },
+  { label: 'Experiences', href: '/experiences' },
+  { label: 'Send a gift', href: '/gifts' },
+  { label: 'Order food', href: '/meals' },
+  { label: 'Groceries', href: '/market' },
+  { label: 'For partners', href: '/b2b' },
 ] as const;

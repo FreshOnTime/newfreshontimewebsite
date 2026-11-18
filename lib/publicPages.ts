@@ -2,7 +2,10 @@ import { pageMetadata } from '@/lib/seo';
 
 /** Canonical public pages shared by metadata and the XML sitemap. */
 export const PUBLIC_PAGES = [
-  { path: '/', title: 'Fresh groceries and local food in Colombo | FreshPick', description: 'Shop fresh groceries, discover bakery, pantry essentials and local food with FreshPick in Colombo, Sri Lanka.' },
+  { path: '/', title: 'Food experiences and gifts in Colombo', description: 'Explore dining, hosted activities and food gifts for birthdays, date nights and family occasions in Colombo.' },
+  { path: '/experiences', title: 'Explore experiences', description: 'Discover dining ideas, baking workshops and food for family occasions in Colombo.' },
+  { path: '/gifts', title: 'Food and experience gifts', description: 'Explore food gifts and experiences to share in Colombo.' },
+  { path: '/market', title: 'FreshPick grocery market', description: 'Browse groceries, recurring baskets and local produce in the FreshPick market.' },
   { path: '/products', title: 'Shop groceries in Colombo', description: 'Browse FreshPick produce, pantry essentials and everyday groceries. Check current prices and availability in the market.' },
   { path: '/categories', title: 'Shop by category', description: 'Explore FreshPick grocery categories, from fresh produce to pantry essentials for your Colombo kitchen.' },
   { path: '/deals', title: 'Grocery offers', description: 'Browse currently discounted FreshPick groceries and check the latest prices and availability.' },
@@ -15,7 +18,7 @@ export const PUBLIC_PAGES = [
   { path: '/farm-to-table', title: 'Our producers and sourcing', description: 'Explore producer opportunities for home growers, vegetable suppliers, homemade food, bakery, beverages and pantry products with FreshPick.' },
   { path: '/diaspora', title: 'Order for family in Sri Lanka', description: 'Shop for family or friends in supported Colombo delivery areas. Confirm delivery arrangements and payment before ordering.' },
   { path: '/b2b', title: 'FreshPick for business', description: 'Learn about FreshPick supplier onboarding and business partnerships in Sri Lanka.' },
-  { path: '/about', title: 'About FreshPick', description: 'Learn how FreshPick helps Colombo households shop for fresh vegetables, fruit, pantry essentials, homemade food and beverages.' },
+  { path: '/about', title: 'About FreshPick', description: 'Explore the food, gifting and experience marketplace FreshPick is building in Colombo.' },
   { path: '/contact', title: 'Contact FreshPick', description: 'Contact FreshPick for order questions, delivery arrangements, account support and partnerships.' },
   { path: '/how-it-works', title: 'How FreshPick works', description: 'Understand the FreshPick customer and supplier business process, orders and operations.' },
   { path: '/how-it-works/customers', title: 'Customer guide: shopping with FreshPick', description: 'How to browse, create bags, check out with cash on delivery, manage recurring baskets and get support.' },
@@ -32,7 +35,7 @@ export const PUBLIC_PAGES = [
 
 /** Search intent groups, chosen for the actual content rather than keyword stuffing. */
 const SEARCH_TERMS: Record<string, readonly string[]> = {
-  '/': ['FreshPick', 'online groceries Colombo', 'fresh food Sri Lanka'],
+  '/': ['FreshPick', 'Colombo food experiences', 'food gifts Sri Lanka'],
   '/products': ['groceries Colombo', 'fresh vegetables', 'online grocery shopping Sri Lanka'],
   '/categories': ['grocery categories', 'fresh produce Colombo', 'pantry staples'],
   '/subscriptions': ['recurring grocery baskets', 'weekly grocery shopping Colombo'],

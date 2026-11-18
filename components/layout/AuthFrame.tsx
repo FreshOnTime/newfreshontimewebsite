@@ -12,14 +12,14 @@ export default function AuthFrame({ children }: { children: ReactNode }) {
       <aside className="overflow-hidden rounded-[1.75rem] border border-brand-green/10 bg-secondary shadow-[0_20px_55px_-35px_rgba(16,46,30,.35)] lg:sticky lg:top-32">
         <div className="relative h-40 sm:h-52 lg:h-[440px] xl:h-[500px]">
           <Image
-            src={signingUp ? '/images/auth/market-bag.webp' : '/images/auth/market-still-life.webp'}
-            alt={signingUp ? 'A canvas market bag with greens, carrots, mangoes, bananas and limes' : 'Leafy greens, aubergines, limes, passion fruit and papaya on a stone counter'}
+            src="/images/experiences/table.webp"
+            alt="A table set for guests"
             fill priority sizes="(max-width: 1023px) calc(100vw - 40px), (max-width: 1440px) 42vw, 580px"
             className="object-cover object-[center_60%]"
           />
         </div>
         <div className="hidden bg-brand-green-deep p-8 text-white lg:block xl:p-10">
-          <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-white/80">Your everyday market</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-white/80">Your FreshPick account</p>
           <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-.04em] xl:text-4xl">{signingUp ? 'Good food starts here.' : 'Welcome back to good food.'}</h2>
           <p className="mt-4 max-w-sm text-sm leading-7 text-white/85">Save your favourites, plan a regular basket and keep your orders in one place.</p>
         </div>

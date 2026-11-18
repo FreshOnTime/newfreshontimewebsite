@@ -7,6 +7,8 @@ import { apiFetch } from "@/lib/api/client";
 const fieldClassName = "w-full rounded-lg border border-border bg-background px-4 py-3.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:bg-background disabled:opacity-60";
 
 const partnershipTypes = [
+  "Dining venue or experience host",
+  "Bakery or food gift partner",
   "Grower or farm",
   "Local food maker",
   "Brand or producer",

@@ -37,7 +37,7 @@ export const PRODUCER_FAQS: readonly AnswerItem[] = [
 export const ABOUT_FAQS: readonly AnswerItem[] = [
   {
     question: "What is FreshPick?",
-    answer: "FreshPick is a Sri Lankan online food market focused on everyday shopping for Colombo households. Customers can browse fresh produce, pantry staples, bakery products and available prepared or homemade food. The website shows current catalogue items and prices and also provides a route for local growers, makers and businesses to enquire about supplying products.",
+    answer: "FreshPick brings food, gifting and experience discovery together in Colombo. Explore occasions and enquire about a date with a host, or shop the live food and grocery catalogue.",
   },
   {
     question: "How can I shop for groceries with FreshPick?",

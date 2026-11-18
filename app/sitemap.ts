@@ -1,3 +1,4 @@
+import { experiences } from "@/lib/experiences";
 import { editorialGuides, guidePath } from '@/lib/editorialGuides';
 import type { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
@@ -49,6 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const managedGuideSlugs = new Set(managedGuides.map(guide => guide.slug));
   const pages: MetadataRoute.Sitemap = [
     ...staticPages,
+    ...experiences.map(item => ({ url: absoluteUrl("/experiences/" + item.slug) })),
     ...editorialGuides
       .filter(guide => !managedGuideSlugs.has(guide.slug))
       .map(guide => ({
