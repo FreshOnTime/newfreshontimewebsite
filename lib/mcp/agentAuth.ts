@@ -19,8 +19,8 @@ export async function authenticateMcpAgent(request: Request): Promise<{ userId: 
   const tokenHash = createHash('sha256').update(match[1]).digest('hex');
   const record = await prisma.agentAccessToken.findUnique({
     where: { tokenHash },
-    select: { userId: true, expiresAt: true, user: { select: { isBanned: true } } },
+    select: { bookingAccess: true, userId: true, expiresAt: true, user: { select: { isBanned: true } } },
   });
   if (!record || record.expiresAt <= new Date() || record.user.isBanned) return null;
-  return { userId: record.userId, scopes: [...MCP_SCOPES] };
+  return { userId: record.userId, scopes: MCP_SCOPES.filter(scope => record.bookingAccess || !scope.startsWith('bookings:')) };
 }

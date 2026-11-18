@@ -3,6 +3,7 @@ import { pageMetadata } from '@/lib/seo';
 /** Canonical public pages shared by metadata and the XML sitemap. */
 export const PUBLIC_PAGES = [
   { path: '/', title: 'Food experiences and gifts in Colombo', description: 'Explore dining, hosted activities and food gifts for birthdays, date nights and family occasions in Colombo.' },
+  { path: '/shops', title: 'Shops and hosts in Colombo', description: 'Find local shops, their products and bookable sessions.' },
   { path: '/experiences', title: 'Explore experiences', description: 'Discover dining ideas, baking workshops and food for family occasions in Colombo.' },
   { path: '/gifts', title: 'Food and experience gifts', description: 'Explore food gifts and experiences to share in Colombo.' },
   { path: '/market', title: 'FreshPick grocery market', description: 'Browse groceries, recurring baskets and local produce in the FreshPick market.' },

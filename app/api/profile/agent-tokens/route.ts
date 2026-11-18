@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Sign in required' }, { status: 401, headers: noStore });
   const tokens = await prisma.agentAccessToken.findMany({
     where: { userId: user.userId },
-    select: { id: true, name: true, createdAt: true, expiresAt: true },
+    select: { id: true, bookingAccess: true, name: true, createdAt: true, expiresAt: true },
     orderBy: { createdAt: 'desc' },
   });
   return NextResponse.json({ tokens }, { headers: noStore });
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
   const tokenHash = createHash('sha256').update(token).digest('hex');
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   const record = await prisma.agentAccessToken.create({
-    data: { userId: user.userId, name: body.name.trim(), tokenHash, expiresAt },
-    select: { id: true, name: true, createdAt: true, expiresAt: true },
+    data: { userId: user.userId, name: body.name.trim(), ...(body.bookingAccess === true ? { bookingAccess: true } : {}), tokenHash, expiresAt },
+    select: { id: true, bookingAccess: true, name: true, createdAt: true, expiresAt: true },
   });
   // The plaintext secret is returned exactly once. Only its hash is stored.
   return NextResponse.json({ token, record }, { status: 201, headers: noStore });

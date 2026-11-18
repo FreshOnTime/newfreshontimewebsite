@@ -7,7 +7,9 @@ describe("FreshPick editorial homepage", () => {
   it("opens with occasion discovery and links to food, gifts and groceries", () => {
     const home = read("app/page.tsx");
     for (const path of ["/experiences", "/meals", "/gifts", "/products"]) expect(home).toContain(path);
-    expect(home).toContain("<ExperienceCards");
+    expect(home).toContain("<ShopList");
+    expect(home).toContain("<SessionList");
+    expect(home).toContain("<ProductGrid");
   });
 
   it("retains database-backed products and existing shopping journeys", () => {

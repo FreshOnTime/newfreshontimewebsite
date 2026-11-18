@@ -46,6 +46,9 @@ export function GET() {
 
 ## What FreshPick offers
 
+- Approved shops and hosts at /shops, with products and upcoming experience sessions
+- Pay-at-venue reservations on the website or through the customer-authorized /api/mcp tools
+
 - Online grocery and pantry shopping
 - Fresh produce and everyday food discovery
 - Ready meals and homemade food

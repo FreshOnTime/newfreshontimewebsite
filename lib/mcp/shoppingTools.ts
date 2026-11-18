@@ -6,6 +6,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { BAG_INCLUDE, bagTotal, serializeBag } from '@/lib/bagSerializer';
 import { productUnitPrice } from '@/lib/commercePricing';
+import { bookExperience, bookingInput, listBookings, cancelBooking, BookingError } from '@/lib/experienceBookings';
 import { prepareCheckout } from '@/lib/checkoutService';
 import { oauthChallenge, oauthProvider } from '@/lib/mcp/oauth';
 
@@ -24,7 +25,7 @@ async function reply(fn: () => Promise<Record<string, unknown>>): Promise<CallTo
     const data = await fn();
     return { content: [{ type: 'text', text: JSON.stringify(data) }], structuredContent: data };
   } catch (error) {
-    const message = error instanceof ShoppingError ? error.message : 'FreshPick could not complete this request. Please retry or use the website.';
+    const message = error instanceof ShoppingError || error instanceof BookingError ? error.message : 'FreshPick could not complete this request. Please retry or use the website.';
     return { isError: true, content: [{ type: 'text', text: message }] };
   }
 }
@@ -91,6 +92,19 @@ export function registerShoppingTools(server: McpServer, userId: string, origin:
       ...(provider ? { _meta: { 'mcp/www_authenticate': [oauthChallenge(provider, required.join(' '))] } } : {}),
     });
   };
+
+  server.registerTool('book_experience', {
+    description: 'Reserve seats after the customer confirms the session, guest name, venue price and quantity. Pay at the venue. Generate a UUID requestId once and reuse it on retries.',
+    inputSchema: bookingInput.shape, annotations: replace, ...toolMetadata('bookings:write'),
+  }, async input => protectedReply('bookings:write', async () => ({ booking: await bookExperience(userId, input) })));
+  server.registerTool('list_my_bookings', {
+    description: 'Show the connected customer their experience reservations.', inputSchema: { page: z.number().int().min(1).max(1000).default(1) },
+    annotations: read, ...toolMetadata('bookings:read'),
+  }, async ({ page }) => protectedReply('bookings:read', async () => ({ bookings: await listBookings(userId, page) })));
+  server.registerTool('cancel_experience_booking', {
+    description: 'Cancel an upcoming reservation after the customer confirms. Its seats become available again.',
+    inputSchema: { bookingId: z.string().uuid() }, annotations: remove, ...toolMetadata('bookings:write'),
+  }, async ({ bookingId }) => protectedReply('bookings:write', () => cancelBooking(userId, bookingId)));
 
   server.registerTool('list_my_bags', {
     title: 'List my FreshPick shopping bags', description: 'Show the connected customer their active bags and current prices.',

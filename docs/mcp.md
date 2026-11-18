@@ -1,6 +1,6 @@
 # FreshPick MCP: catalog and customer-delegated shopping
 
-FreshPick exposes a stateless Streamable HTTP MCP server at `/api/mcp` on its storefront deployment. Three public catalog tools and one subscription-plan browsing tool require no login. Customer shopping tools require either a revocable customer agent key or a configured, verified OAuth account link.
+FreshPick exposes a stateless Streamable HTTP MCP server at `/api/mcp` on its storefront deployment. Public catalog, experience and subscription-plan tools require no login. Customer shopping tools require either a revocable customer agent key or a configured, verified OAuth account link.
 
 ## MCP endpoint
 
@@ -8,10 +8,15 @@ FreshPick exposes a stateless Streamable HTTP MCP server at `/api/mcp` on its st
 
 Production callers use Streamable HTTP and POST JSON-RPC requests with `Accept: application/json, text/event-stream`. No SSE GET stream or persisted MCP sessions. Public catalog tools remain available to anonymous agents.
 
+Database release prerequisite: apply the committed experience booking migration to the target database before serving this version.
+
 ## Public tools
 
 | Tool | Action |
 | --- | --- |
+| `list_shops` | Search approved shops and hosts |
+| `get_shop` | Browse a shop’s products and upcoming sessions |
+| `list_experience_sessions` | Read dates, remaining seats and LKR price per guest |
 | `search_products` | Search current catalogue by name, SKU or description |
 | `get_product` | Fetch one active product |
 | `list_categories` | Browse active grocery categories |
@@ -21,6 +26,9 @@ Production callers use Streamable HTTP and POST JSON-RPC requests with `Accept: 
 
 | Tool | Action |
 | --- | --- |
+| `book_experience` | Reserve places payable at the venue with bookings:write. Reuse the same requestId for retries. |
+| `list_my_bookings` | Read personal reservations with bookings:read |
+| `cancel_experience_booking` | Cancel an upcoming reservation with bookings:write |
 | `list_my_bags` | Read this customer's active bags |
 | `get_my_bag` | Read one bag |
 | `create_bag` | Create a named bag, optionally with items |
@@ -40,7 +48,7 @@ No tool submits an order, confirms an address, starts a payment, modifies an exi
 ## Granting and revoking agent access
 
 1. Sign into the customer website and visit **Account → AI shopping assistants** at `/profile/agent-access`.
-2. Name the agent and create a key. The plaintext key is displayed only once; its SHA-256 hash is kept in Postgres.
+2. Name the agent, optionally grant experience booking access, and create a key. Existing keys retain their original shopping permissions. The plaintext key is displayed only once; its SHA-256 hash is kept in Postgres.
 3. Configure an MCP client that can set a custom authorization header: `Authorization: Bearer fp_agent_...`. Never paste the key in chat messages or include it in a URL.
 4. Revoke access from the account page at any time. Keys expire after 30 days. A customer can have up to five active keys.
 

@@ -63,7 +63,7 @@ beforeEach(() => {
 
 it('keeps anonymous MCP limited to the public read-only catalog and subscription plan tools', async () => {
   const { body } = await tools(false);
-  expect(body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'list_subscription_plans', 'search_products']);
+  expect(body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'get_shop', 'list_categories', 'list_experience_sessions', 'list_shops', 'list_subscription_plans', 'search_products']);
   expect(mockAuthenticate).not.toHaveBeenCalled();
 });
 
@@ -142,4 +142,10 @@ it('scopes bag deletion to the authorized customer', async () => {
   expect(mockPrisma.bag.updateMany).toHaveBeenCalledWith(expect.objectContaining({
     where: { id, userId: 'customer-1', isActive: true }, data: { isActive: false },
   }));
+});
+
+it('requires a booking grant even when an agent can edit shopping bags', async () => {
+  const { body } = await tool('book_experience', { sessionId: id, requestId: otherId, guestName: 'Guest', seats: 1 });
+  expect(body.result.isError).toBe(true);
+  expect(mockPrisma.$transaction).not.toHaveBeenCalled();
 });

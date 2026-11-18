@@ -26,7 +26,7 @@ export default async function Experience({ params }: Props) {
     <Link href="/experiences" className="editorial-link">← All experiences</Link>
     <div className="mt-7 grid items-center gap-8 md:grid-cols-2 md:gap-14">
       <div className="relative aspect-[4/3] overflow-hidden rounded-lg"><Image src={item.image} alt={item.alt} fill priority sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" /></div>
-      <div><p className="text-sm font-semibold uppercase tracking-widest text-[#823e34]">{item.kind}</p>
+      <div><p className="text-sm font-semibold uppercase tracking-widest text-brand-green">{item.kind}</p>
         <h1 className="mt-4 font-serif text-5xl md:text-6xl">{item.title}</h1>
         <p className="mt-4 text-lg">{item.summary}</p><p className="mt-4 leading-7">{item.details}</p>
         <p className="mt-5 text-sm text-muted-foreground">FreshPick will need to confirm partner availability and pricing before you book.</p>

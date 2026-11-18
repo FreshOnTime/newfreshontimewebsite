@@ -26,7 +26,7 @@ export function AdminHeader() {
   };
 
   return (
-    <header className="bg-background shadow-sm border-b border-border">
+    <header className="bg-[#101715] text-white shadow-sm border-b border-border">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -41,7 +41,7 @@ export function AdminHeader() {
               </Button>
             </div>
             <div className="flex-shrink-0">
-              <p className="hidden text-sm font-medium text-brand-green sm:block">FreshPick administration</p>
+              <p className="hidden text-sm font-medium text-[#99f2c8] sm:block">FreshPick administration</p>
             </div>
           </div>
 

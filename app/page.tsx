@@ -1,40 +1,44 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import ExperienceCards from '@/components/experiences/ExperienceCards';
-import { occasions } from '@/lib/experiences';
+import { ArrowUpRight, Search } from 'lucide-react';
+import { listShops, listSessions } from '@/lib/marketplace';
+import prisma from '@/lib/prisma';
+import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
+import ProductGrid from '@/components/products/ProductGrid';
+import type { Product } from '@/models/product';
+import { ShopList, SessionList } from '@/components/marketplace/Listings';
 import { publicPageMetadata } from '@/lib/publicPages';
 
 export const metadata = publicPageMetadata('/');
+export const dynamic = 'force-dynamic';
 
-export default function Home() {
-  return <div className="bg-[#faf7ef] text-[#33231f]">
-    <section className="grid bg-[#42272c] text-[#fff6e9] md:grid-cols-[0.88fr_1.12fr]">
-      <div className="flex flex-col items-start justify-center px-6 py-12 sm:px-12 lg:px-[max(4rem,calc((100vw-80rem)/2))] lg:pr-10 lg:py-24">
-        <p className="text-xs font-semibold uppercase tracking-[.18em]">Colombo, Sri Lanka</p>
-        <h1 className="my-5 font-serif text-[clamp(3.4rem,6.6vw,7rem)] leading-[.99] tracking-[-.055em]">Come to<br /><i>the table.</i></h1>
-        <p className="max-w-sm text-base leading-7">Find a dinner for two, a gift to share or something to make together in Colombo.</p>
-        <Link className="mt-7 inline-flex min-h-12 items-center gap-4 rounded-full bg-[#fff6e9] px-6 font-semibold text-[#42272c]" href="/experiences">Explore experiences <ArrowRight size={17} aria-hidden="true" /></Link>
+export default async function Home() {
+  const [shopResult, sessionResult, productResult] = await Promise.allSettled([
+    listShops(), listSessions(), prisma.product.findMany({ where: { archived: false, stockQty: { gt: 0 } }, select: productCardSelect,
+      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }], take: 4 }),
+  ]);
+  const shops = shopResult.status === 'fulfilled' ? shopResult.value : [];
+  const sessions = sessionResult.status === 'fulfilled' ? sessionResult.value : [];
+  const products = productResult.status === 'fulfilled' ? productResult.value : [];
+  return <div>
+    <section className="discovery-hero"><div className="editorial-wrap grid items-center gap-8 py-12 md:grid-cols-[1fr_.9fr] md:py-20">
+      <div><p className="city-mark">Colombo, Sri Lanka</p>
+        <h1>Discover your<br /><em>local favourites.</em></h1>
+        <p>Shop independent makers, find food gifts and book time with local hosts.</p>
+        <form className="market-search" action="/search"><Search aria-hidden="true" size={20} /><input name="q" aria-label="Search the marketplace" placeholder="Search shops, products and experiences" required /><button>Search</button></form>
+        <nav aria-label="Browse marketplace" className="flex flex-wrap gap-x-5 gap-y-2">{[['Shops & hosts','/shops'],['Experiences','/experiences'],['Gifts','/gifts']].map(([name,href]) => <Link key={href} href={href}>{name} ↗</Link>)}</nav>
       </div>
-      <div className="relative min-h-64 md:min-h-[29rem]">
-        <Image src="/images/experiences/table.webp" alt="Flowers and glassware arranged for a shared dinner" fill priority sizes="(max-width: 767px) 100vw, 56vw" className="object-cover" />
-      </div>
-    </section>
-    <section className="editorial-wrap py-12 md:py-20">
-      <h2 className="font-serif text-4xl md:text-6xl">What’s the occasion?</h2>
-      <nav aria-label="Browse by occasion" className="mb-8 mt-5 flex flex-wrap gap-2">
-        {occasions.map(name => <Link key={name} className="rounded-full border border-[#bca99c] px-5 py-3 text-sm hover:bg-white" href={{ pathname: '/experiences', query: { occasion: name } }}>{name}</Link>)}
-      </nav>
-      <ExperienceCards />
-    </section>
-    <section aria-label="More ways to explore FreshPick" className="editorial-wrap grid gap-4 pb-12 sm:grid-cols-3">
-      {[
-        ['Send a gift', 'Food and experiences for someone special.', '/gifts'],
-        ['Order food', 'Find prepared meals for your table.', '/meals'],
-        ['Shop groceries', 'Browse the everyday market.', '/products'],
-      ].map(([title, copy, href]) => <Link href={href} key={href} className="rounded-lg border border-[#d5c8b8] p-6 hover:bg-white">
-        <h2 className="flex items-center justify-between font-serif text-2xl">{title}<ArrowRight size={18} aria-hidden="true" /></h2><p className="mt-2 text-sm">{copy}</p>
-      </Link>)}
-    </section>
+      <div className="hero-mosaic"><Image src="/images/experiences/table.webp" alt="Flowers and glassware at a dinner table" fill priority sizes="(max-width: 767px) 90vw, 45vw" />
+        <Link href="/experiences">Explore dining & experiences <ArrowUpRight size={20} /></Link>
+      </div></div></section>
+    <div className="market-wrap">
+      <div className="section-line"><h2>Shops & hosts</h2><Link href="/shops">View directory ↗</Link></div>
+      {shopResult.status === 'rejected' ? <p>Shop listings are temporarily unavailable.</p> : shops.length ? <ShopList shops={shops.slice(0, 4)} /> : <p>Partner shops appear here when their first listing is available. <Link className="editorial-link" href="/b2b">List your business</Link></p>}
+      <div className="section-line"><h2>Shop products</h2><Link href="/products">All products ↗</Link></div>
+      {productResult.status === 'rejected' ? <p>The product catalogue is temporarily unavailable.</p> : products.length ? <ProductGrid products={products.map(serializeProductCardForUi) as Product[]} /> : <Link className="editorial-link" href="/meals">Browse food categories</Link>}
+      <div className="section-line"><h2>Upcoming experiences</h2><Link href="/experiences">Explore occasions ↗</Link></div>
+      {sessionResult.status === 'rejected' ? <p>The experience calendar is temporarily unavailable.</p> : sessions.length ? <SessionList sessions={sessions.slice(0, 4)} /> : <p>Browse occasion ideas while hosts prepare their next dates.</p>}
+      <nav className="mt-10 flex flex-wrap gap-5" aria-label="Food and gifting"><Link className="editorial-link" href="/gifts">Send a gift</Link><Link className="editorial-link" href="/meals">Order food</Link><Link className="editorial-link" href="/market">Grocery market</Link></nav>
+    </div>
   </div>;
 }

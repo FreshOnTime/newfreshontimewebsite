@@ -83,8 +83,10 @@ export async function loadStorefrontProducts(query: string) {
 export async function loadStorefrontProduct(id: string) {
   const product = await prisma.product.findFirst({
     where: { OR: [{ id }, { sku: id }, { slug: id }] },
-    include: { category: { select: { name: true, slug: true } } },
+    include: { category: { select: { name: true, slug: true } }, supplier: { select: { id: true, name: true, status: true, applicationStatus: true } } },
   });
   if (!product || product.archived) return null;
-  return serializeProductForUi(product);
+  const supplier = product.supplier;
+  return { ...serializeProductForUi(product), shop: supplier?.status === 'active' && supplier.applicationStatus === 'approved'
+    ? { id: supplier.id, name: supplier.name } : null };
 }

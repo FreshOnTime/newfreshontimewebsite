@@ -36,7 +36,7 @@ describe('FreshPick MCP protocol and public data boundaries', () => {
     const notification = await POST(request({ jsonrpc: '2.0', method: 'notifications/initialized' }));
     expect(notification.status).toBe(202);
     const listed = await rpc('tools/list');
-    expect(listed.body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'list_categories', 'list_subscription_plans', 'search_products']);
+    expect(listed.body.result.tools.map((t: { name: string }) => t.name).sort()).toEqual(['get_product', 'get_shop', 'list_categories', 'list_experience_sessions', 'list_shops', 'list_subscription_plans', 'search_products']);
     expect(listed.body.result.tools.every((t: { annotations: { readOnlyHint: boolean; destructiveHint: boolean } }) => t.annotations.readOnlyHint && !t.annotations.destructiveHint)).toBe(true);
   });
 

@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 
 export const MCP_SCOPES = [
   'catalog:read', 'bags:read', 'bags:write',
-  'wishlist:read', 'wishlist:write', 'orders:read',
+  'wishlist:read', 'wishlist:write', 'orders:read', 'bookings:read', 'bookings:write',
 ] as const;
 
 type Discovery = {

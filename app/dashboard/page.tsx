@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -77,6 +78,7 @@ export default function DashboardPage() {
             <header className="border-b border-border pb-6">
               <p className="text-xs font-bold normal-case text-brand-green">{isSupplier ? 'Partner operations' : 'Account home'}</p>
               <h1 className="mt-3 font-serif text-3xl font-normal leading-tight text-brand-green md:text-4xl">{heading}</h1>
+              <Link className="editorial-link" href={isSupplier ? "/dashboard/sessions" : "/bookings"}>{isSupplier ? "Manage sessions & guests" : "My bookings"}</Link>
               {description && <p className="mt-4 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">{description}</p>}
             </header>
             {renderSection()}

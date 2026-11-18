@@ -3,6 +3,8 @@ import { unstable_cache } from "next/cache";
 import { ArrowRight, Search } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { productCardSelect, serializeProductCardForUi } from "@/lib/productSerializer";
+import { listShops, listSessions } from '@/lib/marketplace';
+import { ShopList, SessionList } from '@/components/marketplace/Listings';
 import { experiences } from "@/lib/experiences";
 import ExperienceCards from "@/components/experiences/ExperienceCards";
 import ProductGrid from "@/components/products/ProductGrid";
@@ -48,11 +50,11 @@ function getString(value: string | string[] | undefined) {
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const query = (getString(params.q) || "").trim();
-  const [products, categories] = query ? await Promise.all([searchProducts(query), searchCategories(query)]) : [[], []];
+  const [products, categories, shops, sessions] = query ? await Promise.all([searchProducts(query), searchCategories(query), listShops(1, query), listSessions({query})]) : [[], [], [], []];
   const matches = query ? experiences.filter(item =>
     [item.title, item.kind, item.summary, ...item.occasions].join(" ").toLowerCase().includes(query.toLowerCase())
   ) : [];
-  const total = products.length + categories.length + matches.length;
+  const total = products.length + categories.length + matches.length + shops.length + sessions.length;
 
   return (
     <div className="bg-background pb-10 text-foreground">
@@ -101,6 +103,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </section>
         ) : (
           <div className="space-y-16">
+            {shops.length > 0 && <section><h2 className="mb-4 text-3xl">Shops & hosts</h2><ShopList shops={shops} /></section>}
+            {sessions.length > 0 && <section><h2 className="mb-4 text-3xl">Bookable experiences</h2><SessionList sessions={sessions} /></section>}
             {matches.length > 0 && <section><h2 className="mb-5 font-serif text-2xl">Experiences</h2><ExperienceCards items={matches} /></section>}
             {categories.length > 0 && <section aria-labelledby="search-categories-title"><h2 id="search-categories-title" className="font-serif text-2xl text-brand-green">Categories</h2><nav aria-label="Matching categories" className="mt-5 flex flex-wrap gap-4">{categories.map(category => <Link key={category.slug} href={`/categories/${encodeURIComponent(category.slug)}`} className="editorial-link">{category.name}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>)}</nav></section>}
             {products.length > 0 && (

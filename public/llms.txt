@@ -10,6 +10,9 @@ Currency: Sri Lankan rupee (LKR)
 
 ## Start here
 
+- [Shops and hosts](https://freshpick.lk/shops) for products and bookable sessions.
+- [Experiences](https://freshpick.lk/experiences) for scheduled dining and hosted activities.
+
 - [FreshPick home](https://freshpick.lk/): introduction to the market and featured food.
 - [Shop all products](https://freshpick.lk/products): live products, pricing and availability.
 - [Browse categories](https://freshpick.lk/categories): find produce, pantry, bakery and other food groups.

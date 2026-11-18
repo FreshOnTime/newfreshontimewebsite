@@ -2,9 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --font-sans: Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Geist", Arial, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
     --font-heading: var(--font-sans);
     --font-default: var(--font-sans);
     --font-accent: var(--font-heading);
@@ -162,3 +169,45 @@
     }
   }
 }
+
+/* Neutral catalogue surfaces share a graphite and mint frame with the workspaces. */
+:root {
+  --background: 150 13% 98%; --foreground: 157 18% 10%; --card: 0 0% 100%;
+  --secondary: 153 12% 93%; --muted: 155 10% 94%; --muted-foreground: 156 9% 34%;
+  --primary: 157 55% 25%; --border: 155 10% 84%; --input: 155 12% 74%;
+  --ring: 155 58% 32%; --radius: .625rem;
+}
+.discovery-hero, .premium-intro {
+  color: #f1f9f6;
+  background-color: #0a100f;
+  background-image: radial-gradient(ellipse at 80% 20%, #13433566, transparent 52%),
+    linear-gradient(#a8f4cf0b 1px, transparent 1px), linear-gradient(90deg, #a8f4cf0b 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+}
+.discovery-hero .city-mark { color: #9cf5cc; text-transform: uppercase; letter-spacing: .16em; font-size: .74rem; }
+.discovery-hero h1 { margin: 1.1rem 0; font-size: clamp(3.25rem, 6.4vw, 6.7rem); line-height: .98; }
+.discovery-hero h1 em { color: #adf7d5; font-style: normal; }
+.discovery-hero p { max-width: 35rem; color: #c6d6cf; }
+.discovery-hero nav a { padding: .45rem 0; font-size: .9rem; color: #e6fff3; }
+.hero-mosaic { position: relative; min-height: clamp(16rem, 30vw, 32rem); border-radius: 1rem; overflow: hidden; border: 1px solid #56756a; }
+.hero-mosaic img { object-fit: cover; }
+.hero-mosaic a { position:absolute; inset:auto 0 0; display:flex; align-items:center; justify-content:space-between; padding:2.5rem 1.3rem 1rem; background:linear-gradient(transparent,#050b09e6); color:white; }
+.market-wrap { width:min(100% - 2rem, 82rem); margin:auto; padding:clamp(2rem,5vw,5rem) 0; }
+.market-wrap h1 { font-size:clamp(2.8rem,6vw,5.5rem); line-height:1.05; margin:1rem 0; }
+.market-wrap h2 { font-size:clamp(1.7rem,3vw,3rem); margin:2.2rem 0 1rem; line-height:1.1; }
+.market-wrap > p { max-width:52rem; margin:.65rem 0; }
+.section-line { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; margin-top:1.4rem; }
+.section-line:first-child, .section-line:first-child h2 { margin-top:0; }
+.section-line a,.listing-tile span { color:#21634c; font-size:.87rem; font-weight:600; }
+.listing-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); }
+.listing-tile,.market-form { background:white; border:1px solid #d7e1dc; border-radius:.8rem; padding:1.4rem; }
+.listing-tile { display:grid; align-content:start; gap:.5rem; margin-bottom:.5rem; }
+a.listing-tile:hover { border-color:#448f71; background:#f0faf5; }
+.listing-tile h3 { font-size:1.45rem; font-weight:600; line-height:1.2; }
+.listing-tile strong { display:flex; justify-content:space-between; }
+.market-form { display:grid; gap:1rem; max-width:38rem; margin:1.5rem 0; }
+.market-form label { display:grid; gap:.4rem; font-weight:600; }
+.market-form :is(input,textarea,select),.market-search input { border:1px solid #bbc9c2; border-radius:.4rem; padding:.7rem; color:#122019; background:white; }
+.market-search { display:flex; align-items:center; gap:.6rem; width:min(100%,36rem); margin:1.5rem 0; border:1px solid #a2b4a9; background:#fff; color:#193529; border-radius:.6rem; padding:.4rem .4rem .4rem .8rem; }
+.market-search input { min-width:0; flex:1; border:0; padding:.5rem 0; }
+.market-search button { background:#a0f5cd; color:#10261d; font-weight:650; border-radius:.4rem; padding:.65rem 1rem; }

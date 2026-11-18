@@ -162,6 +162,7 @@ model User {
   agentAccessTokens AgentAccessToken[]
   oauthIdentities  OAuthIdentity[]
   orders           Order[]
+  bookings         ExperienceBooking[]
   checkoutRequests CheckoutRequest[]
   bags             Bag[]
   subscriptions    Subscription[]
@@ -203,6 +204,7 @@ model AgentAccessToken {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
+  bookingAccess Boolean @default(false)
   tokenHash String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -278,6 +280,7 @@ model Supplier {
   reviewVersion Int @default(0)
 
   products User[] // supplier-role accounts linked to this supplier
+  sessions ExperienceSession[]
   catalog  Product[]
   uploads  SupplierUpload[]
 
@@ -968,4 +971,37 @@ model SupplyOffer {
   handedOverAt  DateTime?
   @@index([status, createdAt])
   @@index([phone, handedOverAt])
+}
+
+model ExperienceSession {
+  id         String @id @default(uuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  title      String
+  details    String
+  occasion   String
+  startsAt   DateTime
+  priceLkr   Int
+  capacity   Int
+  remaining  Int
+  closed     Boolean @default(false)
+  bookings   ExperienceBooking[]
+  @@unique([supplierId, title, startsAt])
+  @@index([startsAt])
+}
+
+model ExperienceBooking {
+  id         String @id @default(uuid())
+  sessionId  String
+  session    ExperienceSession @relation(fields: [sessionId], references: [id])
+  userId     String
+  user       User @relation(fields: [userId], references: [id])
+  requestId  String
+  guestName  String
+  seats      Int
+  totalLkr   Int
+  cancelled  Boolean @default(false)
+  createdAt  DateTime @default(now())
+  @@unique([userId, requestId])
+  @@index([sessionId])
 }

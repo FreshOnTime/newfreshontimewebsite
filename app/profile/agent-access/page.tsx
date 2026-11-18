@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { AccountPage } from '@/components/account/AccountPage';
 
-type AgentToken = { id: string; name: string; createdAt: string; expiresAt: string };
+type AgentToken = { bookingAccess?: boolean; id: string; name: string; createdAt: string; expiresAt: string };
 
 export default function AgentAccessPage() {
   const { user, loading } = useAuth();
@@ -16,6 +16,7 @@ export default function AgentAccessPage() {
   const [tokens, setTokens] = useState<AgentToken[]>([]);
   const [oauth, setOauth] = useState<{ configured: boolean; linked: boolean } | null>(null);
   const [name, setName] = useState('');
+  const [bookingAccess, setBookingAccess] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,11 +60,11 @@ export default function AgentAccessPage() {
     try {
       const response = await authenticatedApiFetch('/api/profile/agent-tokens', {
         method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }),
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, bookingAccess }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not authorize the agent');
-      setSecret(data.token); setName(''); await refresh();
+      setSecret(data.token); setName(''); setBookingAccess(false); await refresh();
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not authorize the agent'); }
     finally { setBusy(false); }
   }
@@ -101,6 +102,7 @@ export default function AgentAccessPage() {
         <h2 className="flex items-center gap-2 text-lg font-medium text-brand-green"><KeyRound className="h-5 w-5" /> Connect an agent</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">Each agent receives a revocable key that can view your orders and wishlists, and create, edit or delete shopping bags. Agents cannot place orders, choose payments or start checkout. Only use clients you trust. Access expires after 30 days.</p>
         <form className="mt-5 flex flex-wrap gap-3" onSubmit={create}>
+          <label className="w-full"><input type="checkbox" checked={bookingAccess} onChange={e => setBookingAccess(e.target.checked)} /> Allow this agent to view, reserve and cancel my experiences</label>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required placeholder="Agent name (e.g. my grocery assistant)" aria-label="Agent name" className="h-11 min-w-0 flex-1 rounded-lg border border-border px-4 text-sm" />
           <button disabled={busy || !name.trim()} className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-leaf px-5 text-sm font-semibold text-brand-ink disabled:opacity-50" type="submit">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Create access key</button>
         </form>
@@ -116,7 +118,7 @@ export default function AgentAccessPage() {
         <h2 className="text-lg font-medium text-brand-green">Your authorized agents</h2>
         {tokens.length === 0 ? <p className="mt-4 text-sm text-muted-foreground">No agents connected.</p> :
           <ul className="mt-4 divide-y divide-border">{tokens.map(token => <li key={token.id} className="flex items-center justify-between gap-4 py-4">
-            <div><p className="text-sm font-semibold">{token.name}</p><p className="mt-1 text-xs text-muted-foreground">Expires {new Date(token.expiresAt).toLocaleDateString()}</p></div>
+            <div><p className="text-sm font-semibold">{token.name}{token.bookingAccess ? ' · Experience booking enabled' : ''}</p><p className="mt-1 text-xs text-muted-foreground">Expires {new Date(token.expiresAt).toLocaleDateString()}</p></div>
             <button type="button" disabled={busy} onClick={() => void revoke(token.id)} className="inline-flex items-center gap-2 text-sm text-destructive disabled:opacity-50"><Trash2 className="h-4 w-4" /> Revoke</button>
           </li>)}</ul>}
       </section>

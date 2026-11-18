@@ -21,7 +21,7 @@ import { loadStorefrontProduct, loadStorefrontProducts } from "@/lib/storefrontP
 export const revalidate = 300;
 
 
-const getProduct = cache(unstable_cache(loadStorefrontProduct, ['storefront-product-db-v1'], {
+const getProduct = cache(unstable_cache(loadStorefrontProduct, ['storefront-product-db-v2'], {
   revalidate: 300, tags: ['products'],
 }));
 const getRelatedSelection = unstable_cache(loadStorefrontProducts, ['storefront-related-db-v1'], {
@@ -98,6 +98,7 @@ export default async function ProductPage({
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{product.isBundle ? "Market bundle" : "From the market"}</p>
             <h1 className="mt-4 font-heading text-[clamp(2.4rem,4.5vw,4.8rem)] font-semibold leading-[1.07] tracking-[-.05em] text-brand-green-deep">{product.name}</h1>
             <p className="mt-3 text-sm text-muted-foreground">{product.isOutOfStock ? "Currently unavailable" : "In stock"} · SKU {product.sku}</p>
+            {product.shop && <Link className="editorial-link" href={'/shops/' + product.shop.id}>Sold by {product.shop.name} <ArrowUpRight size={16} /></Link>}
             <div className="mt-6 flex flex-wrap items-baseline gap-3">
               <span className="text-3xl font-semibold tracking-[-.035em] text-brand-green-deep">Rs. {discountedPrice.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               {showDiscount && <span className="text-sm text-muted-foreground line-through">Rs. {product.pricePerBaseQuantity.toFixed(2)}</span>}
