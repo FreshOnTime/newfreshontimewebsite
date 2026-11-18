@@ -6,13 +6,13 @@ import { GET as receipt } from '@/app/api/orders/receipt/route';
 import { prepareCheckout, checkoutRequestHash, checkoutSchema } from '@/lib/checkoutService';
 
 jest.mock('@/lib/auth', () => ({ requireAuth: (handler: unknown) => handler }));
-jest.mock('@/lib/services/mailService', () => ({ sendOrderEmail: jest.fn() }));
+jest.mock('@/lib/services/mailService', () => ({ sendOrderEmail: jest.fn(), sendEmail: jest.fn() }));
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: {
   product: { findMany: jest.fn() }, user: { findUnique: jest.fn() }, bag: { findFirst: jest.fn() },
   checkoutRequest: { findUnique: jest.fn() }, $transaction: jest.fn(),
 } }));
 const db = prisma as unknown as { product: { findMany: jest.Mock }; user: { findUnique: jest.Mock }; bag: { findFirst: jest.Mock }; checkoutRequest: { findUnique: jest.Mock }; $transaction: jest.Mock };
-const tx = { product: { updateMany: jest.fn() }, order: { create: jest.fn() }, checkoutRequest: { create: jest.fn(), update: jest.fn() } };
+const tx = { product: { updateMany: jest.fn() }, order: { create: jest.fn() }, checkoutRequest: { create: jest.fn(), update: jest.fn() }, supplier: { findMany: jest.fn() }, supplierOrder: { createMany: jest.fn() }, notification: { create: jest.fn() } };
 const product = { id: 'p1', sku: 'TOMATO', slug: 'tomato', name: 'Tomatoes', price: 20, discountPercentage: 25, stockQty: 10 };
 const body = { items: [{ productId: 'p1', quantity: 2 }], shippingAddress: { name: 'Customer', street: 'Market Road', city: 'Colombo', country: 'LK', phone: '0771234567' } };
 const request = (data: unknown = body, key = 'retry-key-1', customerId = 'customer-1') => ({
@@ -68,6 +68,16 @@ describe('Checkout integrity', () => {
     db.checkoutRequest.findUnique.mockResolvedValue({ fingerprint: checkoutRequestHash(checkoutSchema.parse(body)), response: { success: true, data: { _id: 'original' } } });
     expect(await (await POST(request(), undefined)).json()).toMatchObject({ data: { _id: 'original' } });
     expect(db.product.findMany).not.toHaveBeenCalled(); expect(db.$transaction).not.toHaveBeenCalled();
+  });
+  it('writes supplier requests and private alerts within the same checkout transaction', async () => {
+    db.product.findMany.mockResolvedValue([{ ...product, supplierId: 'supplier-1' }]);
+    tx.supplier.findMany.mockResolvedValue([{ id: 'supplier-1', status: 'active', applicationStatus: 'approved', products: [{ id: 'supplier-user', email: null }] }]);
+    tx.supplierOrder.createMany.mockResolvedValue({ count: 1 });
+    const res = await POST(request(), undefined);
+    expect(res.status).toBe(201);
+    expect(tx.supplierOrder.createMany).toHaveBeenCalledWith({ data: [{ orderId: 'order1', supplierId: 'supplier-1', items: [{ productId: 'p1', sku: 'TOMATO', name: 'Tomatoes', qty: 2 }] }], skipDuplicates: true });
+    expect(tx.notification.create).toHaveBeenCalledWith({ data: expect.objectContaining({ targetUserId: 'supplier-user', link: '/dashboard?section=orders' }) });
+    expect(tx.supplierOrder.createMany.mock.invocationCallOrder[0]).toBeLessThan(tx.checkoutRequest.update.mock.invocationCallOrder[0]);
   });
   it('rejects reuse of a key for a different basket', async () => {
     db.checkoutRequest.findUnique.mockResolvedValue({ fingerprint: 'another', response: {} });

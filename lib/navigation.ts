@@ -7,5 +7,6 @@ export const MARKET_NAVIGATION = [
   { label: 'How it works', href: '/how-it-works' },
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Partners', href: '/partners' },
   { label: 'For business', href: '/b2b' },
 ] as const;

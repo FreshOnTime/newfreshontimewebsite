@@ -96,7 +96,7 @@ export const supplierGuide: Guide = {
       'Report corrections or changes of availability to FreshPick operations.'
     ], action: { label: 'Browse the market', href: '/products' } },
     { id: 'orders', title: 'Coordinate fulfilment and customer orders', summary: 'FreshPick manages customer-facing orders and the checkout lifecycle.', details: [
-      'Customers place COD orders with FreshPick; the website does not automatically split or remit payments to suppliers.',
+      'Customers place COD orders with FreshPick; linked suppliers receive their own supply request in the partner workspace. The website does not automatically remit payments to suppliers.',
       'Supplier dashboards surface operational metrics, but are not independent shipping or payout services.',
       'Packing, collection, delivery and dispute responsibilities must be agreed for the specific supplier arrangement.'
     ], action: { label: 'Contact producer support', href: '/contact?type=question&source=producers' } },

@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { prepareCheckout, reserveCheckoutStock, CheckoutError } from '@/lib/checkoutService';
 import { roundMoney } from '@/lib/commercePricing';
+import { createSupplierOrders } from '@/lib/services/supplierOrderService';
 import { orderAddressSchema } from '@/lib/orderAddress';
 import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
@@ -13,6 +14,7 @@ export const dynamic = 'force-dynamic';
 const ORDER_INCLUDE = {
   items: true,
   subscriptionDelivery: true,
+  supplierRequests: { select: { id: true, status: true } },
   customer: { select: { firstName: true, lastName: true, email: true } },
 } satisfies Prisma.OrderInclude;
 
@@ -148,7 +150,7 @@ export const POST = requireAdminSimple(async (request) => {
     const total = roundMoney(subtotal + data.shipping + data.tax - data.discount);
     const created = await prisma.$transaction(async tx => {
       await reserveCheckoutStock(tx, validatedItems);
-      return tx.order.create({
+      const order = await tx.order.create({
       data: {
         orderNumber,
         customerId: data.customerId,
@@ -173,6 +175,8 @@ export const POST = requireAdminSimple(async (request) => {
       },
       include: ORDER_INCLUDE,
       });
+      await createSupplierOrders(tx, order, validatedItems);
+      return order;
     });
 
     const serialized = serializeOrder(created);

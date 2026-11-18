@@ -12,6 +12,7 @@ const groups = [
   { name: 'Store', items: [
     { name: 'Overview', href: '/admin', icon: LayoutDashboard },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+    { name: 'Partner fulfilment', href: '/admin/supplier-orders', icon: Handshake },
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Categories', href: '/admin/categories', icon: Tags },
     { name: 'Customers', href: '/admin/customers', icon: Users },

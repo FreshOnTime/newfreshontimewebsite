@@ -162,7 +162,7 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
     const action = body?.action as string;
     const user = (request as NextRequest & { user: AuthUser }).user;
 
-    const order = await prisma.order.findUnique({ where: { id }, include: { items: true, subscriptionDelivery: true } });
+    const order = await prisma.order.findUnique({ where: { id }, include: { items: true, subscriptionDelivery: true, supplierRequests: { select: { status: true } } } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     const ownerId = user.mongoId || user.userId;
     const isOwner = String(order.customerId) === String(ownerId);
@@ -181,6 +181,9 @@ export const PATCH = requireAuth(async (request: NextRequest, context?: { params
         return NextResponse.json({ error: 'Create a new order to reserve stock again' }, { status: 400 });
       }
       if (order.subscriptionDelivery) validateBasketOrderTransition(order.status, target);
+      if (['shipped','delivered'].includes(target) && order.supplierRequests?.some(r => r.status !== 'collected')) {
+        return NextResponse.json({ error: 'Record all partner collections before shipping or delivering this order.' }, { status: 409 });
+      }
       const updated = await prisma.$transaction(async (tx) => {
         // Claim the exact version first. Concurrent requests cannot both release
         // the reservation, and shipment/address edits invalidate stale actions.
@@ -226,10 +229,11 @@ export const DELETE = requireAuth(async (request: NextRequest, context?: { param
     const user = (request as NextRequest & { user: AuthUser }).user;
     if (user.role !== 'admin') return NextResponse.json({ error: 'Access denied' }, { status: 403 });
 
-    const order = await prisma.order.findUnique({ where: { id }, include: { items: true, subscriptionDelivery: true } });
+    const order = await prisma.order.findUnique({ where: { id }, include: { items: true, subscriptionDelivery: true, supplierRequests: { select: { id: true } } } });
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
     if (order.subscriptionDelivery) return NextResponse.json({ error: 'Basket order history must be kept. Cancel the order instead.' }, { status: 409 });
+    if (order.supplierRequests?.length) return NextResponse.json({ error: 'Partner order history must be kept. Cancel the order instead.' }, { status: 409 });
     // Restore stock for orders that still hold reservations. Cancelled/refunded
     // orders already released their stock, so skip them to avoid double-restore.
     const restore = !order.isRecurring && !['delivered', 'shipped', 'cancelled', 'refunded'].includes(order.status);

@@ -3,6 +3,7 @@ import { basketTotals, productUnitPrice, roundMoney } from "@/lib/commercePricin
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { sendOrderEmail } from '@/lib/services/mailService';
+import { createSupplierOrders } from '@/lib/services/supplierOrderService';
 
 export interface RecurringOrderPattern {
   orderId: string;
@@ -162,7 +163,7 @@ export class RecurringOrderService {
       const productIds = recurringOrder.items.map((i) => i.productId);
       const products = await tx.product.findMany({
         where: { id: { in: productIds }, archived: false },
-        select: { id: true, sku: true, name: true, price: true, discountPercentage: true, stockQty: true },
+        select: { id: true, sku: true, name: true, price: true, discountPercentage: true, stockQty: true, supplierId: true },
       });
       const productMap = new Map(products.map((product) => [product.id, product]));
       const items = recurringOrder.items.map((item) => {
@@ -175,7 +176,7 @@ export class RecurringOrderService {
       for (const item of items) {
         const product = productMap.get(item.productId)!;
         const reserved = await tx.product.updateMany({
-          where: { id: item.productId, archived: false, price: product.price,
+          where: { id: item.productId, archived: false, price: product.price, ...(product.supplierId !== undefined ? { supplierId: product.supplierId } : {}),
             discountPercentage: product.discountPercentage, stockQty: { gte: item.qty } },
           data: { stockQty: { decrement: item.qty } },
         });
@@ -205,6 +206,7 @@ export class RecurringOrderService {
           items: { create: items },
         },
       });
+      await createSupplierOrders(tx, order, items.map(item => ({ ...item, supplierId: productMap.get(item.productId)?.supplierId })));
       if (recurringOrder.customer?.email) await sendOrderEmail(recurringOrder.customer.email, { _id: order.id, total: Number(order.total) }, tx);
       return order;
     });

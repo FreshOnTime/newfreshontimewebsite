@@ -14,6 +14,7 @@ class StockConflict extends Error {}
 const ORDER_INCLUDE = {
   items: true,
   subscriptionDelivery: true,
+  supplierRequests: { select: { id: true, status: true } },
   customer: { select: { firstName: true, lastName: true, email: true } },
 } satisfies Prisma.OrderInclude;
 
@@ -86,6 +87,12 @@ export const PUT = requireAdmin(async (request, { params }: { params: Promise<Re
     const data = updateSchema.parse(body);
     const before = await prisma.order.findUnique({ where: { id }, include: ORDER_INCLUDE });
     if (!before) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    if (before.supplierRequests?.length && ['items','subtotal','tax','shipping','discount','total'].some(key => key in data)) {
+      return NextResponse.json({ error: 'Partner order contents and pricing are fixed. Cancel and create a replacement order if needed.' }, { status: 409 });
+    }
+    if (data.status && ['shipped','delivered'].includes(data.status) && before.supplierRequests?.some(r => r.status !== 'collected')) {
+      return NextResponse.json({ error: 'Record all partner collections before shipping or delivering this order.' }, { status: 409 });
+    }
 
     if (before.subscriptionDelivery) {
       if (['items','subtotal','tax','shipping','discount','total','isRecurring','recurrence','scheduleStatus','nextDeliveryAt'].some(key => key in data)) return NextResponse.json({ error: 'Basket contents and pricing are fixed. Edit the plan for future deliveries.' }, { status: 400 });
@@ -201,6 +208,7 @@ export const DELETE = requireAdmin(async (request, { params }: { params: Promise
     if (!before) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
     if (before.subscriptionDelivery) return NextResponse.json({ error: 'Basket order history must be kept. Cancel the order instead.' }, { status: 409 });
+    if (before.supplierRequests?.length) return NextResponse.json({ error: 'Partner order history must be kept. Cancel the order instead.' }, { status: 409 });
     await prisma.$transaction(async (tx) => {
       const removed = await tx.order.deleteMany({ where: { id, status: before.status, updatedAt: before.updatedAt } });
       if (removed.count !== 1) throw new OrderConflict();
