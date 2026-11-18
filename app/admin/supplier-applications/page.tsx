@@ -118,6 +118,7 @@ export default function ApplicationsPage() {
     <div className="space-y-6">
       <Link href="/admin/suppliers" className="text-sm text-brand-green underline">Supplier records</Link>
       <h1 className="text-3xl font-semibold">Supplier applications</h1>
+      <Link href="/admin/supply" className="underline">Weekly buying requests and grower offers</Link>
       <p className="text-sm text-muted-foreground">Review supplier details and the proposed products they entered during registration.</p>
       <div className="flex flex-wrap justify-between gap-3">
         <label className="flex items-center gap-3 text-sm">

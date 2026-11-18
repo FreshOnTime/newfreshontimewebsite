@@ -1,3 +1,4 @@
+import { verifyGrowerOffers } from './verify-grower-offers';
 import assert from 'node:assert/strict';
 import { verifyNotificationIntegrity } from './verify-notification-integrity';
 import { NextRequest } from 'next/server';
@@ -195,6 +196,7 @@ async function verify() {
   assert.equal((await prisma.subscriber.findUniqueOrThrow({where:{id:subscriber.id}})).unsubscribeVersion,1);
   assert.equal(await prisma.emailOutbox.count({where:{dedupeKey:{startsWith:'newsletter-welcome:'}}}),2);
   console.log('PASS concurrent newsletter signup, atomic welcome queue and old-link invalidation');
+  await verifyGrowerOffers(adminRequest);
   await verifyNotificationIntegrity(admin.id, user.id, other.id);
 
 }

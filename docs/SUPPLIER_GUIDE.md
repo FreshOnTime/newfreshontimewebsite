@@ -3,10 +3,14 @@
 
 **Read the complete on-site walkthrough:** [/how-it-works/suppliers](/how-it-works/suppliers). The source of its steps and FAQs is `lib/marketGuides.ts`. FreshPick is a **curated supplier network**, not an instant self-publishing marketplace.
 
-## Onboarding journey
+## Weekly harvest offers
+
+Open `/supply` to respond to part of a live buying request or offer another harvest without creating an account. Staff use `/admin/supply` to post demand, propose prices and quantities, record packing, pickup and payment terms, and open WhatsApp drafts. Staff record the grower’s reply before reserving quantity, then record the physical handover. The repeat invitation opens a prefilled, editable offer. These records track procurement only. A handover does not publish stock, trigger a payment or create a customer order.
+
+## Catalogue onboarding
 
 1. **Prepare:** Gather producer/business name, contact details, operating address and product details. Describe quantities, pack sizes, price, stock, seasonality and lead times. For prepared foods, include ingredient, allergen, storage and shelf-life information where applicable.
-2. **Register:** Apply at `/auth/signup/supplier`. A new supplier creates an account first and submits details to `/api/suppliers/register`. An existing signed-in user can apply from the same form. If the account was created but submission fails, retry the application after signing in, **not another account signup**.
+2. **Register:** Apply at `/auth/signup/supplier?catalogue=1`. A new supplier creates an account first and submits details to `/api/suppliers/register`. An existing signed-in user can apply from the same form. If the account was created but submission fails, retry the application after signing in, **not another account signup**.
 3. **Review:** Staff review applications in `/admin/supplier-applications`. Approval and active supplier status gate the catalogue workflow. A pending application is not a product listing.
 4. **Commercial agreement:** Agree quality standards, pricing, lead times, packing, pickup/delivery, commissions, settlement, returns and responsibility for losses directly with FreshPick. The platform does **not** establish a standard public payout rate or automatically split and remit payments to suppliers.
 5. **Upload catalogue:** In `/dashboard` → Products, download `/templates/product-upload-template.csv`. Submit a CSV or XLSX with SKU, name, price, cost, stock, category, unit and optional images. The supplier upload is **not** publication; administrators review and import products separately.

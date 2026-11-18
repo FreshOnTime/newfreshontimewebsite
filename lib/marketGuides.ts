@@ -65,9 +65,9 @@ export const customerGuide: Guide = {
 export const supplierGuide: Guide = {
   label: 'Supplier walkthrough',
   title: 'From your first application to the FreshPick market.',
-  intro: 'Growers, makers and distributors can apply to supply FreshPick. Applications, supplier activation, catalogue import and public product publishing are separate steps.',
+  intro: 'Offer a single harvest against a buying request, or apply with a full catalogue. Applications, supplier activation, catalogue import and public product publishing are separate steps.',
   caution: 'FreshPick reviews each supplier relationship. Registration and catalogue upload do not guarantee approval, publication, sales, payment settlement or delivery obligations. Agree prices, commissions, logistics and payout terms directly with the team.',
-  primary: { label: 'Apply as a supplier', href: '/auth/signup/supplier' },
+  primary: { label: 'See weekly buying requests', href: '/supply' },
   secondary: { label: 'Ask the supplier team', href: '/contact?type=question&source=producers' },
   steps: [
     { id: 'prepare', title: 'Prepare your business and product information', summary: 'Start with your supply capability, business details and accurate product information.', details: [
@@ -79,7 +79,7 @@ export const supplierGuide: Guide = {
       'The application collects operating address, primary contact and the products you can supply.',
       'Optional product notes can include one product per line and expected quantities.',
       'If login creation succeeded but the application failed, sign in and retry the application; do not make a duplicate account.'
-    ], action: { label: 'Start supplier registration', href: '/auth/signup/supplier' } },
+    ], action: { label: 'Start catalogue registration', href: '/auth/signup/supplier?catalogue=1' } },
     { id: 'approval', title: 'Application review and commercial discussion', summary: 'FreshPick administrators review the details before supplier tools are activated.', details: [
       'A pending or inactive supplier cannot assume catalogue publishing access.',
       'Expect questions about product quality, supply capacity, pricing, food handling and packaging.',
