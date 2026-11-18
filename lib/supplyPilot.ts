@@ -4,6 +4,7 @@ const shortText = z.string().trim().min(1).max(140);
 const amount = z.coerce.number().positive().max(99999999).multipleOf(0.01);
 const date = z.string().date();
 export const buyingRequest = z.object({
+  id: z.string().uuid(),
   product: shortText, unit: shortText, quantity: amount, grade: shortText,
   area: shortText, deadline: date, pickup: date,
 }).refine(row => row.deadline <= row.pickup, 'Close offers on or before the pickup day.');

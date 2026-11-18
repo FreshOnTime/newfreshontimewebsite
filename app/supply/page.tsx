@@ -52,7 +52,10 @@ export default function SupplyPage() {
       if (retry.current.body !== body) retry.current = { body, key: crypto.randomUUID() };
       const response = await fetch('/api/supply', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, requestId: selected?.id, submissionId: retry.current.key }) });
-      if (!response.ok) throw Error((await response.json()).error || 'Please retry.');
+      if (!response.ok) {
+        if (response.status === 409) void load();
+        throw Error((await response.json()).error || 'Please retry.');
+      }
       setDone(true);
     } catch (e) { setError(e instanceof Error ? e.message : 'Please retry.'); }
     finally { setBusy(false); }

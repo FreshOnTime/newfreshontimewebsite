@@ -7,7 +7,7 @@ import prisma from '../lib/prisma';
 
 export async function verifyGrowerOffers(adminRequest: (path: string, method: string, payload?: unknown) => NextRequest) {
   const path = '/api/admin/supply';
-  const demand = { product: 'Test beans', grade: 'Tender', unit: 'kg', quantity: 10, area: 'Pilot area', pickup: '2099-11-19', deadline: '2099-11-18' };
+  const demand = { id: randomUUID(), product: 'Test beans', grade: 'Tender', unit: 'kg', quantity: 10, area: 'Pilot area', pickup: '2099-11-19', deadline: '2099-11-18' };
   assert.equal((await queue(new NextRequest('http://localhost' + path))).status, 401);
   assert.equal((await publish(adminRequest(path, 'POST', demand))).status, 201);
   const { requests } = await (await board()).json();

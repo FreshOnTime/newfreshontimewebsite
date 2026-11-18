@@ -35,7 +35,7 @@ export const POST = requireAdminSimple(async request => {
   try {
     const data = buyingRequest.parse(await request.json());
     if (data.deadline < colomboDay()) return json({ error: 'Choose a current or future deadline.' }, 400);
-    await prisma.supplyRequest.create({ data: { ...data, remaining: data.quantity } });
+    await prisma.supplyRequest.upsert({ where: { id: data.id }, create: { ...data, remaining: data.quantity }, update: {} });
     return json({ saved: true }, 201);
   } catch (error) { return failure(error); }
 });

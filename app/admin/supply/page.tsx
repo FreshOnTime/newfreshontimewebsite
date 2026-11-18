@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ function message(offer: Offer) {
 }
 
 export default function SupplyQueue() {
+  const publishRetry = useRef({ body: '', id: '' });
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState<Queue | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,13 +41,17 @@ export default function SupplyQueue() {
     try {
       const response = await authenticatedApiFetch('/api/admin/supply', { method, body: JSON.stringify(payload) });
       if (!response.ok) throw Error((await response.json()).error || 'Please retry.');
-      form?.reset(); await load();
+      if (form) { form.reset(); publishRetry.current = { body: '', id: '' }; }
+      await load();
     } catch (e) { setError(e instanceof Error ? e.message : 'Please retry.'); }
     finally { setBusy(false); }
   }
   function publish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void save('POST', Object.fromEntries(new FormData(event.currentTarget)), event.currentTarget);
+    const fields = Object.fromEntries(new FormData(event.currentTarget));
+    const body = JSON.stringify(fields);
+    if (publishRetry.current.body !== body) publishRetry.current = { body, id: crypto.randomUUID() };
+    void save('POST', { ...fields, id: publishRetry.current.id }, event.currentTarget);
   }
   return <main className="mx-auto max-w-5xl space-y-7 p-5">
     <h1 className="text-3xl font-semibold">Weekly supply</h1>
