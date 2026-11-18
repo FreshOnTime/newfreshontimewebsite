@@ -37,7 +37,7 @@ export const PRODUCER_FAQS: readonly AnswerItem[] = [
 export const ABOUT_FAQS: readonly AnswerItem[] = [
   {
     question: "What is FreshPick?",
-    answer: "FreshPick brings food, gifting and experience discovery together in Colombo. Explore occasions and enquire about a date with a host, or shop the live food and grocery catalogue.",
+    answer: "FreshPick brings food, gifting and experience discovery together in Colombo. Browse birthdays, date nights and family occasions, then send FreshPick your preferred date and group size. Prepared meals and groceries are available through the existing market.",
   },
   {
     question: "How can I shop for groceries with FreshPick?",
