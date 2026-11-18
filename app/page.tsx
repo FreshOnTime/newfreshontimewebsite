@@ -1,5 +1,7 @@
 import MarketFinder from '@/components/home/MarketFinder';
-import ExploreMarket from '@/components/home/ExploreMarket';
+import ProductImage from '@/components/products/ProductImage';
+import { discountedUnitPrice } from '@/lib/commercePricing';
+import styles from './home.module.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
@@ -16,12 +18,16 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const [shopResult, sessionResult, productResult] = await Promise.allSettled([
-    listShops(), listSessions(), prisma.product.findMany({ where: { archived: false, stockQty: { gt: 0 } }, select: productCardSelect,
+    listShops(), listSessions(), prisma.product.findMany({ where: { archived: false, stockQty: { gt: 0 } }, select: { ...productCardSelect, supplier: { select: { id: true, name: true, applicationStatus: true, status: true } } },
       orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }], take: 4 }),
   ]);
   const shops = shopResult.status === 'fulfilled' ? shopResult.value : [];
   const sessions = sessionResult.status === 'fulfilled' ? sessionResult.value : [];
   const products = productResult.status === 'fulfilled' ? productResult.value : [];
+  const [lead, ...otherProducts] = products;
+  const seller = lead?.supplier;
+  const hasListings = Boolean(lead || sessions.length || shops.length);
+  const listingsUnavailable = [productResult, shopResult, sessionResult].some(result => result.status === 'rejected');
   return <div>
     <section className="table-cover" aria-labelledby="cover-title">
       <Image src="/images/editorial/restaurant-kitchen.webp" alt="A chef finishing a plate at the kitchen pass" fill priority unoptimized sizes="100vw" />
@@ -34,25 +40,30 @@ export default async function Home() {
       </div>
     </section>
     <MarketFinder />
-    <div className="market-wrap space-y-8 !py-8">
-      {products.length > 0 && <section>
-        <div className="section-line"><h2>Shop products</h2><Link href="/products" className="inline-flex items-center gap-1">All products <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
-        <ProductGrid products={products.map(serializeProductCardForUi) as Product[]} />
+    <div className={styles.content}>
+      <div className={styles.spread}>
+        {lead && <article className={styles.lead}>
+          {(lead.image || lead.images[0]) && <Link className={styles.photo} href={'/products/' + encodeURIComponent(lead.sku)} aria-label={lead.name}>
+            <ProductImage src={lead.image || lead.images[0]} alt={lead.name} />
+          </Link>}
+          <div className={styles.caption}>
+            {seller?.applicationStatus === 'approved' && seller.status === 'active' && <Link className={styles.seller} href={'/shops/' + seller.id}>{seller.name}</Link>}
+            <h2><Link href={'/products/' + encodeURIComponent(lead.sku)}>{lead.name}</Link></h2>
+            <div className={styles.price}><strong>LKR {discountedUnitPrice(Number(lead.price), Number(lead.discountPercentage)).toLocaleString('en-LK')}</strong>
+              <Link className="editorial-link" href={'/products/' + encodeURIComponent(lead.sku)}>View product <ArrowUpRight size={16} /></Link></div>
+          </div>
+        </article>}
+        {sessions.length > 0 && <section className={styles.schedule}>
+          <header><h2>Next on the calendar</h2><Link href="/experiences">All dates</Link></header>
+          <SessionList sessions={sessions.slice(0, 3)} />
+        </section>}
+      </div>
+      {otherProducts.length > 0 && <section><div className="section-line"><h2>More from the market</h2><Link href="/products">All products</Link></div>
+        <ProductGrid products={otherProducts.map(serializeProductCardForUi) as Product[]} />
       </section>}
-      {sessions.length > 0 && <section>
-        <div className="section-line"><h2>Upcoming experiences</h2><Link href="/experiences" className="inline-flex items-center gap-1">All dates <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
-        <SessionList sessions={sessions.slice(0, 4)} />
-      </section>}
-      {shops.length > 0 && <section>
-        <div className="section-line"><h2>Shops &amp; hosts</h2><Link href="/shops" className="inline-flex items-center gap-1">View directory <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
-        <ShopList shops={shops.slice(0, 4)} />
-      </section>}
-      {[productResult, shopResult, sessionResult].some(result => result.status === 'rejected') && <p className="text-sm text-muted-foreground">Some marketplace listings are temporarily unavailable.</p>}
-      <nav aria-label="More ways to shop" className="flex flex-wrap gap-x-6"><Link className="editorial-link" href="/meals">Order food</Link><Link className="editorial-link" href="/gifts">Send a gift</Link></nav>
-    </div>
-    <ExploreMarket />
-    <div className="market-wrap !py-6">
-      <Link href="/b2b" className="editorial-link">List your business <ArrowUpRight size={16} aria-hidden="true" /></Link>
+      {shops.length > 0 && <section><div className="section-line"><h2>Shops &amp; hosts</h2><Link href="/shops">View directory</Link></div><ShopList shops={shops.slice(0, 4)} /></section>}
+      {listingsUnavailable && <p role="status">Some marketplace listings are temporarily unavailable.</p>}
+      {!hasListings && !listingsUnavailable && <section><h2>The marketplace is getting ready</h2><p>Check back for published products and dates, or <Link className="underline" href="/b2b">apply to list your business</Link>.</p></section>}
     </div>
   </div>;
 }

@@ -4,9 +4,10 @@ import { join } from "node:path";
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 describe("FreshPick editorial homepage", () => {
-  it("opens with occasion discovery and links to food, gifts and groceries", () => {
+  it("shows live catalogue entries and keeps food and gifting in the shared navigation", () => {
     const home = read("app/page.tsx");
-    for (const path of ["/experiences", "/meals", "/gifts", "/products"]) expect(home).toContain(path);
+    for (const path of ["/meals", "/gifts"]) expect(read("lib/navigation.ts")).toContain(path);
+    expect(home).toContain("otherProducts.map");
     expect(home).toContain("<ShopList");
     expect(home).toContain("<SessionList");
     expect(home).toContain("<ProductGrid");
