@@ -15,14 +15,14 @@ const getCookedFoodProducts = unstable_cache(async () => {
   const products = await prisma.product.findMany({
     // Filter through the category relation so this collection is one query,
     // rather than waiting for a category lookup before the product query.
-    where: { category: { slug: "cookedfood" }, archived: false },
-    orderBy: { createdAt: "desc" },
+    where: { category: { slug: { in: ["cookedfood", "cooked-food", "prepared-meals", "ready-meals"] } }, archived: false },
+    orderBy: [{ stockQty: "desc" }, { createdAt: "desc" }, { id: "asc" }],
     select: productCardSelect,
     take: 48,
   });
 
   return products.map((product) => serializeProductCardForUi(product) as Product);
-}, ["cooked-food-products-v2"], { revalidate: 300, tags: ["products"] });
+}, ["cooked-food-products-v3"], { revalidate: 300, tags: ["products"] });
 
 export default async function MealsPage() {
   const products = await getCookedFoodProducts();
@@ -30,8 +30,8 @@ export default async function MealsPage() {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "@id": "https://freshpick.lk/meals#collection",
-    "name": "FreshPick Meals on Deals",
-    "description": "Cooked-food favourites available for one-time or recurring delivery in Colombo, Sri Lanka.",
+    "name": "Ready meals in Colombo | FreshPick",
+    "description": "Browse ready meals, home kitchens and bakery in Colombo.",
     "url": "https://freshpick.lk/meals",
     "isPartOf": { "@id": "https://freshpick.lk/#website" },
     "about": { "@type": "Thing", "name": "Cooked food delivery in Colombo" },

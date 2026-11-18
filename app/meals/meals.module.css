@@ -1,0 +1,28 @@
+.page { background: #fbfaf5; color: #1c261d; }
+.cover { position: relative; isolation: isolate; min-height: clamp(19rem, 30vw, 29rem); display: flex; align-items: end; color: #fffaf1; background: #30251d; }
+.cover > img { object-fit: cover; object-position: 50% 58%; z-index: -2; }
+.cover::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(15 12 7 / .82), rgb(15 12 7 / .39) 52%, transparent 82%); }
+.coverText, .content { width: min(calc(100% - 2.5rem), 82rem); margin-inline: auto; }
+.coverText { padding-block: clamp(2rem, 4vw, 4rem); }
+.coverText h1 { font-size: clamp(4.2rem, 8vw, 8rem) !important; }
+.coverText p { max-width: 32ch; margin: .8rem 0 1.25rem; line-height: 1.5; }
+.coverText a, .heading a { display: inline-flex; align-items: center; gap: .65rem; min-height: 44px; font-size: .9rem; }
+.coverText a { padding: .55rem 1.1rem; color:#1b211b; background: #fffaf1; border-radius: 2px; font-weight: 550; }
+.content { padding-bottom: 4rem; }
+.content section { padding-top: clamp(2rem, 4vw, 3.5rem); scroll-margin-top: 5rem; }
+.heading { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; border-bottom:1px solid #bdc2b7; padding-bottom:.85rem; margin-bottom:1.25rem; }
+.heading h2 { font: 400 clamp(2.4rem, 4vw, 4rem)/1 var(--display-face); letter-spacing:-.035em; }
+.heading span, .empty, .soldOut summary { color:#4b584d; }
+.heading span { font-size:.85rem; }
+.soldOut { margin-top:1.2rem; }
+.soldOut summary { cursor:pointer; padding:.8rem 0; }
+.counter { display:grid; grid-template-columns:1fr 1fr; gap:clamp(1rem, 3vw, 2.5rem); }
+.foodLink { min-width:0; }
+.photo { position:relative; aspect-ratio: 2.8; overflow:hidden; }
+.foodLink > div:last-child { display:flex; align-items:center; justify-content:space-between; gap:.4rem; margin-top:.65rem; font:400 clamp(1.5rem, 2.5vw, 2.45rem)/1.2 var(--display-face); }
+.foodLink:hover, .heading a:hover { text-decoration:underline; text-underline-offset:4px; }
+@media(max-width:600px) {
+  .cover { min-height:20rem; }
+  .cover::before { background:linear-gradient(0deg, rgb(15 12 7 / .85), rgb(15 12 7 / .27) 90%); }
+  .photo { aspect-ratio:1.2; }
+}
