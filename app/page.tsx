@@ -1,7 +1,8 @@
+import MarketFinder from '@/components/home/MarketFinder';
 import ExploreMarket from '@/components/home/ExploreMarket';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, Search } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { listShops, listSessions } from '@/lib/marketplace';
 import prisma from '@/lib/prisma';
 import { productCardSelect, serializeProductCardForUi } from '@/lib/productSerializer';
@@ -32,11 +33,7 @@ export default async function Home() {
         </div>
       </div>
     </section>
-    <div className="market-tools">
-      <nav aria-label="Marketplace sections"><Link href="/meals">Order food</Link><Link href="/gifts">Send a gift</Link><Link href="/products">Shop products</Link></nav>
-      <form action="/search" role="search"><Search aria-hidden="true" size={17} /><input name="q" aria-label="Search the marketplace" placeholder="Search the marketplace" required /><button aria-label="Submit marketplace search"><ArrowUpRight size={18} /></button></form>
-    </div>
-    <ExploreMarket />
+    <MarketFinder />
     <div className="market-wrap space-y-8 !py-8">
       {products.length > 0 && <section>
         <div className="section-line"><h2>Shop products</h2><Link href="/products" className="inline-flex items-center gap-1">All products <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
@@ -51,6 +48,10 @@ export default async function Home() {
         <ShopList shops={shops.slice(0, 4)} />
       </section>}
       {[productResult, shopResult, sessionResult].some(result => result.status === 'rejected') && <p className="text-sm text-muted-foreground">Some marketplace listings are temporarily unavailable.</p>}
+      <nav aria-label="More ways to shop" className="flex flex-wrap gap-x-6"><Link className="editorial-link" href="/meals">Order food</Link><Link className="editorial-link" href="/gifts">Send a gift</Link></nav>
+    </div>
+    <ExploreMarket />
+    <div className="market-wrap !py-6">
       <Link href="/b2b" className="editorial-link">List your business <ArrowUpRight size={16} aria-hidden="true" /></Link>
     </div>
   </div>;
