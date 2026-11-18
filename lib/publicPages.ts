@@ -15,6 +15,7 @@ export const PUBLIC_PAGES = [
   { path: '/farm-to-table', title: 'Our producers and sourcing', description: 'Explore producer opportunities for home growers, vegetable suppliers, homemade food, bakery, beverages and pantry products with FreshPick.' },
   { path: '/diaspora', title: 'Order for family in Sri Lanka', description: 'Shop for family or friends in supported Colombo delivery areas. Confirm delivery arrangements and payment before ordering.' },
   { path: '/b2b', title: 'FreshPick for business', description: 'Learn about FreshPick supplier onboarding and business partnerships in Sri Lanka.' },
+  { path: '/partners', title: 'FreshPick Partners: grow and supply with us', description: 'Join the FreshPick local supplier network, offer your harvest, apply with a catalogue and manage supply requests.' },
   { path: '/about', title: 'About FreshPick', description: 'Learn how FreshPick helps Colombo households shop for fresh vegetables, fruit, pantry essentials, homemade food and beverages.' },
   { path: '/contact', title: 'Contact FreshPick', description: 'Contact FreshPick for order questions, delivery arrangements, account support and partnerships.' },
   { path: '/how-it-works', title: 'How FreshPick works', description: 'Understand the FreshPick customer and supplier business process, orders and operations.' },

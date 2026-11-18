@@ -49,7 +49,7 @@ export function checkoutRequestHash(input: CheckoutInput): string {
 export async function prepareCheckout(items: z.infer<typeof checkoutItemsSchema>) {
   const products = await prisma.product.findMany({
     where: { archived: false, OR: items.flatMap((item) => [{ id: item.productId }, { sku: item.productId }, { slug: item.productId }]) },
-    select: { id: true, sku: true, slug: true, name: true, price: true, discountPercentage: true, stockQty: true },
+    select: { id: true, sku: true, slug: true, name: true, price: true, discountPercentage: true, stockQty: true, supplierId: true },
   });
   const quantities = new Map<string, number>();
   for (const item of items) {
@@ -64,7 +64,7 @@ export async function prepareCheckout(items: z.infer<typeof checkoutItemsSchema>
     if (qty > 10000 || product.stockQty < qty) throw new CheckoutError(`Insufficient stock for ${product.name}`);
     const price = productUnitPrice(product);
     return { productId: id, sku: product.sku, name: product.name, qty, price, total: roundMoney(price * qty),
-      basePrice: product.price, discountPercentage: product.discountPercentage };
+      basePrice: product.price, discountPercentage: product.discountPercentage, supplierId: product.supplierId };
   });
   const totals = basketTotals(validatedItems.map((item) => ({ price: item.price, quantity: item.qty })));
   const quoteItems = validatedItems.map((item) => ({ productId: item.productId, name: item.name, quantity: item.qty, price: item.price, total: item.total }));
@@ -77,7 +77,7 @@ export async function prepareCheckout(items: z.infer<typeof checkoutItemsSchema>
 export async function reserveCheckoutStock(tx: Prisma.TransactionClient, items: Awaited<ReturnType<typeof prepareCheckout>>['validatedItems']) {
   for (const item of items) {
     const result = await tx.product.updateMany({
-      where: { id: item.productId, archived: false, price: item.basePrice, discountPercentage: item.discountPercentage, stockQty: { gte: item.qty } },
+      where: { id: item.productId, archived: false, price: item.basePrice, discountPercentage: item.discountPercentage, stockQty: { gte: item.qty }, ...(item.supplierId !== undefined ? { supplierId: item.supplierId } : {}) },
       data: { stockQty: { decrement: item.qty } },
     });
     if (result.count !== 1) throw new CheckoutError('Availability or prices changed. Review your order before trying again.', 409);

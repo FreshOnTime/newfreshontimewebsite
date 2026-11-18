@@ -53,6 +53,7 @@ type FormData = z.infer<typeof schema>;
 interface Order {
   _id?: string;
   subscriptionDelivery?: { id: string } | null;
+  supplierRequests?: { id: string; status: string }[];
   status: FormData['status'];
   paymentStatus: FormData['paymentStatus'];
   trackingNumber?: string;
@@ -75,6 +76,8 @@ interface Order {
 
 export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boolean; onOpenChange: (o: boolean) => void; order?: Order | null; onSave: () => void; }) {
   const basketOrder = !!order?.subscriptionDelivery;
+  const partnerOrder = !!order?.supplierRequests?.length;
+  const fixedContents = basketOrder || partnerOrder;
   const isEditing = !!order?._id;
   const [loading, setLoading] = useState(false);
   const form = useForm<FormData>({
@@ -214,7 +217,7 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
       const res = await authenticatedApiFetch(`/api/admin/orders/${order!._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(basketOrder ? { status: data.status, paymentStatus: data.paymentStatus, trackingNumber: data.trackingNumber, notes: data.notes, shippingAddress: data.shippingAddress, billingAddress: data.billingAddress } : {
+        body: JSON.stringify(fixedContents ? { status: data.status, paymentStatus: data.paymentStatus, trackingNumber: data.trackingNumber, notes: data.notes, shippingAddress: data.shippingAddress, billingAddress: data.billingAddress } : {
           ...data,
           // Items & totals
           items: items.map((it) => ({
@@ -387,7 +390,8 @@ export function OrderDialog({ open, onOpenChange, order, onSave }: { open: boole
             )}
 
             {basketOrder && <p className="rounded-lg border p-3 text-sm leading-6">Basket contents and pricing are fixed for this delivery. Edit the subscription plan to change future baskets.</p>}
-            <fieldset disabled={basketOrder} className={basketOrder ? "opacity-70" : ""}>
+            {partnerOrder && !basketOrder && <p className="rounded-lg border p-3 text-sm leading-6">Partner order contents are fixed to the supplier requests. Cancel and create a replacement order to change the items.</p>}
+            <fieldset disabled={fixedContents} className={fixedContents ? "opacity-70" : ""}>
             {/* Bag / Items summary */}
             <div className="mt-2 border rounded p-3">
               <h3 className="text-sm font-medium">Items</h3>

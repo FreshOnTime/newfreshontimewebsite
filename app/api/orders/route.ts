@@ -7,6 +7,7 @@ import { requireAuth } from '@/lib/auth';
 import { CheckoutError, checkoutSchema, checkoutRequestHash, reserveCheckoutStock, prepareCheckout } from '@/lib/checkoutService';
 import { orderAddressSchema } from '@/lib/orderAddress';
 import { sendOrderEmail } from '@/lib/services/mailService';
+import { createSupplierOrders } from '@/lib/services/supplierOrderService';
 import { RecurringOrderService, type RecurringOrderPattern } from '@/lib/services/recurringOrderService';
 
 const ORDER_INCLUDE = {
@@ -267,6 +268,7 @@ export const POST = requireAuth(async (request: NextRequest & { user?: { userId:
         include: ORDER_INCLUDE,
       });
 
+      await createSupplierOrders(tx, initialOrder, validatedItems);
       let recurringSchedule: { id: string } | null = null;
       if (isRecurring && recurrence && nextDeliveryAt) {
         recurringSchedule = await tx.order.create({

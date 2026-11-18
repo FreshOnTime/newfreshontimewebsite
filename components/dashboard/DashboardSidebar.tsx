@@ -12,6 +12,7 @@ type NavItem = { name: string; icon: IconType; section?: string; href?: string }
 const supplierNav: NavItem[] = [
   { name: 'Overview', section: 'overview', icon: LayoutDashboard },
   { name: 'Products', section: 'products', icon: Package },
+  { name: 'Supply requests', section: 'orders', icon: ShoppingBag },
   { name: 'Messages', section: 'messages', icon: Mail },
   { name: 'Supplier guide', href: '/how-it-works/suppliers', icon: BookOpen },
   { name: 'Notifications', href: '/profile/notifications', icon: Bell },

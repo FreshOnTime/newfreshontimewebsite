@@ -11,10 +11,12 @@ import SupplierDashboard from '@/components/supplier/SupplierDashboard';
 import CustomerDashboard from '@/components/customer/CustomerDashboard';
 import UploadProducts from '@/components/supplier/UploadProducts';
 import MessageList from '@/components/supplier/MessageList';
+import SupplierOrders from '@/components/supplier/SupplierOrders';
 
 const SECTION_LABELS: Record<string, string> = {
   overview: 'Overview',
   products: 'Products',
+  orders: 'Supply requests',
   messages: 'Messages',
   profile: 'Profile',
 };
@@ -27,10 +29,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.replace('/auth/login?redirect=/dashboard');
+      router.replace('/auth/login?redirect=' + encodeURIComponent('/dashboard' + window.location.search));
       return;
     }
     if (user.role === 'admin') router.replace('/admin');
+    if (user.role === 'supplier' && new URLSearchParams(window.location.search).get('section') === 'orders') setSection('orders');
   }, [user, loading, router]);
 
   if (loading) {
@@ -58,6 +61,7 @@ export default function DashboardPage() {
     if (isSupplier) {
       switch (section) {
         case 'products': return <UploadProducts />;
+        case 'orders': return <SupplierOrders />;
         case 'messages': return <MessageList />;
         case 'profile': return <ProfileCard />;
         default: return <SupplierDashboard />;

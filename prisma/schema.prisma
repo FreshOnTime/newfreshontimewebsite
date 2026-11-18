@@ -280,6 +280,7 @@ model Supplier {
   products User[] // supplier-role accounts linked to this supplier
   catalog  Product[]
   uploads  SupplierUpload[]
+  orderRequests SupplierOrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -383,6 +384,7 @@ model Order {
 
   subscriptionDelivery SubscriptionDelivery?
   items    OrderItem[]
+  supplierRequests SupplierOrder[]
   subtotal Decimal     @db.Decimal(12, 2)
   tax      Decimal     @default(0) @db.Decimal(12, 2)
   shipping Decimal     @default(0) @db.Decimal(12, 2)
@@ -418,6 +420,34 @@ model Order {
   @@index([isRecurring, scheduleStatus, nextDeliveryAt])
   @@index([recurringSourceOrderId])
   @@map("orders")
+}
+
+enum SupplierOrderStatus {
+  pending
+  accepted
+  unavailable
+  ready
+  collected
+}
+
+model SupplierOrder {
+  id String @id @default(uuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  supplierId String
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  items Json
+  status SupplierOrderStatus @default(pending)
+  settlementAmount Decimal? @db.Decimal(12, 2)
+  settlementReference String?
+  settledAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orderId, supplierId])
+  @@index([supplierId, createdAt])
+  @@index([status, createdAt])
+  @@map("supplier_orders")
 }
 
 model OrderItem {

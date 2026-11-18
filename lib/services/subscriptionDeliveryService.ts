@@ -5,6 +5,7 @@ import { productUnitPrice } from '@/lib/commercePricing';
 import { orderAddressSchema } from '@/lib/orderAddress';
 import { assertDeliveryArea } from '@/lib/deliveryPolicy';
 import { sendOrderEmail } from '@/lib/services/mailService';
+import { createSupplierOrders } from '@/lib/services/supplierOrderService';
 import { syncBasketDelivery, validateBasketOrderTransition } from '@/lib/basketOrderLifecycle';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
@@ -95,7 +96,7 @@ export class SubscriptionDeliveryService {
           if (!product) throw new BasketFulfillmentError('A mapped product is unavailable. Update the basket contents.');
           if (qty > 10000 || product.stockQty < qty) throw new BasketFulfillmentError(`Insufficient stock for ${product.name}. Replenish stock or update the plan.`);
           const price = productUnitPrice(product);
-          return { productId: id, sku: product.sku, name: product.name, qty, price, total: price * qty, basePrice: product.price, discountPercentage: product.discountPercentage };
+          return { productId: id, sku: product.sku, name: product.name, qty, price, total: price * qty, basePrice: product.price, discountPercentage: product.discountPercentage, supplierId: product.supplierId };
         });
         await reserveCheckoutStock(tx, reserved);
         const price = Number(current.plan.price);
@@ -108,6 +109,7 @@ export class SubscriptionDeliveryService {
           items: { create: allocateBasketPrice(price, reserved) },
         } });
         orderId = order.id;
+        await createSupplierOrders(tx, order, reserved);
         if (current.user.email) await sendOrderEmail(current.user.email, { _id: order.id, total: price }, tx);
       }
       return tx.subscriptionDelivery.create({
@@ -133,7 +135,7 @@ export class SubscriptionDeliveryService {
 
   static async transitionDelivery(deliveryId: string, action: 'confirm' | 'deliver' | 'cancel', version?: number) {
     return prisma.$transaction(async tx => {
-      const delivery = await tx.subscriptionDelivery.findUnique({ where: { id: deliveryId }, include: { order: { include: { items: true } } } });
+      const delivery = await tx.subscriptionDelivery.findUnique({ where: { id: deliveryId }, include: { order: { include: { items: true, supplierRequests: { select: { status: true } } } } } });
       if (!delivery) throw new DeliveryTransitionError('Delivery not found', 404);
       if (action === 'deliver' && delivery.status === 'delivered') return delivery;
       if (version !== undefined && delivery.version !== version) throw new DeliveryTransitionError('This delivery changed. Refresh before saving.', 409);
@@ -142,6 +144,7 @@ export class SubscriptionDeliveryService {
       const status = action === 'confirm' ? 'confirmed' : action === 'deliver' ? 'delivered' : 'cancelled';
       if (delivery.order) {
         const order = delivery.order;
+        if (action === 'deliver' && order.supplierRequests?.some(r => r.status !== 'collected')) throw new DeliveryTransitionError('Record all partner collections before delivering this order.', 409);
         const nextStatus = action === 'confirm' && ['processing','shipped'].includes(order.status) ? order.status : status;
         validateBasketOrderTransition(order.status, nextStatus);
         if (['cancelled','refunded'].includes(order.status)) throw new DeliveryTransitionError('This basket order is no longer active.', 409);
