@@ -7,7 +7,7 @@ export const pageNumber = (input?: string) => Math.max(1, Math.min(1000, Number.
 
 export function ShopList({ shops }: { shops: Awaited<ReturnType<typeof listShops>> }) {
   return <div className="listing-grid">{shops.map(shop => <Link className="listing-tile" key={shop.id} href={'/shops/' + encodeURIComponent(shop.id)}>
-    <Store size={24} aria-hidden="true" /><h3>{shop.name}</h3>{shop.city && <p>{shop.city}</p>}<span>View shop ↗</span>
+    <Store size={24} aria-hidden="true" /><h3>{shop.name}</h3>{shop.city && <p>{shop.city}</p>}<span className="inline-flex items-center gap-1">View shop <ArrowUpRight size={14} aria-hidden="true" /></span>
   </Link>)}</div>;
 }
 

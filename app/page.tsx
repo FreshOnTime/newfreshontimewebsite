@@ -26,17 +26,17 @@ export default async function Home() {
         <h1>Discover your<br /><em>local favourites.</em></h1>
         <p>Shop independent makers, find food gifts and book time with local hosts.</p>
         <form className="market-search" action="/search"><Search aria-hidden="true" size={20} /><input name="q" aria-label="Search the marketplace" placeholder="Search shops, products and experiences" required /><button>Search</button></form>
-        <nav aria-label="Browse marketplace" className="flex flex-wrap gap-x-5 gap-y-2">{[['Shops & hosts','/shops'],['Experiences','/experiences'],['Gifts','/gifts']].map(([name,href]) => <Link key={href} href={href}>{name} ↗</Link>)}</nav>
+        <nav aria-label="Browse marketplace" className="flex flex-wrap gap-x-5 gap-y-2">{[['Shops & hosts','/shops'],['Experiences','/experiences'],['Gifts','/gifts']].map(([name,href]) => <Link key={href} href={href} className="inline-flex items-center gap-1">{name} <ArrowUpRight size={14} aria-hidden="true" /></Link>)}</nav>
       </div>
-      <div className="hero-mosaic"><Image src="/images/experiences/table.webp" alt="Flowers and glassware at a dinner table" fill priority sizes="(max-width: 767px) 90vw, 45vw" />
+      <div className="hero-mosaic"><Image src="/images/experiences/table.webp" alt="Flowers and glassware at a dinner table" fill priority unoptimized sizes="(max-width: 767px) 90vw, 45vw" />
         <Link href="/experiences">Explore dining & experiences <ArrowUpRight size={20} /></Link>
       </div></div></section>
     <div className="market-wrap">
-      <div className="section-line"><h2>Shops & hosts</h2><Link href="/shops">View directory ↗</Link></div>
+      <div className="section-line"><h2>Shops & hosts</h2><Link href="/shops" className="inline-flex items-center gap-1">View directory <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
       {shopResult.status === 'rejected' ? <p>Shop listings are temporarily unavailable.</p> : shops.length ? <ShopList shops={shops.slice(0, 4)} /> : <p>Partner shops appear here when their first listing is available. <Link className="editorial-link" href="/b2b">List your business</Link></p>}
-      <div className="section-line"><h2>Shop products</h2><Link href="/products">All products ↗</Link></div>
+      <div className="section-line"><h2>Shop products</h2><Link href="/products" className="inline-flex items-center gap-1">All products <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
       {productResult.status === 'rejected' ? <p>The product catalogue is temporarily unavailable.</p> : products.length ? <ProductGrid products={products.map(serializeProductCardForUi) as Product[]} /> : <Link className="editorial-link" href="/meals">Browse food categories</Link>}
-      <div className="section-line"><h2>Upcoming experiences</h2><Link href="/experiences">Explore occasions ↗</Link></div>
+      <div className="section-line"><h2>Upcoming experiences</h2><Link href="/experiences" className="inline-flex items-center gap-1">Explore occasions <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
       {sessionResult.status === 'rejected' ? <p>The experience calendar is temporarily unavailable.</p> : sessions.length ? <SessionList sessions={sessions.slice(0, 4)} /> : <p>Browse occasion ideas while hosts prepare their next dates.</p>}
       <nav className="mt-10 flex flex-wrap gap-5" aria-label="Food and gifting"><Link className="editorial-link" href="/gifts">Send a gift</Link><Link className="editorial-link" href="/meals">Order food</Link><Link className="editorial-link" href="/market">Grocery market</Link></nav>
     </div>

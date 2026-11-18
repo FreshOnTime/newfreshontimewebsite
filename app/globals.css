@@ -199,7 +199,7 @@
 .section-line { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; margin-top:1.4rem; }
 .section-line:first-child, .section-line:first-child h2 { margin-top:0; }
 .section-line a,.listing-tile span { color:#21634c; font-size:.87rem; font-weight:600; }
-.listing-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); }
+.listing-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(min(100%,16rem),1fr)); }
 .listing-tile,.market-form { background:white; border:1px solid #d7e1dc; border-radius:.8rem; padding:1.4rem; }
 .listing-tile { display:grid; align-content:start; gap:.5rem; margin-bottom:.5rem; }
 a.listing-tile:hover { border-color:#448f71; background:#f0faf5; }
