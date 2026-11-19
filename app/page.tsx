@@ -1,3 +1,4 @@
+import OccasionEdit from '@/components/home/OccasionEdit';
 import MarketFinder from '@/components/home/MarketFinder';
 import ProductImage from '@/components/products/ProductImage';
 import { discountedUnitPrice } from '@/lib/commercePricing';
@@ -39,7 +40,7 @@ export default async function Home() {
         </div>
       </div>
     </section>
-    <MarketFinder />
+    <OccasionEdit />
     <div className={styles.content}>
       <div className={styles.spread}>
         {lead && <article className={styles.lead}>
@@ -65,5 +66,6 @@ export default async function Home() {
       {listingsUnavailable && <p role="status">Some marketplace listings are temporarily unavailable.</p>}
       {!hasListings && !listingsUnavailable && <section><h2>The marketplace is getting ready</h2><p>Check back for published products and dates, or <Link className="underline" href="/b2b">apply to list your business</Link>.</p></section>}
     </div>
+    <div className={styles.tools}><MarketFinder /></div>
   </div>;
 }
