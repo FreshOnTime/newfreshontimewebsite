@@ -18,20 +18,21 @@ describe("FreshPick editorial homepage", () => {
     ]) expect(page).toContain(marker);
   });
 
-  it("features a produce-box subscription hero with an accessible, real checkout journey", () => {
+  it("features a mixed grocery-box subscription hero with an accessible, real checkout journey", () => {
     const hero = read("components/home/HeroSection.tsx");
     expect(hero).toContain("The FreshPick Box.");
     expect(hero).toContain("Explore subscription boxes");
     expect(hero).toContain('href="/subscriptions"');
     expect(hero).toContain('href="/products"');
     expect(hero).toContain("SUBSCRIPTION_BOX_PHOTO");
-    expect(hero).toContain("/images/home/market-produce-box.webp");
+    expect(hero).toContain("/images/home/freshpick-grocery-box.webp");
+    expect(hero).toContain("pantry staples, eggs, dairy, bread, fruit and vegetables");
     expect(hero).toContain('sizes="100vw"');
     expect(hero).toContain("priority");
     expect(hero).toContain('aria-labelledby="home-hero-heading"');
     expect(hero).toContain('id="home-hero-heading"');
     expect(hero).toContain("bg-gradient-to-t");
-    expect(existsSync(join(process.cwd(), "public/images/home/market-produce-box.webp"))).toBe(true);
+    expect(existsSync(join(process.cwd(), "public/images/home/freshpick-grocery-box.webp"))).toBe(true);
     expect(hero).not.toContain("images.unsplash.com/photo-1595275522477-c3ce3ca9714b");
     expect(hero).not.toContain("useState");
     expect(hero).not.toContain("setInterval(");
