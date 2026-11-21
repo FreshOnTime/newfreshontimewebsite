@@ -1,25 +1,25 @@
-# FreshPick produce-box subscription homepage hero
+# FreshPick grocery-box subscription homepage hero
 
-The homepage hero now introduces FreshPick's **existing grocery box subscriptions** first, rather than leading with a general food-market campaign. It uses an original, locally hosted produce-box illustration, full-bleed photography treatment, centered live typography, and a clear link to the actual subscription-plan listing.
+The homepage hero introduces FreshPick's **existing grocery box subscriptions** first. It uses original, locally hosted grocery-box campaign artwork depicting a mixed assortment of packaged pantry essentials, dairy, eggs, bread, fruit and vegetables, full-bleed photography treatment, centered live typography, and a clear link to the actual subscription-plan listing.
 
 ## Image and provenance
 
-- Asset: `/images/home/market-produce-box.webp` (1672 × 941 WebP).
-- Original FreshPick AI-generated editorial illustration, created October 3, 2026.
-- Generation prompt and usage notes: [EDITORIAL_MARKET.md](EDITORIAL_MARKET.md); ownership/source notes: [CREDITS.md](../public/images/home/CREDITS.md).
+- Asset: `/images/home/freshpick-grocery-box.webp` (WebP).
+- Original FreshPick AI-generated editorial campaign artwork, created November 21, 2026.
+- Generation and ownership/source notes: [CREDITS.md](../public/images/home/CREDITS.md).
 - No reference-site photography, text or branding is copied, embedded or hotlinked.
 - Illustration is **not** a real product photo, promise of specific items, or evidence of currently available stock.
 
 ## Design
 
-- Full-bleed produce box with a dark, restrained scrim to keep text legible on all crops.
+- Full-bleed mixed grocery box with a dark, restrained scrim to keep text legible on all crops.
 - Small eyebrow: “FreshPick · Recurring grocery boxes”.
 - Headline: “The FreshPick Box.”
-- Supporting text: “Fresh food for your routine. Explore our available grocery boxes and choose a delivery schedule that works for you.”
+- Supporting text: “Fresh food and everyday groceries for your routine. Explore our available grocery boxes and choose a delivery schedule that works for you.”
 - Primary action: **Explore subscription boxes** (real route: `/subscriptions`).
 - Secondary action: **Shop the market** (`/products`).
 - Heading and controls remain semantic HTML over a `next/image` layer, never baked into the artwork.
-- Responsive centered layout; mobile uses a produce-focused crop with a stronger legibility scrim. Fixed minimum heights avoid layout shifts.
+- Responsive centered layout; mobile uses a grocery-box-focused crop with a stronger legibility scrim. Fixed minimum heights avoid layout shifts.
 - Static hero avoids carousel JavaScript, autoplay, timer controls and related performance costs.
 
 ## Subscription behavior and truthfulness

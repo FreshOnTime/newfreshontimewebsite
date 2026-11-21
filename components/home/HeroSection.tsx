@@ -5,11 +5,11 @@ import { ArrowUpRight } from "lucide-react";
 /**
  * A static, subscription-first FreshPick campaign masthead.
  *
- * The locally hosted, original produce-box illustration is deliberately
+ * The locally hosted, original grocery-box artwork is deliberately
  * separate from the heading and links, keeping everything accessible,
  * responsive, and editable. See docs/HOMEPAGE_HERO.md for asset provenance.
  */
-const SUBSCRIPTION_BOX_PHOTO = "/images/home/market-produce-box.webp";
+const SUBSCRIPTION_BOX_PHOTO = "/images/home/freshpick-grocery-box.webp";
 
 export default function HeroSection() {
   return (
@@ -19,14 +19,14 @@ export default function HeroSection() {
     >
       <Image
         src={SUBSCRIPTION_BOX_PHOTO}
-        alt="An illustrated kraft produce box filled with fresh vegetables and greens"
+        alt="A grocery delivery box with pantry staples, eggs, dairy, bread, fruit and vegetables"
         fill
         priority
         sizes="100vw"
-        className="object-cover object-[59%_center] sm:object-center"
+        className="object-cover object-[48%_center] sm:object-center"
       />
 
-      {/* Keep large live text readable without hiding the produce box. */}
+      {/* Keep large live text readable without hiding the grocery box. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[#081b11]/50 sm:bg-[#081b11]/40"
@@ -48,8 +48,8 @@ export default function HeroSection() {
             The FreshPick Box.
           </h1>
           <p className="mx-auto mt-6 max-w-[43ch] text-base leading-7 text-white/95 sm:mt-8 sm:text-lg sm:leading-8">
-            Fresh food for your routine. Explore our available grocery boxes
-            and choose a delivery schedule that works for you.
+            Fresh food and everyday groceries for your routine. Explore our available
+            grocery boxes and choose a delivery schedule that works for you.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:mt-10 sm:flex-row sm:gap-6">
             <Link
