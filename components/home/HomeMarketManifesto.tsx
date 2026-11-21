@@ -17,8 +17,8 @@ export default function HomeMarketManifesto() {
             From the ingredients for tonight&apos;s dinner to the small makers worth discovering. One market, with room for it all.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3">
-            <Link href="/farm-to-table" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green text-xs font-semibold uppercase tracking-[.1em] text-brand-green">
-              Explore our producers <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            <Link href="/b2b" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green text-xs font-semibold uppercase tracking-[.1em] text-brand-green">
+              For business <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link href="/how-it-works" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green text-xs font-semibold uppercase tracking-[.1em] text-brand-green">
               How FreshPick works <ArrowUpRight className="h-4 w-4" aria-hidden="true" />

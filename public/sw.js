@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 const STATIC_CACHE = "freshpick-static-v4";
-const DYNAMIC_CACHE = "freshpick-dynamic-v4";
+const DYNAMIC_CACHE = "freshpick-dynamic-v5";
 
 // These routes are public catalogue/marketing content. Account, bag, checkout,
 // order, dashboard, and admin pages are intentionally excluded so no
@@ -19,7 +19,6 @@ const PUBLIC_PAGE_PATHS = new Set([
     "/b2b",
     "/blog",
     "/discover",
-    "/farm-to-table",
     "/help",
 ]);
 

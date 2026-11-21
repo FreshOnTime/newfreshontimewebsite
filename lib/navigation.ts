@@ -3,7 +3,6 @@ export const MARKET_NAVIGATION = [
   { label: 'Categories', href: '/categories' },
   { label: 'Shop all', href: '/products' },
   { label: 'Weekly baskets', href: '/subscriptions' },
-  { label: 'Our producers', href: '/farm-to-table' },
   { label: 'How it works', href: '/how-it-works' },
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },

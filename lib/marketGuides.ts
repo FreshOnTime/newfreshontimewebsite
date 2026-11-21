@@ -74,7 +74,7 @@ export const supplierGuide: Guide = {
       'Prepare your producer or business name, contact details, location and a short product list.',
       'Record pack sizes, indicative pricing, quantities, seasonality, stock and supply lead times.',
       'For packaged or prepared food, include ingredients, allergens, storage and shelf life when relevant.'
-    ], action: { label: 'Who can supply FreshPick?', href: '/farm-to-table' } },
+    ], action: { label: 'Who can supply FreshPick?', href: '/b2b#supplier-partnerships' } },
     { id: 'apply', title: 'Register and submit your supplier application', summary: 'Create a supplier login or finish the application using an existing signed-in account.', details: [
       'The application collects operating address, primary contact and the products you can supply.',
       'Optional product notes can include one product per line and expected quantities.',
