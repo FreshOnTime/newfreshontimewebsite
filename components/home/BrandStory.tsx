@@ -15,10 +15,10 @@ export default function BrandStory() {
             Grow, make or supply good food? We welcome applications from farmers, home growers, independent kitchens, food brands and distributors looking to bring their products to the FreshPick market.
           </p>
           <div className="mt-7 flex flex-wrap gap-7">
-            <Link href="/b2b#supplier-partnerships" className="inline-flex min-h-11 items-center gap-2 border border-brand-green-deep bg-brand-green-deep px-5 text-xs font-bold uppercase tracking-[.1em] text-white transition-colors hover:bg-brand-green">
+            <Link href="/b2b#business-enquiry" className="inline-flex min-h-11 items-center gap-2 border border-brand-green-deep bg-brand-green-deep px-5 text-xs font-bold uppercase tracking-[.1em] text-white transition-colors hover:bg-brand-green">
               Partner with us <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link href="/auth/signup/supplier" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">
+            <Link href="/b2b#business-enquiry" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">
               Apply as a supplier <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>

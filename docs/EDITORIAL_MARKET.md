@@ -38,7 +38,7 @@ footer and existing order flows.
 
 `/b2b` is the single For business destination. Buyers can discuss supply needs
 through the existing enquiry form; growers, food makers and brands can use the
-existing supplier application. Buying and selling have separate, clear actions
+shared partnership application form (no account required to enquire). Buying and selling have separate, clear actions
 on the same page. Producer categories, application steps and FAQs are included under supplier partnerships. The former `/farm-to-table` page permanently redirects to `/b2b#supplier-partnerships`. Enquiries continue to reach the existing admin business inbox.
 Supplier onboarding, review and permissions are unchanged.
 
