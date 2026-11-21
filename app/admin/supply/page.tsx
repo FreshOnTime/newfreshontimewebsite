@@ -15,10 +15,7 @@ function message(offer: Offer) {
     case 'proposed': return 'FreshPick can take ' + amount + ' at LKR ' + offer.agreedPrice + ' per ' + offer.unit + '. ' + offer.terms + ' Please reply to confirm or decline.';
     case 'declined': return 'Thank you for offering ' + offer.product + '. We are passing on this offer. ' + offer.terms;
     case 'confirmed': return 'FreshPick confirms ' + amount + ' at LKR ' + offer.agreedPrice + ' per ' + offer.unit + '. ' + offer.terms;
-    case 'handed_over': {
-      const params = new URLSearchParams({ product: offer.product, unit: offer.unit, quantity: offer.agreedQty || offer.quantity, price: offer.agreedPrice || offer.price, area: offer.area });
-      return 'Can you supply ' + amount + ' again next week? Confirm or change your quantity and ready date here: ' + window.location.origin + '/supply#' + params + ' . Reply skip if you are unavailable.';
-    }
+    case 'handed_over': return 'Can you supply ' + amount + ' again next week? Please reply with your available quantity, asking price and ready date, or reply skip if you are unavailable.';
     default: return 'FreshPick received your offer of ' + amount + '. When can we discuss pickup?';
   }
 }

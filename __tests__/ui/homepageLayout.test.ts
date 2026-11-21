@@ -54,11 +54,42 @@ describe("FreshPick editorial homepage", () => {
     const feature = read("components/home/HomeBasketFeature.tsx");
     expect(feature).toContain('href="/subscriptions"');
     expect(feature).toContain("no automatic card billing");
-    expect(read("components/home/HomeMarketManifesto.tsx")).toContain('href="/farm-to-table"');
+    expect(read("components/home/HomeMarketManifesto.tsx")).toContain('href="/b2b"');
+    const partnerSection = read("components/home/BrandStory.tsx");
+    expect(partnerSection).toContain("Are you a supplier? Partner with us.");
+    expect(partnerSection.match(/href="\/b2b#business-enquiry"/g)).toHaveLength(2);
+    expect(partnerSection).not.toContain('href="/auth/signup/supplier"');
     expect(read("components/home/BrandStory.tsx")).toContain('href="/b2b"');
     for (const name of ["kitchen-basket.webp", "hands-at-work.webp", "restaurant-kitchen.webp"]) {
       expect(existsSync(join(process.cwd(), "public/images/editorial", name))).toBe(true);
     }
+  });
+
+  it("consolidates producers and business partnerships without breaking existing URLs", () => {
+    const navigation = read("lib/navigation.ts");
+    expect(navigation).toContain("{ label: 'For business', href: '/b2b' }");
+    expect(navigation).not.toContain("Our producers");
+    expect(read("components/layout/Footer.tsx")).not.toContain("/farm-to-table");
+    expect(read("app/farm-to-table/page.tsx")).toContain("permanentRedirect('/b2b#supplier-partnerships')");
+    expect(read("app/b2b/B2BContent.tsx")).toContain("<SupplierPartnerships />");
+    const supplierSection = read("app/b2b/SupplierPartnerships.tsx");
+    expect(supplierSection).toContain('id="supplier-partnerships"');
+    expect(supplierSection.match(/href="#business-enquiry"/g)).toHaveLength(2);
+    expect(supplierSection).not.toContain('href="/auth/signup/supplier"');
+    expect(read("lib/publicPages.ts")).not.toContain("'/farm-to-table'");
+  });
+
+  it("routes supplier calls to action directly to the highlighted business application", () => {
+    const business = read("app/b2b/B2BContent.tsx");
+    expect(business).toContain("action: 'Apply as a supplier', href: '#business-enquiry'");
+    expect(business).toContain('id="business-enquiry"');
+    expect(business).toContain('target:ring-2');
+    expect(business).toContain('<PartnershipRequestForm />');
+    expect(read("components/layout/Footer.tsx")).toContain("['Become a supplier','/b2b#business-enquiry']");
+    expect(read("app/supply/page.tsx")).toContain("permanentRedirect('/b2b#business-enquiry')");
+    expect(read("app/auth/signup/supplier/page.tsx")).toContain('<SupplierSignupForm />');
+    expect(read("app/auth/signup/supplier/page.tsx")).not.toContain('/supply');
+    expect(read("lib/marketGuides.ts")).not.toContain("href: '/supply'");
   });
 
   it("shows no more than three published journal cards", () => {

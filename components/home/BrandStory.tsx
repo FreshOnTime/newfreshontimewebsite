@@ -7,19 +7,19 @@ export default function BrandStory() {
     <section aria-labelledby="sourcing-title" className="editorial-wrap py-14 md:py-20">
       <div className="grid items-center gap-9 border-t border-brand-green-deep/20 pt-11 md:grid-cols-2 md:gap-16">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-brand-green">Meet the people behind the food</p>
+          <p className="text-[10px] font-bold uppercase tracking-[.22em] text-brand-green">FreshPick supplier partnerships</p>
           <h2 id="sourcing-title" className="mt-5 max-w-[13ch] font-heading text-[clamp(2.1rem,4vw,4.4rem)] font-semibold uppercase leading-[1.02] tracking-[-.055em] text-brand-green-deep">
-            Food has a story. So do its makers.
+            Are you a supplier? Partner with us.
           </h2>
           <p className="mt-6 max-w-lg text-base leading-8 text-muted-foreground">
-            From fresh ingredients to food made in small kitchens, discover the growers, makers and businesses that make a neighbourhood market worth exploring.
+            Grow, make or supply good food? We welcome applications from farmers, home growers, independent kitchens, food brands and distributors looking to bring their products to the FreshPick market.
           </p>
           <div className="mt-7 flex flex-wrap gap-7">
-            <Link href="/farm-to-table" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">
-              Our producers <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            <Link href="/b2b#business-enquiry" className="inline-flex min-h-11 items-center gap-2 border border-brand-green-deep bg-brand-green-deep px-5 text-xs font-bold uppercase tracking-[.1em] text-white transition-colors hover:bg-brand-green">
+              Partner with us <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link href="/about" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">
-              Our story <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            <Link href="/b2b#business-enquiry" className="inline-flex min-h-11 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">
+              Apply as a supplier <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
         </div>

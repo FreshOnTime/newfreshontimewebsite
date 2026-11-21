@@ -31,8 +31,7 @@ Customers browse the catalogue, select quantities, add products to a bag and rev
 
 ## Producers and business partners
 
-- [Our producers](https://freshpick.lk/farm-to-table): growers, food makers and supplier application guidance.
-- [FreshPick for business](https://freshpick.lk/b2b): food supply and commercial partnership enquiries.
+- [FreshPick for business](https://freshpick.lk/b2b): food sourcing, commercial partnerships, growers, food makers and supplier application guidance.
 - [About FreshPick](https://freshpick.lk/about): market purpose and shopping experience.
 - [Order for family in Sri Lanka](https://freshpick.lk/diaspora): arranging local delivery for a recipient.
 

@@ -23,8 +23,8 @@ Read this alongside the [documentation index](README.md). This is the implemente
 | Account dashboard `/dashboard` | Customer or supplier overview; supplier inventory upload entry | Role-specific dashboard APIs; legacy catalog/settings screens are separate retained tools |
 | My baskets `/profile/subscriptions` | View subscriptions; pause, resume, skip or cancel | Subscription ownership and state checks |
 | Blog `/blog`, `/blog/[slug]` | Read published editorial posts | Blog editor; unpublished and retired content types excluded from public feeds |
-| For business `/b2b` | Submit a business enquiry and discover supplier onboarding | Business-lead inbox and separate supplier account application |
-| About `/about`, Our producers `/farm-to-table` | Learn about the market, producers and sourcing | Editorial page content and photography |
+| For business `/b2b` | Submit a business enquiry, discover producer opportunities and supplier onboarding | Business-lead inbox and separate supplier account application; `/farm-to-table` redirects here |
+| About `/about` | Learn about the market and its sourcing approach | Editorial page content and photography |
 | Homemade `/homemade`, Meals `/meals`, Diaspora `/diaspora` | Market-specific discovery and information pages | Links back into catalog and business/customer journeys |
 | Contact `/contact`, Help `/help`, Help us `/help-us` | Submit questions, issues or suggestions | Admin enquiry inbox; saving a ticket update does not send an email reply |
 | Newsletter signup and `/newsletter/unsubscribe` | Opt in or confirm unsubscribe | Signed consent links, transactional outbox and SendGrid worker |

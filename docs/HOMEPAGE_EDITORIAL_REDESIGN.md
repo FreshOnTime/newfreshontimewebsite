@@ -8,11 +8,11 @@ Natoora’s current homepage uses oversized typographic moments, full-width phot
 ## Original FreshPick implementation
 
 1. **Hero**: an ivory/cream masthead with generous editorial typography and only two primary actions. One full-width, static, mixed-grocery photograph follows. Existing licensed Unsplash image and provenance in [HOMEPAGE_HERO.md](HOMEPAGE_HERO.md). No slideshow, downloaded Natoora images, animation dependencies or false availability claims.
-2. **Editorial positioning**: a short FreshPick-specific message about everyday food and local makers, linked to `/farm-to-table` and `/how-it-works`.
+2. **Editorial positioning**: a short FreshPick-specific message about everyday food and local makers, linked to `/b2b` and `/how-it-works`.
 3. **Categories**: up to six *active* database categories; if none exist, six direct catalogue-search links with locally hosted imagery. Preserve encoded category slugs.
 4. **Products**: database-backed cards, prices, availability and add-to-bag components remain unchanged; the section’s heading and rhythm are simplified.
 5. **Recurring baskets**: one clear editorial feature linking to `/subscriptions`, without suggesting online cards or automatic card debiting.
-6. **Stories and business**: one source/maker story and one B2B enquiry feature, with authentic pages. Journal shows at most three *published* posts.
+6. **Stories and business**: a dedicated supplier partnership invitation and a B2B buyer enquiry feature. Both lead to the unified `/b2b` page; the supplier CTAs land directly on the highlighted `/b2b#business-enquiry` application form. Journal shows at most three *published* posts.
 7. **Help**: existing customer answers and SEO metadata remain intact.
 
 ## Brand distinction

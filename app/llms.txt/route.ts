@@ -17,7 +17,6 @@ const priorityPaths = new Set([
   '/blog',
   '/help',
   '/about',
-  '/farm-to-table',
   '/b2b',
   '/contact',
   '/refund',

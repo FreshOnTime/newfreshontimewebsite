@@ -31,15 +31,15 @@ navigation. Timer and media/visibility listeners are cleaned up on unmount.
 ## Navigation and business
 
 Desktop and mobile share `lib/navigation.ts`: Categories, Shop all, Weekly
-baskets, Our producers, About, Blog and For business. There is no More menu or
+baskets, How it works, About, Blog and For business. There is no More menu or
 separate Recipes, Sell with FreshPick or Delivery & ordering navbar entry.
 Contact remains in the mobile menu and footer. Help remains accessible from the
 footer and existing order flows.
 
 `/b2b` is the single For business destination. Buyers can discuss supply needs
 through the existing enquiry form; growers, food makers and brands can use the
-existing supplier application. Buying and selling have separate, clear actions
-on the same page. Enquiries continue to reach the existing admin business inbox.
+shared partnership application form (no account required to enquire). Buying and selling have separate, clear actions
+on the same page. Producer categories, application steps and FAQs are included under supplier partnerships. The former `/farm-to-table` page permanently redirects to `/b2b#supplier-partnerships`. Enquiries continue to reach the existing admin business inbox.
 Supplier onboarding, review and permissions are unchanged.
 
 Blog is the public/admin name throughout; URLs, CMS records and cache keys are
@@ -55,7 +55,7 @@ pages and meal-kit pages are also removed. Legacy page URLs redirect:
 | Old destination | New destination |
 | --- | --- |
 | `/recipes/*`, `/meal-kits/*` | `/products` |
-| `/creators/*` | `/farm-to-table` |
+| `/creators/*` | `/b2b#supplier-partnerships` |
 | `/admin/recipes/*` | `/admin/blogs` |
 
 Removed public/admin recipe API URLs return 404 and cannot mutate bags or CMS

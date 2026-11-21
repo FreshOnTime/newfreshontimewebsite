@@ -5,6 +5,7 @@ const serviceWorker = fs.readFileSync(path.join(process.cwd(), 'public/sw.js'), 
 
 it('does not cache retired storefront routes', () => {
   expect(serviceWorker).not.toContain('"/meal-kits"');
+  expect(serviceWorker).not.toContain('"/farm-to-table"');
 });
 
 it('keeps private Next.js RSC requests out of the dynamic cache', () => {
@@ -15,5 +16,5 @@ it('keeps private Next.js RSC requests out of the dynamic cache', () => {
 
 it('rotates service-worker cache names after the privacy fix', () => {
   expect(serviceWorker).toContain('freshpick-static-v4');
-  expect(serviceWorker).toContain('freshpick-dynamic-v4');
+  expect(serviceWorker).toContain('freshpick-dynamic-v5');
 });

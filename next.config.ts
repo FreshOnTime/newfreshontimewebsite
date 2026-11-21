@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     return [
       { source: '/recipes/:path*', destination: '/products', permanent: true },
       { source: '/meal-kits/:path*', destination: '/products', permanent: true },
-      { source: '/creators/:path*', destination: '/farm-to-table', permanent: true },
+      { source: '/creators/:path*', destination: '/b2b#supplier-partnerships', permanent: true },
       { source: '/admin/recipes/:path*', destination: '/admin/blogs', permanent: true },
     ];
   },
