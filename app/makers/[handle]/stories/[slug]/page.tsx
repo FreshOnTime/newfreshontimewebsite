@@ -1,3 +1,4 @@
+import { SavePick } from '@/components/makers/SavedPicks';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
@@ -48,7 +49,8 @@ export default async function MakerStoryPage({ params }: Props) {
     <article className="mx-auto max-w-3xl">
       <Link href={`/makers/${handle}`} className="text-sm font-semibold text-brand-green underline">{maker.name} · {maker.makerTown}</Link>
       <h1 className="mt-4 break-words font-serif text-4xl text-brand-green md:text-6xl">{story.title}</h1>
-      <p className="mt-4 break-words text-lg leading-8 text-muted-foreground">{story.excerpt}</p>
+      <SavePick href={`/makers/${handle}/stories/${slug}`} title={story.title} kind="Story" />
+        <p className="mt-4 break-words text-lg leading-8 text-muted-foreground">{story.excerpt}</p>
       <div className="prose mt-8 max-w-none break-words">
         <ReactMarkdown skipHtml disallowedElements={['img']} remarkPlugins={[remarkGfm]}
           components={{ a: ({ href, children }) => <a href={href} rel="ugc nofollow">{children}</a> }}>{story.content}</ReactMarkdown>

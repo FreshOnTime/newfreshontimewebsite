@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-background">
       <PremiumPageHeader
         title="Privacy Policy"
-        subtitle="How Fresh Pick handles information used to run accounts, orders, delivery, and support."
+        subtitle="How FreshPick handles maker profiles, accounts, earlier orders and support."
         eyebrow="Legal · Privacy"
       />
 
@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           <p className="mb-8 font-medium text-muted-foreground">Effective Date: December 2025</p>
 
           <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-            At <strong>Fresh Pick</strong>, we use personal information to provide the website, customer accounts, ordering, delivery, and support.
+            Published maker profiles display the maker name, town, chosen WhatsApp number and published content. Customers can open WhatsApp to continue a conversation directly with the maker. FreshPick also manages member accounts, earlier orders and support enquiries.
           </p>
 
           <div className="space-y-12">

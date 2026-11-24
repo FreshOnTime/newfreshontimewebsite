@@ -162,3 +162,25 @@
     }
   }
 }
+
+/* The public maker journal shares one paper, ink and tomato palette. */
+.freshpick-market {
+  --background: 42 47% 97%;
+  --card: 42 47% 97%;
+  --foreground: 31 20% 13%;
+  --freshpick-green: 15 64% 30%;
+  --freshpick-cream: 39 47% 92%;
+  --primary: 15 64% 30%;
+  --font-heading: Georgia, "Times New Roman", serif;
+  background: hsl(var(--background));
+}
+.maker-masthead { position: sticky; top: 0; z-index: 45; border-bottom: 1px solid #ded8cb; background: #fcfaf5; color: #30261e; }
+.mast-link { font-weight: 600; }
+.mast-link[aria-current="page"], .mast-link:hover { color: #a33e23; }
+.maker-button { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 44px; padding: .65rem 1.1rem; border-radius: 99px; background: #9b3921; color: white; font-size: .875rem; font-weight: 650; }
+.maker-button:hover { background: #793018; }
+.maker-hero { display: grid; grid-template-columns: 1fr 1.08fr; background: #ede5d2; }
+.maker-hero-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: clamp(2rem, 6vw, 6.5rem); }
+.freshpick-market .maker-headline { font-family: Georgia, serif; font-size: clamp(3rem, 6.2vw, 6.4rem); line-height: .96; letter-spacing: -.055em; }
+.maker-hero-photo { position: relative; min-height: clamp(24rem, 40vw, 40rem); }
+@media (max-width: 767px) { .maker-hero { grid-template-columns: minmax(0, 1fr); } .maker-hero-photo { min-height: 15rem; } }

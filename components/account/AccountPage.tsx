@@ -7,12 +7,12 @@ import { Loader2 } from 'lucide-react';
 
 const accountLinks = [
   { href: '/profile', label: 'Details' },
-  { href: '/orders', label: 'Orders' },
-  { href: '/wishlist', label: 'Wishlist' },
+  { href: '/orders', label: 'Previous orders' },
+  { href: '/saved', label: 'Saved picks' },
   { href: '/profile/messages', label: 'Messages' },
   { href: '/profile/notifications', label: 'Notifications' },
   { href: '/profile/subscriptions', label: 'Subscriptions' },
-  { href: '/for-you', label: 'For you' },
+  { href: '/dashboard', label: 'Account home' },
 ];
 
 export function AccountPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {

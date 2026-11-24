@@ -1,19 +1,12 @@
 import Link from 'next/link';
-import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
-import JsonLd from '@/components/seo/JsonLd';
-import { CUSTOMER_QUESTIONS } from '@/lib/customerHelp';
-import { publicPageMetadata } from '@/lib/publicPages';
-import { absoluteUrl, SUPPORT_EMAIL } from '@/lib/config/site';
-
-export const metadata = publicPageMetadata('/help');
-
-export default function HelpPage() {
-  return <div className="bg-background">
-    <JsonLd data={{ '@context': 'https://schema.org', '@type': 'FAQPage', '@id': absoluteUrl('/help#questions'), mainEntity: CUSTOMER_QUESTIONS.map(item => ({ '@type': 'Question', name: item.question, acceptedAnswer: { '@type': 'Answer', text: item.answer } })) }} />
-    <PremiumPageHeader eyebrow="Customer care" title="Delivery & ordering." subtitle="Practical answers for shopping with FreshPick in Colombo." />
-    <div className="editorial-wrap editorial-section grid gap-10 lg:grid-cols-[1fr_2fr]">
-      <aside><h2 className="text-xl font-semibold text-brand-green">Need a hand?</h2><p className="mt-4 text-sm leading-7 text-muted-foreground">For an existing order, include your order number when contacting us.</p><Link href="/contact" className="editorial-link mt-4">Contact FreshPick</Link><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-5 block break-words text-sm text-brand-green underline">{SUPPORT_EMAIL}</a><nav aria-label="Support links" className="mt-6 flex flex-wrap gap-5"><Link href="/orders" className="editorial-link">Your orders</Link><Link href="/help-us" className="editorial-link">Share feedback</Link></nav><div className="mt-9 border-t border-border pt-6"><h3 className="text-base font-semibold text-brand-green">Step-by-step guides</h3><div className="mt-3 grid gap-3"><Link href="/how-it-works/customers" className="editorial-link">How to shop as a customer</Link><Link href="/how-it-works/suppliers" className="editorial-link">How to join as a supplier</Link></div></div></aside>
-      <section aria-label="Ordering questions">{CUSTOMER_QUESTIONS.map(item => <article key={item.question} className="border-t border-border py-6"><h2 className="text-xl font-semibold text-brand-green">{item.question}</h2><p className="mt-4 text-sm leading-7 text-muted-foreground">{item.answer}</p><Link href={item.href} className="editorial-link mt-4">{item.action}</Link></article>)}</section>
-    </div>
-  </div>;
+export const metadata = { title: 'FreshPick help' };
+export default function Help() {
+  const answers = [
+    ['How can I reserve an item?', 'Open its maker page and use the WhatsApp button on a batch or made-to-order item. The maker confirms availability and any reservation.'],
+    ['Who handles delivery and payment?', 'Each maker lists their collection or delivery options. Agree the details directly before placing an order.'],
+    ['Why did a batch disappear?', 'A batch closes when its preorder cutoff passes or the maker marks it sold out. The item page stays available for future batches.'],
+    ['Where are my saved picks?', 'Open Saved in the navigation on the same browser and device where you bookmarked them.'],
+    ['How do I publish?', 'Choose Become a maker. After your profile is approved, Maker Studio lets you publish items, batches and stories.'],
+  ];
+  return <div className="editorial-wrap max-w-4xl py-12 md:py-20"><h1 className="maker-headline">A little help.</h1><div className="my-8 divide-y divide-border">{answers.map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-serif text-xl">{q}</summary><p className="py-3 leading-7">{a}</p></details>)}</div><Link href="/contact" className="maker-button">Contact the team</Link></div>;
 }

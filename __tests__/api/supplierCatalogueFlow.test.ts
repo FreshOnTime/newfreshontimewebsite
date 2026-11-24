@@ -182,7 +182,7 @@ it('notifies the linked supplier account when an admin approves the application'
   expect(db.notification.createMany).toHaveBeenCalledWith({
     data: [expect.objectContaining({
       targetUserId: 'supplier-user',
-      title: 'Supplier application approved',
+      title: 'Maker page approved',
       type: 'success',
       link: '/dashboard',
     })],

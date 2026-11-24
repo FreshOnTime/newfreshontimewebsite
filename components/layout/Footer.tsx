@@ -1,29 +1,17 @@
-import Link from "next/link";
-import Wordmark from "@/components/brand/Wordmark";
-import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
-import { SERVICE_AREAS, SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
+import Link from 'next/link';
+import Wordmark from '@/components/brand/Wordmark';
+import { SUPPORT_EMAIL } from '@/lib/config/site';
 
-const groups = [
-  { title: 'The market', links: [['Categories','/categories'],['Shop all','/products'],['Weekly baskets','/subscriptions'],['Saved products','/wishlist']] },
-  { title: 'FreshPick', links: [['About FreshPick','/about'],['How it works','/how-it-works'],['Blog','/blog']] },
-  { title: 'For business', links: [['For business','/b2b'],['Become a supplier','/b2b#business-enquiry'],['Supplier guide','/how-it-works/suppliers'],['Get in touch','/contact']] },
-  { title: 'Here to help', links: [['Help','/help'],['Customer guide','/how-it-works/customers'],['Your orders','/orders'],['Returns & refunds','/refund'],['Contact','/contact']] },
-];
 export function Footer() {
-  return (
-    <footer className="mt-16 bg-brand-green-deep text-white">
-      <div className="editorial-wrap">
-        <div className="grid gap-8 border-b border-white/20 py-12 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
-          <div><p className="text-[10px] uppercase tracking-[0.16em] text-white/85">A note from the market</p><h2 className="mt-4 max-w-xl font-heading text-4xl font-semibold leading-[1.08] tracking-[-.05em] text-white md:text-6xl">Good things, in your inbox.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">Food stories, seasonal inspiration and news from FreshPick.</p></div>
-          <FooterNewsletterForm />
-        </div>
-        <div className="grid gap-12 py-12 lg:grid-cols-[1fr_2fr] md:py-20">
-          <div><p className="max-w-xs text-sm leading-7 text-white/85">A thoughtfully chosen market for everyday cooking in Colombo.</p><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-6 inline-block min-h-11 break-all text-sm text-white/85 underline decoration-white/30 underline-offset-4">{SUPPORT_EMAIL}</a><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Delivery coverage includes {SERVICE_AREAS.slice(0, 4).join(', ')} and nearby areas.</p></div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">{groups.map(group => <nav key={group.title} aria-label={`Footer ${group.title}`}><h3 className="mb-4 text-[11px] font-medium uppercase tracking-[0.12em] text-white/85">{group.title}</h3><ul>{group.links.map(([name,href]) => <li key={href}><Link href={href} className="inline-flex min-h-10 items-center text-[13px] font-normal leading-6 text-white/90 hover:underline underline-offset-4">{name}</Link></li>)}</ul></nav>)}</div>
-        </div>
-        <p aria-hidden="true" className="select-none pb-6 text-[clamp(2.6rem,12vw,11rem)] leading-none"><Wordmark /></p>
-        <div className="flex flex-col justify-between gap-5 border-t border-white/20 py-6 text-[11px] text-white/85 md:flex-row"><p>© {new Date().getFullYear()} FreshPick</p><nav aria-label="Policies" className="flex flex-wrap gap-x-5 gap-y-3">{[['Privacy','/privacy'],['Terms','/terms'],['Cookies','/cookies'],['Site map','/site-map']].map(([label,href]) => <Link key={href} href={href} className="transition-colors hover:text-white">{label}</Link>)}</nav><div className="flex gap-5">{[['Instagram',SOCIAL_LINKS.instagram],['Facebook',SOCIAL_LINKS.facebook],['X',SOCIAL_LINKS.x]].filter(([,href]) => Boolean(href)).map(([label,href]) => <a key={label} href={href} target="_blank" rel="noreferrer" className="hover:text-white/90">{label}</a>)}</div></div>
+  return <footer className="bg-[#28251f] py-12 text-[#fff9eb]">
+    <div className="editorial-wrap flex flex-wrap items-start justify-between gap-10">
+      <div><Link href="/"><Wordmark className="text-4xl" /></Link>
+        <p className="mt-3 max-w-xs text-sm">Independent food makers across Sri Lanka.</p>
+        <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-4 inline-block text-sm underline">{SUPPORT_EMAIL}</a>
       </div>
-    </footer>
-  );
+      <nav aria-label="Footer links" className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
+        {Object.entries({'Explore makers':'/makers','Food stories':'/stories','Become a maker':'/join','How it works':'/how-it-works','About FreshPick':'/about','Contact':'/contact','Privacy':'/privacy','Terms':'/terms','Cookies':'/cookies','Site map':'/site-map'}).map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+      </nav>
+    </div>
+  </footer>;
 }

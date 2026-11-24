@@ -116,12 +116,12 @@ export default function OrdersPage() {
   }, [user?._id, authLoading, router, retryCount, page]);
 
   return (
-    <AccountPage title="Orders" description="Track deliveries and revisit recent purchases." action={<Link href="/products" className={accountSecondaryButton}>Shop the market</Link>}>
+    <AccountPage title="Previous orders" description="Review your FreshPick purchase history." action={<Link href="/makers" className={accountSecondaryButton}>Explore makers</Link>}>
         <ConfirmAction open={cancelTarget !== null} onOpenChange={(open) => { if (!open) setCancelTarget(null); }} title={`Cancel order #${cancelTarget?.orderNumber || ''}?`} description="This stops this delivery. You can buy these items again from your order details." label="Cancel order" busy={cancellingId !== null} error={cancelError} onConfirm={() => { if (cancelTarget) void cancelOrder(cancelTarget._id); }} />
         {authLoading || loading ? <AccountLoading label="Loading your orders…" /> : error ? (
           <AccountState error title="Couldn’t load your orders" description={error} action={<button type="button" className={accountSecondaryButton} onClick={() => setRetryCount((count) => count + 1)}>Try again</button>} />
         ) : orders.length === 0 ? (
-          <AccountState title={page === 1 ? 'No orders yet' : 'No orders on this page'} description={page === 1 ? 'Your purchases and delivery updates will appear here.' : 'Return to your latest orders.'} action={page === 1 ? <Link href="/products" className={accountButton}>Shop the market</Link> : <button type="button" className={accountSecondaryButton} onClick={() => setPage(1)}>Latest orders</button>} />
+          <AccountState title={page === 1 ? 'No orders yet' : 'No orders on this page'} description={page === 1 ? 'You have no previous FreshPick purchases.' : 'Return to your latest orders.'} action={page === 1 ? <Link href="/makers" className={accountButton}>Explore makers</Link> : <button type="button" className={accountSecondaryButton} onClick={() => setPage(1)}>Latest orders</button>} />
         ) : (
           <section className="overflow-hidden rounded-lg border border-border bg-background">
             <div className="flex items-end justify-between gap-5 border-b border-border px-6 py-5 md:px-6">
@@ -129,7 +129,7 @@ export default function OrdersPage() {
                 <h2 className="text-base font-normal text-brand-green">Recent orders</h2>
                 <p className="mt-1 text-sm font-normal text-muted-foreground">{pagination.total} order{pagination.total === 1 ? '' : 's'} · Page {page} of {Math.max(1, pagination.pages)}</p>
               </div>
-              <Link href="/bags" className="text-xs font-semibold text-brand-green">Saved bags</Link>
+              <Link href="/saved" className="text-xs font-semibold text-brand-green">Saved picks</Link>
             </div>
 
             <div className="divide-y divide-border">

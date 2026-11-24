@@ -9,7 +9,7 @@ export interface SignupData {
   email?: string;
   phoneNumber: string;
   password: string;
-  registrationAddress: {
+  registrationAddress?: {
     addressLine1: string;
     addressLine2?: string;
     city: string;
@@ -145,7 +145,7 @@ export class AuthService {
         phoneNumber: data.phoneNumber,
         passwordHash,
         role: 'customer',
-        addresses: {
+        addresses: data.registrationAddress ? {
           create: [
             {
               recipientName: `${data.firstName} ${data.lastName || ''}`.trim(),
@@ -161,7 +161,7 @@ export class AuthService {
               isRegistration: true,
             },
           ],
-        },
+        } : undefined,
       },
       include: { addresses: true },
     });

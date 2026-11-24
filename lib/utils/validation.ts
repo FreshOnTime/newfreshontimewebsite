@@ -24,7 +24,7 @@ export const signupSchema = z.object({
     province: z.string().min(1, 'Province is required'),
     postalCode: z.string().min(1, 'Postal code is required'),
     country: z.string().min(1, 'Country is required'),
-  })
+  }).optional()
 });
 
 // Login validation schema

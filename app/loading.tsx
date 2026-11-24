@@ -23,7 +23,7 @@ export default function Loading() {
       <div className="flex items-center justify-center py-6">
         <div className="flex items-center gap-3 text-brand-green">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span className="text-lg font-medium">Loading fresh products...</span>
+          <span className="text-lg font-medium">Loading FreshPick…</span>
         </div>
       </div>
 

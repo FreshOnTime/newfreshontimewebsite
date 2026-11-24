@@ -1,3 +1,4 @@
+import { SavePick } from '@/components/makers/SavedPicks';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
@@ -46,6 +47,7 @@ export default async function MakerItemPage({ params }: Props) {
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">{item.kind} · {maker.makerTown} · {maker.makerFulfilment}</p>
         <h1 className="break-words font-serif text-4xl text-brand-green md:text-5xl">{item.name}</h1>
+        <SavePick href={makerItemPath(handle, slug)} title={item.name} kind="Item" />
         <p className="whitespace-pre-wrap break-words leading-7">{item.description}</p>
         {item.madeToOrder && <div className="space-y-2 rounded-xl border border-border p-4">
           <p className="font-semibold text-brand-green">Made to order{item.price && ` · ${formatMakerPrice(item.price)}`}</p>

@@ -30,7 +30,7 @@ export const GET = requireAdminSimple(async request => {
         skip: (page-1)*20,
         take: 20,
         select: {
-          id: true, name: true, contactName: true, email: true, phone: true,
+          id: true, name: true, contactName: true, email: true, phone: true, city: true,
           notes: true, applicationStatus: true, reviewNotes: true,
           reviewVersion: true, reviewedAt: true, createdAt: true,
         },
@@ -85,9 +85,9 @@ export const PATCH = requireAdminSimple(async request => {
           await tx.notification.createMany({
             data: accounts.map(account => ({
               id: randomUUID(),
-              title: approved ? 'Supplier application approved' : status === 'rejected' ? 'Supplier application update' : 'Supplier application under review',
+              title: approved ? 'Maker page approved' : status === 'rejected' ? 'Maker page update' : 'Maker page under review',
               message: approved
-                ? `${current.name} is approved. Catalogue uploads and your supplier product list are now enabled.`
+                ? `${current.name} is approved. Open Maker Studio to publish your profile, items, batches and stories.`
                 : status === 'rejected'
                   ? `${current.name} was not approved at this time. Open your dashboard or contact FreshPick for next steps.`
                   : `${current.name} has been moved back to pending review.`,

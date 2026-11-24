@@ -29,7 +29,7 @@ export default function ContactPage() {
     const requestedType = searchParams.get("type");
     if (requestedType === "suggest") { setType("suggestion"); }
     else if (enquiryTypes.includes(requestedType as EnquiryType)) setType(requestedType as EnquiryType);
-    if (source === "producers") setSubject((current) => current || "Selling with FreshPick");
+    if (source === "producers") setSubject((current) => current || "My maker page");
   }, [searchParams, source]);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -49,7 +49,7 @@ export default function ContactPage() {
       setStatus("sent"); setFeedback(`Enquiry saved for the FreshPick team. Reference: ${enquiryReference(data.enquiryId)}.`);
       submission.current = null;
       setName(""); setEmail(""); setMessage(""); setOrderId(""); setPriority("normal");
-      setSubject(source === "producers" ? "Selling with FreshPick" : "");
+      setSubject(source === "producers" ? "My maker page" : "");
     } catch (error) {
       setStatus("error"); setFeedback(error instanceof Error ? error.message : "Your enquiry could not be saved. Please retry.");
     } finally { sending.current = false; }
@@ -61,7 +61,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background text-foreground">
       <PremiumPageHeader
         title="Speak with FreshPick."
-        subtitle="For orders, recurring plans, partnerships, and general support, our Colombo team is here to help."
+        subtitle="For help with your account, a maker page or a listing, contact FreshPick. For availability and pickup, contact the maker on their item page."
         eyebrow="Contact FreshPick"
       />
 

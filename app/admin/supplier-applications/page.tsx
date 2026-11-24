@@ -13,6 +13,7 @@ interface Application {
   id: string;
   name: string;
   contactName: string;
+  city?: string | null;
   email: string | null;
   phone: string;
   notes: string | null;
@@ -53,12 +54,12 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
         <div>
           <h2 className="text-xl font-semibold">{application.name}</h2>
           <p className="mt-1 break-words text-sm text-muted-foreground">
-            {application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
+            {application.city && `${application.city} · `}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
           </p>
         </div>
 
-        <section className="rounded-lg border border-border bg-secondary/40 p-4">
-          <h3 className="text-sm font-semibold text-foreground">Proposed products</h3>
+        {!!application.notes && <section className="rounded-lg border border-border bg-secondary/40 p-4">
+          <h3 className="text-sm font-semibold text-foreground">Previous catalogue notes</h3>
           {application.proposedProducts.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {application.proposedProducts.map(product => (
@@ -76,7 +77,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
               <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">{application.notes}</p>
             </details>
           )}
-        </section>
+        </section>}
 
         <form onSubmit={event => { event.preventDefault(); void save(); }}>
           <fieldset disabled={busy} className="space-y-4">
@@ -96,7 +97,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
               <Textarea className="mt-2" maxLength={5000} value={notes} onChange={event => setNotes(event.target.value)} />
             </label>
             <p className="text-xs leading-6 text-muted-foreground">
-              Approval activates catalogue upload. The supplier receives an in-app notification when the application status changes.
+              Approval opens Maker Studio for publishing. The maker receives an in-app notification when the application status changes.
             </p>
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             <Button disabled={busy || (status === application.applicationStatus && notes === application.reviewNotes)}>
@@ -117,9 +118,8 @@ export default function ApplicationsPage() {
   return (
     <div className="space-y-6">
       <Link href="/admin/suppliers" className="text-sm text-brand-green underline">Supplier records</Link>
-      <h1 className="text-3xl font-semibold">Supplier applications</h1>
-      <Link href="/admin/supply" className="underline">Weekly buying requests and grower offers</Link>
-      <p className="text-sm text-muted-foreground">Review supplier details and the proposed products they entered during registration.</p>
+      <h1 className="text-3xl font-semibold">Maker applications</h1>
+      <p className="text-sm text-muted-foreground">Review the maker’s name, town and contact details before enabling publishing.</p>
       <div className="flex flex-wrap justify-between gap-3">
         <label className="flex items-center gap-3 text-sm">
           Review status

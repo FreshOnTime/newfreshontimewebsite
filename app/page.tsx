@@ -1,94 +1,44 @@
-import HomeHelp from '@/components/home/HomeHelp';
-import HomeBasketFeature from '@/components/home/HomeBasketFeature';
-import HomeMarketManifesto from '@/components/home/HomeMarketManifesto';
-import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
-import { absoluteUrl } from '@/lib/config/site';
-import { publicPageMetadata } from '@/lib/publicPages';
-import { Metadata } from "next";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { ProductCard } from "@/components/products/ProductCard";
-import { ProductErrorBoundary } from "@/components/products/ProductErrorBoundary";
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowUpRight, MapPin } from 'lucide-react';
+import { MakerItemCard } from '@/components/makers/MakerCards';
+import { publicItemSelect } from '@/lib/makerQueries';
+import { publicMakerWhere } from '@/lib/makers';
+import prisma from '@/lib/prisma';
+import { pageMetadata } from '@/lib/seo';
 
-import HeroSection from "@/components/home/HeroSection";
-import CategoryBento from "@/components/home/CategoryBento";
-import BrandStory, { BusinessStory } from "@/components/home/BrandStory";
-import { unstable_cache } from "next/cache";
-import { loadStorefrontHome } from "@/lib/storefrontData";
-import { listPublishedJournalEntries } from "@/lib/journalService";
-import HomeJournal from "@/components/home/HomeJournal";
+export const dynamic = 'force-dynamic';
+export const metadata = pageMetadata({ path: '/', title: 'FreshPick | Discover Sri Lankan food makers', description: 'Meet independent bakers, home cooks and growers. Explore their items, stories and latest batches.' });
 
-export const dynamic = "force-static";
-export const revalidate = 300;
-
-export const metadata: Metadata = publicPageMetadata('/');
-
-const getHomeData = unstable_cache(loadStorefrontHome, ['storefront-home-db-v1'], {
-  revalidate: 300,
-  tags: ['products', 'categories'],
-});
+const categories = [
+  ['Bakery', 'bakery'], ['Prepared food', 'cooked-food'], ['Pantry', 'pantry-staples'], ['Produce', 'greens-herbs'],
+];
 
 export default async function Home() {
-  const [{ products, categories }, journal] = await Promise.all([
-    getHomeData(),
-    listPublishedJournalEntries().catch((error) => { console.error('[Homepage] Failed to load journal:', error); return []; }),
-  ]);
-
-  return (
-    <div className="bg-background">
-      <BreadcrumbJsonLd items={[{ name: "FreshPick", url: absoluteUrl("/") }]} />
-      <HeroSection />
-      <HomeMarketManifesto />
-      <CategoryBento categories={categories} />
-
-      <section aria-labelledby="market-title" className="bg-background pb-12 md:pb-20">
-        <div className="editorial-wrap">
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-5 border-b border-brand-green-deep/20 pb-6">
-            <div>
-              <p className="mb-4 text-[10px] font-bold uppercase tracking-[.22em] text-brand-green">From the shelves</p>
-              <h2 id="market-title" className="font-heading text-[clamp(2.15rem,4vw,4.2rem)] font-semibold uppercase leading-none tracking-[-.06em] text-brand-green-deep">Shop the market.</h2>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">Discover products from the currently available FreshPick catalogue.</p>
-            </div>
-            <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center gap-2 border-b border-brand-green-deep text-xs font-bold uppercase tracking-[.1em] text-brand-green-deep">See all products <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
-          </div>
-
-          <ProductErrorBoundary>
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-                {products.slice(0, 8).map((product) => (
-                  <div key={product.sku}>
-                    <ProductCard
-                      id={product._id?.toString() || ""}
-                      sku={product.sku}
-                      name={product.name}
-                      image={product.image?.url || ""}
-                      discountPercentage={product.discountPercentage || 0}
-                      baseMeasurementQuantity={product.baseMeasurementQuantity}
-                      pricePerBaseQuantity={product.pricePerBaseQuantity}
-                      measurementType={product.measurementUnit as "g" | "kg" | "ml" | "l" | "ea" | "lb"}
-                      isDiscreteItem={product.isSoldAsUnit}
-                      variant="default"
-                      isOutOfStock={product.isOutOfStock}
-                      isBundle={product.isBundle}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-border bg-card px-6 py-10 text-center">
-                <p className="text-xl font-semibold text-brand-green">The market is being refreshed.</p>
-                <Link href="/products" className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-brand-green">Browse all products <ArrowUpRight className="h-4 w-4" /></Link>
-              </div>
-            )}
-          </ProductErrorBoundary>
-        </div>
-      </section>
-
-      <HomeBasketFeature />
-      <BrandStory />
-      <BusinessStory />
-      <HomeJournal posts={journal} />
-      <HomeHelp />
-    </div>
-  );
+  const items = await prisma.makerItem.findMany({ where: { published: true, supplier: publicMakerWhere }, take: 4,
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }], select: { ...publicItemSelect, supplier: { select: { makerHandle: true } } } });
+  return <>
+    <section className="maker-hero">
+      <div className="maker-hero-copy">
+        <h1 className="maker-headline">Meet the people behind your <em className="text-[#923d29]">next meal.</em></h1>
+        <p className="mt-6 max-w-md leading-7">Find independent bakers, home cooks and growers across Sri Lanka. See what’s fresh and message the maker directly.</p>
+        <form action="/makers" className="mt-7 flex w-full max-w-lg items-center gap-2 rounded-2xl border border-black/15 bg-white p-2">
+          <MapPin size={18} className="ml-2 shrink-0"/><input name="town" aria-label="Search by town" placeholder="Your town or area" className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm" /><button className="maker-button">Explore</button>
+        </form>
+      </div>
+      <div className="maker-hero-photo"><Image src="/images/editorial/hands-at-work.webp" fill priority sizes="(max-width:767px) 100vw, 53vw" alt="Hands shaping dough on a flour-dusted work surface" className="object-cover" /></div>
+    </section>
+    <section className="editorial-wrap py-12 md:py-16">
+      <h2 className="editorial-title">Explore by craft</h2>
+      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">{categories.map(([name, image]) => <Link key={name} href={`/makers?kind=${encodeURIComponent(name)}`} className="group">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-lg"><Image src={`/images/categories/${image}.webp`} alt="" fill sizes="(max-width:1023px) 45vw, 24vw" className="object-cover transition-transform group-hover:scale-105"/></div>
+        <span className="mt-3 flex items-center justify-between font-serif text-xl">{name}<ArrowUpRight size={17}/></span>
+      </Link>)}</div>
+    </section>
+    {items.length > 0 && <section className="editorial-wrap pb-14"><h2 className="editorial-title">Fresh from the makers</h2><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{items.map(item => <MakerItemCard key={item.id} handle={item.supplier.makerHandle} item={item}/>)}</div></section>}
+    <section className="editorial-wrap pb-14"><div className="grid gap-6 border-y border-border py-10 md:grid-cols-2">
+      <div><h2 className="font-serif text-4xl">From their kitchens</h2><Link href="/stories" className="editorial-link">Read the food stories <ArrowUpRight size={16}/></Link></div>
+      <div><h2 className="font-serif text-4xl">Make something yourself?</h2><Link href="/join" className="editorial-link">Open your maker page <ArrowUpRight size={16}/></Link></div>
+    </div></section>
+  </>;
 }

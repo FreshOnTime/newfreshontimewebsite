@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { AccountPage, AccountState, AccountLoading, accountSecondaryButton } from '@/components/account/AccountPage';
 import { ConfirmAction } from '@/components/account/ConfirmAction';
-import { ReorderButton } from '@/components/account/ReorderButton';
 import { orderAddressSchema } from '@/lib/orderAddress';
 import { CheckCircle2, Clock, Package, Truck, ArrowLeft, MapPin, CreditCard, XCircle, RotateCcw } from "lucide-react";
 
@@ -528,7 +527,6 @@ export default function OrderDetailPage() {
                 </CardContent>
               </Card>
 
-              {!order.isRecurring && <Card className="shadow-none border-border bg-background"><CardContent className="p-6"><ReorderButton orderId={order._id} /></CardContent></Card>}
 
               {/* Need Help Card */}
               <Card className="shadow-none border-border bg-background overflow-hidden">
