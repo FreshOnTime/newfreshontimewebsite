@@ -38,7 +38,7 @@ export default function OfflinePage() {
                 </div>
 
                 <p className="text-sm text-muted-foreground mt-8">
-                    Don&apos;t worry, your cart items are saved and will be here when you&apos;re back online.
+                    Reconnect to see the latest items and batches from your makers.
                 </p>
             </div>
         </div>
