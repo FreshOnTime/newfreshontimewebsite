@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import styles from './EditorialHome.module.css';
 
 const chapters = [
   { number: '01', title: 'Made by real people.', description: 'Meet independent bakers, home cooks and growers. Get to know the people behind your food.', image: '/images/editorial/restaurant-kitchen.webp', alt: 'Cooks preparing food together', href: '/makers', action: 'Meet the makers' },
@@ -9,19 +10,20 @@ const chapters = [
 ];
 
 export function ExperienceChapters() {
-  return <section className="studio-experience" aria-label="The FreshPick experience">
-    <div className="studio-experience-heading editorial-wrap" data-studio-chapter>
-      <p className="studio-overline">The FreshPick experience</p>
-      <h2>Food worth<br/>getting to know.</h2>
-    </div>
-    <div className="editorial-wrap studio-chapter-list">
-      {chapters.map(chapter => <article className="studio-story-panel" key={chapter.number} data-studio-chapter>
-        <div className="studio-story-image" data-studio-parallax><Image src={chapter.image} alt={chapter.alt} fill sizes="(max-width: 767px) 100vw, 58vw"/></div>
-        <div className="studio-chapter-copy">
-          <p className="studio-overline">{chapter.number} / 03</p>
-          <h2>{chapter.title}</h2>
-          <p>{chapter.description}</p>
-          <Link href={chapter.href} className="studio-text-action">{chapter.action}<ArrowUpRight size={18} aria-hidden="true"/></Link>
+  return <section className={styles.story} aria-label="The FreshPick experience">
+    <header className={styles.storyHeader} data-studio-chapter>
+      <p className={styles.eyebrow}>THE FRESHPICK EXPERIENCE / 01—03</p>
+      <h2>More than a meal.<br/><em>A story worth knowing.</em></h2>
+    </header>
+    <div className={styles.chapterGrid}>
+      {chapters.map(chapter => <article className={styles.chapter} key={chapter.number} data-studio-feature data-studio-chapter>
+        <Link className={styles.chapterPhoto} href={chapter.href} aria-label={chapter.action} data-studio-parallax>
+          <Image src={chapter.image} alt={chapter.alt} fill sizes={chapter.number === '01' ? '(max-width: 767px) 100vw, 90vw' : '(max-width: 767px) 100vw, 45vw'}/>
+          <span className={styles.chapterNumber} aria-hidden="true">{chapter.number}</span>
+        </Link>
+        <div className={styles.chapterCopy}>
+          <div><h3>{chapter.title}</h3><p>{chapter.description}</p></div>
+          <Link href={chapter.href} className={styles.chapterAction} aria-label={chapter.action}><ArrowUpRight size={23} aria-hidden="true"/></Link>
         </div>
       </article>)}
     </div>

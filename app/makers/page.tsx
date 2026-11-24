@@ -49,11 +49,11 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   const hasResults = [items, batches, makers, stories].some(rows => rows.length > 0);
   const filtered = Boolean(town || kind || q || page > 1);
   const launch = !hasResults && !filtered;
-  return <div className="fp-directory directory-experience">
+  return <div className="fp-directory directory-experience edition-directory">
     <header className={`directory-masthead ${filtered ? "directory-masthead-compact" : ""}`}>
       <div className="editorial-wrap directory-masthead-inner">
         <div className="directory-masthead-copy"><p className="studio-overline">The FreshPick directory</p><h1>Find good food.<br/><span>Meet good people.</span></h1><p>Discover independent food makers, near you and across Sri Lanka.</p></div>
-        {!filtered && <div className="directory-masthead-photo"><Image src="/images/editorial/kitchen-basket.webp" alt="A woven basket of fresh ingredients" fill priority sizes="(max-width:767px) 90vw, 48vw"/></div>}
+        {!filtered && <div className="directory-masthead-photo" data-studio-parallax><Image src="/images/editorial/kitchen-basket.webp" alt="A woven basket of fresh ingredients" fill priority sizes="(max-width:767px) 90vw, 48vw"/></div>}
       </div>
     </header>
     <div className="editorial-wrap lux-directory-controls directory-search-panel">
@@ -70,7 +70,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
       {hasResults && <nav className="lux-result-jump" aria-label="Jump to results">{makers.length > 0 && <a href="#makers-results">Makers</a>}{items.length > 0 && <a href="#items-results">Food</a>}{batches.length > 0 && <a href="#batches-results">Preorders</a>}{stories.length > 0 && <a href="#stories-results">Stories</a>}</nav>}
       {hasResults && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
       {makers.length > 0 && <section id="makers-results">
-        <h2 className="editorial-title">Meet the makers</h2>
+        <div className="edition-section-heading"><p className="studio-overline">01 / The people</p><h2 className="editorial-title">Meet the makers</h2></div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-studio-grid>
           {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="journal-index-entry">
             <h3 className="flex items-center justify-between gap-3 font-serif text-xl text-brand-green">{maker.name}<ArrowUpRight className="shrink-0" size={16} aria-hidden="true" /></h3>
@@ -81,7 +81,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         <Link href="/join" className="mt-5 inline-block text-sm font-semibold text-brand-green underline">Join FreshPick as a maker</Link>
       </section>}
       {items.length > 0 && <section id="items-results">
-        <h2 className="editorial-title">The item board</h2>
+        <div className="edition-section-heading"><p className="studio-overline">02 / The food</p><h2 className="editorial-title">The item board</h2></div>
         <div className="mt-5 journal-item-grid" data-studio-grid>{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
       </section>}
       {batches.length > 0 && <section id="batches-results">

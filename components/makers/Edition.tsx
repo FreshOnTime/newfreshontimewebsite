@@ -15,11 +15,11 @@ const crafts = [
 
 export function CraftShelf() {
   return <section id="discover-craft" className="fp-section lux-crafts editorial-wrap" data-studio-chapter aria-labelledby="craft-title">
-    <div className="fp-section-head"><div><h2 id="craft-title">Explore local food.</h2></div><Link className="fp-inline" href="/makers">All makers</Link></div>
-    <DiscoveryRail label="food crafts">{crafts.map(([label, kind, image]) =>
+    <div className="fp-section-head"><div><p className="fp-kicker">THE COLLECTION / 01</p><h2 id="craft-title">Explore local food.</h2></div><Link className="fp-inline" href="/makers">All makers</Link></div>
+    <DiscoveryRail label="food crafts">{crafts.map(([label, kind, image], index) =>
       <Link key={kind} href={`/makers?kind=${encodeURIComponent(kind)}`} className="fp-craft">
         <div className="fp-image"><Image src={image} alt="" fill sizes="(max-width: 639px) 68vw, (max-width: 1023px) 32vw, 24vw" /></div>
-        <span>{label}<ArrowUpRight size={19} aria-hidden="true"/></span>
+        <span><span className="craft-name"><small aria-hidden="true">{String(index + 1).padStart(2, '0')} /</small>{label}</span><ArrowUpRight size={19} aria-hidden="true"/></span>
       </Link>)}</DiscoveryRail>
   </section>;
 }

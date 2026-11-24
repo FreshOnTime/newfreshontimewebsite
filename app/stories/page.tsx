@@ -12,15 +12,15 @@ export default async function Stories({ searchParams }: { searchParams: Promise<
     skip: (page - 1) * 20, take: 21, orderBy: [{ publishedAt: 'desc' }, { id: 'asc' }],
     select: { id: true, title: true, excerpt: true, slug: true, supplier: { select: { name: true, makerHandle: true } } },
   });
-  return <>
+  return <div className="edition-journal">
     <PageBand title="The food journal." intro="Kitchen notes, grower stories and things worth making time to cook." image="/images/editorial/recipe-ingredients.webp" alt="Ingredients laid out for cooking"/>
     {rows.length > 0 && <section className="fp-section editorial-wrap"><div className="fp-section-head"><h2>From the makers</h2></div>
-      <div className="fp-story-list">{rows.slice(0,20).map(row => <Link key={row.id} href={`/makers/${row.supplier?.makerHandle}/stories/${row.slug}`}>
+      <div className="fp-story-list edition-story-index" data-studio-grid>{rows.slice(0,20).map(row => <Link key={row.id} href={`/makers/${row.supplier?.makerHandle}/stories/${row.slug}`}>
         <span className="fp-kicker">{row.supplier?.name}</span><h3>{row.title}</h3><p>{row.excerpt}</p></Link>)}</div></section>}
     {(page > 1 || rows.length > 20) && <nav className="editorial-wrap flex gap-5 py-5 underline" aria-label="Story pages">
       {page > 1 && <Link href={`/stories?page=${page - 1}`}>Previous</Link>}
       {rows.length > 20 && <Link href={`/stories?page=${page + 1}`}>Next</Link>}
     </nav>}
     <div className="lux-journal-band"><ReadingShelf/></div><div className="editorial-wrap pb-10"><Link className="fp-inline" href="/blog">Browse the editorial archive</Link></div>
-  </>;
+  </div>;
 }

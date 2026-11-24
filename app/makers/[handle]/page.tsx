@@ -36,7 +36,7 @@ export default async function MakerPage({ params }: Props) {
 
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, maker.name);
   const leadItem = items.find(item => item.image);
-  return <div className="fp-maker-profile editorial-wrap space-y-10 py-10 md:py-16">
+  return <div className="fp-maker-profile edition-storefront editorial-wrap space-y-10 py-10 md:py-16">
     <header className={`journal-storefront lux-storefront ${leadItem ? "lux-storefront-photo" : ""}`}><div className="lux-storefront-copy">
       <Link href="/makers" className="text-sm font-semibold text-brand-green underline">Explore makers</Link>
       <p className="fp-kicker mt-6">Independent food maker</p><h1 className="mt-3 font-serif text-4xl text-brand-green md:text-6xl">{maker.name}</h1>
@@ -46,10 +46,10 @@ export default async function MakerPage({ params }: Props) {
       </div>{leadItem && <Link href={`/makers/${handle}/items/${leadItem.slug}`} className="lux-storefront-feature"><MakerPhoto image={leadItem.image} name={leadItem.name}/><span>From this maker · {leadItem.name} <span aria-hidden="true">↗</span></span></Link>}
     </header>
     <nav className="lux-result-jump" aria-label="Maker page sections"><a href="#maker-items">Food & items</a>{stories.length > 0 && <a href="#maker-stories">Stories</a>}</nav>
-    <section id="maker-items">
+    <section id="maker-items" data-studio-chapter>
       <div className="fp-section-head"><h2 className="editorial-title">From this kitchen</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
       {items.length === 0 && <p className="mt-3 text-muted-foreground">This maker hasn’t published any items yet.</p>}
-      <div className="mt-4 journal-item-grid">
+      <div className="mt-4 journal-item-grid" data-studio-grid>
         {items.map(item => <MakerItemCard key={item.id} handle={handle} item={item} />)}
       </div>
     </section>
