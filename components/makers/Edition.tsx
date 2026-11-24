@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
 import { fieldNotes, notePath } from '@/lib/fieldNotes';
 
 const crafts = [
@@ -17,7 +18,7 @@ export function CraftShelf() {
     <div className="fp-crafts">{crafts.map(([label, kind, image]) =>
       <Link key={kind} href={`/makers?kind=${encodeURIComponent(kind)}`} className="fp-craft">
         <div className="fp-image"><Image src={image} alt="" fill sizes="(max-width: 639px) 31vw, (max-width: 899px) 28vw, 16vw" /></div>
-        <span>{label}</span>
+        <span>{label}<ArrowUpRight size={16} aria-hidden="true"/></span>
       </Link>)}</div>
   </section>;
 }
@@ -28,7 +29,7 @@ export function ReadingShelf({ exclude }: { exclude?: string }) {
     <div className="fp-reads">{fieldNotes.filter(note => note.slug !== exclude).map(note =>
       <Link key={note.slug} href={notePath(note)} className="fp-read">
         <div className="fp-image"><Image src={note.image} alt={note.alt} fill sizes="(max-width: 639px) 95vw, 33vw" /></div>
-        <span className="fp-kicker">{note.category}</span><h3>{note.title}</h3><p>{note.excerpt}</p>
+        <span className="fp-kicker">{note.category}</span><h3>{note.title}</h3><p>{note.excerpt}</p><span className="journal-read-link">Read the story <ArrowUpRight size={15} aria-hidden="true"/></span>
       </Link>
     )}</div>
   </section>;

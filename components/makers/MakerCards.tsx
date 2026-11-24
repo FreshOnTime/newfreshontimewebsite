@@ -16,18 +16,21 @@ export function MakerPhoto({ image, name }: { image: string | null; name: string
   );
 }
 
-export function MakerItemCard({ handle, item }: {
+export function MakerItemCard({ handle, item, makerName, makerTown }: {
   handle: string | null;
+  makerName?: string;
+  makerTown?: string | null;
   item: { slug: string; name: string; kind: string; image: string | null; price: Money | null; madeToOrder: boolean };
 }) {
   return <Link href={makerItemPath(handle, item.slug)} className="fp-item-card group block">
-    <MakerPhoto image={item.image} name={item.name} />
+    <div className="journal-card-media"><MakerPhoto image={item.image} name={item.name} /></div>
     <div className="p-3">
       <p className="text-xs font-semibold text-muted-foreground">{item.kind}{item.madeToOrder ? ' · Made to order' : ''}</p>
       <h3 className="mt-1 flex items-center justify-between gap-3 font-serif text-xl text-brand-green">
         {item.name}<ArrowUpRight size={16} className="shrink-0 opacity-60 group-hover:opacity-100" aria-hidden="true" />
       </h3>
-      {item.price && <p className="mt-1 text-sm text-muted-foreground">{formatMakerPrice(item.price)}</p>}
+      {makerName && <p className="journal-card-origin">{makerName}{makerTown ? ` · ${makerTown}` : ""}</p>}
+      {item.price != null && <p className="mt-1 text-sm text-muted-foreground">{formatMakerPrice(item.price)}</p>}
     </div>
   </Link>;
 }

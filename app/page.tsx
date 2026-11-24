@@ -1,10 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Search } from 'lucide-react';
-import { MakerItemCard } from '@/components/makers/MakerCards';
+import { ArrowUpRight, Search, MapPin, ArrowRight } from 'lucide-react';
+import { MakerItemCard, BatchDetails } from '@/components/makers/MakerCards';
 import { CraftShelf, ReadingShelf } from '@/components/makers/Edition';
 import { publicItemSelect } from '@/lib/makerQueries';
-import { publicMakerWhere } from '@/lib/makers';
+import { publicMakerWhere, openBatches, makerItemPath } from '@/lib/makers';
 import prisma from '@/lib/prisma';
 import { pageMetadata } from '@/lib/seo';
 
@@ -12,40 +12,41 @@ export const dynamic = 'force-dynamic';
 export const metadata = pageMetadata({ path: '/', title: 'FreshPick | Discover Sri Lankan food makers', description: 'Meet independent bakers, home cooks and growers. Explore their items, stories and latest batches.' });
 
 export default async function Home() {
-  const [items, makers] = await Promise.all([
+  const [items, makers, batches] = await Promise.all([
     prisma.makerItem.findMany({
     where: { published: true, supplier: publicMakerWhere }, take: 4,
     orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-    select: { ...publicItemSelect, supplier: { select: { makerHandle: true } } },
+    select: { ...publicItemSelect, supplier: { select: { makerHandle: true, name: true, makerTown: true } } },
     }),
     prisma.supplier.findMany({ where: publicMakerWhere, orderBy: [{name: 'asc'}, {id: 'asc'}], take: 4,
       select: { id: true, name: true, makerHandle: true, makerTown: true, makerBio: true } }),
+    prisma.makerBatch.findMany({where:{...openBatches(),item:{published:true,supplier:publicMakerWhere}},orderBy:[{cutoff:'asc'},{id:'asc'}],take:3,include:{item:{select:{name:true,slug:true,supplier:{select:{name:true,makerHandle:true,makerTown:true,makerWhatsApp:true}}}}}}),
   ]);
   return <>
-    <div className="fp-cover editorial-wrap">
-      <section className="fp-lead">
-        <Image src="/images/home/market-pantry.webp" alt="" fill priority sizes="(max-width: 799px) 100vw, 72vw" />
-        <div className="fp-lead-copy">
-          <span className="fp-kicker"><MapPin size={15} /> Sri Lanka</span>
-          <h1>Good food,<br/><em>closer to home.</em></h1>
-          <p>Discover independent bakers, home cooks and growers. Talk to the people who make your food.</p>
-          <form action="/makers" className="fp-search"><Search size={18}/><input name="town" aria-label="Search by town" placeholder="Search by town or area"/><button>Explore</button></form>
-        </div>
-      </section>
-      <Link className="fp-cover-note" href="/stories/the-bread-window">
-        <div className="fp-image"><Image src="/images/editorial/hands-at-work.webp" alt="Hands shaping fresh dough" fill priority sizes="(max-width:799px) 38vw, 30vw"/></div>
-        <div className="fp-cover-caption"><span className="fp-kicker">From the journal</span><h2>The bread <em>window.</em></h2><span className="fp-note-link">Read the field note</span></div>
-      </Link>
+    <section className="journal-cover editorial-wrap">
+      <div className="journal-cover-copy">
+        <p className="fp-kicker">A taste of Sri Lanka</p>
+        <h1>Good food.<br/><em>Good people.</em></h1>
+        <p>Discover Sri Lankan bakers, home cooks, growers and pantry makers. Find something you love and contact the maker directly on WhatsApp.</p>
+        <form action="/makers" role="search" className="journal-discover"><label htmlFor="home-discover" className="sr-only">Find a food or maker</label><Search size={19} aria-hidden="true"/><input id="home-discover" name="q" maxLength={100} placeholder="Try sourdough or a maker name"/><button type="submit" aria-label="Search makers"><ArrowRight size={19}/></button></form>
+        <Link href="/makers" className="journal-text-cta">Explore makers <ArrowUpRight size={17}/></Link>
+      </div>
+      <figure className="journal-cover-feature"><div className="journal-cover-photo fp-image"><Image src="/images/editorial/hands-at-work.webp" alt="Hands kneading dough beside a bowl" fill priority sizes="(max-width: 767px) 100vw, 57vw" /></div><figcaption><span>Food is a craft.</span><span>FreshPick / The journal</span></figcaption></figure>
+    </section>
+    <div className="journal-first-note editorial-wrap">
+      {makers.length > 0 ? <Link href={'/makers/'+makers[0].makerHandle}><span className="fp-kicker">Meet a maker</span><span>{makers[0].name}{makers[0].makerTown ? ' · '+makers[0].makerTown : ''}</span><ArrowUpRight size={18}/></Link> : <Link href="/stories/the-bread-window"><span className="fp-kicker">From the journal</span><span>The bread window</span><ArrowUpRight size={18}/></Link>}
     </div>
-    <CraftShelf/>
-    {items.length > 0 && <section className="fp-section editorial-wrap"><div className="fp-section-head"><h2>Fresh from the makers</h2><Link className="fp-inline" href="/makers">Browse items</Link></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{items.map(item => <MakerItemCard key={item.id} handle={item.supplier.makerHandle} item={item}/>)}</div></section>}
+    {batches.length > 0 && <section className="journal-batch-board editorial-wrap" aria-labelledby="home-batches"><div className="fp-section-head"><div><p className="fp-kicker">From the kitchens</p><h2 id="home-batches">Taking preorders.</h2></div><Link className="fp-inline" href="/makers">See the directory</Link></div><div className="journal-batch-board-grid">{batches.map(batch=><article key={batch.id}><span className="fp-kicker">{batch.item.supplier.name}</span><h3><Link href={makerItemPath(batch.item.supplier.makerHandle,batch.item.slug)}>{batch.item.name} <ArrowUpRight size={16} aria-hidden="true"/></Link></h3>{batch.item.supplier.makerTown && <p className="journal-location"><MapPin size={14} aria-hidden="true"/>{batch.item.supplier.makerTown}</p>}<BatchDetails batch={batch} itemName={batch.item.name} phone={batch.item.supplier.makerWhatsApp}/></article>)}</div></section>}
+    {items.length > 0 && <section className="fp-section editorial-wrap"><div className="fp-section-head"><h2>Fresh from the makers</h2><Link className="fp-inline" href="/makers">Browse items</Link></div><div className="journal-item-grid">{items.map(item => <MakerItemCard key={item.id} handle={item.supplier.makerHandle} item={item} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div></section>}
     {makers.length > 0 && <section className="fp-people editorial-wrap">
       <div className="fp-section-head"><h2>Meet the makers</h2><Link className="fp-inline" href="/makers">The directory</Link></div>
       <div className="fp-people-grid">{makers.map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`}>
         <span aria-hidden="true">{maker.name.slice(0,1)}</span><div><h3>{maker.name}</h3><p>{maker.makerTown}</p>{maker.makerBio && <p className="line-clamp-2">{maker.makerBio}</p>}</div>
       </Link>)}</div>
     </section>}
+    <CraftShelf/>
     <div className="fp-paper"><ReadingShelf/></div>
+    <section className="journal-method editorial-wrap" aria-label="How FreshPick works"><div><p className="fp-kicker">A different kind of market</p><h2>Closer to the people who make it.</h2></div><ol><li><span>01</span><div><h3>Find something good</h3><p>Explore food by craft, maker or town.</p></div></li><li><span>02</span><div><h3>Meet the maker</h3><p>Read their story and see what they make.</p></div></li><li><span>03</span><div><h3>Make it yours</h3><p>Enquire directly and arrange the details together.</p></div></li></ol></section>
     <section className="fp-invite editorial-wrap"><div className="fp-image"><Image src="/images/editorial/restaurant-kitchen.webp" alt="Cooks working at a busy kitchen counter" fill sizes="(max-width:639px) 95vw, 45vw"/></div><div><h2>Made in your kitchen?</h2><p>Give your food a page of its own. Share your next batch, write a story and take enquiries on WhatsApp.</p><Link className="maker-button" href="/join">Start a maker page</Link></div></section>
   </>;
 }

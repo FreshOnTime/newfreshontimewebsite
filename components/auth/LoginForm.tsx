@@ -15,7 +15,7 @@ export function LoginForm() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, loginWithGoogle, error, clearError } = useAuth();
+  const { login, error, clearError } = useAuth();
   const searchParams = useSearchParams();
 
   const requestedDestination = searchParams.get('redirect') || searchParams.get('callbackUrl');
@@ -36,17 +36,6 @@ export function LoginForm() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsLoading(true);
-      const loggedInUser = await loginWithGoogle();
-      window.location.href = accountDestination(loggedInUser.role, requestedDestination);
-    } catch (googleError) {
-      console.error('Google sign-in error:', googleError);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="bg-background">
@@ -80,19 +69,9 @@ export function LoginForm() {
               {isLoading ? 'Signing in…' : <span className="inline-flex items-center gap-2">Continue <ArrowRight className="h-4 w-4" /></span>}
             </Button>
 
-            <div className="flex items-center gap-4 py-1"><span className="h-px flex-1 bg-secondary" /><span className="text-xs font-semibold normal-case text-muted-foreground">or</span><span className="h-px flex-1 bg-secondary" /></div>
-
-            <Button type="button" variant="outline" className="h-12 w-full rounded-md border-border bg-background text-sm font-medium text-foreground shadow-none hover:bg-background" disabled={isLoading} onClick={handleGoogleSignIn}>
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="mr-3 h-5 w-5">
-                <path fill="#4285F4" d="M21.35 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.51h3.14c1.84-1.69 2.91-4.18 2.91-7.28Z" />
-                <path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.34L15.3 16.9c-.89.6-2.03.96-3.3.96-2.54 0-4.7-1.72-5.47-4.03H3.29v2.59A9.75 9.75 0 0 0 12 21.75Z" />
-                <path fill="#FBBC05" d="M6.53 13.83A5.86 5.86 0 0 1 6.22 12c0-.64.11-1.25.31-1.83V7.58H3.29A9.74 9.74 0 0 0 2.25 12c0 1.57.38 3.05 1.04 4.42l3.24-2.59Z" />
-                <path fill="#EA4335" d="M12 6.14c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.83 3.23 14.62 2.25 12 2.25a9.75 9.75 0 0 0-8.71 5.33l3.24 2.59C7.3 7.86 9.46 6.14 12 6.14Z" />
-              </svg>
-              Continue with Google
-            </Button>
           </form>
 
+          <p className="mt-5 text-xs leading-6 text-muted-foreground">Previously signed in with Google? <Link href="/auth/forgot" className="font-semibold text-brand-green underline underline-offset-4">Set a password using your account email.</Link></p>
           <p className="mt-8 text-sm text-muted-foreground">New to FreshPick? <Link href={accountLink('/auth/signup', requestedDestination)} className="font-semibold text-brand-green hover:text-brand-green">Create an account</Link></p>
         </div>
       </section>
