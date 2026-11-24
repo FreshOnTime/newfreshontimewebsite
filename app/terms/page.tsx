@@ -10,7 +10,7 @@ export default function TermsPage() {
         <div className="min-h-screen bg-background">
             <PremiumPageHeader
                 title="Terms of Service"
-                subtitle="Terms that apply when using Fresh Pick accounts, ordering, delivery, and related services."
+                subtitle="Using maker pages, accounts and FreshPick services."
                 eyebrow="Legal · Terms"
             />
 
@@ -19,7 +19,7 @@ export default function TermsPage() {
                     <p className="mb-8 font-medium text-muted-foreground">Effective Date: December 2025</p>
 
                     <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                        Welcome to <strong>Fresh Pick</strong>. By accessing or using our website and services, you agree to these Terms and Conditions.
+                        Maker pages introduce you to independent food businesses. Confirm pricing, availability, payment and collection or delivery with the maker on WhatsApp. The ordering provisions below also cover previous purchases made through FreshPick. Welcome to <strong>Fresh Pick</strong>. By accessing or using our website and services, you agree to these Terms and Conditions.
                     </p>
 
                     <div className="space-y-12">

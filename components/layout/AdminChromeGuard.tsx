@@ -14,7 +14,7 @@ import AuthFrame from '@/components/layout/AuthFrame';
 const BottomNav = dynamic(() => import('@/components/layout/BottomNav'), { loading: () => null, ssr: false });
 export default function AdminChromeGuard({ children, footer }: { children: ReactNode; footer: ReactNode }) {
   const pathname = usePathname() || '';
-  const workspace = pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/dashboard';
+  const workspace = pathname === '/admin' || pathname.startsWith('/admin/');
   const authentication = pathname.startsWith('/auth/');
   const checkout = pathname === '/checkout';
   if (workspace) return <AuthProvider><div className="flex min-h-screen flex-col"><main id="main-content" className="flex-1">{children}</main></div></AuthProvider>;

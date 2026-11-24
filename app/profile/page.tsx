@@ -91,7 +91,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <AccountPage title="Account details" description="Your contact information and delivery address." action={<Link href={dashboardHref} className={accountSecondaryButton}>Account home <ArrowRight className="h-4 w-4" /></Link>}>
+    <AccountPage title="Account details" description="Manage your login and contact details." action={<Link href={dashboardHref} className={accountSecondaryButton}>Account home <ArrowRight className="h-4 w-4" /></Link>}>
         <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
           <form onSubmit={(event) => { event.preventDefault(); void handleSave(); }} className="rounded-lg border border-border bg-background p-6 md:p-8">
             <div className="flex flex-wrap items-start justify-between gap-5 border-b border-border pb-6">
@@ -130,7 +130,7 @@ export default function ProfilePage() {
                   <p>{[address.streetAddress, address.streetAddress2, address.town, address.city, address.state, address.postalCode].filter(Boolean).join(', ')}</p>
                 </div>
               ) : (
-                <p className="mt-5 text-sm font-normal leading-6 text-muted-foreground">Add your delivery address at checkout.</p>
+                <p className="mt-5 text-sm font-normal leading-6 text-muted-foreground">You have no historical delivery address.</p>
               )}
             </section>
 
@@ -139,16 +139,16 @@ export default function ProfilePage() {
               <div className="mt-5 space-y-4">
                 <StatusRow label="Email" value={user.email ? (status.isEmailVerified ? 'Verified' : 'Verification pending') : 'Not added'} verified={Boolean(status.isEmailVerified)} />
                 <StatusRow label="Phone" value={user.phoneNumber ? (status.isPhoneVerified ? 'Verified' : 'Verification pending') : 'Not added'} verified={Boolean(status.isPhoneVerified)} />
-                <StatusRow label="Account" value={role.replace(/_/g, ' ')} verified />
+                <StatusRow label="Account" value={role === 'supplier' ? 'Maker' : role.replace(/_/g, ' ')} verified />
               </div>
             </section>
 
             <section className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
-              <AccountLink href="/for-you" title="For You" copy="Personal picks and repeat reminders" />
+              <AccountLink href="/makers" title="Explore makers" copy="Browse items by town or craft" />
               <AccountLink href="/orders" title="Orders" copy="Track and revisit your purchases" />
               <AccountLink href="/profile/messages" title="Messages" copy="Read updates from the FreshPick team" />
               <AccountLink href="/profile/notifications" title="Notifications" copy="Read FreshPick announcements and account updates" />
-              <AccountLink href="/bags" title="Shopping bags" copy="Continue a saved or active bag" />
+              <AccountLink href="/saved" title="Saved picks" copy="Revisit bookmarked makers and stories" />
               <AccountLink href="/profile/agent-access" title="AI shopping assistants" copy="Authorize or revoke an agent to prepare your bags" />
             </section>
           </aside>

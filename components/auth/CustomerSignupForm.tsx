@@ -23,14 +23,7 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
     phoneNumber: '',
     password: '',
     confirmPassword: '',
-    registrationAddress: {
-      addressLine1: '',
-      addressLine2: '',
-      city: '',
-      province: '',
-      postalCode: '',
-      country: 'Sri Lanka'
-    }
+
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -41,13 +34,6 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddressChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      registrationAddress: { ...prev.registrationAddress, [field]: value }
-    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +55,7 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
         email: formData.email || undefined,
         phoneNumber: formData.phoneNumber,
         password: formData.password,
-        registrationAddress: formData.registrationAddress
+
       });
       if (!validation.isValid) { setFieldErrors(validation.errors || null); return; }
       await signup(validation.data!);
@@ -100,8 +86,8 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
 
           <div className="mt-6 border-b border-border pb-8">
             <span className="text-xs font-bold normal-case text-brand-green">Create your FreshPick</span>
-            <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Create a customer account</h1>
-            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">We ask for a delivery address now so checkout can stay fast later. You can update it from your profile.</p>
+            <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Join FreshPick</h1>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">Create your login to start a maker page or manage your FreshPick account.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-9 space-y-10">
@@ -138,38 +124,6 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
 
             <p id="password-guidance" className="text-xs leading-6 text-muted-foreground">Use at least 8 characters, including an uppercase letter, a lowercase letter and a number.</p>
 
-            <section className="border-t border-border pt-9">
-              <div className="mb-5">
-                <p className="text-xs font-bold normal-case text-brand-green">02 · Delivery</p>
-                <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">Where should FreshPick come to?</h2>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <Field label="Address line 1 *" htmlFor="addressLine1">
-                    <Input id="addressLine1" autoComplete="address-line1" value={formData.registrationAddress.addressLine1} onChange={(e) => handleAddressChange('addressLine1', e.target.value)} required className={inputClass} />
-                  </Field>
-                </div>
-                <div className="md:col-span-2">
-                  <Field label="Address line 2" htmlFor="addressLine2">
-                    <Input id="addressLine2" autoComplete="address-line2" value={formData.registrationAddress.addressLine2} onChange={(e) => handleAddressChange('addressLine2', e.target.value)} className={inputClass} />
-                  </Field>
-                </div>
-                <Field label="City *" htmlFor="city">
-                  <Input id="city" autoComplete="address-level2" value={formData.registrationAddress.city} onChange={(e) => handleAddressChange('city', e.target.value)} required className={inputClass} />
-                </Field>
-                <Field label="Province *" htmlFor="province">
-                  <Input id="province" autoComplete="address-level1" value={formData.registrationAddress.province} onChange={(e) => handleAddressChange('province', e.target.value)} required className={inputClass} />
-                </Field>
-                <Field label="Postal code *" htmlFor="postalCode">
-                  <Input id="postalCode" autoComplete="postal-code" value={formData.registrationAddress.postalCode} onChange={(e) => handleAddressChange('postalCode', e.target.value)} required className={inputClass} />
-                </Field>
-                <Field label="Country" htmlFor="country">
-                  <Input id="country" value={formData.registrationAddress.country} disabled className={` ${inputClass} text-muted-foreground`} />
-                </Field>
-              </div>
-            </section>
-
             {(serverError || fieldErrors) && (
               <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
                 {serverError && <p>{serverError}</p>}
@@ -178,7 +132,7 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
             )}
 
             <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-              <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">By creating an account, your order and bag history can be used to make FreshPick more relevant to you.</p>
+              <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">Your login details stay private.</p>
               <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-lg bg-brand-leaf px-7 text-sm font-semibold normal-case text-brand-ink shadow-none hover:bg-brand-leaf/85">
                 {isLoading ? 'Creating account…' : <span className="inline-flex items-center gap-2">Create account <ArrowRight className="h-4 w-4" /></span>}
               </Button>

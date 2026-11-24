@@ -99,13 +99,13 @@ export default function MySubscriptionsPage() {
   const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US', { timeZone: 'Asia/Colombo', weekday: 'short', month: 'short', day: 'numeric' });
 
   return (
-    <AccountPage title="Subscriptions" description="Manage your regular deliveries." action={<Link href="/subscriptions" className={accountSecondaryButton}>Explore plans</Link>}>
+    <AccountPage title="Subscriptions" description="Manage your regular deliveries." action={<Link href="/makers" className={accountSecondaryButton}>Explore makers</Link>}>
         <ConfirmAction open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null); }} title={confirmAction?.action === 'skip' ? 'Skip the next delivery?' : 'Cancel this subscription?'} description={confirmAction?.action === 'skip' ? `Skip the delivery on ${formatDate(confirmAction.sub.nextDeliveryDate)}. Your following delivery stays on the plan’s regular schedule.` : 'This ends future deliveries for this plan. You can choose a new plan anytime.'} label={confirmAction?.action === 'skip' ? 'Skip delivery' : 'Cancel subscription'} busy={actionLoading !== null} error={actionError} onConfirm={() => { if (confirmAction) void handleAction(confirmAction.sub._id, confirmAction.action); }} />
         {actionError && !confirmAction && <div role="alert" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 p-4 text-sm text-rose-700"><p>{actionError}</p><button type="button" className={accountSecondaryButton} disabled={actionLoading !== null} onClick={() => { setActionError(null); setRetryCount((count) => count + 1); }}>Refresh subscriptions</button></div>}
         {authLoading || isLoading ? <AccountLoading label="Loading your subscriptions…" /> : error ? (
           <AccountState error title="Couldn’t load your subscriptions" description={error} action={<button type="button" className={accountSecondaryButton} onClick={() => setRetryCount((count) => count + 1)}>Try again</button>} />
         ) : subscriptions.length === 0 ? (
-          <AccountState title="No subscriptions yet" description="Choose a plan to have your essentials delivered regularly." action={<Link href="/subscriptions" className={accountButton}>Explore plans</Link>} />
+          <AccountState title="No subscriptions yet" description="No previous FreshPick subscriptions are linked to this account." action={<Link href="/makers" className={accountButton}>Explore makers</Link>} />
         ) : (
           <div className="space-y-4">
             {subscriptions.map((sub) => (

@@ -9,7 +9,7 @@ const paths = [
     icon: MessageCircleWarning,
     label: "Client care",
     title: "Something needs attention.",
-    copy: "Tell us about an order, checkout, delivery, or account issue. Urgent matters are prioritised by our care team.",
+    copy: "Tell us about a maker page, a listing, your account or a previous FreshPick order.",
     href: "/contact?type=issue",
     action: "Report an issue",
   },

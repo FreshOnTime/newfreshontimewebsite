@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 import { GET } from '@/app/api/blogs/route';
 
 jest.mock('next/cache', () => ({ unstable_cache: (fn: unknown) => fn, revalidatePath: jest.fn(), revalidateTag: jest.fn() }));
-jest.mock('@/lib/prisma', () => ({ __esModule: true, default: { product: { findMany: jest.fn() }, category: { findMany: jest.fn() }, blog: { findMany: jest.fn(), count: jest.fn() } } }));
+jest.mock('@/lib/prisma', () => ({ __esModule: true, default: { supplier: { findMany: jest.fn() }, makerItem: { findMany: jest.fn() }, product: { findMany: jest.fn() }, category: { findMany: jest.fn() }, blog: { findMany: jest.fn(), count: jest.fn() } } }));
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -47,31 +47,17 @@ it('keeps private pages out of indexing without blocking rendering assets', () =
   for (const path of ['/checkout', '/profile', '/auth/login']) expect(PUBLIC_PAGES.map(page => page.path)).not.toContain(path);
 });
 
-it('includes blog and product collections, excluding retired recipes and creator URLs', async () => {
-  (prisma.product.findMany as jest.Mock).mockResolvedValue([{ sku: 'LIME / 01', updatedAt: new Date('2026-10-01') }]);
-  (prisma.category.findMany as jest.Mock).mockResolvedValue([{ slug: 'fresh-produce', updatedAt: new Date('2026-10-01') }]);
-  (prisma.blog.findMany as jest.Mock).mockImplementation(({ where }) => where.category === 'recipe'
-    ? [{ slug: 'lime-recipe', authorId: 'creator-1', content: JSON.stringify({ ingredients: [{ productId: 'lime', quantity: 1 }], steps: ['Cut the lime.'] }), updatedAt: new Date('2026-10-01') }, { slug: 'malformed-recipe', content: 'invalid' }]
-    : where.category === 'collection'
-      ? [{ slug: 'market-edit', content: JSON.stringify({ productIds: ['lime'] }), updatedAt: new Date('2026-10-01') }]
-      : [{ slug: 'market-journal', updatedAt: new Date('2026-10-01') }]);
-  const pages = await sitemap(); const urls = pages.map(page => page.url);
-  expect(urls).toEqual(expect.arrayContaining(['/blog', '/help', '/b2b', '/blog/market-journal', '/collections/market-edit', '/products/LIME%20%2F%2001'].map(absoluteUrl)));
-  expect(urls.some(url => /\/(recipes|creators|meal-kits)(\/|$)/.test(url))).toBe(false);
-  expect((prisma.blog.findMany as jest.Mock).mock.calls.some(([args]) => args.where.category === 'recipe')).toBe(false);
-  expect(pages.find(page => page.url === absoluteUrl('/help'))?.lastModified).toBeUndefined();
-  expect(prisma.blog.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ published: true, isDeleted: false, AND: expect.any(Array) }) }));
-});
-
-it('retains healthy sitemap sections when one database query fails', async () => {
-  const log = jest.spyOn(console, 'error').mockImplementation(() => {});
-  (prisma.product.findMany as jest.Mock).mockRejectedValue(new Error('offline'));
-  (prisma.category.findMany as jest.Mock).mockResolvedValue([{ slug: 'fresh-produce' }]);
-  (prisma.blog.findMany as jest.Mock).mockResolvedValue([{ slug: 'market-story' }]);
+it('indexes published maker profiles, items, stories and editorial articles', async () => {
+  (prisma.supplier.findMany as jest.Mock).mockResolvedValue([{makerHandle:'local-baker'}]);
+  (prisma.makerItem.findMany as jest.Mock).mockResolvedValue([{slug:'sourdough',supplier:{makerHandle:'local-baker'}}]);
+  (prisma.blog.findMany as jest.Mock).mockImplementation(({where}) =>
+    where.supplier ? [{slug:'from-our-kitchen',supplier:{makerHandle:'local-baker'}}] : []);
   const urls = (await sitemap()).map(page => page.url);
-  expect(urls).toContain(absoluteUrl('/categories/fresh-produce'));
-  expect(urls).toContain(absoluteUrl('/blog/market-story'));
-  log.mockRestore();
+  expect(urls).toEqual(expect.arrayContaining(['/makers/local-baker','/makers/local-baker/items/sourdough','/makers/local-baker/stories/from-our-kitchen'].map(absoluteUrl)));
+  expect(urls).not.toContain(absoluteUrl('/checkout'));
+  expect(prisma.makerItem.findMany).toHaveBeenCalledWith(expect.objectContaining({
+    where: expect.objectContaining({ published:true, supplier:expect.objectContaining({makerPublished:true}) }),
+  }));
 });
 
 it.each(['page=-1', 'page=0', 'page=NaN', 'page=1.5', 'page=100001', 'limit=0', 'limit=-1', 'limit=invalid', 'limit=51'])('rejects an invalid public journal query: %s', async query => {

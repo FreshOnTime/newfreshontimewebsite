@@ -39,6 +39,7 @@ export default function MakerStudio() {
   const [busy, setBusy] = useState(false);
   const [itemEdit, setItemEdit] = useState('');
   const [copyId, setCopyId] = useState('');
+  const [tab,setTab] = useState('Profile');
   const [storyEdit, setStoryEdit] = useState('');
 
   useEffect(() => {
@@ -138,7 +139,8 @@ export default function MakerStudio() {
 
   return <div className="space-y-5" aria-busy={busy}>
     {notice && <p role={notice.error ? 'alert' : 'status'} className={`sticky top-4 z-10 rounded-lg border bg-background p-3 text-sm ${notice.error ? 'border-red-300 text-red-700' : 'border-border text-brand-green'}`}>{notice.text}</p>}
-    <section className={panel}>
+    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{['Profile','Items','Batches','Stories'].map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 rounded-full border border-border px-5 text-sm'}>{name}</button>)}</nav>}
+    <section hidden={tab !== 'Profile'} className={panel}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className={heading}>Public profile</h2>
         {supplier.makerPublished && <Link href={profilePath} className={plain}>View your page</Link>}
@@ -172,7 +174,7 @@ export default function MakerStudio() {
     </section>
 
     {supplier.makerHandle && <>
-      <section className={panel}>
+      <section hidden={tab !== 'Items'} className={panel}>
         <h2 className={heading}>{item ? 'Edit item' : 'Create an item'}</h2>
         {!item && catalogue.length > 0 && <label className={label}>Start from your catalogue
           <select className={fields} value={copyId} onChange={event => setCopyId(event.target.value)}>
@@ -208,7 +210,7 @@ export default function MakerStudio() {
         </div>)}
       </section>
 
-      <section className={panel}>
+      <section hidden={tab !== 'Batches'} className={panel}>
         <h2 className={heading}>Post a batch</h2>
         {openItems.length === 0 ? <p className="text-sm text-muted-foreground">Publish an item to open preorders for a batch.</p> :
           <form onSubmit={submitBatch} className="grid gap-4 md:grid-cols-2">
@@ -228,7 +230,7 @@ export default function MakerStudio() {
         </div>))}
       </section>
 
-      <section className={panel}>
+      <section hidden={tab !== 'Stories'} className={panel}>
         <h2 className={heading}>{story ? 'Edit story' : 'Write a story'}</h2>
         <form key={story?.id || 'new-story'} onSubmit={submitStory} className="grid gap-4">
           <label className={label}>Title<input name="title" className={fields} defaultValue={story?.title || ''} required minLength={3} maxLength={150} /></label>

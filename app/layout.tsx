@@ -10,11 +10,11 @@ import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL, SOCIAL_LINKS } from "@/lib/conf
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
-  category: 'shopping',
-  keywords: ['FreshPick', 'fresh groceries Colombo', 'Sri Lankan local food'],
-  title: { default: 'Fresh groceries and local food in Colombo | FreshPick', template: '%s | FreshPick' },
-  description: 'Shop groceries, bakery, pantry essentials and local food with FreshPick in Colombo, Sri Lanka.',
-  openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'FreshPick groceries and local food in Colombo' }] },
+  category: 'food',
+  keywords: ['FreshPick', 'local bakers and cooks', 'Sri Lankan local food'],
+  title: { default: 'Local food makers in Sri Lanka | FreshPick', template: '%s | FreshPick' },
+  description: 'Discover Sri Lankan bakers, cooks and growers. Explore their items, seasonal batches and stories.',
+  openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Sri Lankan food makers on FreshPick' }] },
   twitter: { card: 'summary_large_image', images: ['/opengraph-image'] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
   formatDetection: { email: false, address: false, telephone: false },
@@ -29,7 +29,7 @@ const organizationJsonLd = {
       "name": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/brand/freshpick-wordmark.svg`,
-      "description": "FreshPick is a Sri Lankan food discovery and commerce platform connecting households to recurring baskets, groceries, prepared food, local makers, and curated food-supply partners.",
+      "description": "FreshPick connects people with independent food makers across Sri Lanka.",
       "sameAs": Object.values(SOCIAL_LINKS).filter(Boolean),
       "email": SUPPORT_EMAIL,
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
@@ -39,16 +39,7 @@ const organizationJsonLd = {
         "email": SUPPORT_EMAIL,
         "availableLanguage": "English"
       },
-      "knowsAbout": [
-        "Food discovery in Colombo",
-                "Fresh grocery delivery in Colombo",
-        "Recurring grocery orders",
-        "Prepared food delivery in Colombo",
-        "Sri Lankan independent food makers",
-        "Supplier onboarding",
-        "Food producer partnerships",
-        "Business food supply partnerships"
-      ]
+      "knowsAbout": ["Sri Lankan food makers", "Home baking", "Food stories", "Local produce"]
     },
     {
       "@type": "WebSite",
@@ -61,7 +52,7 @@ const organizationJsonLd = {
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": `${SITE_URL}/search?q={search_term_string}`
+          "urlTemplate": `${SITE_URL}/makers?q={search_term_string}`
         },
         "query-input": "required name=search_term_string"
       }

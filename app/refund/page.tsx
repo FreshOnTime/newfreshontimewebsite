@@ -6,7 +6,7 @@ import { SUPPORT_EMAIL } from '@/lib/config/site';
 
 export default function RefundPage() {
   return <main className="min-h-screen bg-background">
-    <PremiumPageHeader title="Refund & replacement policy" subtitle="What to do when an order needs attention." backgroundImage="/images/home/tomatoes.webp"/>
+    <PremiumPageHeader title="Previous FreshPick orders" subtitle="For a purchase arranged through WhatsApp, contact the maker in your original conversation. The guidance below covers orders previously placed through FreshPick checkout." backgroundImage="/images/home/tomatoes.webp"/>
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <section className="mb-8 flex gap-4 rounded-lg border border-border bg-secondary p-6">
         <CheckCircle2 className="mt-1 h-6 w-6 shrink-0 text-brand-green" aria-hidden="true"/>
@@ -25,9 +25,9 @@ export default function RefundPage() {
         </ol>
       </section>
       <section className="space-y-6 border-t border-border py-9"><h2 className="font-serif text-3xl text-brand-green">Refunds and unavailable products</h2>
-        <p className="text-sm leading-7 text-muted-foreground">Website checkout currently supports <strong>cash on delivery</strong>, not online card payment. There is no automated credit-card refund process. If you have paid for an item requiring a refund, support will confirm the appropriate arrangement.</p>
+        <p className="text-sm leading-7 text-muted-foreground">If you used cash on delivery for a previous FreshPick order and need a refund, contact support with the order number so the team can confirm the appropriate arrangement.</p>
         <p className="text-sm leading-7 text-muted-foreground">If an item becomes unavailable during packing, confirm a change, cancellation or payment adjustment with the team. No automatic bank transfer, credit or fixed resolution time is promised here. Applicable statutory consumer rights remain unaffected.</p>
-        <div className="flex flex-wrap gap-6"><Link href="/how-it-works/customers" className="editorial-link">Customer ordering guide</Link><Link href="/help" className="editorial-link">Delivery and ordering answers</Link></div>
+        <div className="flex flex-wrap gap-6"><Link href="/how-it-works" className="editorial-link">How FreshPick works</Link><Link href="/help" className="editorial-link">Get help</Link></div>
       </section>
     </div>
   </main>;

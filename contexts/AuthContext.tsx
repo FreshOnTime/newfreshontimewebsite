@@ -51,7 +51,7 @@ interface SignupData {
   email?: string;
   phoneNumber: string;
   password: string;
-  registrationAddress: {
+  registrationAddress?: {
     addressLine1: string;
     addressLine2?: string;
     city: string;
@@ -139,6 +139,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       pathname.startsWith('/profile') ||
       pathname.startsWith('/orders') ||
       pathname.startsWith('/dashboard') ||
+      pathname === '/join' ||
       pathname.startsWith('/bags') ||
       pathname.startsWith('/wishlist') ||
       pathname.startsWith('/checkout');

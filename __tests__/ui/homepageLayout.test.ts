@@ -1,100 +1,19 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync } from 'node:fs';
+import { MARKET_NAVIGATION } from '@/lib/navigation';
+import nextConfig from '@/next.config';
 
-const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
+it('opens discovery and maker publishing from the homepage', () => {
+  const html = readFileSync('app/page.tsx', 'utf8');
+  expect(html).toContain('action="/makers"');
+  expect(html).toContain('href="/join"');
+  expect(html).toContain('supplier: publicMakerWhere');
+  expect(MARKET_NAVIGATION.map(link => link.href)).toEqual(['/makers','/stories','/saved','/about']);
+});
 
-describe("FreshPick editorial homepage", () => {
-  it("retains database-backed products and existing shopping journeys", () => {
-    const page = read("app/page.tsx");
-    for (const marker of [
-      "<HeroSection />",
-      "<HomeMarketManifesto />",
-      "<CategoryBento categories={categories} />",
-      "<ProductCard",
-      "<HomeBasketFeature />",
-      "<HomeJournal posts={journal} />",
-      "loadStorefrontHome",
-      "getHomeData()",
-    ]) expect(page).toContain(marker);
-  });
-
-  it("features a produce-box subscription hero with an accessible, real checkout journey", () => {
-    const hero = read("components/home/HeroSection.tsx");
-    expect(hero).toContain("The FreshPick Box.");
-    expect(hero).toContain("Explore subscription boxes");
-    expect(hero).toContain('href="/subscriptions"');
-    expect(hero).toContain('href="/products"');
-    expect(hero).toContain("SUBSCRIPTION_BOX_PHOTO");
-    expect(hero).toContain("/images/home/market-produce-box.webp");
-    expect(hero).toContain('sizes="100vw"');
-    expect(hero).toContain("priority");
-    expect(hero).toContain('aria-labelledby="home-hero-heading"');
-    expect(hero).toContain('id="home-hero-heading"');
-    expect(hero).toContain("bg-gradient-to-t");
-    expect(existsSync(join(process.cwd(), "public/images/home/market-produce-box.webp"))).toBe(true);
-    expect(hero).not.toContain("images.unsplash.com/photo-1595275522477-c3ce3ca9714b");
-    expect(hero).not.toContain("useState");
-    expect(hero).not.toContain("setInterval(");
-    expect(hero).not.toContain("marketSelections.map");
-    expect(hero).not.toContain('aria-roledescription="carousel"');
-  });
-
-  it("shows real approved categories and safe search fallbacks across the full food market", () => {
-    const category = read("components/home/CategoryBento.tsx");
-    expect(category).toContain("ordered.slice(0, 6)");
-    expect(category).toContain("lg:grid-cols-6");
-    expect(category).toContain("encodeURIComponent(category.slug)");
-    expect(category).toContain("fallbackCategories");
-    for (const text of ["Bakery", "Ready meals", "Dairy & eggs", "Pantry", "Beverages"]) {
-      expect(category).toContain(text);
-    }
-  });
-
-  it("keeps marketing claims and links grounded in existing features", () => {
-    const feature = read("components/home/HomeBasketFeature.tsx");
-    expect(feature).toContain('href="/subscriptions"');
-    expect(feature).toContain("no automatic card billing");
-    expect(read("components/home/HomeMarketManifesto.tsx")).toContain('href="/b2b"');
-    const partnerSection = read("components/home/BrandStory.tsx");
-    expect(partnerSection).toContain("Are you a supplier? Partner with us.");
-    expect(partnerSection.match(/href="\/b2b#business-enquiry"/g)).toHaveLength(2);
-    expect(partnerSection).not.toContain('href="/auth/signup/supplier"');
-    expect(read("components/home/BrandStory.tsx")).toContain('href="/b2b"');
-    for (const name of ["kitchen-basket.webp", "hands-at-work.webp", "restaurant-kitchen.webp"]) {
-      expect(existsSync(join(process.cwd(), "public/images/editorial", name))).toBe(true);
-    }
-  });
-
-  it("consolidates producers and business partnerships without breaking existing URLs", () => {
-    const navigation = read("lib/navigation.ts");
-    expect(navigation).toContain("{ label: 'For business', href: '/b2b' }");
-    expect(navigation).not.toContain("Our producers");
-    expect(read("components/layout/Footer.tsx")).not.toContain("/farm-to-table");
-    expect(read("app/farm-to-table/page.tsx")).toContain("permanentRedirect('/b2b#supplier-partnerships')");
-    expect(read("app/b2b/B2BContent.tsx")).toContain("<SupplierPartnerships />");
-    const supplierSection = read("app/b2b/SupplierPartnerships.tsx");
-    expect(supplierSection).toContain('id="supplier-partnerships"');
-    expect(supplierSection.match(/href="#business-enquiry"/g)).toHaveLength(2);
-    expect(supplierSection).not.toContain('href="/auth/signup/supplier"');
-    expect(read("lib/publicPages.ts")).not.toContain("'/farm-to-table'");
-  });
-
-  it("routes supplier calls to action directly to the highlighted business application", () => {
-    const business = read("app/b2b/B2BContent.tsx");
-    expect(business).toContain("action: 'Apply as a supplier', href: '#business-enquiry'");
-    expect(business).toContain('id="business-enquiry"');
-    expect(business).toContain('target:ring-2');
-    expect(business).toContain('<PartnershipRequestForm />');
-    expect(read("components/layout/Footer.tsx")).toContain("['Become a supplier','/b2b#business-enquiry']");
-    expect(read("app/supply/page.tsx")).toContain("permanentRedirect('/b2b#business-enquiry')");
-    expect(read("app/auth/signup/supplier/page.tsx")).toContain('<SupplierSignupForm />');
-    expect(read("app/auth/signup/supplier/page.tsx")).not.toContain('/supply');
-    expect(read("lib/marketGuides.ts")).not.toContain("href: '/supply'");
-  });
-
-  it("shows no more than three published journal cards", () => {
-    const journal = read("components/home/HomeJournal.tsx");
-    expect(journal).toContain("posts.slice(0, 3)");
-    expect(journal).toContain("Explore the journal");
-  });
+it('maps previous public commerce and procurement links to maker workflows', async () => {
+  const redirects = await nextConfig.redirects!();
+  for (const [source,destination] of [['/products/:path*','/makers'],['/checkout','/makers'],['/b2b','/join'],['/supply','/join']]) {
+    expect(redirects).toContainEqual(expect.objectContaining({source,destination}));
+  }
+  expect(redirects.some(rule => rule.source === '/orders/:path*')).toBe(false);
 });

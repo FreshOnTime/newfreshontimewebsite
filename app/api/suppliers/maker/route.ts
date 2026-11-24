@@ -71,7 +71,7 @@ async function approvedSupplier(userId: string, role: string) {
 }
 
 const fail = (error: string, status: number) => Response.json({ error }, { status });
-const approvalRequired = () => fail('An approved supplier account is required to use the maker studio.', 403);
+const approvalRequired = () => fail('Your maker page needs approval before you can publish. Check your notifications for updates.', 403);
 const missing = () => fail('This entry was not found in your maker studio.', 404);
 
 export const GET = requireAuth(async request => {

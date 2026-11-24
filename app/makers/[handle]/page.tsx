@@ -1,3 +1,4 @@
+import { SavePick } from '@/components/makers/SavedPicks';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MakerItemCard } from '@/components/makers/MakerCards';
@@ -36,7 +37,8 @@ export default async function MakerPage({ params }: Props) {
     <header className="rounded-2xl bg-brand-cream p-6 md:p-10">
       <Link href="/makers" className="text-sm font-semibold text-brand-green underline">Explore makers</Link>
       <h1 className="mt-3 font-serif text-4xl text-brand-green md:text-6xl">{maker.name}</h1>
-      <p className="mt-3 text-sm font-medium">{[maker.makerTown, maker.makerFulfilment].filter(Boolean).join(' · ')}</p>
+      <SavePick href={`/makers/${handle}`} title={maker.name} kind="Maker" />
+        <p className="mt-3 text-sm font-medium">{[maker.makerTown, maker.makerFulfilment].filter(Boolean).join(' · ')}</p>
       {maker.makerBio && <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words leading-7 text-muted-foreground">{maker.makerBio}</p>}
     </header>
     <section>

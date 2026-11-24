@@ -128,3 +128,11 @@ it('returns a recoverable failure when saving the supplier link fails', async ()
   expect(JSON.stringify(await response.json())).not.toContain('offline');
   log.mockRestore();
 });
+
+it('accepts a maker application with a town and contact details only', async () => {
+  const response = await POST(request({ companyName: 'Nawala Kitchen', town: 'Nawala', contactName: 'Cook', phone: body.phone }));
+  expect(response.status).toBe(201);
+  expect(prisma.supplier.create).toHaveBeenCalledWith(expect.objectContaining({
+    data: expect.objectContaining({ city: 'Nawala', makerTown: 'Nawala', applicationStatus: 'pending', notes: undefined }),
+  }));
+});

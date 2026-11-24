@@ -17,8 +17,8 @@ export default function CookiesPage() {
             <p>FreshPick uses <code>accessToken</code> and <code>refreshToken</code> cookies to recognise your signed-in account and renew your session. These cookies support account features such as shopping bags, orders and your profile. They are set by the server and cannot be read by the website’s browser scripts.</p>
           </section>
           <section>
-            <h2 className="mb-3 text-xl font-normal text-brand-green">Remembering searches</h2>
-            <p>The website also uses your browser’s local storage for recent searches and cached product categories. This helps show your recent searches and avoids downloading the same category list repeatedly. Local storage is separate from sign-in cookies.</p>
+            <h2 className="mb-3 text-xl font-normal text-brand-green">Saved picks</h2>
+            <p>Saved makers, stories and items are stored in this browser on this device. Removing a bookmark or clearing site storage removes it here.</p>
           </section>
           <section>
             <h2 className="mb-3 text-xl font-normal text-brand-green">Analytics and Google sign-in</h2>

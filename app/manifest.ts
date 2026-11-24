@@ -2,13 +2,13 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'FreshPick — Fresh food in Colombo',
+    name: 'FreshPick — Sri Lankan food makers',
     short_name: 'FreshPick',
-    description: 'Fresh groceries, pantry staples and local food delivered in Colombo, Sri Lanka.',
+    description: 'Find local makers, items, batches and food stories across Sri Lanka.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F8F7F2',
-    theme_color: '#2F6B45',
+    theme_color: '#9b3921',
     orientation: 'portrait-primary',
     categories: ['food', 'shopping', 'lifestyle'],
     icons: [72, 96, 128, 144, 152, 192, 384, 512].map(size => ({
@@ -18,9 +18,9 @@ export default function manifest(): MetadataRoute.Manifest {
       purpose: 'any',
     })),
     shortcuts: [
-      { name: 'Shop products', short_name: 'Products', url: '/products' },
-      { name: 'View deals', short_name: 'Deals', url: '/deals' },
-      { name: 'My orders', short_name: 'Orders', url: '/orders' },
+      { name: 'Explore makers', short_name: 'Makers', url: '/makers' },
+      { name: 'Food stories', short_name: 'Stories', url: '/stories' },
+      { name: 'Saved picks', short_name: 'Saved', url: '/saved' },
     ].map(shortcut => ({ ...shortcut, icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }] })),
   };
 }

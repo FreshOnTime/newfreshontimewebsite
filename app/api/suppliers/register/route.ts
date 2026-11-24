@@ -11,14 +11,15 @@ const supplierSchema = z.object({
   contactName: z.string().trim().min(1).max(100),
   email: z.string().trim().email().optional().or(z.literal('')),
   phone: phoneSchema,
+  town: z.string().trim().min(2).max(100).optional(),
   address: z.object({
     addressLine1: z.string().trim().min(1), city: z.string().trim().min(1),
     province: z.string().trim().min(1), postalCode: z.string().trim().min(1),
     country: z.string().trim().min(1),
-  }),
+  }).optional(),
   productListCsv: z.string().max(10000).optional(),
   productList: z.string().max(10000).optional(),
-});
+}).refine(data => !!(data.address || data.town), 'Enter your town');
 
 class RegistrationError extends Error {
   constructor(message: string, public status: number) { super(message); }
@@ -38,7 +39,7 @@ async function notifyAdmins(supplierId: string, supplierName: string, updated: b
       data: admins.map(admin => ({
         id: randomUUID(),
         title: updated ? 'Supplier application updated' : 'New supplier application',
-        message: `${supplierName} submitted supplier details and a proposed product list for review.`,
+        message: `${supplierName} submitted a maker profile for review.`,
         type: 'info' as const,
         targetUserId: admin.id,
         link: '/admin/supplier-applications',
@@ -75,11 +76,11 @@ async function handleRegister(request: NextRequest) {
               contactName: body.contactName,
               email: body.email || null,
               phone: body.phone,
-              street: body.address.addressLine1,
-              city: body.address.city,
-              state: body.address.province,
-              zipCode: body.address.postalCode,
-              country: body.address.country,
+              street: body.address?.addressLine1,
+              city: body.town || body.address?.city, makerTown: body.town,
+              state: body.address?.province,
+              zipCode: body.address?.postalCode,
+              country: body.address?.country,
               ...(productNotes !== undefined ? { notes: productNotes } : {}),
             },
           });
@@ -92,8 +93,8 @@ async function handleRegister(request: NextRequest) {
       if (existing) throw new RegistrationError('A supplier with these contact details already exists. Contact FreshPick to link your account.', 409);
       const supplier = await tx.supplier.create({ data: {
         name: body.companyName, contactName: body.contactName, email: body.email || undefined,
-        phone: body.phone, street: body.address.addressLine1, city: body.address.city,
-        state: body.address.province, zipCode: body.address.postalCode, country: body.address.country,
+        phone: body.phone, street: body.address?.addressLine1, city: body.town || body.address?.city, makerTown: body.town,
+        state: body.address?.province, zipCode: body.address?.postalCode, country: body.address?.country,
         status: 'inactive', applicationStatus: 'pending', paymentTerms: 'net_30', notes: productNotes,
       } });
       const link = await tx.user.updateMany({ where: { id: user.id, supplierId: null }, data: { supplierId: supplier.id, ...(user.role === 'customer' ? { role: 'supplier' as const } : {}) } });
