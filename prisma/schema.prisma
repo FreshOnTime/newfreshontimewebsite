@@ -277,6 +277,15 @@ model Supplier {
   reviewedAt DateTime?
   reviewVersion Int @default(0)
 
+  makerHandle      String?     @unique
+  makerPublished   Boolean     @default(false)
+  makerBio         String?
+  makerTown        String?
+  makerWhatsApp    String?
+  makerFulfilment  String?
+  makerItems       MakerItem[]
+  makerStories     Blog[]
+
   products User[] // supplier-role accounts linked to this supplier
   catalog  Product[]
   uploads  SupplierUpload[]
@@ -728,10 +737,15 @@ model Blog {
   metaKeywords    String[]  @default([])
   isDeleted       Boolean   @default(false)
 
+  supplierId  String?
+  supplier    Supplier?       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  makerItems  MakerStoryItem[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([published, publishedAt])
+  @@index([supplierId, published, publishedAt])
   @@index([authorId])
   @@map("blogs")
 }
@@ -968,4 +982,53 @@ model SupplyOffer {
   handedOverAt  DateTime?
   @@index([status, createdAt])
   @@index([phone, handedOverAt])
+}
+
+model MakerItem {
+  id           String         @id @default(uuid())
+  supplierId   String
+  supplier     Supplier       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  slug         String
+  name         String
+  description  String
+  kind         String
+  price        Decimal?       @db.Decimal(12, 2)
+  image        String?
+  madeToOrder  Boolean        @default(false)
+  published    Boolean        @default(true)
+  batches      MakerBatch[]
+  stories      MakerStoryItem[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([supplierId, slug])
+  @@index([supplierId, published, createdAt])
+  @@map("maker_items")
+}
+
+model MakerBatch {
+  id          String    @id @default(uuid())
+  itemId      String
+  item        MakerItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  note        String
+  price       Decimal   @db.Decimal(12, 2)
+  cutoff      DateTime
+  readyAt     DateTime
+  soldOut     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([itemId, cutoff])
+  @@index([soldOut, cutoff, readyAt])
+  @@map("maker_batches")
+}
+
+model MakerStoryItem {
+  storyId String
+  story   Blog      @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  itemId  String
+  item    MakerItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, itemId])
+  @@index([itemId])
+  @@map("maker_story_items")
 }
