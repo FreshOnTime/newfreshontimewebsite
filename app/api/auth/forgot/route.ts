@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/services/mailService';
+import { managedRecovery, managedError, supabaseAuthEnabled } from '@/lib/supabaseAuth';
 import { isRateLimited, makeKey } from '@/lib/middleware/rateLimiter';
 
 export const POST = async (request: NextRequest) => {
@@ -25,6 +26,14 @@ export const POST = async (request: NextRequest) => {
 
     const user = await prisma.user.findUnique({ where: { email } });
 
+    if (supabaseAuthEnabled() && (!user || user.supabaseAuthId)) {
+      try { await managedRecovery(email); } catch (error) {
+        const result = managedError(error);
+        if (result.status === 503 || result.status === 429) return result;
+      }
+      return NextResponse.json({ message: 'If an account exists, a reset link has been sent' });
+    }
+    if (user?.supabaseAuthId) return NextResponse.json({ error: 'Recovery temporarily unavailable' }, { status: 503 });
     // Always respond with a success message to avoid leaking which emails exist
     if (!user) {
       return NextResponse.json({ message: 'If an account exists, a reset link has been sent' });

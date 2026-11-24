@@ -9,7 +9,8 @@ import { ArrowLeft, ArrowRight, KeyRound, Loader2 } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const params = useSearchParams();
-  const token = params.get('token') || '';
+  const managedToken = params.get('token_hash');
+  const token = managedToken || params.get('token') || '';
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function ResetPasswordPage() {
       const response = await fetch('/api/auth/reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, password, ...(managedToken ? { provider: 'supabase' } : {}) }),
       });
       const data = await response.json();
       if (response.ok) setMessage(data.message || 'Password reset successful. You can sign in now.');

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authService } from '@/lib/services/authService';
+import { managedRefresh, managedRefreshPrefix, managedSessionResponse, managedError, supabaseAuthEnabled } from '@/lib/supabaseAuth';
 import { setAuthCookies } from '@/lib/utils/cookies';
 
 export async function POST(request: NextRequest) {
@@ -13,6 +14,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (refreshToken.startsWith(managedRefreshPrefix)) {
+      if (!supabaseAuthEnabled()) return NextResponse.json({ error: 'Authentication temporarily unavailable' }, { status: 503 });
+      try { return await managedSessionResponse(await managedRefresh(refreshToken.slice(managedRefreshPrefix.length))); }
+      catch (error) { return managedError(error); }
+    }
     // Attempt to refresh tokens
     try {
       const result = await authService.refreshToken(refreshToken);

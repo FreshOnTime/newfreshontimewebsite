@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest) {
 
     const current = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { email: true, phoneNumber: true, isBanned: true },
+      select: { email: true, phoneNumber: true, isBanned: true, supabaseAuthId: true },
     });
 
     if (!current) {
@@ -66,6 +66,7 @@ export async function PATCH(request: NextRequest) {
 
     if (current.isBanned) return NextResponse.json({ error: 'This account is unavailable' }, { status: 403 });
 
+    if (current.supabaseAuthId && email !== current.email) return NextResponse.json({ error: 'Contact support to change your verified sign-in email.' }, { status: 400 });
     const updated = await prisma.user.update({
       where: { id: payload.userId },
       data: {

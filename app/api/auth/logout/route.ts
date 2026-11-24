@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authService } from '@/lib/services/authService';
+import { managedLogout, managedRefreshPrefix } from '@/lib/supabaseAuth';
 import { clearAuthCookies } from '@/lib/utils/cookies';
 
 export async function POST(request: NextRequest) {
@@ -8,7 +9,8 @@ export async function POST(request: NextRequest) {
 
     if (refreshToken) {
       // Remove the refresh token from database
-      await authService.logout(refreshToken);
+      if (refreshToken.startsWith(managedRefreshPrefix)) await managedLogout(refreshToken.slice(managedRefreshPrefix.length));
+      else await authService.logout(refreshToken);
     }
 
     // Create response

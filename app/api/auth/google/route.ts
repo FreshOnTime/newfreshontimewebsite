@@ -11,6 +11,7 @@ const googleTokenSchema = z.object({
 
 async function handleGoogleLogin(request: NextRequest) {
   try {
+    if (process.env.FRESHPICK_SUPABASE_AUTH === 'true') return NextResponse.json({ error: 'Use email sign-in or password recovery.' }, { status: 410 });
     const parsed = googleTokenSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json({ error: 'A Google ID token is required' }, { status: 400 });
