@@ -45,7 +45,7 @@ export default async function MakerStoryPage({ params }: Props) {
   const result = await findStory(handle, slug);
   if (!result) notFound();
   const { maker, story } = result;
-  return <div className="fp-maker-story editorial-wrap py-10 md:py-16">
+  return <div className="fp-maker-story edition-article editorial-wrap py-10 md:py-16">
     <article className="journal-maker-article">
       <header className="journal-story-header">
       <p className="fp-kicker">From the makers · {Math.max(1,Math.ceil(story.content.trim().split(/\s+/).length/220))} min read</p><div className="mt-3"><Link href={`/makers/${handle}`} className="journal-text-cta">{maker.name} · {maker.makerTown}</Link></div>

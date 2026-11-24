@@ -23,7 +23,7 @@ export function ModernMotion() {
       const context = gsap.context(() => {
         const hero = root.querySelector('[data-studio-hero], .studio-hero, .directory-masthead, .fp-join');
         if (hero && hero.getBoundingClientRect().top < innerHeight) {
-          const copy = hero.querySelectorAll('[data-studio-intro], .directory-masthead-copy > *, .maker-hero-copy > h1, .maker-hero-copy > p');
+          const copy = hero.querySelectorAll('[data-studio-intro], .directory-masthead-copy > *, .maker-hero-copy > h1, .maker-hero-copy > p:not([data-studio-intro])');
           const media = hero.querySelector('[data-studio-hero-media], .studio-hero-media, .directory-masthead-photo, .maker-hero-photo');
           const timeline = gsap.timeline({ defaults: { ease: 'power3.out', clearProps: 'opacity,transform' } });
           timeline.from(copy, { opacity: .75, y: 20, duration: .85, stagger: .10 });

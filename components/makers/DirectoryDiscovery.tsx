@@ -16,7 +16,7 @@ export function DirectoryDiscovery() {
         <div><p className="studio-overline">A taste of Sri Lanka</p><h2 id="discover-food-heading">Find your kind of food.</h2></div>
         <p>Browse the crafts we welcome into FreshPick. These are discovery categories, not available listings.</p>
       </div>
-      <div className="directory-discovery-grid" data-studio-grid>
+      <div className="directory-discovery-grid edition-discovery-grid" data-studio-grid>
         {collections.map(collection => <Link key={collection.kind} className="directory-discovery-card" href={'/makers?kind='+encodeURIComponent(collection.kind)}>
           <div className="directory-discovery-photo"><Image src={collection.image} alt="" fill sizes="(max-width:767px) 90vw, 30vw"/></div>
           <div className="directory-discovery-copy"><h3>{collection.title}</h3><p>{collection.description}</p><span className="directory-circle"><ArrowUpRight size={21} aria-hidden="true"/></span></div>

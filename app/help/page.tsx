@@ -9,5 +9,5 @@ export default function Help() {
     ['Where are my saved picks?', 'Open Saved in the navigation on the same browser and device where you bookmarked them.'],
     ['How do I publish?', 'Choose Become a maker. After your profile is approved, Maker Studio lets you publish items, batches and stories.'],
   ];
-  return <><PageBand title="How can we help?" intro="Answers about makers, enquiries and your FreshPick account."/><div className="fp-help editorial-wrap"><div className="my-8 divide-y divide-border">{answers.map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-serif text-xl">{q}</summary><p className="py-3 leading-7">{a}</p></details>)}</div><Link href="/contact" className="maker-button">Contact the team</Link></div></>;
+  return <div className="edition-help"><PageBand title="How can we help?" intro="Answers about makers, enquiries and your FreshPick account."/><div className="fp-help editorial-wrap"><div className="my-8 divide-y divide-border">{answers.map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-serif text-xl">{q}</summary><p className="py-3 leading-7">{a}</p></details>)}</div><Link href="/contact" className="maker-button">Contact the team</Link></div></div>;
 }

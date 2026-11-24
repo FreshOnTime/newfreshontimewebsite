@@ -41,7 +41,7 @@ export default async function MakerItemPage({ params }: Props) {
   const { item, maker } = result;
   const related = await prisma.makerItem.findMany({ where: {supplierId: maker.id, published: true, slug: {not: slug}}, orderBy: [{createdAt: 'desc'}, {id:'asc'}], take: 3, select: publicItemSelect });
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, item.name);
-  return <div className="fp-item-page editorial-wrap py-10 md:py-16">
+  return <div className="fp-item-page edition-item editorial-wrap py-10 md:py-16">
     <nav aria-label="Breadcrumb" className="journal-breadcrumb"><Link href="/makers">Makers</Link><span aria-hidden="true">/</span><Link href={`/makers/${handle}`}>{maker.name}</Link><span aria-hidden="true">/</span><span aria-current="page">{item.name}</span></nav>
     <div className="journal-item-layout mt-5 grid items-start gap-8 lg:grid-cols-2">
       <div className="journal-item-photo lux-item-visual"><MakerPhoto image={item.image} name={item.name} /></div>
@@ -61,7 +61,7 @@ export default async function MakerItemPage({ params }: Props) {
           <summary>Current batches</summary>
           {item.batches.length === 0 && <p className="mt-2 text-sm text-muted-foreground">There are no open batches right now.</p>}
           <div className="mt-3 grid gap-3">
-            {item.batches.map(batch => <div key={batch.id} className="rounded-xl border border-border p-4">
+            {item.batches.map(batch => <div key={batch.id} className="edition-batch-row border-t border-border py-4">
               <BatchDetails batch={batch} itemName={item.name} phone={maker.makerWhatsApp} />
             </div>)}
           </div>

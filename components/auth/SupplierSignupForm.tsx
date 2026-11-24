@@ -26,8 +26,8 @@ export function SupplierSignupForm() {
       await refreshAuth(); router.push('/dashboard');
     } catch (e) { setError(e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); }
   }
-  return <div className="maker-hero fp-join"><div className="maker-hero-copy">
-    <h1 className="maker-headline">Your food.<br/><em>Your page.</em></h1>
+  return <div className="maker-hero fp-join edition-join"><div className="maker-hero-copy">
+    <p className="studio-overline" data-studio-intro>For independent food makers</p><h1 className="maker-headline">Your food.<br/><em>Your page.</em></h1>
     <p className="my-5 max-w-lg leading-7">Give your kitchen, garden or food brand a home on FreshPick. Once your page is approved, publish an item, share a batch or write your first story. Enquiries go straight to your WhatsApp.</p>
     {loading ? <p>Loading account…</p> : user?.role === 'supplier' ? <Link href="/dashboard" className="maker-button">Open maker studio</Link> : !user ? <div className="flex flex-wrap items-center gap-5"><Link className="maker-button" href="/auth/signup/customer?redirect=/join">Create your login</Link><Link className="underline" href="/auth/login?redirect=/join">Already registered? Sign in</Link></div> :
       <form onSubmit={submit} className="grid w-full max-w-lg gap-4">
