@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
       role: dbUser.role,
       secondaryRoles: dbUser.secondaryRoles,
       supplierId: dbUser.supplierId,
+      managedAuth: Boolean(dbUser.supabaseAuthId),
       isEmailVerified: dbUser.isEmailVerified,
       isPhoneVerified: dbUser.isPhoneVerified,
       giftCardBalance: Number(dbUser.giftCardBalance),

@@ -6,12 +6,21 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { sendVerificationEmail } from '@/lib/services/mailService';
+import { managedSignupSchema, startManagedSignup, managedError, supabaseAuthEnabled } from '@/lib/supabaseAuth';
 import { withRateLimit } from '@/lib/utils/rateLimit';
 
 async function handleSignup(request: NextRequest) {
   try {
     const body = await request.json();
 
+    if (supabaseAuthEnabled()) {
+      const managed = managedSignupSchema.safeParse(body);
+      if (!managed.success) return NextResponse.json({ error: managed.error.issues[0]?.message || 'Invalid registration' }, { status: 400 });
+      try {
+        await startManagedSignup(managed.data);
+        return NextResponse.json({ verificationRequired: true, message: 'Check your email to verify your account.' }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
+      } catch (error) { return managedError(error); }
+    }
     // Validate input
     const validation = validateInput(signupSchema, body);
     if (!validation.isValid) {

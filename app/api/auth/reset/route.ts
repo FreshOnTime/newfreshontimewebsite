@@ -3,9 +3,10 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { passwordSchema } from '@/lib/utils/validation';
+import { managedPasswordReset, managedError, supabaseAuthEnabled } from '@/lib/supabaseAuth';
 import { isRateLimited, makeKey } from '@/lib/middleware/rateLimiter';
 
-const resetSchema = z.object({ token: z.string().min(1).max(1024), password: passwordSchema });
+const resetSchema = z.object({ token: z.string().min(1).max(1024), password: passwordSchema, provider: z.literal('supabase').optional() });
 
 export const POST = async (request: NextRequest) => {
   try {
@@ -19,6 +20,13 @@ export const POST = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Too many reset attempts. Try again later.' }, { status: 429 });
     }
 
+    if (parsed.data.provider === 'supabase') {
+      if (!supabaseAuthEnabled()) return NextResponse.json({ error: 'Recovery temporarily unavailable' }, { status: 503 });
+      try {
+        await managedPasswordReset(token, password);
+        return NextResponse.json({ message: 'Password reset successful' });
+      } catch (error) { return managedError(error); }
+    }
     // Find token record by verifying hash against stored hashes
     const tokens = await prisma.emailToken.findMany({ where: { type: 'reset', expiresAt: { gt: new Date() } } });
     let matched: (typeof tokens[number]) | null = null;
@@ -32,7 +40,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     const user = await prisma.user.findUnique({ where: { id: matched.userId } });
-    if (!user) {
+    if (!user || user.supabaseAuthId) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 

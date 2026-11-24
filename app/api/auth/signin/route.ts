@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authService } from '@/lib/services/authService';
 import { loginSchema, validateInput } from '@/lib/utils/validation';
 import { setAuthCookies } from '@/lib/utils/cookies';
+import prisma from '@/lib/prisma';
+import { managedPasswordLogin, managedSessionResponse, managedError, supabaseAuthEnabled } from '@/lib/supabaseAuth';
 import { withRateLimit } from '@/lib/utils/rateLimit';
 
 async function handleLogin(request: NextRequest) {
@@ -20,6 +22,17 @@ async function handleLogin(request: NextRequest) {
       );
     }
 
+    if (supabaseAuthEnabled()) {
+      const { identifier, password } = validation.data!;
+      const email = identifier.toLowerCase();
+      const account = await prisma.user.findFirst({ where: { OR: [{ email: { equals: email, mode: 'insensitive' } }, { phoneNumber: identifier }] } });
+      if (!account || account.supabaseAuthId) {
+        try {
+          if (!identifier.includes('@') || account?.isBanned) return NextResponse.json({ error: 'Invalid credentials. Use your email address.' }, { status: 401 });
+          return await managedSessionResponse(await managedPasswordLogin(email, password), true);
+        } catch (error) { return managedError(error); }
+      }
+    }
     // Login user
     const result = await authService.login(validation.data!);
 
