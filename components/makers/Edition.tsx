@@ -14,7 +14,7 @@ const crafts = [
 ];
 
 export function CraftShelf() {
-  return <section id="discover-craft" className="fp-section lux-crafts editorial-wrap" aria-labelledby="craft-title">
+  return <section id="discover-craft" className="fp-section lux-crafts editorial-wrap" data-studio-chapter aria-labelledby="craft-title">
     <div className="fp-section-head"><div><h2 id="craft-title">Explore local food.</h2></div><Link className="fp-inline" href="/makers">All makers</Link></div>
     <DiscoveryRail label="food crafts">{crafts.map(([label, kind, image]) =>
       <Link key={kind} href={`/makers?kind=${encodeURIComponent(kind)}`} className="fp-craft">
@@ -25,9 +25,9 @@ export function CraftShelf() {
 }
 
 export function ReadingShelf({ exclude }: { exclude?: string }) {
-  return <section className="fp-section editorial-wrap" aria-label="FreshPick field notes">
+  return <section className="fp-section editorial-wrap" data-studio-chapter aria-label="FreshPick field notes">
     <div className="fp-section-head"><div><h2>Go behind the food.</h2></div><Link href="/stories" className="fp-inline">The journal</Link></div>
-    <div className="fp-reads">{fieldNotes.filter(note => note.slug !== exclude).map(note =>
+    <div className="fp-reads" data-studio-grid>{fieldNotes.filter(note => note.slug !== exclude).map(note =>
       <Link key={note.slug} href={notePath(note)} className="fp-read">
         <div className="fp-image"><Image src={note.image} alt={note.alt} fill sizes="(max-width: 639px) 95vw, 33vw" /></div>
         <span className="fp-kicker">{note.category}</span><h3>{note.title}</h3><p>{note.excerpt}</p><span className="journal-read-link">Read the story <ArrowUpRight size={15} aria-hidden="true"/></span>
