@@ -33,7 +33,7 @@ export default async function MakerPage({ params }: Props) {
     }),
   ]);
 
-  return <main className="editorial-wrap space-y-10 py-10 md:py-16">
+  return <main className="fp-maker-profile editorial-wrap space-y-10 py-10 md:py-16">
     <header className="rounded-2xl bg-brand-cream p-6 md:p-10">
       <Link href="/makers" className="text-sm font-semibold text-brand-green underline">Explore makers</Link>
       <h1 className="mt-3 font-serif text-4xl text-brand-green md:text-6xl">{maker.name}</h1>

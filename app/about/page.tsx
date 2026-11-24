@@ -1,11 +1,12 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import { CraftShelf, PageBand } from '@/components/makers/Edition';
 export const metadata = { title: 'About FreshPick' };
 export default function About() {
-  return <section className="maker-hero"><div className="maker-hero-copy">
-    <h1 className="maker-headline">A closer look at local food.</h1>
-    <p className="my-6 max-w-lg leading-8">A baker opens a Saturday batch. A grower shares what’s in season. A home cook tells the story behind a family recipe. FreshPick gives each of them a page you can come back to.</p>
-    <p className="mb-6 max-w-lg leading-8">Browse by town or craft and speak directly to the person behind the food. Each maker sets their own availability, price and pickup or delivery arrangements.</p>
-    <Link className="maker-button" href="/makers">Meet the makers</Link>
-  </div><div className="maker-hero-photo"><Image fill sizes="(max-width:767px) 100vw, 55vw" src="/images/editorial/sri-lankan-fields.webp" alt="Fields along the road to Nuwara Eliya, Sri Lanka" className="object-cover"/></div></section>;
+  return <>
+    <PageBand title="People make the market." intro="FreshPick brings the people behind Sri Lanka’s food into view." image="/images/editorial/sri-lankan-fields.webp" alt="Cultivated fields along the road to Nuwara Eliya"/>
+    <section className="fp-about editorial-wrap"><h2>From a single kitchen<br/>to a whole island.</h2><div>
+      <p>A baker opens a Saturday batch. A grower shares what’s in season. A home cook writes down a family recipe. Every maker gets a page for their food and the stories that go with it.</p>
+      <p>You can find them by town or craft, save something for later and ask a question directly on WhatsApp. The maker sets the price, availability and pickup or delivery arrangements.</p>
+      <Link className="fp-inline" href="/join">Create your maker page</Link></div></section><div className="fp-paper"><CraftShelf/></div>
+  </>;
 }

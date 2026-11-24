@@ -1,3 +1,4 @@
+import { fieldNotes, notePath } from '@/lib/fieldNotes';
 import type { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
 import { makerDestinations } from '@/lib/makerDestinations';
@@ -16,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.blog.findMany({ where:{slug:{in:editorialGuides.map(g=>g.slug)}}, select:{slug:true} }),
   ]);
   const managed = new Set(managedGuides.map(row=>row.slug));
-  const paths = [...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`),
+  const paths = [...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`),
     ...items.map(i=>makerItemPath(i.supplier.makerHandle,i.slug)), ...stories.map(s=>`/makers/${s.supplier?.makerHandle}/stories/${s.slug}`),
     ...journal.map(j=>`/blog/${encodeURIComponent(j.slug)}`), ...editorialGuides.filter(g=>!managed.has(g.slug)).map(g => guidePath(g.slug))];
   return paths.map(path=>({url:absoluteUrl(path)}));

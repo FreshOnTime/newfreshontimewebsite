@@ -40,7 +40,7 @@ export default async function MakerItemPage({ params }: Props) {
   if (!result) notFound();
   const { item, maker } = result;
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, item.name);
-  return <main className="editorial-wrap py-10 md:py-16">
+  return <main className="fp-item-page editorial-wrap py-10 md:py-16">
     <Link href={`/makers/${handle}`} className="text-sm font-semibold text-brand-green underline">More from {maker.name}</Link>
     <div className="mt-6 grid items-start gap-8 lg:grid-cols-2">
       <MakerPhoto image={item.image} name={item.name} />

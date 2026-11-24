@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PageBand, ReadingShelf } from '@/components/makers/Edition';
 import { ArrowUpRight } from 'lucide-react';
 import { BatchDetails, MakerPhoto, MakerItemCard } from '@/components/makers/MakerCards';
 import { publicItemSelect } from '@/lib/makerQueries';
@@ -42,12 +43,12 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   ]);
   const pageLink = (next: number) => `/makers?${new URLSearchParams({ ...(town ? { town } : {}), ...(kind ? {kind} : {}), ...(q ? {q} : {}), page: String(next) })}`;
 
-  return <main className="bg-background pb-16">
-    <header className="border-b border-border bg-brand-cream">
-      <div className="editorial-wrap py-12 md:py-20">
-        <h1 className="max-w-3xl font-serif text-5xl leading-tight text-brand-green md:text-7xl">Fresh near you.</h1>
-        <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">Find what local bakers, cooks, growers and food makers are preparing, and enquire with them directly.</p>
-        <form action="/makers" className="mt-6 flex max-w-4xl flex-wrap items-end gap-3">
+  const hasResults = [items, batches, makers, stories].some(rows => rows.length > 0);
+  const filtered = Boolean(town || kind || q || page > 1);
+  return <div className="fp-directory">
+    <PageBand title="The maker directory." intro="Find a baker around the corner, a kitchen taking preorders or a grower near home." image="/images/editorial/market-crates.webp" alt="Fresh produce arranged in market crates"/>
+    <div className="editorial-wrap">
+        <form action="/makers" className="fp-filters">
           <label htmlFor="maker-town" className="flex-1 space-y-2 text-sm font-semibold">
             <span>Town</span>
             <input id="maker-town" name="town" defaultValue={town} maxLength={100} placeholder="e.g. Nawala" className="block min-h-11 w-full rounded-lg border border-border bg-background px-3 font-normal" />
@@ -57,17 +58,14 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           <button className="min-h-11 rounded-lg bg-brand-green px-5 font-semibold text-white">Find makers</button>
         </form>
         {(town || q || kind) && <Link href="/makers" className="mt-3 inline-block text-sm underline">Clear filters</Link>}
-      </div>
-    </header>
+    </div>
     <div className="editorial-wrap space-y-12 py-10">
-      <section>
+      {items.length > 0 && <section>
         <h2 className="editorial-title">The item board</h2>
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle}/>)}</div>
-        {!items.length && <p className="text-muted-foreground">No published items match this selection.</p>}
-      </section>
-      <section>
+      </section>}
+      {batches.length > 0 && <section>
         <h2 className="editorial-title">Open for preorders</h2>
-        {batches.length === 0 && <p className="mt-3 text-muted-foreground">No open batches{town ? ` near ${town}` : ''} on this page. Browse makers for made-to-order items.</p>}
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {batches.slice(0, pageSize).map(batch => {
             const { item } = batch;
@@ -84,10 +82,9 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
             </article>;
           })}
         </div>
-      </section>
-      <section>
+      </section>}
+      {makers.length > 0 && <section>
         <h2 className="editorial-title">Meet the makers</h2>
-        {makers.length === 0 && <p className="mt-3 text-muted-foreground">No makers found on this page.</p>}
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="rounded-xl border border-border p-5 hover:bg-brand-cream">
             <h3 className="flex items-center justify-between gap-3 font-serif text-xl text-brand-green">{maker.name}<ArrowUpRight className="shrink-0" size={16} aria-hidden="true" /></h3>
@@ -96,7 +93,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           </Link>)}
         </div>
         <Link href="/join" className="mt-5 inline-block text-sm font-semibold text-brand-green underline">Join FreshPick as a maker</Link>
-      </section>
+      </section>}
       {stories.length > 0 && <section>
         <h2 className="editorial-title">Stories from makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -107,10 +104,16 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           </Link>)}
         </div>
       </section>}
+      {!hasResults && <div className="fp-empty">
+        <div><h2>{filtered ? 'No matches this time.' : 'The directory is opening.'}</h2>
+        <p>{filtered ? 'Try a nearby town, a different craft, or browse all makers.' : 'Maker pages appear here as they publish. If you make food, introduce your kitchen to the directory.'}</p></div>
+        <Link className="maker-button" href={filtered ? '/makers' : '/join'}>{filtered ? 'See all makers' : 'Start a maker page'}</Link>
+      </div>}
       <nav aria-label="Maker discovery pages" className="flex gap-5 text-sm font-semibold text-brand-green">
         {page > 1 && <Link href={pageLink(page - 1)}>Previous page</Link>}
         {[items, batches, makers, stories].some(results => results.length > pageSize) && <Link href={pageLink(page + 1)}>Next page</Link>}
       </nav>
     </div>
-  </main>;
+    {!hasResults && <div className="fp-paper"><ReadingShelf/></div>}
+  </div>;
 }

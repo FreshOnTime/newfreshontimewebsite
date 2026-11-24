@@ -3,7 +3,7 @@ import Wordmark from '@/components/brand/Wordmark';
 import { SUPPORT_EMAIL } from '@/lib/config/site';
 
 export function Footer() {
-  return <footer className="bg-[#28251f] py-12 text-[#fff9eb]">
+  return <footer className="fp-footer">
     <div className="editorial-wrap flex flex-wrap items-start justify-between gap-10">
       <div><Link href="/"><Wordmark className="text-4xl" /></Link>
         <p className="mt-3 max-w-xs text-sm">Independent food makers across Sri Lanka.</p>
