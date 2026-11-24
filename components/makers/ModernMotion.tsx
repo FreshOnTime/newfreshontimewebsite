@@ -13,9 +13,12 @@ export function ModernMotion() {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let disposed = false;
     let cancel: (() => void) | undefined;
+    let activating = false;
     async function activate() {
-      const [{ gsap }, { ScrollTrigger }] = await Promise.all([import('gsap'), import('gsap/dist/ScrollTrigger')]);
-      if (disposed || preference.matches || !root) return;
+      if (activating || cancel || disposed || preference.matches) return;
+      activating = true;
+      const [{ gsap }, { ScrollTrigger }] = await Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).finally(() => { activating = false; });
+      if (disposed || preference.matches || cancel || !root) return;
       gsap.registerPlugin(ScrollTrigger);
       const context = gsap.context(() => {
         const hero = root.querySelector('.studio-hero');
@@ -33,7 +36,7 @@ export function ModernMotion() {
           if (!copy.length) return;
           gsap.from(copy, { opacity: .45, y: 32, stagger: .10, duration: .9, ease: 'power3.out', clearProps: 'opacity,transform', scrollTrigger: { trigger: chapter, start: 'top 88%', once: true } });
         });
-        root.querySelectorAll<HTMLElement>('[data-studio-grid]').forEach(grid => {
+        root.querySelectorAll<HTMLElement>('[data-studio-grid], .lux-rail-track').forEach(grid => {
           if (grid.getBoundingClientRect().top < innerHeight * .72) return;
           gsap.from(Array.from(grid.children).slice(0, 8), { opacity: .45, y: 24, stagger: .075, duration: .7, ease: 'power2.out', clearProps: 'opacity,transform', scrollTrigger: { trigger: grid, start: 'top 90%', once: true } });
         });

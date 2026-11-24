@@ -642,7 +642,7 @@ html{scroll-padding-top:7rem;}
 .studio-content .editorial-wrap{max-width:1440px;padding-inline:var(--studio-gutter);}
 .studio-content :is(.fp-band h1,.journal-storefront h1,.journal-story-header h1,.fp-article-head h1,.fp-item-page h1){font-family:var(--lux-serif);font-weight:650;letter-spacing:-.055em;}
 .studio-content .studio-hero{margin:0;background:#f3f4f1;overflow:hidden;}
-.studio-content .studio-hero-inner{padding-top:clamp(1rem,3vw,3rem);padding-bottom:clamp(2rem,4vw,4rem);}
+.studio-content .studio-hero .lux-hero-inner{padding-top:clamp(1rem,3vw,3rem);padding-bottom:clamp(2rem,4vw,4rem);}
 .freshpick-market>main .studio-hero h1{font-size:clamp(3.6rem,8.6vw,9.1rem);line-height:.91;letter-spacing:-.075em;font-weight:650;}
 .studio-hero h1 span{color:#536a57;}
 .studio-content .studio-hero-media{width:calc(100% - 2 * var(--studio-gutter));max-width:1440px;margin:0 auto var(--studio-gutter);border-radius:var(--studio-radius);min-height:clamp(20rem,47vw,47rem);}
@@ -687,3 +687,13 @@ html{scroll-padding-top:7rem;}
  .studio-content .studio-experience-heading h2{font-size:clamp(3rem,12vw,5.2rem);}
 }
 @media(prefers-reduced-motion:reduce){.studio-content *{scroll-behavior:auto!important;}.studio-content .studio-story-image img{transform:none!important;}}
+
+/* Reconcile earlier page-specific treatments with the Studio tokens. */
+.freshpick-market>main.studio-content .journal-method li>span{font:600 .85rem/1.5 Arial,Helvetica,sans-serif;color:var(--studio-muted);}
+.freshpick-market>main.studio-content .fp-studio>section{border-radius:20px;background:#fff;}
+.freshpick-market>main.studio-content .fp-studio :is(input,select,textarea):not([type=checkbox]){border-radius:10px;}
+.freshpick-market>main.studio-content .fp-studio nav button{border-radius:999px;}
+.freshpick-market>main.studio-content .fp-studio-counts{border:0;gap:.65rem;background:transparent;}
+.freshpick-market>main.studio-content .fp-studio-counts>div{border-radius:16px;min-width:0;flex-wrap:wrap;}
+.freshpick-market>main.studio-content .fp-read h3,.freshpick-market>main.studio-content .fp-story-list h3{font-weight:650;letter-spacing:-.04em;}
+.freshpick-market>main.studio-content .lux-reading-body>section:first-child>p::first-letter{float:none;font:inherit;color:inherit;margin:0;}
