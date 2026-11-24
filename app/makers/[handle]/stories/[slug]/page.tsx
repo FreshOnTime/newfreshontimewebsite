@@ -48,7 +48,7 @@ export default async function MakerStoryPage({ params }: Props) {
   return <div className="fp-maker-story editorial-wrap py-10 md:py-16">
     <article className="journal-maker-article">
       <header className="journal-story-header">
-      <Link href={`/makers/${handle}`} className="text-sm font-semibold text-brand-green underline">{maker.name} · {maker.makerTown}</Link>
+      <p className="fp-kicker">From the makers · {Math.max(1,Math.ceil(story.content.trim().split(/\s+/).length/220))} min read</p><div className="mt-3"><Link href={`/makers/${handle}`} className="journal-text-cta">{maker.name} · {maker.makerTown}</Link></div>
       <h1 className="mt-4 break-words font-serif text-4xl text-brand-green md:text-6xl">{story.title}</h1>
       <SavePick href={`/makers/${handle}/stories/${slug}`} title={story.title} kind="Story" />
         <p className="mt-4 break-words text-lg leading-8 text-muted-foreground">{story.excerpt}</p>

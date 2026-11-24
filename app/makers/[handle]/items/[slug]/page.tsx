@@ -41,15 +41,15 @@ export default async function MakerItemPage({ params }: Props) {
   const { item, maker } = result;
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, item.name);
   return <div className="fp-item-page editorial-wrap py-10 md:py-16">
-    <Link href={`/makers/${handle}`} className="text-sm font-semibold text-brand-green underline">More from {maker.name}</Link>
+    <nav aria-label="Breadcrumb" className="journal-breadcrumb"><Link href="/makers">Makers</Link><span aria-hidden="true">/</span><Link href={`/makers/${handle}`}>{maker.name}</Link><span aria-hidden="true">/</span><span aria-current="page">{item.name}</span></nav>
     <div className="journal-item-layout mt-5 grid items-start gap-8 lg:grid-cols-2">
       <div className="journal-item-photo"><MakerPhoto image={item.image} name={item.name} /></div>
       <div className="space-y-4 journal-item-info">
-        <p className="text-sm text-muted-foreground">{item.kind} · {maker.makerTown} · {maker.makerFulfilment}</p>
+        <p className="fp-kicker">{item.kind}</p><Link href={`/makers/${handle}`} className="journal-text-cta">Made by {maker.name}</Link>
         <h1 className="break-words font-serif text-4xl text-brand-green md:text-5xl">{item.name}</h1>
         <SavePick href={makerItemPath(handle, slug)} title={item.name} kind="Item" />
         <div className="journal-item-order">
-          <p className="journal-price">{item.price ? formatMakerPrice(item.price) : 'Ask the maker for a price'}</p>
+          <p className="journal-price">{item.price != null ? formatMakerPrice(item.price) : 'Ask the maker for a price'}</p>
           <p>{item.madeToOrder ? 'Made to order' : item.batches.length ? 'Open for preorders' : 'No open batches right now'}</p>
           <p className="text-sm">{[maker.makerTown, maker.makerFulfilment].filter(Boolean).join(' · ')}</p>
           {enquiry && <a href={enquiry} target="_blank" rel="noopener noreferrer" className="maker-button">Enquire on WhatsApp</a>}

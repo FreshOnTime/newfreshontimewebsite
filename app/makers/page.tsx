@@ -23,7 +23,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   const [items, batches, makers, stories] = await Promise.all([
     prisma.makerItem.findMany({ where: { ...itemFilter, supplier: where, ...(q ? { OR: [{name: match}, {supplier: {name: match}}] } : {}) },
       skip: (page-1)*pageSize, take: pageSize+1, orderBy: [{createdAt: 'desc'},{id: 'asc'}],
-      select: { ...publicItemSelect, supplier: {select: {makerHandle: true}} } }),
+      select: { ...publicItemSelect, supplier: {select: {makerHandle: true, name: true, makerTown: true}} } }),
     prisma.makerBatch.findMany({
       where: { ...openBatches(), item: { ...itemFilter, supplier: where, ...(q ? { OR: [{name: match}, {supplier: {name: match}}] } : {}) } },
       orderBy: [{ cutoff: 'asc' }, { id: 'asc' }],
@@ -60,6 +60,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         {(town || q || kind) && <Link href="/makers" className="mt-3 inline-block text-sm underline">Clear filters</Link>}
     </div>
     <div className="editorial-wrap space-y-9 py-7">
+      {hasResults && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
       {makers.length > 0 && <section>
         <h2 className="editorial-title">Meet the makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -73,7 +74,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
       </section>}
       {items.length > 0 && <section>
         <h2 className="editorial-title">The item board</h2>
-        <div className="mt-5 journal-item-grid">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle}/>)}</div>
+        <div className="mt-5 journal-item-grid">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
       </section>}
       {batches.length > 0 && <section>
         <h2 className="editorial-title">Open for preorders</h2>
@@ -97,7 +98,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
       {stories.length > 0 && <section>
         <h2 className="editorial-title">Stories from makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {stories.slice(0, pageSize).map(story => <Link key={story.id} href={`/makers/${story.supplier?.makerHandle}/stories/${story.slug}`} className="rounded-xl border border-border p-5 hover:bg-brand-cream">
+          {stories.slice(0, pageSize).map(story => <Link key={story.id} href={`/makers/${story.supplier?.makerHandle}/stories/${story.slug}`} className="journal-index-entry">
             <p className="text-sm text-muted-foreground">{story.supplier?.name}</p>
             <h3 className="mt-1 font-serif text-xl text-brand-green">{story.title}</h3>
             <p className="mt-2 line-clamp-2 break-words text-sm">{story.excerpt}</p>

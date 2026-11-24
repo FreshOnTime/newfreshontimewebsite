@@ -44,14 +44,14 @@ export default async function MakerPage({ params }: Props) {
       {maker.makerBio && <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words leading-7 text-muted-foreground">{maker.makerBio}</p>}
     </header>
     <section>
-      <h2 className="editorial-title">Items</h2>
+      <div className="fp-section-head"><h2 className="editorial-title">From this kitchen</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
       {items.length === 0 && <p className="mt-3 text-muted-foreground">This maker hasn’t published any items yet.</p>}
       <div className="mt-4 journal-item-grid">
         {items.map(item => <MakerItemCard key={item.id} handle={handle} item={item} />)}
       </div>
     </section>
     {stories.length > 0 && <section>
-      <h2 className="editorial-title">Stories</h2>
+      <div className="fp-section-head"><h2 className="editorial-title">The maker’s journal</h2></div>
       <div className="mt-4 divide-y divide-border border-y border-border">
         {stories.map(story => <Link key={story.id} href={`/makers/${handle}/stories/${story.slug}`} className="block px-2 py-4 hover:bg-brand-cream">
           <h3 className="font-serif text-xl text-brand-green">{story.title}</h3>
