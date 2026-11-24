@@ -26,18 +26,20 @@ export default async function Home() {
   ]);
   return <div className={styles.home}>
     <section className={styles.hero} data-studio-hero aria-labelledby="home-headline">
-      <div className={styles.heroCopy}>
-        <p className={styles.eyebrow} data-studio-intro><span/> THE LOCAL FOOD EDIT · SRI LANKA</p>
-        <h1 id="home-headline" data-studio-intro>Good food.<br/><em>Closer to home.</em></h1>
-        <p className={styles.intro} data-studio-intro>Discover independent food makers across Sri Lanka. Find something extraordinary in an everyday kitchen.</p>
-        <form action="/makers" role="search" className={`journal-discover ${styles.search}`}><label htmlFor="home-discover" className="sr-only">Find a food or maker</label><Search size={19} aria-hidden="true"/><input id="home-discover" name="q" maxLength={100} placeholder="Try sourdough or a maker name"/><button type="submit" aria-label="Search makers"><ArrowRight size={19}/></button></form>
-        <div className={styles.actions} data-studio-intro><Link href="/makers" className={styles.primary}>Explore makers <ArrowUpRight size={17} aria-hidden="true"/></Link><Link href="/how-it-works" className={styles.textLink}>How it works <ArrowUpRight size={15} aria-hidden="true"/></Link></div>
-        <div className={styles.heroFooter}><span>Independent makers. Real stories.</span><span>01 / DISCOVER</span></div>
-      </div>
       <figure className={styles.heroMedia} data-studio-hero-media>
-        <Image src="/images/editorial/hands-at-work.webp" alt="Hands kneading dough beside a bowl" fill priority sizes="(max-width: 767px) 100vw, 55vw" />
-        <figcaption>THE ART OF MAKING <span>FRESHPICK JOURNAL</span></figcaption>
+        <Image src="/images/editorial/hands-at-work.webp" alt="Hands kneading dough beside a bowl" fill priority sizes="100vw" />
       </figure>
+      <div className={styles.heroCopy}>
+        <p className={styles.eyebrow} data-studio-intro><span/> FRESHPICK · SRI LANKA</p>
+        <h1 id="home-headline" data-studio-intro>Good food.<br/><em>Closer to home.</em></h1>
+        <p className={styles.intro} data-studio-intro>Discover the independent kitchens, bakers and growers behind Sri Lanka’s food.</p>
+        <div className={styles.actions} data-studio-intro><Link href="/makers" className={styles.primary}>Explore makers <ArrowUpRight size={17} aria-hidden="true"/></Link><Link href="/how-it-works" className={styles.textLink}>How it works <ArrowUpRight size={15} aria-hidden="true"/></Link></div>
+      </div>
+      <div className={styles.heroFooter}><span>THE ART OF MAKING</span><a href="#discover-craft">Discover the collection <span aria-hidden="true">↓</span></a></div>
+    </section>
+    <section className={styles.discovery} aria-label="Find local food">
+      <div><p className={styles.eyebrow}>YOUR NEXT DISCOVERY</p><h2>Find something good.</h2></div>
+      <form action="/makers" role="search" className={`journal-discover ${styles.search}`}><label htmlFor="home-discover" className="sr-only">Find a food or maker</label><Search size={19} aria-hidden="true"/><input id="home-discover" name="q" maxLength={100} placeholder="Try sourdough or a maker name"/><button type="submit" aria-label="Search makers"><ArrowRight size={19}/></button></form>
     </section>
     <CraftShelf/>
     {makers.length === 0 && items.length === 0 && batches.length === 0 && <section className={styles.launch} aria-label="Directory opening"><div><p className={styles.eyebrow}>A MARKET IN THE MAKING</p><h2>Something good is taking shape.</h2><p>Our independent maker directory is opening. Explore the food journal or introduce your own kitchen.</p></div><Link className={styles.textLink} href="/join">Become a maker <ArrowUpRight size={18} aria-hidden="true"/></Link></section>}

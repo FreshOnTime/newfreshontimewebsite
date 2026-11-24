@@ -28,9 +28,9 @@ export function ModernMotion() {
           const timeline = gsap.timeline({ defaults: { ease: 'power3.out', clearProps: 'opacity,transform' } });
           timeline.from(copy, { opacity: .75, y: 20, duration: .85, stagger: .10 });
           if (media) {
-            timeline.from(media, { opacity: .85, y: 16, duration: 1.1 }, .18);
+            if (!hero.hasAttribute('data-studio-hero')) timeline.from(media, { opacity: .85, y: 16, duration: 1.1 }, .18);
             const image = media.querySelector('img');
-            if (image && hero.hasAttribute('data-studio-hero')) timeline.from(image, { scale: 1.07, duration: 1.65, ease: 'power2.out', clearProps: 'transform' }, .12);
+            if (image && hero.hasAttribute('data-studio-hero') && !window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches) timeline.from(image, { scale: 1.07, duration: 1.65, ease: 'power2.out', clearProps: 'transform' }, .12);
           }
         }
         const chapters = root.querySelectorAll<HTMLElement>('[data-studio-chapter], .fp-band, .journal-storefront, .journal-story-header, .fp-article-head, .fp-item-page .journal-item-info');
@@ -45,6 +45,9 @@ export function ModernMotion() {
           gsap.from(Array.from(grid.children).slice(0, 8), { immediateRender: false, opacity: .85, y: 16, stagger: .075, duration: .7, ease: 'power2.out', clearProps: 'opacity,transform', scrollTrigger: { trigger: grid, start: 'top 90%', once: true } });
         });
         if (window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches) {
+          const heroStage = root.querySelector<HTMLElement>('[data-studio-hero]');
+          const heroImage = heroStage?.querySelector<HTMLElement>('[data-studio-hero-media] img');
+          if (heroStage && heroImage) gsap.fromTo(heroImage, {yPercent:0,scale:1.07}, {yPercent:5,scale:1.14,ease:'none',scrollTrigger:{trigger:heroStage,start:'top top',end:'bottom top',scrub:.8,invalidateOnRefresh:true}});
           root.querySelectorAll<HTMLElement>('[data-studio-parallax]').forEach(frame => {
             const image = frame.querySelector('img');
             if (!image) return;

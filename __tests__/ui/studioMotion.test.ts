@@ -19,3 +19,11 @@ it('retains the original chrome and functional discovery',()=>{
   expect(source('app/page.tsx')).toContain('<ExperienceChapters/>');
   expect(source('app/page.tsx')).toContain('action="/makers"');
 });
+
+it('keeps the cinematic homepage navigable and independent of motion',()=>{
+  const page=source('app/page.tsx');
+  expect(page).toContain('data-studio-hero-media');
+  expect(page).toContain('href="#discover-craft"');
+  expect(page).toContain('role="search"');
+  expect(source('components/makers/EditorialHome.module.css')).toContain('prefers-reduced-motion');
+});
