@@ -1,0 +1,61 @@
+/* Screenshots from an actual running site, never generated mockups. */
+const { chromium } = require('playwright');
+const fs = require('node:fs/promises');
+const assert = require('node:assert/strict');
+const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
+const historical = process.env.HISTORICAL_BASE_URL;
+const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
+const routes = [
+  ['homepage','/'],['directory','/makers'],['maker-profile',maker],
+  ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
+  ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
+  ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
+];
+const out = process.env.VISUAL_OUTPUT_DIR || 'visual-review';
+async function ready(page,path) {
+  const response = await page.goto(path,{waitUntil:'networkidle',timeout:60000});
+  assert(response && response.ok(), 'Failed to load '+path);
+  await page.evaluate(async()=>{await document.fonts.ready; await Promise.all(Array.from(document.images).map(async i=>{i.loading='eager';try{await i.decode()}catch{}}));});
+}
+async function capture(page,name) {
+  await page.screenshot({path:out+'/'+name+'.png',fullPage:true,animations:'disabled'});
+  const overflow = await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth+1);
+  assert(!overflow,'Horizontal overflow: '+name);
+}
+async function main(){
+  await fs.mkdir(out,{recursive:true});
+  const browser=await chromium.launch({headless:true});
+  const errors=[];
+  try{
+    for(const width of [390,1440]){
+      const context=await browser.newContext({viewport:{width,height:width===390?844:900},deviceScaleFactor:1});
+      const page=await context.newPage();
+      try{
+        for(const [name,path] of routes){
+          try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
+            if(name==='homepage'){
+              await page.locator('.heritage-header').screenshot({path:out+'/current-header-'+width+'.png'});
+              await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
+              if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
+            }
+          }catch(error){errors.push(String(error));}
+        }
+        if(historical){
+          try{await ready(page,new URL('/',historical).href);await page.locator('header').first().screenshot({path:out+'/historical-header-'+width+'.png'});await page.locator('footer').last().screenshot({path:out+'/historical-footer-'+width+'.png'});}catch(error){errors.push(String(error));}
+        }
+        if(process.env.VISUAL_LOGIN && process.env.VISUAL_PASSWORD){
+          try{
+            const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:process.env.VISUAL_LOGIN,password:process.env.VISUAL_PASSWORD}});
+            assert(login.ok(),'Test account login failed');
+            await ready(page,new URL('/dashboard',base).href);
+            await page.getByRole('heading',{name:'Maker studio.'}).waitFor({timeout:20000});
+            await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
+            await capture(page,'maker-studio-'+width);
+          }catch(error){errors.push(String(error));}
+        }else errors.push('Maker Studio requires a non-sensitive test login.');
+      }finally{await context.close();}
+    }
+  }finally{await browser.close();}
+  if(errors.length)throw new Error(errors.join('\n'));
+}
+main().catch(error=>{console.error(error);process.exitCode=1;});
