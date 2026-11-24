@@ -1,7 +1,7 @@
 /* Screenshots from an actual running site, never generated mockups. */
-const { chromium } = require('playwright');
-const fs = require('node:fs/promises');
-const assert = require('node:assert/strict');
+import { chromium } from 'playwright';
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
 const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';

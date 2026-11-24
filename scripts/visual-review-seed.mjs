@@ -1,7 +1,7 @@
 /* Isolated screenshot fixtures only. Never run against a real site or database. */
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const assert = require('node:assert/strict');
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import assert from 'node:assert/strict';
 const url = new URL(process.env.DATABASE_URL || 'postgresql://invalid');
 assert.equal(url.hostname, 'localhost', 'Visual fixtures require local PostgreSQL');
 assert.equal(url.pathname, '/freshpick_visual', 'Visual fixtures require a dedicated database');
