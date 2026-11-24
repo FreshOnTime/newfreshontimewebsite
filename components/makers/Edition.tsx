@@ -37,8 +37,8 @@ export function ReadingShelf({ exclude }: { exclude?: string }) {
 }
 
 export function PageBand({ title, intro, image, alt }: { title: string; intro?: string; image?: string; alt?: string }) {
-  return <header className={'fp-band' + (image ? ' fp-band-photo' : '')}><div className="editorial-wrap">
+  return <header className={'fp-band studio-page-band' + (image ? ' fp-band-photo' : '')}><div className="editorial-wrap">
     <div><h1>{title}</h1>{intro && <p>{intro}</p>}</div>
-    {image && <div className="fp-image"><Image src={image} alt={alt || ''} fill sizes="(max-width:639px) 100vw, 38vw" /></div>}
+    {image && <div className="fp-image studio-band-photo"><Image src={image} alt={alt || ''} fill sizes="(max-width:639px) 100vw, 38vw" /></div>}
   </div></header>;
 }

@@ -66,7 +66,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
       {hasResults && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
       {makers.length > 0 && <section id="makers-results">
         <h2 className="editorial-title">Meet the makers</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-studio-grid>
           {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="journal-index-entry">
             <h3 className="flex items-center justify-between gap-3 font-serif text-xl text-brand-green">{maker.name}<ArrowUpRight className="shrink-0" size={16} aria-hidden="true" /></h3>
             <p className="mt-1 text-sm text-muted-foreground">{maker.makerTown}</p>
@@ -77,7 +77,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
       </section>}
       {items.length > 0 && <section id="items-results">
         <h2 className="editorial-title">The item board</h2>
-        <div className="mt-5 journal-item-grid">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
+        <div className="mt-5 journal-item-grid" data-studio-grid>{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
       </section>}
       {batches.length > 0 && <section id="batches-results">
         <h2 className="editorial-title">Open for preorders</h2>

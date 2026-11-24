@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, Search, MapPin, ArrowRight } from 'lucide-react';
+import { ExperienceChapters } from '@/components/makers/ExperienceChapters';
 import { MakerItemCard, BatchDetails } from '@/components/makers/MakerCards';
 import { CraftShelf, ReadingShelf } from '@/components/makers/Edition';
 import { publicItemSelect } from '@/lib/makerQueries';
@@ -37,8 +38,8 @@ export default async function Home() {
       <div className="modern-hero-media studio-hero-media"><Image src="/images/editorial/hands-at-work.webp" alt="Hands kneading dough beside a bowl" fill priority sizes="100vw" className="lux-hero-image"/></div>
     </section>
     <CraftShelf/>
-    <section className="modern-feature studio-chapter editorial-wrap" data-studio-chapter aria-label="Discover local makers"><div className="modern-feature-copy studio-chapter-copy"><p className="fp-kicker">Made with care</p><h2>Meet the people.<br/>Taste the difference.</h2><p>From small bakeries to family kitchens. Find food with a story and get in touch directly.</p><Link href="/makers" className="modern-primary">Find a maker</Link></div><div className="modern-feature-photo" data-studio-parallax><Image src="/images/editorial/restaurant-kitchen.webp" alt="Cooks preparing food together" fill sizes="(max-width: 767px) 100vw, 54vw"/></div></section>
-    <div className="journal-first-note editorial-wrap">
+    <ExperienceChapters/>
+    <div className="journal-first-note studio-note editorial-wrap">
       {makers.length > 0 ? <Link href={'/makers/'+makers[0].makerHandle}><span className="fp-kicker">Meet a maker</span><span>{makers[0].name}{makers[0].makerTown ? ' · '+makers[0].makerTown : ''}</span><ArrowUpRight size={18}/></Link> : <Link href="/stories/the-bread-window"><span className="fp-kicker">From the journal</span><span>The bread window</span><ArrowUpRight size={18}/></Link>}
     </div>
     {batches.length > 0 && <section className="journal-batch-board editorial-wrap" aria-labelledby="home-batches"><div className="fp-section-head"><div><p className="fp-kicker">From the kitchens</p><h2 id="home-batches">Taking preorders.</h2></div><Link className="fp-inline" href="/makers">See the directory</Link></div><div className="journal-batch-board-grid">{batches.map(batch=><article key={batch.id}><span className="fp-kicker">{batch.item.supplier.name}</span><h3><Link href={makerItemPath(batch.item.supplier.makerHandle,batch.item.slug)}>{batch.item.name} <ArrowUpRight size={16} aria-hidden="true"/></Link></h3>{batch.item.supplier.makerTown && <p className="journal-location"><MapPin size={14} aria-hidden="true"/>{batch.item.supplier.makerTown}</p>}<BatchDetails batch={batch} itemName={batch.item.name} phone={batch.item.supplier.makerWhatsApp}/></article>)}</div></section>}
