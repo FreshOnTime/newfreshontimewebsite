@@ -339,27 +339,21 @@
 .fp-people-grid>a { display:flex; gap:1rem; align-items:flex-start; padding:1.2rem; border:1px solid #b9c2ad; }
 .fp-people-grid>a>span { display:grid; place-items:center; width:3rem; height:3rem; flex:none; color:#fff5d8; background:#496148; font:italic 2rem/1 var(--font-heading); }
 
-/* Heritage chrome: structural reference c6dfc3e (2025-09-03). Keep the journal's typography scoped to content. */
-.heritage-header,.heritage-footer { font-family:var(--font-sans),Arial,sans-serif; line-height:1.5; }
-.heritage-header {color:#111827;}
-.heritage-header .container,.heritage-footer .container {width:100%;max-width:100%;}
-@media(min-width:640px){.heritage-header .container,.heritage-footer .container{max-width:640px;}}
-@media(min-width:768px){.heritage-header .container,.heritage-footer .container{max-width:768px;}}
-@media(min-width:1024px){.heritage-header .container,.heritage-footer .container{max-width:1024px;}}
-@media(min-width:1280px){.heritage-header .container,.heritage-footer .container{max-width:1280px;}}
-@media(min-width:1536px){.heritage-header .container,.heritage-footer .container{max-width:1536px;}}
-.freshpick-market .heritage-footer h3 {font-family:inherit;font-weight:600;letter-spacing:normal;color:white;}
-.heritage-header a:hover,.heritage-nav-link[aria-current=page] {color:#16a34a;}
-.heritage-nav-link {color:#374151;font-weight:500;}
-.heritage-nav-link[aria-current=page] {font-weight:600;text-decoration:underline;text-underline-offset:5px;}
-.heritage-search {position:relative;align-items:center;border:2px solid #e5e7eb;border-radius:9999px;background:white;color:#111827;min-height:42px;width:100%;gap:.65rem;padding:2px 3px 2px 12px;}
-.heritage-search:focus-within{border-color:#22c55e;}
-.heritage-search svg{color:#9ca3af;flex:none;}
-.heritage-search input{min-width:0;flex:1;background:transparent;outline:none;padding:5px 0;font-size:.875rem;}
-.heritage-search input:focus-visible{outline:none;}
-.heritage-search button{background:#16a34a;color:white;font-weight:600;font-size:.875rem;padding:.4rem 1.1rem;border-radius:9999px;white-space:nowrap;}
-.heritage-search button:hover{background:#15803d;}
-html{scroll-padding-top:12rem;}
+/* Pre-maker-pivot brand chrome: source 267542f (24 November 2026). */
+.heritage-header,.heritage-footer {
+  --font-heading:var(--font-sans);
+  --background:50 30% 96.0784%; --foreground:105 9.0909% 8.6275%;
+  --primary:142 38.961% 30.1961%; --border:65.4545 13.253% 83.7255%;
+  --ring:142 38.961% 30.1961%;
+}
+.freshpick-market :is(.heritage-header,.heritage-footer) .editorial-wrap {max-width:1440px;padding-inline:1rem;}
+@media(min-width:640px){.freshpick-market :is(.heritage-header,.heritage-footer) .editorial-wrap{padding-inline:1.5rem;}}
+@media(min-width:1024px){.freshpick-market :is(.heritage-header,.heritage-footer) .editorial-wrap{padding-inline:2.5rem;}}
+@media(min-width:1280px){.freshpick-market :is(.heritage-header,.heritage-footer) .editorial-wrap{padding-inline:3.5rem;}}
+@media(max-width:359px){.freshpick-market .heritage-header .editorial-wrap{padding-inline:.75rem;}}
+.freshpick-market .heritage-footer h2 {font-family:var(--font-sans);font-weight:600;letter-spacing:-.05em;}
+.freshpick-market .heritage-footer h3 {font-family:var(--font-sans);font-weight:500;letter-spacing:.12em;}
+html{scroll-padding-top:7rem;}
 .journal-cover{display:grid;grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr);gap:clamp(1.5rem,5vw,5rem);align-items:center;padding-block:clamp(1.5rem,3vw,3.25rem);}
 .journal-cover-copy{min-width:0;}
 .journal-cover h1{font-size:clamp(3.7rem,7.15vw,7rem);line-height:.92;margin:.7rem 0 1.25rem;color:#1c3525;letter-spacing:-.04em;}
@@ -415,4 +409,4 @@ html{scroll-padding-top:12rem;}
   .journal-item-layout,.journal-story-columns{grid-template-columns:1fr;}
   .journal-item-photo>img,.journal-item-photo>.fp-monogram{aspect-ratio:4/3;}
 }
-@media(max-width:479px){.journal-item-grid,.journal-item-grid:has(>:nth-child(2):last-child){grid-template-columns:1fr;}.journal-item-grid>*{max-width:100%;}.fp-filters{grid-template-columns:1fr 1fr;}.fp-filters label:first-child{grid-column:1/-1;}.fp-filters button{grid-column:1/-1;}.heritage-header .bg-green-50{font-size:.78rem;}}
+@media(max-width:479px){.journal-item-grid,.journal-item-grid:has(>:nth-child(2):last-child){grid-template-columns:1fr;}.journal-item-grid>*{max-width:100%;}.fp-filters{grid-template-columns:1fr 1fr;}.fp-filters label:first-child{grid-column:1/-1;}.fp-filters button{grid-column:1/-1;}}
