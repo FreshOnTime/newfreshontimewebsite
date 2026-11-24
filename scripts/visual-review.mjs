@@ -10,6 +10,7 @@ const routes = [
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
+  ['journal','/stories'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
 ];
 const out = process.env.VISUAL_OUTPUT_DIR || 'visual-review';
 async function ready(page,path) {
@@ -37,12 +38,29 @@ async function main(){
               await page.locator('.heritage-header').screenshot({path:out+'/current-header-'+width+'.png'});
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
               if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
+              const rail = page.getByRole('region',{name:'food crafts'});
+              const next = page.getByRole('button',{name:'Next food crafts'});
+              await next.click();
+              await page.waitForFunction(()=>document.querySelector('.lux-rail-track').scrollLeft>10);
+              await rail.screenshot({path:out+'/craft-gallery-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.journal-discover button').click();
               await page.waitForURL('**/makers?q=visual-no-match-000');
               await page.getByRole('heading',{name:'No matches this time.'}).waitFor();
             }
-          }catch(error){errors.push(String(error));}
+            if(name==='item'){
+              const details = page.locator('.lux-detail').first();
+              await details.locator('summary').click();
+              assert(!(await details.getAttribute('open')) && !(await details.evaluate(node=>node.open)),'Item accordion did not close');
+              await details.locator('summary').click();
+              assert(await details.evaluate(node=>node.open),'Item accordion did not open');
+            }
+            if(name==='directory'){
+              await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).click();
+              await page.waitForURL('**/makers?kind=Bakery');
+              assert.equal(await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).getAttribute('aria-current'),'page');
+            }
+          }catch(error){errors.push(name+' '+width+': '+String(error));}
         }
         if(historical){
           try{await ready(page,new URL('/',historical).href);await page.locator('header').first().screenshot({path:out+'/historical-header-'+width+'.png'});await page.locator('footer').last().screenshot({path:out+'/historical-footer-'+width+'.png'});}catch(error){errors.push(String(error));}
