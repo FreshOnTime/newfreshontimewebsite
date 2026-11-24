@@ -13,6 +13,7 @@ interface User {
   email?: string;
   phoneNumber: string;
   role: string;
+  managedAuth?: boolean;
   secondaryRoles?: string[];
   _id: string;
   registrationAddress?: {
@@ -36,7 +37,7 @@ interface AuthContextType {
   clearError: () => void;
   login: (identifier: string, password: string) => Promise<User>;
   loginWithGoogle: () => Promise<User>;
-  signup: (data: SignupData) => Promise<void>;
+  signup: (data: SignupData) => Promise<{ verificationRequired: boolean }>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
 }
@@ -49,7 +50,7 @@ interface SignupData {
   firstName: string;
   lastName?: string;
   email?: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   password: string;
   registrationAddress?: {
     addressLine1: string;
@@ -157,6 +158,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => deferredTask.cancel();
   }, [pathname, refreshAuth, user]);
 
+  useEffect(() => {
+    if (!user?.managedAuth) return;
+    const interval = window.setInterval(() => { void refreshAuth(); }, 5 * 60 * 1000);
+    return () => window.clearInterval(interval);
+  }, [user?.managedAuth, refreshAuth]);
+
   const login = useCallback(async (identifier: string, password: string) => {
     try {
       clearError();
@@ -222,8 +229,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const responseData = await response.json();
 
       if (response.ok) {
+        if (responseData.verificationRequired) return { verificationRequired: true };
         setUser(responseData.user);
-        return;
+        return { verificationRequired: false };
       }
 
       const err = new Error(responseData.error || 'Signup failed') as ServerError;
@@ -243,15 +251,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setLoading(true);
       await apiFetch('/api/auth/logout', { method: 'POST' });
-      const { firebaseAuth, auth } = await loadFirebaseAuth();
-      await firebaseAuth.signOut(auth);
+      if (!user?.managedAuth) {
+        const { firebaseAuth, auth } = await loadFirebaseAuth();
+        await firebaseAuth.signOut(auth);
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
       setLoading(false);
     }
-  }, []);
+  }, [user?.managedAuth]);
 
   const value = React.useMemo(() => ({
     user,

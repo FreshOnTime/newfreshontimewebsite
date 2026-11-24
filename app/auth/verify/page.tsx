@@ -7,7 +7,8 @@ import { useSearchParams } from 'next/navigation';
 
 export default function VerifyPage() {
   const params = useSearchParams();
-  const token = params.get('token') || '';
+  const managedToken = params.get('token_hash');
+  const token = managedToken || params.get('token') || '';
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>(token ? 'loading' : 'error');
   const [message, setMessage] = useState(token ? 'Verifying your email…' : 'This verification link is missing its token.');
 
@@ -15,7 +16,7 @@ export default function VerifyPage() {
     if (!token) return;
     void (async () => {
       try {
-        const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+        const response = managedToken ? await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) }) : await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
         const data = await response.json();
         if (response.ok) {
           setStatus('success');
@@ -29,7 +30,7 @@ export default function VerifyPage() {
         setMessage('Network error. Please try the verification link again.');
       }
     })();
-  }, [token]);
+  }, [token, managedToken]);
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center bg-background px-5 py-10 text-foreground">

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 
 const inputClass = 'h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20';
 
-export function CustomerSignupForm({ requestedDestination }: { requestedDestination?: string }) {
+export function CustomerSignupForm({ requestedDestination, managed = false }: { requestedDestination?: string; managed?: boolean }) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -26,6 +26,7 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
 
   });
 
+  const [verificationSent, setVerificationSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
@@ -49,6 +50,12 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
       setServerError(null);
       setFieldErrors(null);
 
+      if (managed) {
+        const result = await signup({firstName: formData.firstName, lastName: formData.lastName || undefined, email: formData.email, password: formData.password});
+        if (result.verificationRequired) { setVerificationSent(true); return; }
+        router.push(accountDestination('customer', requestedDestination));
+        return;
+      }
       const validation = validateInput(signupSchema, {
         firstName: formData.firstName,
         lastName: formData.lastName || undefined,
@@ -71,6 +78,8 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
       setIsLoading(false);
     }
   };
+
+  if (verificationSent) return <section className="mx-auto max-w-md space-y-4 py-12"><h1 className="font-serif text-4xl">Check your inbox.</h1><p>We sent a verification link to {formData.email}. Verify your email, then sign in to FreshPick.</p><Link href={accountLink('/auth/login', requestedDestination)} className="maker-button">Back to sign in</Link></section>;
 
   return (
     <div className="bg-background">
@@ -107,12 +116,12 @@ export function CustomerSignupForm({ requestedDestination }: { requestedDestinat
                 <Field label="Last name" htmlFor="lastName">
                   <Input id="lastName" autoComplete="family-name" value={formData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} className={inputClass} />
                 </Field>
-                <Field label="Email" htmlFor="email">
-                  <Input id="email" autoComplete="email" type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} />
+                <Field label={managed ? "Email *" : "Email"} htmlFor="email">
+                  <Input id="email" autoComplete="email" type="email" required={managed} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputClass} />
                 </Field>
-                <Field label="Phone number *" htmlFor="phone">
+                {!managed && <Field label="Phone number *" htmlFor="phone">
                   <Input id="phone" type="tel" autoComplete="tel" value={formData.phoneNumber} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} required className={inputClass} />
-                </Field>
+                </Field>}
                 <Field label="Password *" htmlFor="password">
                   <PasswordInput id="password" autoComplete="new-password" minLength={8} aria-describedby="password-guidance" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} required className={inputClass} />
                 </Field>

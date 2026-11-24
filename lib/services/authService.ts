@@ -186,6 +186,7 @@ export class AuthService {
 
     if (!user) throw new Error('Invalid credentials');
     if (user.isBanned) throw new Error('Account is banned');
+    if (user.supabaseAuthId) throw new Error('Sign in using your verified email');
     if (!user.passwordHash) throw new Error('Account does not have password authentication enabled');
 
     const isValidPassword = await bcrypt.compare(data.password, user.passwordHash);
@@ -246,6 +247,7 @@ export class AuthService {
         });
       }
 
+      if (account.supabaseAuthId) throw new Error('Sign in using your verified email');
       if (account.isBanned) throw new Error('Account is banned');
 
       await tx.oAuthIdentity.create({
@@ -255,7 +257,7 @@ export class AuthService {
       return account;
     });
 
-    if (user.isBanned) throw new Error('Account is banned');
+    if (user.isBanned || user.supabaseAuthId) throw new Error('Account unavailable');
 
     const { accessToken, refreshTokenData } = issueTokens(user);
     await prisma.$transaction([
@@ -283,6 +285,7 @@ export class AuthService {
     });
 
     if (!existing) throw new Error('Invalid or expired refresh token');
+    if (existing.user.supabaseAuthId) throw new Error('Sign in using your verified email');
     if (existing.user.isBanned) throw new Error('Account is banned');
 
     const { accessToken, refreshTokenData } = issueTokens(existing.user);

@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { managedVerify, managedUser, managedError, supabaseAuthEnabled } from '@/lib/supabaseAuth';
+import { isRateLimited, makeKey } from '@/lib/middleware/rateLimiter';
+
+export async function POST(request: NextRequest) {
+  if (!supabaseAuthEnabled()) return NextResponse.json({ error: 'Verification temporarily unavailable' }, { status: 503 });
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  if (isRateLimited(makeKey('supabase-verify', ip), 20, 600000)) return NextResponse.json({ error: 'Too many attempts' }, { status: 429 });
+  const body = await request.json().catch(() => null);
+  if (typeof body?.token !== 'string' || !body.token || body.token.length > 1024) return NextResponse.json({ error: 'Invalid verification link' }, { status: 400 });
+  try {
+    await managedUser(await managedVerify(body.token, 'email'), true);
+    return NextResponse.json({ message: 'Your email is verified. You can sign in now.' });
+  } catch (error) { return managedError(error); }
+}
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -18,7 +32,7 @@ export const GET = async (request: NextRequest) => {
     if (!matched) return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
 
     const user = await prisma.user.findUnique({ where: { id: matched.userId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!user || user.supabaseAuthId) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     await prisma.user.update({ where: { id: user.id }, data: { isEmailVerified: true } });
 
