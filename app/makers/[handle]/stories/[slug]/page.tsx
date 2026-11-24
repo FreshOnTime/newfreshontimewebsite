@@ -45,7 +45,7 @@ export default async function MakerStoryPage({ params }: Props) {
   const result = await findStory(handle, slug);
   if (!result) notFound();
   const { maker, story } = result;
-  return <main className="editorial-wrap py-10 md:py-16">
+  return <main className="fp-maker-story editorial-wrap py-10 md:py-16">
     <article className="mx-auto max-w-3xl">
       <Link href={`/makers/${handle}`} className="text-sm font-semibold text-brand-green underline">{maker.name} · {maker.makerTown}</Link>
       <h1 className="mt-4 break-words font-serif text-4xl text-brand-green md:text-6xl">{story.title}</h1>

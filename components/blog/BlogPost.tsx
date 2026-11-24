@@ -58,7 +58,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
   };
 
   return (
-    <article className="min-h-screen bg-background">
+    <article className="fp-archive-article min-h-screen bg-background">
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
@@ -158,7 +158,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
           </div>
           <nav aria-label="Keep exploring" className="flex flex-col gap-3 sm:flex-row md:justify-end">
             <Link href="/blog" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-brand-green/25 bg-white px-6 py-3 text-sm font-semibold text-brand-green hover:border-brand-green">More stories <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
-            <Link href="/products" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-green-deep px-6 py-3 text-sm font-semibold text-white hover:bg-brand-green">Shop the market <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link href="/makers" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand-green-deep px-6 py-3 text-sm font-semibold text-white hover:bg-brand-green">Explore makers <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
           </nav>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { PageBand } from "@/components/makers/Edition";
+import { ArrowUpRight } from "lucide-react";
 import { publicPageMetadata } from "@/lib/publicPages";
 import { BlogList } from "@/components/blog/BlogList";
 import JournalCard from "@/components/blog/JournalCard";
@@ -48,31 +49,13 @@ export default async function BlogPage() {
         inLanguage: "en-LK",
       }} />
 
-      <section className="overflow-hidden border-b border-brand-green/10 bg-brand-cream">
-        <div className="editorial-wrap grid items-center gap-9 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.03fr)_minmax(0,.97fr)] lg:gap-16 lg:py-20">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-brand-green">The FreshPick Journal</p>
-            <h1 className="mt-5 max-w-[13ch] font-heading text-[clamp(3.1rem,6.2vw,6.4rem)] font-semibold leading-[1.02] tracking-[-.058em] text-brand-green-deep">
-              Good food has a story.
-            </h1>
-            <p className="mt-7 max-w-[48ch] text-base leading-8 text-foreground/75 sm:text-lg">
-              Thoughtful notes on the food we cook, the markets we shop and the little rituals that make everyday life better.
-            </p>
-            <Link href="#stories-heading" className="mt-8 inline-flex min-h-12 items-center gap-3 border-b border-brand-green/40 text-sm font-semibold text-brand-green transition-colors hover:border-brand-green">
-              Explore the journal <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </div>
-          <div className="relative min-h-[320px] overflow-hidden rounded-[1.5rem] bg-secondary sm:min-h-[430px] lg:min-h-[520px] lg:rounded-[2rem]">
-            <BlogImage src="/images/editorial/kitchen-basket.webp" alt="Fresh vegetables and herbs on a kitchen table" priority sizes="(max-width: 1023px) 100vw, 48vw" />
-          </div>
-        </div>
-      </section>
+      <PageBand title="The editorial archive." intro="Food writing and guides from earlier FreshPick editions." image="/images/editorial/kitchen-basket.webp" alt="Fresh vegetables and herbs on a kitchen table"/>
 
       {featured && (
         <section className="editorial-wrap py-14 md:py-20" aria-labelledby="featured-story-heading">
           <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
             <h2 id="featured-story-heading" className="font-heading text-2xl font-semibold tracking-[-.035em] text-brand-green-deep sm:text-3xl">Featured story</h2>
-            <span className="text-sm text-muted-foreground">A good place to start reading</span>
+
           </div>
           <article className="grid min-w-0 overflow-hidden rounded-[1.5rem] bg-brand-green-deep text-white lg:grid-cols-[minmax(0,1.08fr)_minmax(0,.92fr)] lg:rounded-[2rem]">
             <Link href={featuredHref} aria-label={"Read " + featured.title} className="group relative block min-h-[290px] overflow-hidden bg-brand-green sm:min-h-[420px] lg:min-h-[490px]">
@@ -100,9 +83,9 @@ export default async function BlogPage() {
             <div className="mb-9 grid gap-4 md:grid-cols-[1fr_.8fr] md:items-end">
               <div>
                 <p className="text-sm font-semibold text-brand-green">Practical reading</p>
-                <h2 id="guides-heading" className="mt-3 max-w-[19ch] font-heading text-[clamp(2.15rem,4vw,3.8rem)] font-semibold leading-[1.1] tracking-[-.045em] text-brand-green-deep">Make everyday shopping a little easier.</h2>
+                <h2 id="guides-heading" className="mt-3 max-w-[19ch] font-heading text-[clamp(2.15rem,4vw,3.8rem)] font-semibold leading-[1.1] tracking-[-.045em] text-brand-green-deep">From the archive.</h2>
               </div>
-              <p className="max-w-md text-base leading-8 text-muted-foreground md:justify-self-end">Useful guides for the shopping list, the pantry and the decisions you make before checkout.</p>
+              <p className="max-w-md text-base leading-8 text-muted-foreground md:justify-self-end">Earlier FreshPick guides to pantry ingredients and everyday food planning.</p>
             </div>
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {remainingGuides.map((guide) => (
@@ -119,7 +102,7 @@ export default async function BlogPage() {
             <p className="text-sm font-semibold text-brand-green">From the market</p>
             <h2 id="stories-heading" className="mt-3 font-heading text-[clamp(2.2rem,4.5vw,4rem)] font-semibold leading-[1.08] tracking-[-.045em] text-brand-green-deep">More stories to explore.</h2>
           </div>
-          <Link href="/products" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand-green hover:underline">Visit the market <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+          <Link href="/makers" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand-green hover:underline">Explore makers <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
         </div>
         <BlogList initialData={initialData} featuredSlug={featuredCms?.slug} />
       </section>

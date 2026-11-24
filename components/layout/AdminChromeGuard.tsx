@@ -17,7 +17,7 @@ export default function AdminChromeGuard({ children, footer }: { children: React
   const workspace = pathname === '/admin' || pathname.startsWith('/admin/');
   const authentication = pathname.startsWith('/auth/');
   const checkout = pathname === '/checkout';
-  if (workspace) return <AuthProvider><div className="flex min-h-screen flex-col"><main id="main-content" className="flex-1">{children}</main></div></AuthProvider>;
+  if (workspace) return <AuthProvider><div className="fp-admin flex min-h-screen flex-col"><main id="main-content" className="flex-1">{children}</main></div></AuthProvider>;
   return (
     <AuthProvider><BagProvider><WishlistProvider>
       <div className={`freshpick-market flex min-h-screen flex-col ${checkout || authentication ? '' : 'pb-20 md:pb-0'}`}>

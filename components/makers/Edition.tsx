@@ -1,0 +1,42 @@
+import Image from 'next/image';
+import Link from 'next/link';
+import { fieldNotes, notePath } from '@/lib/fieldNotes';
+
+const crafts = [
+  ['Bakery', 'Bakery', '/images/categories/bakery.webp'],
+  ['Home kitchens', 'Prepared food', '/images/categories/cooked-food.webp'],
+  ['Pantry', 'Pantry', '/images/categories/pantry-staples.webp'],
+  ['Growers', 'Produce', '/images/editorial/kitchen-basket.webp'],
+  ['Dairy & eggs', 'Dairy & eggs', '/images/categories/dairy-eggs.webp'],
+  ['Drinks', 'Drinks', '/images/categories/beverages.webp'],
+];
+
+export function CraftShelf() {
+  return <section className="fp-section editorial-wrap" aria-labelledby="craft-title">
+    <div className="fp-section-head"><h2 id="craft-title">Browse by craft</h2><Link className="fp-inline" href="/makers">All makers</Link></div>
+    <div className="fp-crafts">{crafts.map(([label, kind, image]) =>
+      <Link key={kind} href={`/makers?kind=${encodeURIComponent(kind)}`} className="fp-craft">
+        <div className="fp-image"><Image src={image} alt="" fill sizes="(max-width: 639px) 31vw, (max-width: 899px) 28vw, 16vw" /></div>
+        <span>{label}</span>
+      </Link>)}</div>
+  </section>;
+}
+
+export function ReadingShelf({ exclude }: { exclude?: string }) {
+  return <section className="fp-section editorial-wrap" aria-label="FreshPick field notes">
+    <div className="fp-section-head"><h2>Field notes</h2><Link href="/stories" className="fp-inline">The journal</Link></div>
+    <div className="fp-reads">{fieldNotes.filter(note => note.slug !== exclude).map(note =>
+      <Link key={note.slug} href={notePath(note)} className="fp-read">
+        <div className="fp-image"><Image src={note.image} alt={note.alt} fill sizes="(max-width: 639px) 95vw, 33vw" /></div>
+        <span className="fp-kicker">{note.category}</span><h3>{note.title}</h3><p>{note.excerpt}</p>
+      </Link>
+    )}</div>
+  </section>;
+}
+
+export function PageBand({ title, intro, image, alt }: { title: string; intro?: string; image?: string; alt?: string }) {
+  return <header className={'fp-band' + (image ? ' fp-band-photo' : '')}><div className="editorial-wrap">
+    <div><h1>{title}</h1>{intro && <p>{intro}</p>}</div>
+    {image && <div className="fp-image"><Image src={image} alt={alt || ''} fill sizes="(max-width:639px) 100vw, 38vw" /></div>}
+  </div></header>;
+}

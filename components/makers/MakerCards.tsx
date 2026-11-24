@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight, ImageOff } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { formatMakerDate, formatMakerPrice, makerImageSrc, makerItemPath, makerWhatsAppLink } from '@/lib/makers';
 
 type Money = number | string | { toString(): string };
@@ -10,8 +10,8 @@ export function MakerPhoto({ image, name }: { image: string | null; name: string
     // eslint-disable-next-line @next/next/no-img-element -- Supplier images may be hosted on different domains.
     <img src={source} alt={name} loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/3] w-full rounded-xl object-cover" />
   ) : (
-    <div className="grid aspect-[4/3] place-items-center rounded-xl bg-brand-cream text-brand-green/30">
-      <ImageOff size={28} aria-hidden="true" />
+    <div className="fp-monogram" aria-hidden="true">
+      <span>{name.trim().slice(0, 1).toUpperCase()}</span>
     </div>
   );
 }
@@ -20,7 +20,7 @@ export function MakerItemCard({ handle, item }: {
   handle: string | null;
   item: { slug: string; name: string; kind: string; image: string | null; price: Money | null; madeToOrder: boolean };
 }) {
-  return <Link href={makerItemPath(handle, item.slug)} className="group block rounded-2xl border border-border p-3">
+  return <Link href={makerItemPath(handle, item.slug)} className="fp-item-card group block">
     <MakerPhoto image={item.image} name={item.name} />
     <div className="p-3">
       <p className="text-xs font-semibold text-muted-foreground">{item.kind}{item.madeToOrder ? ' · Made to order' : ''}</p>

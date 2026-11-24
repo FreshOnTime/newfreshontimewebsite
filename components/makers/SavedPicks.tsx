@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSyncExternalStore, useState } from 'react';
+import { PageBand, CraftShelf } from '@/components/makers/Edition';
 import { Bookmark } from 'lucide-react';
 
 type Pick = { href: string; title: string; kind: string };
@@ -15,7 +16,7 @@ function snapshot() { try { return localStorage.getItem(key) || '[]'; } catch { 
 function picks(raw: string): Pick[] {
   try {
     const entries: unknown = JSON.parse(raw);
-    return Array.isArray(entries) ? entries.filter(p => p && typeof p.href === 'string' && /^\/makers\/[a-z0-9-]+(?:\/(?:items|stories)\/[a-z0-9-]+)?$/.test(p.href) && typeof p.title === 'string' && typeof p.kind === 'string') : [];
+    return Array.isArray(entries) ? entries.filter(p => p && typeof p.href === 'string' && /^\/(?:makers\/[a-z0-9-]+(?:\/(?:items|stories)\/[a-z0-9-]+)?|stories\/[a-z0-9-]+)$/.test(p.href) && typeof p.title === 'string' && typeof p.kind === 'string') : [];
   } catch { return []; }
 }
 const serverSnapshot = () => '[]';
@@ -34,8 +35,11 @@ export function SavePick({ href, title, kind }: Pick) {
 }
 export function SavedPicks() {
   const entries = picks(useSyncExternalStore(subscribe, snapshot, serverSnapshot));
-  return <div className="editorial-wrap min-h-[55vh] py-12 md:py-20"><h1 className="maker-headline">Your saved picks.</h1><p className="my-6 text-muted-foreground">Makers, items and stories you’ve bookmarked on this device.</p>
-    {entries.map(p => <article key={p.href} className="flex items-center justify-between gap-4 border-t border-border py-4"><Link href={p.href}><span className="text-xs">{p.kind}</span><h2 className="text-2xl">{p.title}</h2></Link><SavePick {...p}/></article>)}
-    {!entries.length && <Link className="maker-button" href="/makers">Find a maker</Link>}
-  </div>;
+  return <>
+    <PageBand title="Your saved picks." intro="Your own collection of makers, food and stories, kept in this browser." image="/images/editorial/kitchen-basket.webp" alt="A woven basket full of vegetables and herbs"/>
+    <div className="editorial-wrap py-8">
+      {entries.length ? <div className="fp-saved-list">{entries.map(p => <article key={p.href}><Link href={p.href}><span className="fp-kicker">{p.kind}</span><h2>{p.title}</h2></Link><SavePick {...p}/></article>)}</div> :
+        <div className="fp-empty"><div><h2>Start your collection.</h2><p>Tap Save on a maker, an item or a story and you’ll find it here.</p></div><Link className="maker-button" href="/stories">Explore the journal</Link></div>}
+    </div>{!entries.length && <CraftShelf/>}
+  </>;
 }

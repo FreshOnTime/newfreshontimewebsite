@@ -18,7 +18,7 @@ const accountLinks = [
 export function AccountPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <div className="bg-background pb-12 text-foreground">
+    <div className="fp-account bg-background pb-12 text-foreground">
       <header className="border-b border-brand-green/10 bg-brand-cream">
         <div className="mx-auto max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
           <div className="flex flex-wrap items-end justify-between gap-5 pb-7 md:pb-8">
