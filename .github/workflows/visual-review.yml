@@ -37,11 +37,15 @@ jobs:
       - run: npm ci
       - run: npx prisma migrate deploy
       - run: node scripts/visual-review-seed.mjs
-      - run: npm install --no-save --package-lock=false playwright@1.51.1
-      - run: npx playwright install --with-deps chromium
+      - name: Install isolated browser tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/freshpick-browser" --no-save --package-lock=false playwright@1.51.1
+          "$RUNNER_TEMP/freshpick-browser/node_modules/.bin/playwright" install --with-deps chromium
       - run: npm run build
         env:
           NODE_ENV: production
+      - name: Link isolated Playwright for screenshot script
+        run: ln -s "$RUNNER_TEMP/freshpick-browser/node_modules/playwright" node_modules/playwright
       - name: Capture full pages
         run: |
           npm start -- --hostname 127.0.0.1 >/tmp/visual-server.log 2>&1 &
