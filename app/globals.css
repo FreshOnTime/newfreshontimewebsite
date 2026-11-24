@@ -569,3 +569,55 @@ html{scroll-padding-top:7rem;}
 .freshpick-market>main .fp-join h1{font:400 clamp(3.2rem,6vw,6.5rem)/.98 var(--lux-serif);letter-spacing:-.055em;}
 @media(min-width:1024px){.lux-item-visual{position:sticky;top:7rem;}.journal-story-aside{position:sticky;top:7rem;}}
 @media(max-width:767px){.lux-storefront-photo{grid-template-columns:1fr;}.lux-item-visual{position:static;}.journal-story-aside{position:static;}}
+
+/* Modern FreshPick: Apple-inspired hierarchy, not an Apple brand imitation.
+   The typography and surfaces are scoped to page content, excluding site chrome. */
+.freshpick-market>main{--lux-serif:Arial,Helvetica,sans-serif;--lux-paper:#f5f5f3;--lux-ink:#1d1d1f;--lux-line:#deded9;--modern-green:#174c35;--modern-surface:#f4f5f2;}
+.freshpick-market>main :is(h1,h2,h3).font-serif,.freshpick-market>main .editorial-title{font-weight:650;letter-spacing:-.045em;}
+.freshpick-market>main .fp-section-head h2{font-weight:650;font-size:clamp(2rem,4vw,4rem);letter-spacing:-.055em;line-height:1.08;color:#1d1d1f;}
+.freshpick-market>main .maker-button,.modern-primary{border-radius:999px;min-height:48px;padding:.75rem 1.55rem;background:var(--modern-green);color:white;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;width:fit-content;text-decoration:none;transition:background .2s ease,transform .2s ease;}
+.modern-primary:hover{background:#236246;}
+.modern-link{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;min-height:48px;color:#174c35;font-weight:600;text-underline-offset:.25em;}
+.modern-link:hover{text-decoration:underline;}
+.fp-modern-home .lux-hero{display:block;min-height:0;background:#f5f5f3;color:#1d1d1f;overflow:visible;padding-top:clamp(2rem,5vw,5rem);}
+.fp-modern-home .lux-hero::before{display:none;}
+.fp-modern-home .lux-hero-image{position:relative!important;width:100%!important;height:clamp(19rem,43vw,42rem)!important;object-fit:cover;object-position:center 58%;z-index:auto;display:block;order:2;}
+.fp-modern-home .lux-hero{display:flex;flex-direction:column;}
+.fp-modern-home .lux-hero-inner{display:block;min-height:0;padding-top:0;padding-bottom:clamp(1.75rem,4vw,3rem);order:1;}
+.fp-modern-home .lux-hero-copy{max-width:60rem;text-align:center;margin:auto;}
+.freshpick-market>main .fp-modern-home .lux-hero h1{font:650 clamp(3.2rem,6.9vw,7.2rem)/.98 Arial,Helvetica,sans-serif;color:#1d1d1f;letter-spacing:-.065em;margin:.8rem 0 1rem;}
+.fp-modern-home .lux-hero-copy>.fp-kicker{color:#174c35;}
+.fp-modern-home .lux-hero-copy>p:not(.fp-kicker){max-width:40rem;margin:0 auto 1.25rem;color:#505653;font-size:clamp(1.05rem,1.8vw,1.5rem);line-height:1.35;}
+.fp-modern-home .lux-hero .journal-discover{margin:1.1rem auto 0;min-height:52px;border:1px solid #d2d5cf;border-radius:999px;padding:.25rem .35rem .25rem 1rem;background:white;max-width:27rem;}
+.fp-modern-home .journal-discover button{border-radius:50%;}
+.modern-hero-actions{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:.65rem 1.25rem;margin-top:1.25rem;}
+.fp-modern-home .lux-hero :is(a,button):focus-visible{outline-color:#174c35!important;}
+.freshpick-market>main .lux-crafts{padding-block:clamp(2.8rem,6vw,6rem);}
+.lux-crafts .fp-craft{display:flex;flex-direction:column;overflow:hidden;border-radius:24px;background:#f4f5f2;transition:transform .25s ease,box-shadow .25s ease;}
+.lux-crafts .fp-craft .fp-image{aspect-ratio:4/5;border-radius:0;}
+.lux-crafts .fp-craft>span{font:650 clamp(1.2rem,2vw,1.7rem)/1.2 Arial,Helvetica,sans-serif;letter-spacing:-.035em;margin:0;padding:1.1rem;min-height:70px;}
+.lux-rail-track{padding:.45rem .2rem 1.1rem;gap:1rem;}
+.modern-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);min-height:clamp(22rem,40vw,38rem);margin-block:1rem 4rem;}
+.modern-feature-copy{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;background:#e9eee9;border-radius:24px 0 0 24px;padding:clamp(1.5rem,4.2vw,4.5rem);}
+.modern-feature-copy h2{font:650 clamp(2.25rem,4.3vw,4.6rem)/1.06 Arial,Helvetica,sans-serif;letter-spacing:-.055em;color:#1d1d1f;margin:.8rem 0;}
+.modern-feature-copy p:not(.fp-kicker){color:#505653;max-width:34ch;line-height:1.6;margin-bottom:1.5rem;}
+.modern-feature-photo{position:relative;min-height:22rem;overflow:hidden;border-radius:0 24px 24px 0;}
+.modern-feature-photo img{object-fit:cover;}
+.modern-journal{background:#f4f5f2;}
+.freshpick-market>main .fp-band h1,.freshpick-market>main .fp-article-head h1,.freshpick-market>main .journal-story-header h1{font-weight:650;font-size:clamp(2.6rem,5.7vw,5.7rem);line-height:1.04;letter-spacing:-.055em;}
+.freshpick-market>main .lux-storefront{border-radius:24px;background:#f4f5f2;}
+.freshpick-market>main .lux-storefront h1{font-size:clamp(2.8rem,5.6vw,5.5rem);font-weight:650;}
+.freshpick-market>main .lux-order-panel{border-radius:24px;background:#f4f5f2;}
+.freshpick-market>main .journal-price{font-weight:650;letter-spacing:-.045em;}
+.freshpick-market>main .fp-item-card h3{font-weight:650;}
+.freshpick-market>main .journal-card-media{border-radius:20px;}
+.freshpick-market>main .lux-auth h1,.freshpick-market>main .fp-join h1{font-weight:650;letter-spacing:-.045em;}
+.freshpick-market>main .lux-auth aside{border-radius:24px;}
+.freshpick-market>main .lux-auth :is(input,textarea,select):not([type=checkbox]):not([type=radio]){border-radius:12px;}
+.freshpick-market>main .lux-auth button[type=submit]{border-radius:999px;}
+.freshpick-market>main .fp-process>section,.freshpick-market>main .fp-empty{border-radius:24px;background:#f4f5f2;}
+.freshpick-market>main .lux-invite>div:last-child{background:#e9eee9;}
+.freshpick-market>main .fp-invite h2,.freshpick-market>main .journal-method h2,.freshpick-market>main .fp-about h2,.freshpick-market>main .fp-process h2{font-weight:650;}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.lux-crafts .fp-craft:hover{transform:translateY(-3px);box-shadow:0 12px 28px #1d1d1f12;}.modern-primary:hover{transform:translateY(-1px);}}
+@media(max-width:767px){.modern-feature{grid-template-columns:1fr;}.modern-feature-copy{border-radius:24px 24px 0 0;}.modern-feature-photo{border-radius:0 0 24px 24px;min-height:16rem;}.fp-modern-home .lux-hero-image{height:clamp(15rem,75vw,26rem)!important;}}
+@media(prefers-reduced-motion:reduce){.lux-crafts .fp-craft,.modern-primary{transition:none;transform:none!important;}}
