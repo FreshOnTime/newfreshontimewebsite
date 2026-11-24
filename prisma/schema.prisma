@@ -147,6 +147,7 @@ model User {
   // later, before checkout, for accounts that do not have one yet.
   phoneNumber     String?    @unique
   passwordHash    String?
+  supabaseAuthId  String?    @unique
   role            UserRole   @default(customer)
   secondaryRoles  UserRole[] @default([])
   isBanned        Boolean    @default(false)

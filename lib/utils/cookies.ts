@@ -59,10 +59,11 @@ export function getCookie(request: NextRequest, name: string): string | undefine
 export function setAuthCookies(
   response: NextResponse,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
+  accessMaxAge = 7 * 24 * 60 * 60
 ): void {
   setCookie(response, 'accessToken', accessToken, {
-    maxAge: 7 * 24 * 60 * 60,
+    maxAge: accessMaxAge,
   });
 
   setCookie(response, 'refreshToken', refreshToken, {

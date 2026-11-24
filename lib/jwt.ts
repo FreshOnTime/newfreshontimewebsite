@@ -27,11 +27,11 @@ export interface RefreshToken {
   expiresAt: Date;
 }
 
-export function signAccessToken(payload: Omit<TokenPayload, 'type'>): string {
+export function signAccessToken(payload: Omit<TokenPayload, 'type'>, expiresIn?: number): string {
   return jwt.sign(
     { ...payload, type: 'access' },
     getJwtSecret(),
-    { expiresIn: JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn'] }
+    { expiresIn: expiresIn ?? (JWT_ACCESS_EXPIRES as jwt.SignOptions['expiresIn']) }
   );
 }
 
