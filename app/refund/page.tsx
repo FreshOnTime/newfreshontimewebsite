@@ -25,7 +25,7 @@ export default function RefundPage() {
         </ol>
       </section>
       <section className="space-y-6 border-t border-border py-9"><h2 className="font-serif text-3xl text-brand-green">Refunds and unavailable products</h2>
-        <p className="text-sm leading-7 text-muted-foreground">If you paid for a previous FreshPick order and need a refund, contact support with the order number so the team can confirm the appropriate arrangement.</p>
+        <p className="text-sm leading-7 text-muted-foreground">If you used cash on delivery for a previous FreshPick order and need a refund, contact support with the order number so the team can confirm the appropriate arrangement.</p>
         <p className="text-sm leading-7 text-muted-foreground">If an item becomes unavailable during packing, confirm a change, cancellation or payment adjustment with the team. No automatic bank transfer, credit or fixed resolution time is promised here. Applicable statutory consumer rights remain unaffected.</p>
         <div className="flex flex-wrap gap-6"><Link href="/how-it-works" className="editorial-link">How FreshPick works</Link><Link href="/help" className="editorial-link">Get help</Link></div>
       </section>
