@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import { DiscoveryRail } from './DiscoveryRail';
 import { fieldNotes, notePath } from '@/lib/fieldNotes';
 
 const crafts = [
@@ -13,19 +14,19 @@ const crafts = [
 ];
 
 export function CraftShelf() {
-  return <section className="fp-section editorial-wrap" aria-labelledby="craft-title">
-    <div className="fp-section-head"><h2 id="craft-title">Browse by craft</h2><Link className="fp-inline" href="/makers">All makers</Link></div>
-    <div className="fp-crafts">{crafts.map(([label, kind, image]) =>
+  return <section id="discover-craft" className="fp-section lux-crafts editorial-wrap" aria-labelledby="craft-title">
+    <div className="fp-section-head"><div><p className="fp-kicker">Find your next favourite</p><h2 id="craft-title">A world of local food.</h2></div><Link className="fp-inline" href="/makers">All makers</Link></div>
+    <DiscoveryRail label="food crafts">{crafts.map(([label, kind, image]) =>
       <Link key={kind} href={`/makers?kind=${encodeURIComponent(kind)}`} className="fp-craft">
-        <div className="fp-image"><Image src={image} alt="" fill sizes="(max-width: 639px) 31vw, (max-width: 899px) 28vw, 16vw" /></div>
+        <div className="fp-image"><Image src={image} alt="" fill sizes="(max-width: 639px) 68vw, (max-width: 1023px) 32vw, 24vw" /></div>
         <span>{label}<ArrowUpRight size={16} aria-hidden="true"/></span>
-      </Link>)}</div>
+      </Link>)}</DiscoveryRail>
   </section>;
 }
 
 export function ReadingShelf({ exclude }: { exclude?: string }) {
   return <section className="fp-section editorial-wrap" aria-label="FreshPick field notes">
-    <div className="fp-section-head"><h2>Field notes</h2><Link href="/stories" className="fp-inline">The journal</Link></div>
+    <div className="fp-section-head"><div><p className="fp-kicker">Read slowly</p><h2>Field notes.</h2></div><Link href="/stories" className="fp-inline">The journal</Link></div>
     <div className="fp-reads">{fieldNotes.filter(note => note.slug !== exclude).map(note =>
       <Link key={note.slug} href={notePath(note)} className="fp-read">
         <div className="fp-image"><Image src={note.image} alt={note.alt} fill sizes="(max-width: 639px) 95vw, 33vw" /></div>

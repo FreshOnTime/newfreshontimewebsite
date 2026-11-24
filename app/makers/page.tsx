@@ -43,25 +43,28 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   ]);
   const pageLink = (next: number) => `/makers?${new URLSearchParams({ ...(town ? { town } : {}), ...(kind ? {kind} : {}), ...(q ? {q} : {}), page: String(next) })}`;
 
+  const craftLink = (value?: string) => `/makers?${new URLSearchParams({ ...(town ? {town} : {}), ...(q ? {q} : {}), ...(value ? {kind:value} : {}) })}`;
   const hasResults = [items, batches, makers, stories].some(rows => rows.length > 0);
   const filtered = Boolean(town || kind || q || page > 1);
   return <div className="fp-directory">
     <PageBand title="The maker directory." intro="Find a baker around the corner, a kitchen taking preorders or a grower near home."/>
-    <div className="editorial-wrap">
+    <div className="editorial-wrap lux-directory-controls">
+        <nav className="lux-craft-tabs" aria-label="Browse by craft">{[undefined,...makerKinds].map(value => <Link key={value || "all"} href={craftLink(value)} aria-current={kind === value ? "page" : undefined}>{value || "All crafts"}</Link>)}</nav>
         <form action="/makers" className="fp-filters">
           <label htmlFor="maker-town" className="flex-1 space-y-2 text-sm font-semibold">
             <span>Town</span>
             <input id="maker-town" name="town" defaultValue={town} maxLength={100} placeholder="e.g. Nawala" className="block min-h-11 w-full rounded-lg border border-border bg-background px-3 font-normal" />
           </label>
-          <label className="grid gap-2 text-sm font-semibold">Search<input className="min-h-11 rounded-lg border px-3" name="q" defaultValue={q} placeholder="Item or maker" /></label>
+          <label className="grid gap-2 text-sm font-semibold">Search<input className="min-h-11 rounded-lg border px-3" name="q" maxLength={100} defaultValue={q} placeholder="Item or maker" /></label>
           <label className="grid gap-2 text-sm font-semibold">Craft<select name="kind" defaultValue={kind || ''} className="min-h-11 rounded-lg border px-3"><option value="">All crafts</option>{makerKinds.map(value => <option key={value}>{value}</option>)}</select></label>
           <button className="min-h-11 rounded-lg bg-brand-green px-5 font-semibold text-white">Find makers</button>
         </form>
         {(town || q || kind) && <Link href="/makers" className="mt-3 inline-block text-sm underline">Clear filters</Link>}
     </div>
-    <div className="editorial-wrap space-y-9 py-7">
+    <div className="editorial-wrap lux-directory-results space-y-9 py-7">
+      {hasResults && <nav className="lux-result-jump" aria-label="Jump to results">{makers.length > 0 && <a href="#makers-results">Makers</a>}{items.length > 0 && <a href="#items-results">Food</a>}{batches.length > 0 && <a href="#batches-results">Preorders</a>}{stories.length > 0 && <a href="#stories-results">Stories</a>}</nav>}
       {hasResults && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
-      {makers.length > 0 && <section>
+      {makers.length > 0 && <section id="makers-results">
         <h2 className="editorial-title">Meet the makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="journal-index-entry">
@@ -72,11 +75,11 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         </div>
         <Link href="/join" className="mt-5 inline-block text-sm font-semibold text-brand-green underline">Join FreshPick as a maker</Link>
       </section>}
-      {items.length > 0 && <section>
+      {items.length > 0 && <section id="items-results">
         <h2 className="editorial-title">The item board</h2>
         <div className="mt-5 journal-item-grid">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
       </section>}
-      {batches.length > 0 && <section>
+      {batches.length > 0 && <section id="batches-results">
         <h2 className="editorial-title">Open for preorders</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {batches.slice(0, pageSize).map(batch => {
@@ -95,7 +98,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           })}
         </div>
       </section>}
-      {stories.length > 0 && <section>
+      {stories.length > 0 && <section id="stories-results">
         <h2 className="editorial-title">Stories from makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stories.slice(0, pageSize).map(story => <Link key={story.id} href={`/makers/${story.supplier?.makerHandle}/stories/${story.slug}`} className="journal-index-entry">
