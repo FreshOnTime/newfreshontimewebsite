@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { PageBand } from '@/components/makers/Edition';
+import Image from 'next/image';
+import { DirectoryDiscovery } from '@/components/makers/DirectoryDiscovery';
+import { Search, MapPin } from 'lucide-react';
 import { ArrowUpRight } from 'lucide-react';
 import { BatchDetails, MakerPhoto, MakerItemCard } from '@/components/makers/MakerCards';
 import { publicItemSelect } from '@/lib/makerQueries';
@@ -43,27 +45,33 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   ]);
   const pageLink = (next: number) => `/makers?${new URLSearchParams({ ...(town ? { town } : {}), ...(kind ? {kind} : {}), ...(q ? {q} : {}), page: String(next) })}`;
 
+  const craftLink = (value?: string) => `/makers?${new URLSearchParams({ ...(town ? {town} : {}), ...(q ? {q} : {}), ...(value ? {kind:value} : {}) })}`;
   const hasResults = [items, batches, makers, stories].some(rows => rows.length > 0);
   const filtered = Boolean(town || kind || q || page > 1);
-  return <div className="fp-directory">
-    <PageBand title="The maker directory." intro="Find a baker around the corner, a kitchen taking preorders or a grower near home."/>
-    <div className="editorial-wrap">
-        <form action="/makers" className="fp-filters">
-          <label htmlFor="maker-town" className="flex-1 space-y-2 text-sm font-semibold">
-            <span>Town</span>
-            <input id="maker-town" name="town" defaultValue={town} maxLength={100} placeholder="e.g. Nawala" className="block min-h-11 w-full rounded-lg border border-border bg-background px-3 font-normal" />
-          </label>
-          <label className="grid gap-2 text-sm font-semibold">Search<input className="min-h-11 rounded-lg border px-3" name="q" defaultValue={q} placeholder="Item or maker" /></label>
-          <label className="grid gap-2 text-sm font-semibold">Craft<select name="kind" defaultValue={kind || ''} className="min-h-11 rounded-lg border px-3"><option value="">All crafts</option>{makerKinds.map(value => <option key={value}>{value}</option>)}</select></label>
-          <button className="min-h-11 rounded-lg bg-brand-green px-5 font-semibold text-white">Find makers</button>
+  const launch = !hasResults && !filtered;
+  return <div className="fp-directory directory-experience">
+    <header className={`directory-masthead ${filtered ? "directory-masthead-compact" : ""}`}>
+      <div className="editorial-wrap directory-masthead-inner">
+        <div className="directory-masthead-copy"><p className="studio-overline">The FreshPick directory</p><h1>Find good food.<br/><span>Meet good people.</span></h1><p>Discover independent food makers, near you and across Sri Lanka.</p></div>
+        {!filtered && <div className="directory-masthead-photo"><Image src="/images/editorial/kitchen-basket.webp" alt="A woven basket of fresh ingredients" fill priority sizes="(max-width:767px) 90vw, 48vw"/></div>}
+      </div>
+    </header>
+    <div className="editorial-wrap lux-directory-controls directory-search-panel">
+        <nav className="lux-craft-tabs" aria-label="Browse by craft">{[undefined,...makerKinds].map(value => <Link key={value || "all"} href={craftLink(value)} aria-current={kind === value ? "page" : undefined}>{value || "All crafts"}</Link>)}</nav>
+        <form action="/makers" className="directory-search-form" role="search">
+          {kind && <input type="hidden" name="kind" value={kind}/>}
+          <label className="directory-search-field"><Search size={20} aria-hidden="true"/><span><span className="directory-field-label">What are you looking for?</span><input name="q" maxLength={100} defaultValue={q} placeholder="Food or maker name"/></span></label>
+          <label className="directory-search-field"><MapPin size={20} aria-hidden="true"/><span><span className="directory-field-label">Where?</span><input id="maker-town" name="town" maxLength={100} defaultValue={town} placeholder="Any town"/></span></label>
+          <button className="modern-primary" type="submit">Find makers <ArrowUpRight size={17} aria-hidden="true"/></button>
         </form>
         {(town || q || kind) && <Link href="/makers" className="mt-3 inline-block text-sm underline">Clear filters</Link>}
     </div>
-    <div className="editorial-wrap space-y-9 py-7">
+    <div className="editorial-wrap lux-directory-results directory-results space-y-9 py-7">
+      {hasResults && <nav className="lux-result-jump" aria-label="Jump to results">{makers.length > 0 && <a href="#makers-results">Makers</a>}{items.length > 0 && <a href="#items-results">Food</a>}{batches.length > 0 && <a href="#batches-results">Preorders</a>}{stories.length > 0 && <a href="#stories-results">Stories</a>}</nav>}
       {hasResults && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
-      {makers.length > 0 && <section>
+      {makers.length > 0 && <section id="makers-results">
         <h2 className="editorial-title">Meet the makers</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-studio-grid>
           {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="journal-index-entry">
             <h3 className="flex items-center justify-between gap-3 font-serif text-xl text-brand-green">{maker.name}<ArrowUpRight className="shrink-0" size={16} aria-hidden="true" /></h3>
             <p className="mt-1 text-sm text-muted-foreground">{maker.makerTown}</p>
@@ -72,11 +80,11 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         </div>
         <Link href="/join" className="mt-5 inline-block text-sm font-semibold text-brand-green underline">Join FreshPick as a maker</Link>
       </section>}
-      {items.length > 0 && <section>
+      {items.length > 0 && <section id="items-results">
         <h2 className="editorial-title">The item board</h2>
-        <div className="mt-5 journal-item-grid">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
+        <div className="mt-5 journal-item-grid" data-studio-grid>{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div>
       </section>}
-      {batches.length > 0 && <section>
+      {batches.length > 0 && <section id="batches-results">
         <h2 className="editorial-title">Open for preorders</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {batches.slice(0, pageSize).map(batch => {
@@ -95,7 +103,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           })}
         </div>
       </section>}
-      {stories.length > 0 && <section>
+      {stories.length > 0 && <section id="stories-results">
         <h2 className="editorial-title">Stories from makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stories.slice(0, pageSize).map(story => <Link key={story.id} href={`/makers/${story.supplier?.makerHandle}/stories/${story.slug}`} className="journal-index-entry">
@@ -105,15 +113,18 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           </Link>)}
         </div>
       </section>}
-      {!hasResults && <div className="fp-empty">
-        <div><h2>{filtered ? 'No matches this time.' : 'The directory is opening.'}</h2>
-        <p>{filtered ? 'Try a nearby town, a different craft, or browse all makers.' : 'Maker pages appear here as they publish. If you make food, introduce your kitchen to the directory.'}</p></div>
-        <Link className="maker-button" href={filtered ? '/makers' : '/join'}>{filtered ? 'See all makers' : 'Start a maker page'}</Link>
-      </div>}
-      <nav aria-label="Maker discovery pages" className="flex gap-5 text-sm font-semibold text-brand-green">
+      {!hasResults && <section className="directory-status" aria-live="polite">
+        <div><p className="studio-overline">{launch ? 'Coming to FreshPick' : 'Search results'}</p>
+          <h2>{filtered ? 'No matches this time.' : 'The directory is opening.'}</h2>
+          <p>{filtered ? 'Try a nearby town, a different craft, or browse all makers.' : 'Independent makers will appear here as their pages are approved and published. In the meantime, explore the food journal or introduce your own kitchen.'}</p>
+        </div>
+        {filtered ? <Link className="modern-primary" href="/makers">See all makers</Link> : <Link className="studio-outline-action" href="/stories">Explore the journal <ArrowUpRight size={17} aria-hidden="true"/></Link>}
+      </section>}
+      {(page > 1 || [items, batches, makers, stories].some(results => results.length > pageSize)) && <nav aria-label="Maker discovery pages" className="flex gap-5 text-sm font-semibold text-brand-green">
         {page > 1 && <Link href={pageLink(page - 1)}>Previous page</Link>}
         {[items, batches, makers, stories].some(results => results.length > pageSize) && <Link href={pageLink(page + 1)}>Next page</Link>}
-      </nav>
+      </nav>}
     </div>
+    {launch && <DirectoryDiscovery/>}
   </div>;
 }

@@ -8,8 +8,8 @@ export default function AuthFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const signingUp = pathname.includes('signup') || pathname === '/auth/register';
   return (
-    <div className="fp-auth account-form editorial-wrap grid items-start gap-8 py-8 md:py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 xl:gap-20">
-      <aside className="overflow-hidden rounded-[1.75rem] border border-brand-green/10 bg-secondary shadow-[0_20px_55px_-35px_rgba(16,46,30,.35)] lg:sticky lg:top-32">
+    <div className="fp-auth lux-auth account-form editorial-wrap grid items-start gap-8 py-8 md:py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 xl:gap-20">
+      <aside className="overflow-hidden bg-secondary lg:sticky lg:top-32">
         <div className="relative h-40 sm:h-52 lg:h-[440px] xl:h-[500px]">
           <Image
             src={signingUp ? '/images/editorial/hands-at-work.webp' : '/images/auth/market-still-life.webp'}

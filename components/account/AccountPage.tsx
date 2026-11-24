@@ -18,7 +18,7 @@ const accountLinks = [
 export function AccountPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <div className="fp-account bg-background pb-12 text-foreground">
+    <div className="fp-account lux-account bg-background pb-12 text-foreground">
       <header className="border-b border-brand-green/10 bg-brand-cream">
         <div className="mx-auto max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
           <div className="flex flex-wrap items-end justify-between gap-5 pb-7 md:pb-8">
@@ -29,10 +29,10 @@ export function AccountPage({ title, description, action, children }: { title: s
             </div>
             {action}
           </div>
-          <nav aria-label="Account navigation" className="flex flex-wrap gap-x-6 gap-y-1">
+          <nav aria-label="Account navigation" className="lux-account-nav flex gap-x-6 gap-y-1">
             {accountLinks.map(({ href, label }) => {
               const active = pathname === href || (href === '/orders' && pathname.startsWith('/orders/'));
-              return <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={`border-b-2 py-3 text-sm transition-colors ${active ? 'border-brand-green font-medium text-brand-green' : 'border-transparent text-muted-foreground hover:text-brand-green'}`}>{label}</Link>;
+              return <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={`shrink-0 border-b-2 py-3 text-sm transition-colors ${active ? 'border-brand-green font-medium text-brand-green' : 'border-transparent text-muted-foreground hover:text-brand-green'}`}>{label}</Link>;
             })}
           </nav>
         </div>

@@ -21,6 +21,6 @@ export default async function Stories({ searchParams }: { searchParams: Promise<
       {page > 1 && <Link href={`/stories?page=${page - 1}`}>Previous</Link>}
       {rows.length > 20 && <Link href={`/stories?page=${page + 1}`}>Next</Link>}
     </nav>}
-    <ReadingShelf/><div className="editorial-wrap pb-10"><Link className="fp-inline" href="/blog">Browse the editorial archive</Link></div>
+    <div className="lux-journal-band"><ReadingShelf/></div><div className="editorial-wrap pb-10"><Link className="fp-inline" href="/blog">Browse the editorial archive</Link></div>
   </>;
 }
