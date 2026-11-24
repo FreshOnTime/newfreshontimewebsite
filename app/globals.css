@@ -581,7 +581,8 @@ html{scroll-padding-top:7rem;}
 .modern-link:hover{text-decoration:underline;}
 .fp-modern-home .lux-hero{display:block;min-height:0;background:#f5f5f3;color:#1d1d1f;overflow:visible;padding-top:clamp(2rem,5vw,5rem);}
 .fp-modern-home .lux-hero::before{display:none;}
-.fp-modern-home .lux-hero-image{position:relative!important;width:100%!important;height:clamp(19rem,43vw,42rem)!important;object-fit:cover;object-position:center 58%;z-index:auto;display:block;order:2;}
+.fp-modern-home .modern-hero-media{position:relative;min-height:clamp(19rem,43vw,42rem);width:100%;order:2;overflow:hidden;}
+.fp-modern-home .lux-hero-image{object-fit:cover;object-position:center 58%;z-index:auto;}
 .fp-modern-home .lux-hero{display:flex;flex-direction:column;}
 .fp-modern-home .lux-hero-inner{display:block;min-height:0;padding-top:0;padding-bottom:clamp(1.75rem,4vw,3rem);order:1;}
 .fp-modern-home .lux-hero-copy{max-width:60rem;text-align:center;margin:auto;}
@@ -619,5 +620,12 @@ html{scroll-padding-top:7rem;}
 .freshpick-market>main .lux-invite>div:last-child{background:#e9eee9;}
 .freshpick-market>main .fp-invite h2,.freshpick-market>main .journal-method h2,.freshpick-market>main .fp-about h2,.freshpick-market>main .fp-process h2{font-weight:650;}
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.lux-crafts .fp-craft:hover{transform:translateY(-3px);box-shadow:0 12px 28px #1d1d1f12;}.modern-primary:hover{transform:translateY(-1px);}}
-@media(max-width:767px){.modern-feature{grid-template-columns:1fr;}.modern-feature-copy{border-radius:24px 24px 0 0;}.modern-feature-photo{border-radius:0 0 24px 24px;min-height:16rem;}.fp-modern-home .lux-hero-image{height:clamp(15rem,75vw,26rem)!important;}}
+@media(max-width:767px){.modern-feature{grid-template-columns:1fr;}.modern-feature-copy{border-radius:24px 24px 0 0;}.modern-feature-photo{border-radius:0 0 24px 24px;min-height:16rem;}.fp-modern-home .modern-hero-media{min-height:clamp(15rem,75vw,26rem);}}
 @media(prefers-reduced-motion:reduce){.lux-crafts .fp-craft,.modern-primary{transition:none;transform:none!important;}}
+
+.freshpick-market>main{background:#fff;--background:0 0% 100%;--card:0 0% 100%;--foreground:240 3% 12%;}
+.freshpick-market>main .lux-journal-band .fp-section-head h2{color:inherit;}
+.freshpick-market>main .lux-account>header,.freshpick-market>main .fp-studio-counts>div{background:#f4f5f2;}
+.freshpick-market>main .lux-account :is(form,aside section,.editorial-card){border-radius:20px;}
+.freshpick-market>main .fp-join{background:#f4f5f2;}
+.freshpick-market>main .lux-order-panel .maker-button{width:100%;}
