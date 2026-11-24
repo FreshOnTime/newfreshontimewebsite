@@ -14,3 +14,6 @@ The PR visual-review workflow builds the current branch against a dedicated ephe
 
 ## Premium refinement
 References: [Natoora identity](https://www.justified.studio/work/natoora) (editorial asymmetry), [Flamingo Estate](https://flamingoestate.com/) (photography and sensory storytelling), [Diaspora Co.](https://www.diasporaco.com/pages/about) (South Asian maker provenance). Original implementation: restored functional homepage search, actual open-batch board, maker provenance on item cards, photographic captions, asymmetric reading shelf, three-step guide, breadcrumbs and reading time; restrained hover movement and reduced-motion support. No third-party creative assets copied. All marketplace data is live or conditional; no invented listings.
+
+## CI follow-up
+Run 461 passed lint (zero errors) but exposed a homepage search regression (516/517 tests passed). Restored the GET form with a named q input, retained the existing test, and added browser verification of the search submission and empty state. The earlier screenshot run installed Chromium but failed to start Next.js (missing `.next/server/preview-props.json` after npm install). Browser dependencies now install before the production build; startup is checked on IPv4 with fail-fast diagnostics. No production credentials used. Latest CI and screenshots remain pending.

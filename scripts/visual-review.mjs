@@ -37,6 +37,10 @@ async function main(){
               await page.locator('.heritage-header').screenshot({path:out+'/current-header-'+width+'.png'});
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
               if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
+              await page.locator('#home-discover').fill('visual-no-match-000');
+              await page.locator('.journal-discover button').click();
+              await page.waitForURL('**/makers?q=visual-no-match-000');
+              await page.getByRole('heading',{name:'No matches this time.'}).waitFor();
             }
           }catch(error){errors.push(String(error));}
         }
