@@ -761,3 +761,20 @@ html{scroll-padding-top:7rem;}
  .directory-launch-image{border-radius:0 0 var(--studio-radius) var(--studio-radius);min-height:17rem;}
 }
 @media(prefers-reduced-motion:reduce){.directory-discovery-photo img{transition:none;}}
+
+/* Resolve mixed display type and visual rhythm across all public content. */
+.freshpick-market>main.studio-content :is(.maker-headline,.fp-join-tools h3,.fp-story-list h3,.fp-saved-list h2,.fp-people-grid h3,.fp-help summary,.fp-batch h3,.fp-invite h2,.fp-article-body h2,.journal-method h2,.journal-method h3,.fp-empty h2,.fp-about h2,.fp-process h2){font-family:Arial,Helvetica,sans-serif;font-weight:650;letter-spacing:-.045em;}
+.freshpick-market>main.studio-content .fp-join{margin-inline:var(--studio-gutter);border-radius:var(--studio-radius);overflow:hidden;max-width:1440px;margin-top:clamp(1rem,3vw,3rem);}
+.freshpick-market>main.studio-content .fp-join h1 em{font-style:normal;color:#536a57;}
+.join-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;}
+.join-feature-grid>div{background:var(--studio-soft);border-radius:var(--studio-radius);padding:clamp(1.4rem,3vw,3rem);min-width:0;}
+.join-feature-grid svg{color:var(--studio-green);margin-bottom:1.5rem;}
+.join-feature-grid h3{font:650 clamp(1.5rem,2.5vw,2.5rem)/1.08 Arial,Helvetica,sans-serif;letter-spacing:-.045em;margin-bottom:.8rem;}
+.join-feature-grid p{font-size:.95rem;line-height:1.6;color:var(--studio-muted);}
+.join-next{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding-block:1.2rem var(--studio-section);}
+.join-next h2{font:650 clamp(2rem,4vw,4rem)/1.05 Arial,Helvetica,sans-serif;letter-spacing:-.05em;margin-top:.65rem;max-width:18ch;}
+.join-next .modern-primary{flex-shrink:0;}
+.studio-content .studio-experience{padding-block:clamp(3rem,5vw,5.5rem);}
+.studio-content .studio-story-panel{min-height:clamp(21rem,32vw,32rem);}
+.studio-content .studio-story-image{min-height:18rem;}
+@media(max-width:767px){.join-feature-grid{grid-template-columns:1fr;}.join-next{align-items:flex-start;flex-direction:column;}.studio-content .studio-story-image{min-height:clamp(15rem,65vw,25rem);}}
