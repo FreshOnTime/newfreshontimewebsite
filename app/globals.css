@@ -525,3 +525,47 @@ html{scroll-padding-top:7rem;}
 }
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.freshpick-market>main .maker-button:hover{transform:translateY(-2px);}.lux-rail-controls button{transition:background .2s ease,color .2s ease;}.lux-crafts .fp-craft:hover img{transform:scale(1.045);}}
 @media(prefers-reduced-motion:reduce){.freshpick-market>main .maker-button{transition:none;transform:none!important;}.lux-rail-track{scroll-behavior:auto;}}
+
+/* Storefronts, detail pages and everyday account tools. */
+.freshpick-market>main .lux-storefront{background:#e8e9df;border:0;padding:clamp(1.5rem,4vw,4rem);display:grid;gap:clamp(1.5rem,4vw,4rem);align-items:center;}
+.lux-storefront-photo{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);}
+.lux-storefront-copy{min-width:0;overflow-wrap:anywhere;}
+.freshpick-market>main .lux-storefront h1{font-size:clamp(3rem,6.4vw,6.6rem);line-height:.99;}
+.lux-storefront-feature{display:block;min-width:0;}
+.lux-storefront-feature img{aspect-ratio:4/3;object-fit:cover;border-radius:0;}
+.lux-storefront-feature>span{display:flex;justify-content:space-between;gap:.5rem;padding:.85rem 0;font-size:.85rem;border-bottom:1px solid #a8ae9e;overflow-wrap:anywhere;}
+.freshpick-market>main .lux-order-panel{background:#e9ebdf;padding:clamp(1.2rem,2.5vw,2rem);border:0;}
+.lux-order-panel .maker-button{width:100%;}
+.freshpick-market>main .journal-price{font:400 2.3rem/1.1 var(--lux-serif);}
+.lux-detail{border-bottom:1px solid var(--lux-line);padding:1.25rem 0;}
+.lux-detail summary,.fp-help summary{cursor:pointer;font-size:1.05rem;font-weight:600;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:1rem;list-style:none;}
+.lux-detail summary::-webkit-details-marker,.fp-help summary::-webkit-details-marker{display:none;}
+.lux-detail summary::after,.fp-help summary::after{content:"+";font-size:1.4rem;font-weight:400;flex:none;}
+.lux-detail[open] summary::after,.fp-help details[open] summary::after{content:"−";}
+.lux-detail>p{padding-top:.8rem;}
+.freshpick-market>main .fp-article-head h1,.freshpick-market>main .journal-story-header h1{font:400 clamp(3rem,6.2vw,6.5rem)/1 var(--lux-serif);letter-spacing:-.055em;}
+.freshpick-market>main .fp-article-body{max-width:48rem;}
+.lux-reading-body>section:first-child>p::first-letter{font-size:3.1em;float:left;line-height:.9;margin:.06em .12em 0 0;color:#244b35;}
+.freshpick-market>main .journal-maker-article{border-top:0;}
+.journal-story-header{padding-bottom:1.5rem;border-bottom:1px solid var(--lux-line);}
+.freshpick-market>main .fp-about h2,.freshpick-market>main .fp-process h2,.freshpick-market>main .fp-invite h2,.freshpick-market>main .journal-method h2{font-family:var(--lux-serif);font-weight:400;letter-spacing:-.04em;}
+.freshpick-market>main .fp-process>section{padding:clamp(1.2rem,3vw,3rem);background:#e9ebdf;}
+.freshpick-market>main .fp-process>section:last-child{background:#eee4d3;}
+.freshpick-market>main .fp-help details{padding:1.2rem 0;}
+.freshpick-market>main .fp-saved-list{gap:1rem 3rem;}
+.freshpick-market>main .fp-empty{border-left:0;background:#e9ebdf;}
+.freshpick-market>main .lux-auth{align-items:start;gap:clamp(1.5rem,5vw,5rem);}
+.freshpick-market>main .lux-auth h1{font:400 clamp(2.7rem,4vw,4.2rem)/1.08 var(--lux-serif);letter-spacing:-.04em;}
+.freshpick-market>main .lux-auth :is(input,textarea,select):not([type=checkbox]):not([type=radio]){border-radius:0;background:#fffefa;}
+.freshpick-market>main .lux-auth button[type=submit]{border-radius:0;min-height:48px;background:#102e1e;color:#fff;}
+.freshpick-market>main .lux-account>header{background:#e9ebdf;border-top:0;}
+.lux-account-nav{overflow-x:auto;scrollbar-width:thin;white-space:nowrap;}
+.freshpick-market>main .lux-account :is(form,aside section,.editorial-card){border-radius:0;box-shadow:none;}
+.freshpick-market>main .fp-studio{max-width:90rem;}
+.freshpick-market>main .fp-studio-counts>div{padding:clamp(.8rem,2vw,1.5rem);background:#e9ebdf;}
+.freshpick-market>main .fp-studio-counts strong{font:400 clamp(1.8rem,3vw,2.8rem)/1 var(--lux-serif);}
+.freshpick-market>main .fp-studio>section{border:1px solid var(--lux-line);}
+.freshpick-market>main .fp-join{background:#e8ddc4;}
+.freshpick-market>main .fp-join h1{font:400 clamp(3.2rem,6vw,6.5rem)/.98 var(--lux-serif);letter-spacing:-.055em;}
+@media(min-width:1024px){.lux-item-visual{position:sticky;top:7rem;}.journal-story-aside{position:sticky;top:7rem;}}
+@media(max-width:767px){.lux-storefront-photo{grid-template-columns:1fr;}.lux-item-visual{position:static;}.journal-story-aside{position:static;}}

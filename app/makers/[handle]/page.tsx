@@ -1,7 +1,7 @@
 import { SavePick } from '@/components/makers/SavedPicks';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MakerItemCard } from '@/components/makers/MakerCards';
+import { MakerItemCard, MakerPhoto } from '@/components/makers/MakerCards';
 import { findPublicMaker, publicItemSelect } from '@/lib/makerQueries';
 import prisma from '@/lib/prisma';
 import { makerWhatsAppLink } from '@/lib/makers';
@@ -35,22 +35,25 @@ export default async function MakerPage({ params }: Props) {
   ]);
 
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, maker.name);
+  const leadItem = items.find(item => item.image);
   return <div className="fp-maker-profile editorial-wrap space-y-10 py-10 md:py-16">
-    <header className="journal-storefront">
+    <header className={`journal-storefront lux-storefront ${leadItem ? "lux-storefront-photo" : ""}`}><div className="lux-storefront-copy">
       <Link href="/makers" className="text-sm font-semibold text-brand-green underline">Explore makers</Link>
-      <h1 className="mt-3 font-serif text-4xl text-brand-green md:text-6xl">{maker.name}</h1>
+      <p className="fp-kicker mt-6">Independent food maker</p><h1 className="mt-3 font-serif text-4xl text-brand-green md:text-6xl">{maker.name}</h1>
       <div className="flex flex-wrap items-center gap-3 mt-4">{enquiry && <a className="maker-button" href={enquiry} target="_blank" rel="noopener noreferrer">Contact on WhatsApp</a>}<SavePick href={`/makers/${handle}`} title={maker.name} kind="Maker" /></div>
         <p className="mt-3 text-sm font-medium">{[maker.makerTown, maker.makerFulfilment].filter(Boolean).join(' · ')}</p>
       {maker.makerBio && <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words leading-7 text-muted-foreground">{maker.makerBio}</p>}
+      </div>{leadItem && <Link href={`/makers/${handle}/items/${leadItem.slug}`} className="lux-storefront-feature"><MakerPhoto image={leadItem.image} name={leadItem.name}/><span>From this maker · {leadItem.name} <span aria-hidden="true">↗</span></span></Link>}
     </header>
-    <section>
+    <nav className="lux-result-jump" aria-label="Maker page sections"><a href="#maker-items">Food & items</a>{stories.length > 0 && <a href="#maker-stories">Stories</a>}</nav>
+    <section id="maker-items">
       <div className="fp-section-head"><h2 className="editorial-title">From this kitchen</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
       {items.length === 0 && <p className="mt-3 text-muted-foreground">This maker hasn’t published any items yet.</p>}
       <div className="mt-4 journal-item-grid">
         {items.map(item => <MakerItemCard key={item.id} handle={handle} item={item} />)}
       </div>
     </section>
-    {stories.length > 0 && <section>
+    {stories.length > 0 && <section id="maker-stories">
       <div className="fp-section-head"><h2 className="editorial-title">The maker’s journal</h2></div>
       <div className="mt-4 divide-y divide-border border-y border-border">
         {stories.map(story => <Link key={story.id} href={`/makers/${handle}/stories/${story.slug}`} className="block px-2 py-4 hover:bg-brand-cream">
