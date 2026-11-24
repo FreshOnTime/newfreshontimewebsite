@@ -45,19 +45,22 @@ export default async function MakerStoryPage({ params }: Props) {
   const result = await findStory(handle, slug);
   if (!result) notFound();
   const { maker, story } = result;
-  return <main className="fp-maker-story editorial-wrap py-10 md:py-16">
-    <article className="mx-auto max-w-3xl">
+  return <div className="fp-maker-story editorial-wrap py-10 md:py-16">
+    <article className="journal-maker-article">
+      <header className="journal-story-header">
       <Link href={`/makers/${handle}`} className="text-sm font-semibold text-brand-green underline">{maker.name} · {maker.makerTown}</Link>
       <h1 className="mt-4 break-words font-serif text-4xl text-brand-green md:text-6xl">{story.title}</h1>
       <SavePick href={`/makers/${handle}/stories/${slug}`} title={story.title} kind="Story" />
         <p className="mt-4 break-words text-lg leading-8 text-muted-foreground">{story.excerpt}</p>
-      <div className="prose mt-8 max-w-none break-words">
+      </header>
+      <div className={story.makerItems.length ? "journal-story-columns" : "journal-story-columns journal-story-solo"}>
+      <div className="prose max-w-none break-words">
         <ReactMarkdown skipHtml disallowedElements={['img']} remarkPlugins={[remarkGfm]}
           components={{ a: ({ href, children }) => <a href={href} rel="ugc nofollow">{children}</a> }}>{story.content}</ReactMarkdown>
       </div>
-      {story.makerItems.length > 0 && <section className="mt-10 border-t border-border pt-6">
+      {story.makerItems.length > 0 && <aside className="journal-story-aside">
         <h2 className="editorial-title">Items in this story</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-5">
           {story.makerItems.map(({ item }) => {
             const batch = item.batches[0];
             const enquiry = item.madeToOrder && makerWhatsAppLink(maker.makerWhatsApp, item.name);
@@ -68,7 +71,8 @@ export default async function MakerStoryPage({ params }: Props) {
             </div>;
           })}
         </div>
-      </section>}
+      </aside>}
+      </div>
     </article>
-  </main>;
+  </div>;
 }

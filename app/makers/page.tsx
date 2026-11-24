@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PageBand, ReadingShelf } from '@/components/makers/Edition';
+import { PageBand } from '@/components/makers/Edition';
 import { ArrowUpRight } from 'lucide-react';
 import { BatchDetails, MakerPhoto, MakerItemCard } from '@/components/makers/MakerCards';
 import { publicItemSelect } from '@/lib/makerQueries';
@@ -46,7 +46,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   const hasResults = [items, batches, makers, stories].some(rows => rows.length > 0);
   const filtered = Boolean(town || kind || q || page > 1);
   return <div className="fp-directory">
-    <PageBand title="The maker directory." intro="Find a baker around the corner, a kitchen taking preorders or a grower near home." image="/images/editorial/market-crates.webp" alt="Fresh produce arranged in market crates"/>
+    <PageBand title="The maker directory." intro="Find a baker around the corner, a kitchen taking preorders or a grower near home."/>
     <div className="editorial-wrap">
         <form action="/makers" className="fp-filters">
           <label htmlFor="maker-town" className="flex-1 space-y-2 text-sm font-semibold">
@@ -59,10 +59,21 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         </form>
         {(town || q || kind) && <Link href="/makers" className="mt-3 inline-block text-sm underline">Clear filters</Link>}
     </div>
-    <div className="editorial-wrap space-y-12 py-10">
+    <div className="editorial-wrap space-y-9 py-7">
+      {makers.length > 0 && <section>
+        <h2 className="editorial-title">Meet the makers</h2>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="journal-index-entry">
+            <h3 className="flex items-center justify-between gap-3 font-serif text-xl text-brand-green">{maker.name}<ArrowUpRight className="shrink-0" size={16} aria-hidden="true" /></h3>
+            <p className="mt-1 text-sm text-muted-foreground">{maker.makerTown}</p>
+            {maker.makerBio && <p className="mt-2 line-clamp-2 break-words text-sm">{maker.makerBio}</p>}
+          </Link>)}
+        </div>
+        <Link href="/join" className="mt-5 inline-block text-sm font-semibold text-brand-green underline">Join FreshPick as a maker</Link>
+      </section>}
       {items.length > 0 && <section>
         <h2 className="editorial-title">The item board</h2>
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle}/>)}</div>
+        <div className="mt-5 journal-item-grid">{items.slice(0,pageSize).map(item => <MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle}/>)}</div>
       </section>}
       {batches.length > 0 && <section>
         <h2 className="editorial-title">Open for preorders</h2>
@@ -70,7 +81,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           {batches.slice(0, pageSize).map(batch => {
             const { item } = batch;
             const shop = item.supplier;
-            return <article key={batch.id} className="rounded-2xl border border-border p-3">
+            return <article key={batch.id} className="journal-batch">
               <Link href={makerItemPath(shop.makerHandle, item.slug)}>
                 <MakerPhoto image={item.image} name={item.name} />
                 <h3 className="px-3 pt-3 font-serif text-2xl text-brand-green">{item.name}</h3>
@@ -82,17 +93,6 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
             </article>;
           })}
         </div>
-      </section>}
-      {makers.length > 0 && <section>
-        <h2 className="editorial-title">Meet the makers</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {makers.slice(0, pageSize).map(maker => <Link key={maker.id} href={`/makers/${maker.makerHandle}`} className="rounded-xl border border-border p-5 hover:bg-brand-cream">
-            <h3 className="flex items-center justify-between gap-3 font-serif text-xl text-brand-green">{maker.name}<ArrowUpRight className="shrink-0" size={16} aria-hidden="true" /></h3>
-            <p className="mt-1 text-sm text-muted-foreground">{maker.makerTown}</p>
-            {maker.makerBio && <p className="mt-2 line-clamp-2 break-words text-sm">{maker.makerBio}</p>}
-          </Link>)}
-        </div>
-        <Link href="/join" className="mt-5 inline-block text-sm font-semibold text-brand-green underline">Join FreshPick as a maker</Link>
       </section>}
       {stories.length > 0 && <section>
         <h2 className="editorial-title">Stories from makers</h2>
@@ -114,6 +114,5 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         {[items, batches, makers, stories].some(results => results.length > pageSize) && <Link href={pageLink(page + 1)}>Next page</Link>}
       </nav>
     </div>
-    {!hasResults && <div className="fp-paper"><ReadingShelf/></div>}
   </div>;
 }
