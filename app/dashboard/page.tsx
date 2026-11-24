@@ -8,12 +8,14 @@ import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ProfileCard } from '@/components/dashboard/ProfileCard';
 import SupplierDashboard from '@/components/supplier/SupplierDashboard';
+import MakerStudio from '@/components/makers/MakerStudio';
 import CustomerDashboard from '@/components/customer/CustomerDashboard';
 import UploadProducts from '@/components/supplier/UploadProducts';
 import MessageList from '@/components/supplier/MessageList';
 
 const SECTION_LABELS: Record<string, string> = {
   overview: 'Overview',
+  maker: 'Maker studio',
   products: 'Products',
   messages: 'Messages',
   profile: 'Profile',
@@ -57,6 +59,7 @@ export default function DashboardPage() {
   const renderSection = () => {
     if (isSupplier) {
       switch (section) {
+        case 'maker': return <MakerStudio />;
         case 'products': return <UploadProducts />;
         case 'messages': return <MessageList />;
         case 'profile': return <ProfileCard />;

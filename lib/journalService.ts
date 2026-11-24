@@ -9,7 +9,7 @@ export const journalCategoryWhere: Prisma.BlogWhereInput = {
   AND: [{ OR: [{ category: null }, { category: { notIn: COMMERCE_BLOG_CATEGORIES } }] }],
 };
 export const publishedJournalWhere: Prisma.BlogWhereInput = {
-  ...journalCategoryWhere, isDeleted: false, published: true,
+  ...journalCategoryWhere, supplierId: null, isDeleted: false, published: true,
 };
 
 export const listPublishedJournalEntries = unstable_cache(async (): Promise<JournalSummary[]> => {

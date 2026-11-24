@@ -66,7 +66,7 @@ it('lists imported products back to the owning approved supplier', async () => {
   }]);
   db.product.count.mockResolvedValue(1);
 
-  const response = await listSupplierProducts(req('http://localhost/api/suppliers/products?limit=100'));
+  const response = await listSupplierProducts(req('http://localhost/api/suppliers/products?limit=100'), {});
   expect(response.status).toBe(200);
   expect(await response.json()).toMatchObject({
     products: [{ id: 'p1', sku: 'FP-1', name: 'Tomatoes', price: 350, stockQty: 12 }],
@@ -100,7 +100,7 @@ it('imports the actual template fields into a supplier product', async () => {
     'POST',
     { uploadId: 'upload-1' },
     { userId: 'admin-1', role: 'admin' },
-  ));
+  ), {});
   expect(response.status).toBe(200);
   const data = await response.json();
   expect(data.results.created).toEqual([{ sku: 'FP-BANANA-001', id: 'product-1' }]);
@@ -141,7 +141,7 @@ it('updates the same supplier SKU on a re-import instead of duplicating it', asy
     'POST',
     { uploadId: 'upload-1' },
     { userId: 'admin-1', role: 'admin' },
-  ));
+  ), {});
   const data = await response.json();
   expect(data.results.updated).toEqual([{ sku: 'FP-1', id: 'product-1' }]);
   expect(db.product.create).not.toHaveBeenCalled();
@@ -215,7 +215,7 @@ it('keeps inline spreadsheet blobs out of admin upload list responses', async ()
     'GET',
     undefined,
     { userId: 'admin-1', role: 'admin' },
-  ));
+  ), {});
   expect(response.status).toBe(200);
   const data = await response.json();
   expect(data.data[0]).not.toHaveProperty('fileData');
@@ -239,7 +239,7 @@ it('rejects a supplier import row with no required price instead of creating a f
     'POST',
     { uploadId: 'upload-1' },
     { userId: 'admin-1', role: 'admin' },
-  ));
+  ), {});
   expect(response.status).toBe(200);
   const data = await response.json();
   expect(data.results.errors).toEqual([{ row: 2, reason: 'Missing price' }]);
@@ -267,7 +267,7 @@ it('notifies linked supplier accounts after a successful catalogue import', asyn
     'POST',
     { uploadId: 'upload-1' },
     { userId: 'admin-1', role: 'admin' },
-  ));
+  ), {});
   expect(response.status).toBe(200);
   expect(db.notification.createMany).toHaveBeenCalledWith({
     data: [expect.objectContaining({
