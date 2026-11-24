@@ -82,6 +82,35 @@ async function main(){
         }else errors.push('Maker Studio requires a non-sensitive test login.');
       }finally{await context.close();}
     }
+    // Exercise the true pre-launch state in the explicitly isolated fixture database only.
+    if (process.env.FRESHPICK_VISUAL_FIXTURES === '1') {
+      const database = new URL(process.env.DATABASE_URL || 'postgresql://invalid');
+      assert.equal(database.hostname, 'localhost');
+      assert.equal(database.pathname, '/freshpick_visual');
+      const { PrismaClient } = await import('@prisma/client');
+      const db = new PrismaClient();
+      try {
+        const fixture = await db.supplier.findUnique({where:{makerHandle:'visual-review-bakery'},select:{id:true,makerPublished:true}});
+        assert(fixture, 'Expected isolated fixture');
+        await db.supplier.update({where:{id:fixture.id},data:{makerPublished:false}});
+        try {
+          for (const width of [390,1440]) {
+            const context=await browser.newContext({viewport:{width,height:width===390?844:900},reducedMotion:'reduce'});
+            try {
+              const page=await context.newPage();
+              await ready(page,new URL('/makers',base).href);
+              await page.getByRole('heading',{name:'The directory is opening.'}).waitFor();
+              await page.getByRole('heading',{name:'Find your kind of food.'}).waitFor();
+              assert.equal(await page.locator('#makers-results').count(),0);
+              await capture(page,'directory-launch-'+width);
+            } finally { await context.close(); }
+          }
+        } finally {
+          await db.supplier.update({where:{id:fixture.id},data:{makerPublished:fixture.makerPublished}});
+        }
+      } catch(error) { errors.push(String(error)); }
+      finally { await db.$disconnect(); }
+    }
     const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
     try{
       const page=await reduced.newPage();
