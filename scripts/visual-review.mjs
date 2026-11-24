@@ -36,7 +36,7 @@ async function main(){
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(name==='homepage'){
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
-              await page.locator('.studio-story-panel').first().scrollIntoViewIfNeeded();
+              await page.locator('[data-studio-feature]').first().scrollIntoViewIfNeeded();
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
               await capture(page,'motion-homepage-'+width);

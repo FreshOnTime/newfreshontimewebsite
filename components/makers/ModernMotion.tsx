@@ -21,18 +21,22 @@ export function ModernMotion() {
       if (disposed || preference.matches || cancel || !root) return;
       gsap.registerPlugin(ScrollTrigger);
       const context = gsap.context(() => {
-        const hero = root.querySelector('.studio-hero, .directory-masthead, .fp-join');
+        const hero = root.querySelector('[data-studio-hero], .studio-hero, .directory-masthead, .fp-join');
         if (hero && hero.getBoundingClientRect().top < innerHeight) {
           const copy = hero.querySelectorAll('[data-studio-intro], .directory-masthead-copy > *, .maker-hero-copy > h1, .maker-hero-copy > p');
-          const media = hero.querySelector('.studio-hero-media, .directory-masthead-photo, .maker-hero-photo');
+          const media = hero.querySelector('[data-studio-hero-media], .studio-hero-media, .directory-masthead-photo, .maker-hero-photo');
           const timeline = gsap.timeline({ defaults: { ease: 'power3.out', clearProps: 'opacity,transform' } });
           timeline.from(copy, { opacity: .75, y: 20, duration: .85, stagger: .10 });
-          if (media) timeline.from(media, { opacity: .85, y: 16, duration: 1.1 }, .18);
+          if (media) {
+            timeline.from(media, { opacity: .85, y: 16, duration: 1.1 }, .18);
+            const image = media.querySelector('img');
+            if (image && hero.hasAttribute('data-studio-hero')) timeline.from(image, { scale: 1.07, duration: 1.65, ease: 'power2.out', clearProps: 'transform' }, .12);
+          }
         }
         const chapters = root.querySelectorAll<HTMLElement>('[data-studio-chapter], .fp-band, .journal-storefront, .journal-story-header, .fp-article-head, .fp-item-page .journal-item-info');
         chapters.forEach(chapter => {
           if (chapter.getBoundingClientRect().top < innerHeight * .72) return;
-          const copy = chapter.querySelectorAll('h1,h2,.studio-chapter-copy > p');
+          const copy = chapter.querySelectorAll('h1,h2,h3,.studio-chapter-copy > p');
           if (!copy.length) return;
           gsap.from(copy, { immediateRender: false, opacity: .8, y: 22, stagger: .10, duration: .9, ease: 'power3.out', clearProps: 'opacity,transform', scrollTrigger: { trigger: chapter, start: 'top 88%', once: true } });
         });
