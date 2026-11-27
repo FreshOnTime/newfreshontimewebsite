@@ -9,10 +9,10 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } 
 import { cn } from '@/lib/utils';
 
 const groups = [
- {name:'Discovery',items:[{name:'Control centre',href:'/admin',icon:LayoutDashboard},{name:'Business applications',href:'/admin/supplier-applications',icon:Building2},{name:'Business directory',href:'/admin/suppliers',icon:Store},{name:'Discovery review',href:'/admin/discovery-prospects',icon:MapPin},{name:'Live vendors',href:'/admin/live-vendors',icon:Radio}]},
+ {name:'Discovery',items:[{name:'Control centre',href:'/admin',icon:LayoutDashboard},{name:'Business applications',href:'/admin/supplier-applications',icon:Building2},{name:'Business directory',href:'/admin/suppliers',icon:Store},{name:'External listing review',href:'/admin/discovery-prospects',icon:MapPin},{name:'Live vendors',href:'/admin/live-vendors',icon:Radio}]},
  {name:'Publishing',items:[{name:'Journal articles',href:'/admin/blogs',icon:BookOpen},{name:'Website pages',href:'/admin/site-pages',icon:Layers},{name:'Food & Culture CMS',href:'/admin/discovery-content',icon:BookOpen}]},
  {name:'Community & support',items:[{name:'Enquiry inbox',href:'/admin/enquiries',icon:MessageSquare},{name:'Business enquiries',href:'/admin/business-leads',icon:Handshake},{name:'Members & access',href:'/admin/users',icon:Users}]},
- {name:'Legacy operations',items:[{name:'Orders',href:'/admin/orders',icon:ShoppingCart},{name:'Products',href:'/admin/products',icon:Package},{name:'Categories',href:'/admin/categories',icon:Tags},{name:'Customers',href:'/admin/customers',icon:Users},{name:'Subscriptions',href:'/admin/subscriptions',icon:Layers},{name:'Collections',href:'/admin/collections',icon:Layers},{name:'Newsletter archive',href:'/admin/newsletter',icon:Mail},{name:'Store reports',href:'/admin/analytics',icon:BarChart3}]}
+ {name:'Legacy records',items:[{name:'Orders',href:'/admin/orders',icon:ShoppingCart},{name:'Products',href:'/admin/products',icon:Package},{name:'Categories',href:'/admin/categories',icon:Tags},{name:'Customers',href:'/admin/customers',icon:Users},{name:'Subscriptions',href:'/admin/subscriptions',icon:Layers},{name:'Collections',href:'/admin/collections',icon:Layers},{name:'Newsletter archive',href:'/admin/newsletter',icon:Mail},{name:'Store reports',href:'/admin/analytics',icon:BarChart3}]}
 ];
 
 export function AdminSidebar() {
@@ -48,13 +48,14 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
   return <>
     <Link href="/admin" onClick={onNavigate} className="flex h-20 shrink-0 items-center text-xl font-bold tracking-tight text-brand-green"><Wordmark /></Link>
     <nav aria-label="Admin navigation" className="space-y-7 pb-8">
-      {groups.map(group => <div key={group.name}>
+      {groups.filter(group=>group.name!=='Legacy records').map(group => <div key={group.name}>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{group.name}</p>
         <ul className="-mx-2 space-y-1">{group.items.map(item => {
           const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/subscriptions' && pathname === '/admin/subscription-deliveries') || (item.href === '/admin/suppliers' && ['/admin/supplier-uploads'].includes(pathname));
-          return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors', active ? 'bg-brand-green-deep text-white' : 'text-foreground hover:bg-brand-green/10 hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
+          return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors', active ? 'bg-[#d9edc7] text-[#21452f]' : 'text-foreground hover:bg-brand-green/10 hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
         })}</ul>
       </div>)}
+      <details className="border-t border-border pt-3"><summary className="cursor-pointer py-2 text-xs font-semibold text-muted-foreground">Legacy records &amp; tools</summary><ul className="space-y-1">{groups.filter(g=>g.name==='Legacy records').flatMap(g=>g.items).map(item=><li key={item.href}><Link href={item.href} onClick={onNavigate} className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm hover:bg-secondary"><item.icon size={16}/>{item.name}</Link></li>)}<li><Link href="/admin/supplier-uploads" onClick={onNavigate} className="flex min-h-11 items-center px-3 text-sm hover:bg-secondary">Historical uploads</Link></li></ul></details>
       <Link href="/" onClick={onNavigate} className="flex min-h-11 items-center justify-between border-t border-border pt-4 text-xs font-semibold uppercase text-brand-green">View FreshPick <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
     </nav>
   </>;

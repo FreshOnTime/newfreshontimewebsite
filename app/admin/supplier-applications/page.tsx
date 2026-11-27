@@ -25,11 +25,13 @@ interface Application {
   applicationStatus: string;
   reviewNotes: string;
   reviewVersion: number;
+  status?:string; makerPublished?:boolean; linkedAccounts?:number; verifiedAccounts?:number; reviewedAt?:string|null;
 }
 
 function ReviewCard({ application, saved }: { application: Application; saved: () => void }) {
   const [notes, setNotes] = useState(application.reviewNotes);
   const [status, setStatus] = useState(application.applicationStatus);
+  const [confirmed,setConfirmed]=useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,7 +42,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
     try {
       const response = await apiFetch('/api/admin/supplier-applications', {
         method: 'PATCH',
-        body: JSON.stringify({ id: application.id, version: application.reviewVersion, status, notes }),
+        body: JSON.stringify({ id: application.id, version: application.reviewVersion, status, notes, confirmed }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save review');
@@ -58,13 +60,13 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
         <div>
           <h2 className="text-xl font-semibold">{application.name}</h2><p className="text-xs font-semibold text-brand-green">{businessTypeLabel(application.businessType)}</p>
           {!!application.businessSpecialties?.length && <p className="mt-1 text-sm text-muted-foreground">{application.businessSpecialties.map(specialtyLabel).join(' · ')}</p>}
-          <p className="mt-1 break-words text-sm text-muted-foreground">
+          <div className="mt-3 flex flex-wrap gap-2 text-xs"><Badge variant="outline">{application.applicationStatus==="pending"?"Awaiting review":application.applicationStatus}</Badge><Badge variant="outline">{application.makerPublished&&application.status==="active"&&application.applicationStatus==="approved"?"Page published":"Page private"}</Badge><Badge variant="outline">{application.linkedAccounts??0} linked account(s) · {application.verifiedAccounts??0} email verified</Badge></div><p className="mt-2 text-xs text-muted-foreground">Stored business record. A linked account does not establish the owner’s identity. {application.reviewedAt?"Previously reviewed.":"No recorded review yet."}</p><p className="mt-1 break-words text-sm text-muted-foreground">
             {application.city && `${application.city} · `}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
           </p>
         </div>
 
         {!!application.notes && <section className="rounded-lg border border-border bg-secondary/40 p-4">
-          <h3 className="text-sm font-semibold text-foreground">Previous catalogue notes</h3>
+          <h3 className="text-sm font-semibold text-foreground">Proposed offerings</h3>
           {application.proposedProducts.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {application.proposedProducts.map(product => (
@@ -98,14 +100,14 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
               </select>
             </label>
             <label className="block text-sm">
-              Private review notes
+              Private review evidence / notes
               <Textarea className="mt-2" maxLength={5000} value={notes} onChange={event => setNotes(event.target.value)} />
             </label>
-            <p className="text-xs leading-6 text-muted-foreground">
+            {status==="approved"&&application.applicationStatus!=="approved"&&<label className="flex gap-2 items-start text-sm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> I checked the business identity, ownership and contact details and recorded the evidence above.</label>}<p className="text-xs leading-6 text-muted-foreground">
               Approval opens Business Studio for publishing. The business receives an in-app notification when the application status changes.
             </p>
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-            <Button disabled={busy || (status === application.applicationStatus && notes === application.reviewNotes)}>
+            <Button disabled={busy || (status === application.applicationStatus && notes === application.reviewNotes)||(status==='approved'&&application.applicationStatus!=='approved'&&(!confirmed||!notes.trim()))}>
               {busy ? 'Saving…' : 'Save review'}
             </Button>
           </fieldset>
@@ -122,9 +124,9 @@ export default function ApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/suppliers" className="text-sm text-brand-green underline">Supplier records</Link>
-      <h1 className="text-3xl font-semibold">Maker applications</h1>
-      <p className="text-sm text-muted-foreground">Review the maker’s name, town and contact details before enabling publishing.</p>
+      <Link href="/admin/suppliers" className="text-sm text-brand-green underline">Business directory</Link>
+      <h1 className="text-3xl font-semibold">Business applications</h1>
+      <p className="text-sm text-muted-foreground">Review real stored records, check ownership and contact details, then enable publishing. Approval is not the same as publishing a public page.</p>
       <div className="flex flex-wrap justify-between gap-3">
         <label className="flex items-center gap-3 text-sm">
           Review status

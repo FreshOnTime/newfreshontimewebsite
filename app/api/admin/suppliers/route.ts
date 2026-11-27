@@ -56,7 +56,7 @@ function serializeSupplier(s: Supplier) {
     paymentTerms: termsToApi(s.paymentTerms),
     notes: s.notes ?? undefined,
     status: s.status,
-    applicationStatus: s.applicationStatus,
+    applicationStatus: s.applicationStatus, makerPublished:s.makerPublished,reviewedAt:s.reviewedAt,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };
@@ -118,7 +118,7 @@ export const POST = requireAdminSimple(async (request) => {
         country: data.address.country,
         paymentTerms: termsToDb(data.paymentTerms),
         notes: data.notes ?? null,
-        status: data.status,
+        status: 'inactive', applicationStatus:'pending',
       },
     });
 

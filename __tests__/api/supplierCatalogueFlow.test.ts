@@ -175,7 +175,7 @@ it('notifies the linked supplier account when an admin approves the application'
   const response = await reviewSupplierApplication(req(
     'http://localhost/api/admin/supplier-applications',
     'PATCH',
-    { id: 'supplier-1', version: 2, status: 'approved', notes: 'Approved' },
+    { id: 'supplier-1', version: 2, status: 'approved', notes: 'Approved', confirmed:true },
     { userId: 'admin-1', role: 'admin' },
   ));
   expect(response.status).toBe(200);

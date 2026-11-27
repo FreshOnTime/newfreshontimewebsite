@@ -20,7 +20,7 @@ export function Navbar() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const maker = user?.role === "supplier";
-  const account = user?.role === "admin" ? "/admin" : "/dashboard";
+  const account = (user?.role === "admin"||user?.secondaryRoles?.includes("admin")) ? "/admin" : "/dashboard";
   const links = [...MARKET_NAVIGATION, {label:maker ? "Business studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}, {label:"Contact",href:"/contact"}];
 
   useEffect(() => { setMenuOpen(false); setSearchOpen(false); }, [pathname]);
@@ -50,10 +50,10 @@ export function Navbar() {
           <div className="flex shrink-0 items-center gap-0 sm:gap-1">
             <button type="button" aria-label={searchOpen ? "Close search" : "Open search"} aria-expanded={searchOpen} aria-controls="header-search" onClick={() => { setSearchOpen((open) => !open); setMenuOpen(false); }} className={iconButton}><Search strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /></button>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild><button type="button" aria-label="Open account menu" className={iconButton}><UserRound strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /></button></DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild><button type="button" aria-label="Open account menu" className={`${iconButton} ${user?"fp-signed-in-account":""}`}>{user?<span aria-hidden="true" className="text-sm font-bold">{(user.firstName?.trim().slice(0,1)||"A").toUpperCase()}</span>:<UserRound strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" />}</button></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl border-border bg-background p-2 shadow-sm">
                 {user ? <>
-                  {[[maker ? 'Business studio' : 'Your account',account],['Profile','/profile'],['Saved picks','/saved']].map(([label,href]) => <DropdownMenuItem key={href} asChild><Link href={href} className="min-h-11">{label}</Link></DropdownMenuItem>)}
+                  {[[user.role==='admin'||user.secondaryRoles?.includes('admin')?'Admin dashboard':maker ? 'Business studio' : 'Your account',account],['Profile','/profile'],['Saved picks','/saved']].map(([label,href]) => <DropdownMenuItem key={href} asChild><Link href={href} className="min-h-11">{label}</Link></DropdownMenuItem>)}
                   <DropdownMenuSeparator /><DropdownMenuItem onSelect={() => void signOut()} className="min-h-11 text-destructive">Sign out</DropdownMenuItem>
                 </> : <><DropdownMenuItem asChild><Link href="/auth/login" className="min-h-11">Sign in</Link></DropdownMenuItem><DropdownMenuItem asChild><Link href="/auth/signup" className="min-h-11">Create account</Link></DropdownMenuItem></>}
               </DropdownMenuContent>
