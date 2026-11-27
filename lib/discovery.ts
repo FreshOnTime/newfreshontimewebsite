@@ -4,7 +4,7 @@ import type { Prisma } from '@prisma/client';
 
 export const publicProspectWhere = {reviewStatus:'approved',permissionStatus:'cleared',reviewedAt:{not:null}} satisfies Prisma.DiscoveryProspectWhereInput;
 export const publicProspectSelect = {id:true,name:true,category:true,area:true,products:true,website:true,instagram:true,facebook:true,tiktok:true,reviewedAt:true} satisfies Prisma.DiscoveryProspectSelect;
-export const diningCategories = ['Café','Café / mobile coffee','Restaurant','Home catering','Grazing / catering','Food experiences','Bakery','Home bakery'];
+export const diningCategories = ['Café','Café / mobile coffee','Restaurant','Home catering','Grazing / catering','Food experiences','Bakery','Home bakery','Home kitchen'];
 export type DiscoveryMode='all'|'dining'|'products'|'gifting'|'makers';
 export type PublicProspect=Prisma.DiscoveryProspectGetPayload<{select:typeof publicProspectSelect}>;
 export function searchText(value: unknown){return typeof value==='string'?value.trim().slice(0,100):''}
@@ -14,7 +14,7 @@ const typeCategories:Record<BusinessType,string[]>={restaurant:['Restaurant'],ca
 const kindCategories:Record<string,string[]>={Bakery:['Home bakery','Bakery'], 'Prepared food':['Home kitchen','Home catering','Grazing / catering','Restaurant'],Pantry:['Pantry goods','Specialty food','Nut butter','Chocolate','Tea','Coffee'],Produce:['Produce','Grower'], 'Dairy & eggs':['Dairy & eggs'],Drinks:['Craft beverage','Coffee','Tea','Café','Café / mobile coffee'],Other:['Food experiences']};
 export async function listProspects(mode:DiscoveryMode,q:string,area:string,page:number,filters?:{type?:BusinessType;kind?:string}){
  const search={contains:q,mode:'insensitive' as const};
- const category=mode==='dining'?{category:{in:diningCategories}}:mode==='makers'?{category:{notIn:['Restaurant','Café','Café / mobile coffee','Food experiences']}}:mode==='products'?{category:{notIn:diningCategories}}:mode==='gifting'?{OR:[{category:{in:['Home bakery','Chocolate','Tea','Coffee','Grazing / catering']}},{products:{contains:'gift',mode:'insensitive' as const}}]}:{};
+ const category=mode==='dining'?{category:{in:diningCategories}}:mode==='makers'?{category:{notIn:diningCategories}}:mode==='products'?{category:{notIn:diningCategories}}:mode==='gifting'?{OR:[{category:{in:['Home bakery','Chocolate','Tea','Coffee','Grazing / catering']}},{products:{contains:'gift',mode:'insensitive' as const}}]}:{};
  const where:Prisma.DiscoveryProspectWhereInput={AND:[publicProspectWhere,category,...(filters?.type?[{category:{in:typeCategories[filters.type]}}]:[]),...(filters?.kind?[{category:{in:kindCategories[filters.kind]||[]}}]:[]),...(q?[{OR:[{name:search},{products:search},{category:search}]}]:[]),...(area?[{area:{contains:area,mode:'insensitive' as const}}]:[])]};
  return prisma.discoveryProspect.findMany({where,select:publicProspectSelect,orderBy:[{name:'asc'},{id:'asc'}],skip:(page-1)*24,take:25});
 }

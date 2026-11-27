@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Wordmark from "@/components/brand/Wordmark";
-import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
-import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
+import { SOCIAL_LINKS } from "@/lib/config/site";
 
 const groups = [
-  { title: 'Explore', links: [['Explore','/discover'],['Food & brands','/makers'],['Dining','/eat-drink'],['Products','/food-products'],['Gifting','/gifting'],['Journal','/stories']] },
+  { title: 'Explore', links: [['Explore','/discover'],['Food & brands','/makers'],['Dining','/eat-drink'],['Products','/food-products'],['Gift suppliers','/gifting'],['Journal','/stories']] },
   { title: 'FreshPick', links: [['About FreshPick','/about'],['How it works','/how-it-works'],['Editorial archive','/blog']] },
   { title: 'For businesses', links: [['For businesses','/for-businesses'],['List your business','/join'],['Business studio','/dashboard'],['Listing corrections','/contact']] },
   { title: 'Here to help', links: [['Help','/help'],['Account','/profile'],['Contact','/contact']] },
@@ -13,12 +12,8 @@ export function Footer() {
   return (
     <footer className="heritage-footer mt-8 bg-brand-green-deep text-white">
       <div className="editorial-wrap">
-        <div className="grid gap-8 border-b border-white/20 py-9 md:grid-cols-2 md:items-center md:gap-12 md:py-12">
-          <div><h2 className=" max-w-xl font-heading text-4xl font-normal leading-[1.08] tracking-[-.025em] text-white md:text-6xl">A little more good food.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">A note from FreshPick with new dining finds, local makers and thoughtful gift ideas.</p></div>
-          <FooterNewsletterForm />
-        </div>
         <div className="grid gap-8 py-10 lg:grid-cols-[1fr_2fr] md:py-12">
-          <div><p className="max-w-xs text-sm leading-7 text-white/85">An independent guide to Sri Lankan food, makers, restaurants and cafés.</p><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-6 inline-block min-h-11 break-all text-sm text-white/85 underline decoration-white/30 underline-offset-4">{SUPPORT_EMAIL}</a><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Discover food and connect directly with the business.</p></div>
+          <div><p className="max-w-xs text-sm leading-7 text-white/85">An independent guide to Sri Lankan food, makers, restaurants and cafés.</p><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Discover food and connect directly with the business.</p></div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">{groups.map(group => <nav key={group.title} aria-label={`Footer ${group.title}`}><h3 className="mb-4 text-[11px] font-medium uppercase tracking-[0.12em] text-white/85">{group.title}</h3><ul>{group.links.map(([name,href]) => <li key={href}><Link href={href} className="inline-flex min-h-10 items-center text-[13px] font-normal leading-6 text-white/90 hover:underline underline-offset-4">{name}</Link></li>)}</ul></nav>)}</div>
         </div>
         <div className="pb-6"><Link href="/" aria-label="FreshPick home"><Wordmark className="text-[36px]"/></Link></div>

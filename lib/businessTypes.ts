@@ -2,7 +2,7 @@ export const businessTypes=['maker','restaurant','cafe','bakery','caterer','food
 export type BusinessType=typeof businessTypes[number];
 export const diningBusinessTypes=['restaurant','cafe','bakery','caterer'] as const;
 export const venueOnlyTypes=['restaurant','cafe'] as const;
-export const businessTypeLabels:Record<BusinessType,string>={maker:'Independent maker / home kitchen',restaurant:'Restaurant',cafe:'Café',bakery:'Bakery',caterer:'Caterer',food_brand:'Food brand',other:'Other food business'};
+export const businessTypeLabels:Record<BusinessType,string>={maker:'Independent food maker',restaurant:'Restaurant',cafe:'Café',bakery:'Bakery',caterer:'Caterer',food_brand:'Food brand',other:'Other food business'};
 export function businessTypeLabel(value:string|null|undefined){return businessTypeLabels[value as BusinessType]||'Independent food business'}
 export function isDiningBusiness(value:string|null|undefined){return diningBusinessTypes.some(type=>type===value)}
 export function isVenueOnly(value:string|null|undefined){return venueOnlyTypes.some(type=>type===value)}
