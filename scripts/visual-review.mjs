@@ -138,11 +138,14 @@ async function main(){
               assert.equal(await page.locator('.fp-contact-submit').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
             }
             if(name==='maker-profile'){
+              assert(await page.locator('.fp-business-logo').isVisible());
+              assert(await page.locator('.fp-business-cover').isVisible());
               await page.getByRole('heading',{name:'Explore baked creations',exact:true}).waitFor();
               assert(await page.getByRole('heading',{name:'Enquire about your order',exact:true}).isVisible());
               const schemas=await page.locator('script[type="application/ld+json"]').evaluateAll(nodes=>nodes.map(n=>JSON.parse(n.textContent||'{}')));
               assert(schemas.some(s=>s['@type']==='ProfilePage'),'Missing public business profile schema');
             }
+            if(name==='story'){assert(await page.locator('.fp-article-cover[alt="Test editorial image"]').isVisible());}
             if(name==='join'){
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('gift_creator');
               await page.getByRole('checkbox',{name:'Food hampers',exact:true}).check();
@@ -197,8 +200,12 @@ async function main(){
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
             assert(await page.getByRole('checkbox',{name:'Food hampers',exact:true}).isVisible());
             assert(await page.getByRole('progressbar',{name:'Business page setup progress'}).isVisible());
+            assert(await page.getByLabel('Upload business logo',{exact:true}).isVisible());
+            assert(await page.getByLabel('Upload business cover photo',{exact:true}).isVisible());
             await capture(page,'maker-studio-'+width);
             await page.getByRole('button',{name:'Articles',exact:true}).click();
+            assert(await page.getByLabel('Upload article cover image',{exact:true}).isVisible());
+            assert(await page.getByLabel('Cover image description',{exact:true}).isVisible());
             await page.getByRole('textbox',{name:'Article body',exact:true}).fill('A fictional article draft.');
             await page.getByRole('button',{name:'Heading',exact:true}).click();
             await page.getByRole('button',{name:'Preview article',exact:true}).click();

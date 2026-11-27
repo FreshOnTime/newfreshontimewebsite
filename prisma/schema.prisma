@@ -282,6 +282,8 @@ model Supplier {
   businessSpecialties String[] @default([])
   businessWebsite  String?
   businessInstagram String?
+  businessLogo      String?
+  businessCover     String?
   makerHandle      String?     @unique
   makerPublished   Boolean     @default(false)
   makerBio         String?

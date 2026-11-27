@@ -92,3 +92,11 @@
 .fp-studio-overview progress::-webkit-progress-bar{background:#ffffff26;border-radius:999px}
 .fp-studio-overview progress::-webkit-progress-value{background:#b9e98c;border-radius:999px}
 .fp-studio-overview progress::-moz-progress-bar{background:#b9e98c;border-radius:999px}
+
+/* Owner-managed profile and journal imagery. No stock placeholders for missing uploads. */
+.fp-business-cover,.fp-article-cover,.fp-story-thumbnail,.fp-business-logo{display:block;max-width:100%;object-fit:cover;background:#eceee6;border-radius:12px}
+.fp-business-cover{width:100%;aspect-ratio:3/1;max-height:380px;margin-bottom:0}
+.fp-business-logo{width:88px;height:88px;aspect-ratio:1;object-fit:contain;margin-top:1.25rem;padding:5px;background:#fff;border:1px solid var(--fp-rule,#d5d4cb)}
+.fp-article-cover{width:100%;aspect-ratio:16/9;max-height:520px;margin:1.5rem auto}
+.fp-story-thumbnail{width:100%;aspect-ratio:16/9;max-height:220px;margin-bottom:.8rem}
+@media(max-width:640px){.fp-business-cover{aspect-ratio:16/9}.fp-business-logo{width:68px;height:68px}.fp-article-cover{border-radius:8px}}

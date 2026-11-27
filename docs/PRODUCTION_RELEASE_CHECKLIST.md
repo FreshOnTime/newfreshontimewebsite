@@ -26,3 +26,6 @@ If SQL was applied outside Prisma, verify the actual schema before reconciling w
 PR #177 introduces business specialities. The production baseline was reconciled to 25 successful Prisma migrations and no unresolved failures. The business publishing experience PR does not introduce database schema changes. Its CI and browser workflows must still pass before merging.
 
 Automatic production migration execution requires a deliberately configured protected release environment and verified database credentials. This checklist does not turn on automatic production SQL or change Vercel billing.
+
+## Business branding release
+The business-branding feature adds nullable `businessLogo` and `businessCover` columns in migration `20261128020000_business_branding`. Apply this migration before promoting the branding application. Article cover images reuse the existing `blogs.featuredImage` JSON column. The existing authenticated product image uploader is reused for these public media assets, with JPEG/PNG/WebP/AVIF and 4 MB validation. Replacing/removing a reference does not delete the stored object. Verify that production Supabase public image storage is configured and perform an authenticated upload/save/removal test using non-private images in staging. Browser CI uses static fixture images, not actual production storage.

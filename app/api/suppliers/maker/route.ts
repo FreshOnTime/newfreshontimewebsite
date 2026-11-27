@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { fulfilmentOptions, makerImageSrc, makerKinds, makerSummarySelect } from '@/lib/makers';
 import prisma from '@/lib/prisma';
 import {businessSpecialties,businessArticleTopics} from '@/lib/businessSpecialties';
+import {businessMediaSource} from '@/lib/businessMedia';
 import {businessTypes,officialHttps} from '@/lib/businessTypes';
 
 const price = z.number().min(0.01).max(9999999999.99).multipleOf(0.01);
@@ -16,6 +17,8 @@ const dateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, 'Choose a S
   }, 'Choose a valid Sri Lanka date and time')
   .transform(value => new Date(`${value}:00+05:30`));
 const id = z.string().min(1).max(100);
+const mediaUrl=z.string().max(2048).refine(v=>!!businessMediaSource(v),'Choose a valid image');
+const articleCover=z.object({url:mediaUrl,alt:z.string().trim().min(1).max(200)});
 const actions = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('profile'),
@@ -23,6 +26,8 @@ const actions = z.discriminatedUnion('action', [
     businessSpecialties:z.array(z.enum(businessSpecialties)).max(8).transform(values=>[...new Set(values)]).optional(),
     website:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v),'Enter a valid HTTPS website'),
     instagram:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v,'instagram.com'),'Enter a valid Instagram profile URL'),
+    logo:mediaUrl.nullable().optional(),
+    cover:mediaUrl.nullable().optional(),
     handle: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(50),
     bio: z.string().trim().max(1200),
     town: z.string().trim().min(2).max(100),
@@ -53,6 +58,7 @@ const actions = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('story'),
     category:z.enum(businessArticleTopics).nullable().optional(),
+    featuredImage:articleCover.nullable().optional(),
     id: id.optional(),
     title: z.string().trim().min(3).max(150),
     excerpt: z.string().trim().min(3).max(300),
@@ -93,7 +99,7 @@ export const GET = requireAuth(async request => {
     prisma.blog.findMany({
       where: { supplierId: supplier.id, isDeleted: false },
       orderBy: { updatedAt: 'desc' },
-      select: { id: true, slug: true, title: true, excerpt: true, content: true, category:true, published: true, makerItems: { select: { itemId: true } } },
+      select: { id: true, slug: true, title: true, excerpt: true, content: true, category:true, featuredImage:true, published: true, makerItems: { select: { itemId: true } } },
     }),
     prisma.product.findMany({
       where: { supplierId: supplier.id, archived: false },
@@ -124,6 +130,8 @@ export const POST = requireAuth(async request => {
           ...(data.businessSpecialties!==undefined?{businessSpecialties:data.businessSpecialties}:{}),
           ...(data.website!==undefined?{businessWebsite:officialHttps(data.website)||null}:{}),
           ...(data.instagram!==undefined?{businessInstagram:officialHttps(data.instagram,"instagram.com")||null}:{}),
+          ...(data.logo!==undefined?{businessLogo:data.logo}:{}),
+          ...(data.cover!==undefined?{businessCover:data.cover}:{}),
           makerHandle: data.handle, makerBio: data.bio, makerTown: data.town,
           makerWhatsApp: phone.number, makerFulfilment: data.fulfilment, makerPublished: data.published,
         },
@@ -175,6 +183,7 @@ export const POST = requireAuth(async request => {
           const fields = {
             title: data.title, excerpt: data.excerpt, content: data.content,
             ...(data.category!==undefined?{category:data.category}:{}),
+            ...(data.featuredImage!==undefined?{featuredImage:data.featuredImage===null?Prisma.DbNull:data.featuredImage}:{}),
             authorName: supplier.name, published: data.published,
           };
           const tags = data.itemIds.map(itemId => ({ itemId }));
