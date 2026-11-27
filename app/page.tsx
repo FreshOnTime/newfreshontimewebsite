@@ -1,16 +1,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, Search, MapPin, ArrowRight } from 'lucide-react';
-import { ExperienceChapters } from '@/components/makers/ExperienceChapters';
+import { DiscoveryRail, DiscoveryChapters } from '@/components/discovery/Editorial';
 import { MakerItemCard, BatchDetails } from '@/components/makers/MakerCards';
-import { CraftShelf, ReadingShelf } from '@/components/makers/Edition';
+import { ReadingShelf } from '@/components/makers/Edition';
 import { publicItemSelect } from '@/lib/makerQueries';
 import { publicMakerWhere, openBatches, makerItemPath } from '@/lib/makers';
 import prisma from '@/lib/prisma';
 import { pageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
-export const metadata = pageMetadata({ path: '/', title: 'FreshPick | Discover Sri Lankan food makers', description: 'Meet independent bakers, home cooks and growers. Explore their items, stories and latest batches.' });
+export const metadata = pageMetadata({ path: '/', title: 'FreshPick | Discover Sri Lankan food, makers and dining', description: 'Discover independent makers, restaurants, cafés, food products and original stories across Sri Lanka.' });
 
 export default async function Home() {
   const [items, makers, batches] = await Promise.all([
@@ -24,21 +24,17 @@ export default async function Home() {
     prisma.makerBatch.findMany({where:{...openBatches(),item:{published:true,supplier:publicMakerWhere}},orderBy:[{cutoff:'asc'},{id:'asc'}],take:3,include:{item:{select:{name:true,slug:true,supplier:{select:{name:true,makerHandle:true,makerTown:true,makerWhatsApp:true}}}}}}),
   ]);
   return <div className="lux-home fp-modern-home">
-    <section className="lux-hero studio-hero" aria-labelledby="home-headline">
-      <div className="lux-hero-inner editorial-wrap">
-      <div className="lux-hero-copy">
-        <p className="fp-kicker" data-studio-intro>FreshPick Sri Lanka</p>
-        <h1 id="home-headline" data-studio-intro>Good food.<br/><span>Closer to home.</span></h1>
-        <p data-studio-intro>Discover independent food makers across Sri Lanka.</p>
-        <form action="/makers" role="search" className="journal-discover"><label htmlFor="home-discover" className="sr-only">Find a food or maker</label><Search size={19} aria-hidden="true"/><input id="home-discover" name="q" maxLength={100} placeholder="Try sourdough or a maker name"/><button type="submit" aria-label="Search makers"><ArrowRight size={19}/></button></form>
-        <div className="modern-hero-actions" data-studio-intro><Link href="/makers" className="modern-primary">Explore makers</Link><Link href="/how-it-works" className="modern-link">How it works <ArrowUpRight size={16} aria-hidden="true"/></Link></div>
+    <section className="fp26-hero" aria-labelledby="home-headline">
+      <div className="fp26-hero-copy">
+        <div className="fp26-issue"><span>Independent food discovery</span><span>Sri Lanka / No. 01</span></div>
+        <h1 id="home-headline">Good food.<br/>Great finds.</h1>
+        <div className="fp26-hero-bottom"><p>Discover the people, places and flavours that make Sri Lanka worth tasting.</p>
+          <Link href="/discover" className="fp26-textlink">Explore FreshPick <ArrowUpRight size={20} aria-hidden="true"/></Link></div>
+        <form action="/discover" role="search" className="fp26-search"><label htmlFor="home-discover" className="sr-only">Find food, makers or places</label><Search size={21} aria-hidden="true"/><input id="home-discover" name="q" maxLength={100} placeholder="Find a dish, product or place"/><button type="submit" aria-label="Search FreshPick"><ArrowRight size={21}/></button></form>
       </div>
-      
-      </div>
-      <div className="modern-hero-media studio-hero-media"><Image src="/images/editorial/hands-at-work.webp" alt="Hands kneading dough beside a bowl" fill priority sizes="100vw" className="lux-hero-image"/></div>
+      <figure className="fp26-hero-photo"><Image src="/images/editorial/recipe-ingredients.webp" alt="A collection of fresh ingredients for cooking" fill priority sizes="(max-width: 760px) 100vw, 50vw"/><figcaption>FreshPick / The art of eating well</figcaption></figure>
     </section>
-    <CraftShelf/>
-    <ExperienceChapters/>
+    <div className="fp26-shell"><DiscoveryRail/><DiscoveryChapters/></div>
     <div className="journal-first-note studio-note editorial-wrap">
       {makers.length > 0 ? <Link href={'/makers/'+makers[0].makerHandle}><span className="fp-kicker">Meet a maker</span><span>{makers[0].name}{makers[0].makerTown ? ' · '+makers[0].makerTown : ''}</span><ArrowUpRight size={18}/></Link> : <Link href="/stories/the-bread-window"><span className="fp-kicker">From the journal</span><span>The bread window</span><ArrowUpRight size={18}/></Link>}
     </div>
@@ -51,7 +47,7 @@ export default async function Home() {
       </Link>)}</div>
     </section>}
     <div className="modern-journal"><ReadingShelf/></div>
-    <section className="journal-method studio-method editorial-wrap" data-studio-chapter aria-label="How FreshPick works"><div><p className="fp-kicker">A different kind of market</p><h2>Closer to the people who make it.</h2></div><ol><li><span>01</span><div><h3>Find something good</h3><p>Explore food by craft, maker or town.</p></div></li><li><span>02</span><div><h3>Meet the maker</h3><p>Read their story and see what they make.</p></div></li><li><span>03</span><div><h3>Make it yours</h3><p>Enquire directly and arrange the details together.</p></div></li></ol></section>
-    <section className="fp-invite lux-invite studio-invite editorial-wrap" data-studio-chapter><div className="fp-image"><Image src="/images/editorial/restaurant-kitchen.webp" alt="Cooks working at a busy kitchen counter" fill sizes="(max-width:639px) 95vw, 45vw"/></div><div><h2>Your food deserves to be discovered.</h2><p>Give your food a page of its own. Share your next batch, write a story and take enquiries on WhatsApp.</p><Link className="maker-button" href="/join">Start a maker page</Link></div></section>
+    <section className="journal-method studio-method editorial-wrap" data-studio-chapter aria-label="How FreshPick works"><div><p className="fp-kicker">A different kind of market</p><h2>Closer to good food.</h2></div><ol><li><span>01</span><div><h3>Find something good</h3><p>Explore food by maker, dish, product or place.</p></div></li><li><span>02</span><div><h3>Know the food</h3><p>Explore the details and stories behind your choice.</p></div></li><li><span>03</span><div><h3>Make it yours</h3><p>Enquire directly and arrange the details together.</p></div></li></ol></section>
+    <section className="fp-invite lux-invite studio-invite editorial-wrap" data-studio-chapter><div className="fp-image"><Image src="/images/editorial/restaurant-kitchen.webp" alt="Cooks working at a busy kitchen counter" fill sizes="(max-width:639px) 95vw, 45vw"/></div><div><h2>Your food deserves to be discovered.</h2><p>Give your food business a free page of its own. Showcase what you make and connect directly with customers.</p><Link className="maker-button" href="/for-businesses">Get discovered</Link></div></section>
   </div>;
 }

@@ -1033,3 +1033,26 @@ model MakerStoryItem {
   @@index([itemId])
   @@map("maker_story_items")
 }
+
+
+model DiscoveryProspect {
+  id               String    @id
+  name             String
+  category         String
+  area             String?
+  products         String?
+  instagram        String?
+  facebook         String?
+  tiktok           String?
+  website          String?
+  sourceUrl        String
+  reviewStatus     String    @default("pending")
+  permissionStatus String    @default("not_assessed")
+  reviewNotes      String    @default("")
+  reviewedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([reviewStatus, category])
+  @@map("discovery_prospects")
+}

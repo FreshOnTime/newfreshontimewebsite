@@ -4,9 +4,9 @@ import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
 import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
 
 const groups = [
-  { title: 'The market', links: [['Explore makers','/makers'],['Food stories','/stories'],['Saved picks','/saved']] },
+  { title: 'The market', links: [['Discover','/discover'],['Makers','/makers'],['Eat & drink','/eat-drink'],['Products','/food-products'],['Gifting','/gifting'],['Food tools','/food-tools']] },
   { title: 'FreshPick', links: [['About FreshPick','/about'],['How it works','/how-it-works'],['Editorial archive','/blog']] },
-  { title: 'For makers', links: [['Become a maker','/join'],['Maker studio','/dashboard'],['Get in touch','/contact']] },
+  { title: 'For makers', links: [['For businesses','/for-businesses'],['Become a maker','/join'],['Maker studio','/dashboard'],['Get in touch','/contact']] },
   { title: 'Here to help', links: [['Help','/help'],['Account','/profile'],['Contact','/contact']] },
 ];
 export function Footer() {
@@ -18,7 +18,7 @@ export function Footer() {
           <FooterNewsletterForm />
         </div>
         <div className="grid gap-12 py-12 lg:grid-cols-[1fr_2fr] md:py-20">
-          <div><p className="max-w-xs text-sm leading-7 text-white/85">A thoughtfully chosen guide to independent food makers across Sri Lanka.</p><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-6 inline-block min-h-11 break-all text-sm text-white/85 underline decoration-white/30 underline-offset-4">{SUPPORT_EMAIL}</a><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Discover food and arrange collection directly with the maker.</p></div>
+          <div><p className="max-w-xs text-sm leading-7 text-white/85">An independent guide to Sri Lankan food, makers, restaurants and cafés.</p><a href={`mailto:${SUPPORT_EMAIL}`} className="mt-6 inline-block min-h-11 break-all text-sm text-white/85 underline decoration-white/30 underline-offset-4">{SUPPORT_EMAIL}</a><p className="mt-1 max-w-xs text-xs leading-6 text-white/85">Discover food and connect directly with the business.</p></div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">{groups.map(group => <nav key={group.title} aria-label={`Footer ${group.title}`}><h3 className="mb-4 text-[11px] font-medium uppercase tracking-[0.12em] text-white/85">{group.title}</h3><ul>{group.links.map(([name,href]) => <li key={href}><Link href={href} className="inline-flex min-h-10 items-center text-[13px] font-normal leading-6 text-white/90 hover:underline underline-offset-4">{name}</Link></li>)}</ul></nav>)}</div>
         </div>
         <p aria-hidden="true" className="select-none pb-6 text-[clamp(2.6rem,12vw,11rem)] leading-none"><Wordmark /></p>

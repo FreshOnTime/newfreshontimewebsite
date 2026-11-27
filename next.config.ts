@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/discover', destination: '/makers', permanent: false },
       { source: '/products/:path*', destination: '/makers', permanent: false },
       { source: '/categories/:path*', destination: '/makers', permanent: false },
       { source: '/collections/:path*', destination: '/makers', permanent: false },
