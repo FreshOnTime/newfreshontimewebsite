@@ -40,6 +40,11 @@ jobs:
       - name: Install isolated browser tools
         run: |
           npm install --prefix "$RUNNER_TEMP/freshpick-browser" --no-save --package-lock=false playwright@1.51.1
+          # Hosted Ubuntu images may include an unrelated Microsoft APT feed.
+          # Disable only that feed for this ephemeral runner; keep signature verification on.
+          for file in /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources; do
+            if [ -f "$file" ]; then sudo mv "$file" "$file.disabled"; fi
+          done
           "$RUNNER_TEMP/freshpick-browser/node_modules/.bin/playwright" install --with-deps chromium
       - run: npm run build
         env:
