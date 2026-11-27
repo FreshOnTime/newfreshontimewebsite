@@ -1,8 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import {ArrowUpRight,Utensils,Store,Gift,Package,Bookmark,BookOpen} from 'lucide-react';
+import {ArrowUpRight} from 'lucide-react';
 import ExploreSearch from '@/components/discovery/ExploreSearch';
-import {DiscoveryRail,DiscoveryChapters,SectionHeading} from '@/components/discovery/Editorial';
+import {DiscoveryChapters,SectionHeading} from '@/components/discovery/Editorial';
+import {EditorialPicks,OccasionShelf,GiftFeature,ConnectShelf} from '@/components/discovery/Curated';
 import {ProspectCard} from '@/components/discovery/Directory';
 import {publicMakerWhere} from '@/lib/makers';
 import {publicProspectWhere,publicProspectSelect,diningCategories} from '@/lib/discovery';
@@ -11,7 +11,6 @@ import prisma from '@/lib/prisma';
 import {pageMetadata} from '@/lib/seo';
 export const dynamic='force-dynamic';
 export const metadata=pageMetadata({path:'/',title:'Discover restaurants, food businesses and stories in Sri Lanka',description:'FreshPick is Sri Lanka’s independent food discovery platform. Explore places to eat, discover food brands, find gifts and read local food stories.'});
-const destinations=[{title:'Find your next table',desc:'Restaurants, cafés and places worth exploring.',href:'/eat-drink',photo:'/images/editorial/restaurant-kitchen.webp',alt:'A restaurant kitchen at work',icon:Utensils},{title:'Meet local food businesses',desc:'Independent makers, bakers and speciality brands.',href:'/makers',photo:'/images/editorial/hands-at-work.webp',alt:'Hands preparing food',icon:Store},{title:'Discover something delicious',desc:'Individual products and food brands.',href:'/food-products',photo:'/images/categories/beverages.webp',alt:'Food and drink products',icon:Package},{title:'Give something memorable',desc:'Find suppliers and plan personal or corporate gifts.',href:'/gifting',photo:'/images/categories/bakery.webp',alt:'Fresh baked goods',icon:Gift}];
 export default async function Home(){
  const [venues,prospects,stories]=await Promise.all([
  prisma.supplier.findMany({where:{...publicMakerWhere,businessType:{in:[...diningBusinessTypes]}},take:4,orderBy:[{name:'asc'},{id:'asc'}],select:{id:true,name:true,makerHandle:true,makerTown:true,makerBio:true,businessType:true}}).catch(e=>{console.error('Homepage venues',e);return []}),
@@ -19,13 +18,14 @@ export default async function Home(){
  prisma.blog.findMany({where:{published:true,isDeleted:false,supplier:publicMakerWhere},take:3,orderBy:[{publishedAt:'desc'},{id:'asc'}],select:{id:true,title:true,slug:true,excerpt:true,supplier:{select:{name:true,makerHandle:true}}}}).catch(e=>{console.error('Homepage articles',e);return []})
  ]);
  return <div className="fp26-home fp-discovery-home"><div className="fp26-shell">
- <section className="fp26-hero fp-dining-hero" aria-labelledby="home-headline"><div className="fp26-hero-copy"><p className="fp26-issue"><span aria-hidden="true"/> Sri Lanka’s independent food discovery platform</p><h1 id="home-headline">Good food.<br/>Great finds.</h1><p className="fp26-deck">Discover where to eat, what to try and the people behind your next favourite food. Explore restaurants, independent brands and stories in one place.</p><ExploreSearch/></div><figure className="fp26-hero-photo"><Image src="/images/editorial/restaurant-kitchen.webp" alt="The people and craft behind a restaurant kitchen" fill priority sizes="(max-width:760px) 100vw,54vw"/><figcaption>Discover the people behind the plate.</figcaption></figure></section>
- <DiscoveryRail/>
- <section className="fp26-guide-section"><SectionHeading title="What are you in the mood for?"/><div className="fp-discovery-destinations">{destinations.map(({title,desc,href,photo,alt,icon:Icon})=><Link href={href} key={href} className="fp-destination"><div className="fp-destination-photo"><Image src={photo} alt={alt} fill sizes="(max-width:760px) 50vw,25vw"/></div><div className="fp-destination-copy"><Icon size={20} strokeWidth={1.6} aria-hidden="true"/><h3>{title}</h3><p>{desc}</p><ArrowUpRight size={18} aria-hidden="true"/></div></Link>)}</div></section>
- {(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title="Places to discover" href="/eat-drink" label="Explore dining"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}
+ <section className="fp-explore-intro" aria-labelledby="home-headline"><p className="fp26-label">Your guide to food in Sri Lanka</p><h1 id="home-headline">Find your next favourite.</h1><p className="fp26-deck">Places to eat, food worth trying and people worth discovering. Explore restaurants, local brands and gifts, then connect directly.</p><ExploreSearch/></section>
+ <EditorialPicks group="dining"/>
+ {(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title="Explore FreshPick profiles" href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}
+ <GiftFeature/>
+ <OccasionShelf/>
  <DiscoveryChapters/>
+ <ConnectShelf/>
  {stories.length>0&&<section className="fp26-guide-section"><SectionHeading title="Stories from local businesses" href="/stories" label="Read the journal"/><div className="fp26-resultgrid">{stories.map(story=><article className="fp26-index" key={story.id}><p className="fp26-label">{story.supplier?.name}</p><h3><Link href={'/makers/'+story.supplier?.makerHandle+'/stories/'+story.slug}>{story.title}</Link></h3><p>{story.excerpt}</p></article>)}</div></section>}
- <section className="fp26-guide-section fp-why-discovery"><div><p className="fp26-label">A different way to find food</p><h2>Less searching. More discovering.</h2><p className="fp26-deck">FreshPick brings useful food information out of scattered feeds and into a place you can explore. We connect you with businesses, not a checkout.</p></div><div>{[{icon:Utensils,title:'Discover on your terms',desc:'Find places and businesses by what they offer.'},{icon:Bookmark,title:'Keep what you love',desc:'Save your favourite profiles, products and articles in this browser.'},{icon:BookOpen,title:'Go behind the food',desc:'Read original guides and stories published by food businesses.'}].map(({icon:Icon,title,desc})=><article key={title}><Icon size={24} strokeWidth={1.5}/><div><h3>{title}</h3><p>{desc}</p></div></article>)}</div></section>
- <section className="fp26-business-band"><div><p className="fp26-label">For restaurants & food businesses</p><h2>Let people discover your business.</h2><p>Create a public profile, showcase your menu or products and publish your own articles. Free to apply.</p></div><Link className="fp26-action" href="/for-businesses">Discover business benefits <ArrowUpRight size={18}/></Link></section>
+ <section className="fp26-business-band"><div><p className="fp26-label">For restaurants & food businesses</p><h2>Good food deserves to be found.</h2><p>Create a public profile, showcase your menu or products and publish your own articles. Free to apply.</p></div><Link className="fp26-action" href="/for-businesses">List your business <ArrowUpRight size={18}/></Link></section>
  </div></div>;
 }

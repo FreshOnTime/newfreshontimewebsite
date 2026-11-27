@@ -33,3 +33,5 @@ it('keeps products separate from businesses and restaurants in the new discovery
  expect(read('components/makers/MakerStudio.tsx')).toContain('Publish article in the journal');
  expect(read('components/discovery/GiftPlanner.tsx')).toContain('Copy enquiry');
 });
+
+it('makes gifting and contact paths prominent without the repeated homepage navigation',()=>{const home=read('app/page.tsx');expect(home).toContain('<GiftFeature/>');expect(home).toContain('<ConnectShelf/>');expect(home).not.toContain('<DiscoveryRail/>');expect(home).toContain('<EditorialPicks group="dining"/>');expect(read('components/discovery/Curated.tsx')).toContain('Not FreshPick partners');});

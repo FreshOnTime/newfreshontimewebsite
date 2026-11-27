@@ -3,7 +3,7 @@ const source = (path: string) => readFileSync(path,'utf8');
 
 it('preserves progressive enhancement and real food discovery in the premium homepage', () => {
   const page = source('app/page.tsx');
-  expect(source('components/discovery/ExploreSearch.tsx')).toContain("path:'/discover'");
+  expect(source('components/discovery/ExploreSearch.tsx')).toContain('action="/discover"');
   expect(source('components/discovery/ExploreSearch.tsx')).toContain('name="q"');
   expect(page).toContain('href="/for-businesses"');
   expect(page).toContain('supplier:publicMakerWhere');

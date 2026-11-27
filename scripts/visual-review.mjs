@@ -48,16 +48,14 @@ async function main(){
               await page.locator('.heritage-header').screenshot({path:out+'/current-header-'+width+'.png'});
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
               if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
-              const rail = page.getByRole('navigation',{name:'Browse FreshPick'});
-              assert.equal(await rail.getByRole('link').count(),5);
-              await page.getByRole('button',{name:'Eat & drink',exact:true}).click();
-              assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/eat-drink');
-              await page.getByRole('button',{name:'Everything',exact:true}).click();
-              await rail.screenshot({path:out+'/discovery-rail-'+width+'.png'});
+              assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
+              assert.equal(await page.getByRole('link',{name:'Plan your gift',exact:true}).getAttribute('href'),'/gifting#gift-planner');
+              assert.equal(await page.getByRole('link',{name:'Find a restaurant',exact:true}).getAttribute('href'),'/eat-drink');
+              await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
-              await page.waitForURL('**/discover?q=visual-no-match-000');
-              await page.getByRole('heading',{name:'No matching results yet.'}).waitFor();
+              await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
+              await page.getByRole('heading',{name:'No matching FreshPick profiles yet.'}).waitFor();
             }
             if(name==='item'){
               const details = page.locator('.lux-detail').first();
@@ -132,7 +130,7 @@ async function main(){
       const page=await reduced.newPage();
       await ready(page,new URL('/',base).href);
       assert.equal(await page.locator('main').getAttribute('data-studio-motion'),null,'Reduced motion must not activate GSAP');
-      assert(await page.getByRole('heading',{name:'Good food. Great finds.'}).isVisible(),'Headline must remain visible');
+      assert(await page.getByRole('heading',{name:'Find your next favourite.'}).isVisible(),'Headline must remain visible');
       await capture(page,'reduced-motion-homepage-390');
     }catch(error){errors.push(String(error));}finally{await reduced.close();}
   }finally{await browser.close();}

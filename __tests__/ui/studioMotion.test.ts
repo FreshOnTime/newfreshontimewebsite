@@ -17,5 +17,5 @@ it('retains the original chrome and functional discovery',()=>{
   expect(guard).toContain('<Navbar />');
   expect(guard).toContain('<ModernMotion/>');
   expect(source('app/page.tsx')).toContain('<DiscoveryChapters/>');
-  expect(source('components/discovery/ExploreSearch.tsx')).toContain("path:'/discover'");
+  expect(source('components/discovery/ExploreSearch.tsx')).toContain('action="/discover"');
 });

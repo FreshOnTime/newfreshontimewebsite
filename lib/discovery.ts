@@ -4,7 +4,7 @@ import type { Prisma } from '@prisma/client';
 
 export const publicProspectWhere = {reviewStatus:'approved',permissionStatus:'cleared',reviewedAt:{not:null}} satisfies Prisma.DiscoveryProspectWhereInput;
 export const publicProspectSelect = {id:true,name:true,category:true,area:true,products:true,website:true,instagram:true,facebook:true,tiktok:true,reviewedAt:true} satisfies Prisma.DiscoveryProspectSelect;
-export const diningCategories = ['Café','Café / mobile coffee','Restaurant','Home catering','Grazing / catering','Food experiences'];
+export const diningCategories = ['Café','Café / mobile coffee','Restaurant','Home catering','Grazing / catering','Food experiences','Bakery','Home bakery'];
 export type DiscoveryMode='all'|'dining'|'products'|'gifting'|'makers';
 export type PublicProspect=Prisma.DiscoveryProspectGetPayload<{select:typeof publicProspectSelect}>;
 export function searchText(value: unknown){return typeof value==='string'?value.trim().slice(0,100):''}

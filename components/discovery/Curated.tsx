@@ -1,0 +1,21 @@
+import Link from 'next/link';
+import Image from 'next/image';
+import {ArrowUpRight,ArrowRight,Utensils,Store,Gift,MapPin,Coffee,Croissant,Users} from 'lucide-react';
+import {editorialMatches,type EditorialGroup} from '@/lib/editorialDiscoveries';
+import {SectionHeading} from './Editorial';
+
+export function EditorialPicks({group,q='',area='',limit=4}:{group:EditorialGroup;q?:string;area?:string;limit?:number}){
+ const entries=editorialMatches(group,q,area).slice(0,limit);
+ if(!entries.length)return null;
+ return <section className="fp26-guide-section fp-curated-picks"><SectionHeading title={group==='dining'?'Colombo dining discoveries':'Gift ideas from local businesses'}/><p className="fp26-meta mb-4">Independent editorial finds from official business websites. Not FreshPick partners or customer reviews. Confirm current details directly.</p><div className="fp-curated-list">{entries.map(p=><article key={p.id} className="fp-curated-entry"><p className="fp26-label">{p.category}</p><h3>{p.name}</h3><p className="fp26-location"><MapPin size={14} aria-hidden="true"/>{p.area}</p><p>{p.description}</p><a href={p.url} target="_blank" rel="noopener noreferrer" className="fp26-textlink">Official website <ArrowUpRight size={16} aria-hidden="true"/></a></article>)}</div></section>
+}
+const occasions=[
+ {title:'Coffee & cafés',desc:'Find a place for your next cup.',href:'/eat-drink?type=cafe',icon:Coffee},
+ {title:'Date night',desc:'A practical guide to choosing a table for two.',href:'/stories/a-table-for-two',icon:Utensils},
+ {title:'Family & group meals',desc:'Explore restaurants and ask about group seating.',href:'/eat-drink?type=restaurant',icon:Users},
+ {title:'Bakeries & sweet treats',desc:'Meet local bakers and explore what they make.',href:'/makers?kind=Bakery',icon:Croissant},
+] as const;
+export function OccasionShelf(){return <section className="fp26-guide-section fp-occasion-section"><SectionHeading title="Explore by occasion" href="/eat-drink" label="Browse dining"/><div className="fp-occasion-grid">{occasions.map(({title,desc,href,icon:Icon})=><Link key={title} href={href} className="fp-occasion"><Icon size={26} strokeWidth={1.5} aria-hidden="true"/><h3>{title}</h3><p>{desc}</p><ArrowRight size={17} aria-hidden="true"/></Link>)}</div></section>}
+export function GiftFeature(){return <section className="fp26-guide-section fp-gift-feature"><div className="fp-gift-image"><Image src="/images/categories/bakery.webp" alt="Baked treats, inspiration for food gifts" fill sizes="(max-width:760px) 100vw,40vw"/></div><div className="fp-gift-copy"><p className="fp26-label">Personal & corporate gifting</p><h2>Make their day delicious.</h2><p>Find chocolates, cakes, hampers and thoughtful food gifts. Planning for one person or an entire team? Prepare a clear enquiry and contact suppliers directly.</p><div className="fp-feature-actions"><Link className="fp26-action" href="/gifting#gift-planner">Plan your gift <Gift size={18} aria-hidden="true"/></Link><Link className="fp26-textlink" href="/gifting">Explore gift suppliers <ArrowUpRight size={16} aria-hidden="true"/></Link></div></div></section>}
+export function ConnectShelf(){return <section className="fp26-guide-section fp-connect-section"><SectionHeading title="Connect with the people behind the food"/><div className="fp-connect-grid"><article><Store size={27} strokeWidth={1.5} aria-hidden="true"/><h3>Connect with makers</h3><p>Explore independent brands, bakeries and kitchens. Ask about their products through their official channels.</p><Link href="/makers" className="fp26-action">Find a maker <ArrowUpRight size={16}/></Link></article><article><Utensils size={27} strokeWidth={1.5} aria-hidden="true"/><h3>Connect with restaurants</h3><p>Find restaurants and cafés, explore their menus and ask them directly about visiting or reservations.</p><Link href="/eat-drink" className="fp26-action">Find a restaurant <ArrowUpRight size={16}/></Link></article></div></section>}
+export function FoodBrandTabs({products=false}:{products?:boolean}){return <nav className="fp26-topicnav" aria-label="Food and brands"><Link href="/makers" aria-current={!products?'page':undefined}>Businesses & makers</Link><Link href="/food-products" aria-current={products?'page':undefined}>Individual products</Link></nav>}

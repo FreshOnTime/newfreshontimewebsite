@@ -4,7 +4,7 @@ import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
 import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
 
 const groups = [
-  { title: 'Explore', links: [['Discover','/discover'],['Makers','/makers'],['Eat & drink','/eat-drink'],['Products','/food-products'],['Gifting','/gifting'],['Journal','/stories']] },
+  { title: 'Explore', links: [['Explore','/discover'],['Food & brands','/makers'],['Dining','/eat-drink'],['Products','/food-products'],['Gifting','/gifting'],['Journal','/stories']] },
   { title: 'FreshPick', links: [['About FreshPick','/about'],['How it works','/how-it-works'],['Editorial archive','/blog']] },
   { title: 'For businesses', links: [['For businesses','/for-businesses'],['List your business','/join'],['Business studio','/dashboard'],['Listing corrections','/contact']] },
   { title: 'Here to help', links: [['Help','/help'],['Account','/profile'],['Contact','/contact']] },
