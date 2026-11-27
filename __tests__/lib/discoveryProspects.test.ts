@@ -32,4 +32,17 @@ it('keeps reviewed imported businesses searchable under the same type filters',a
  expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([publicProspectWhere,{category:{in:['Café','Café / mobile coffee']}}])})}));
 });
 
-it('excludes dining categories from the independent food brand directory',async()=>{(prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([]);await listProspects('makers','','',1);expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([{category:{notIn:expect.arrayContaining(['Restaurant','Café','Bakery','Home bakery','Home catering','Home kitchen'])}}])})}));});
+it('excludes venue-only and experience listings while allowing bakeries and home food businesses in the maker directory',async()=>{
+ (prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([]);
+ await listProspects('makers','','',1);
+ expect(prisma.discoveryProspect.findMany).toHaveBeenLastCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([publicProspectWhere,{category:{notIn:['Café','Café / mobile coffee','Restaurant','Food experiences']}}])})}));
+ await listProspects('makers','','',1,{type:'bakery'});
+ expect(prisma.discoveryProspect.findMany).toHaveBeenLastCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([{category:{in:['Home bakery','Bakery']}}])})}));
+ await listProspects('dining','','',1,{type:'bakery'});
+ expect(prisma.discoveryProspect.findMany).toHaveBeenLastCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([{category:{in:expect.arrayContaining(['Bakery','Home bakery'])}}])})}));
+});
+it('supports reviewed gift businesses without requiring a gift keyword',async()=>{
+ (prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([]);
+ await listProspects('gifting','','',1,{type:'gift_creator'});
+ expect(prisma.discoveryProspect.findMany).toHaveBeenLastCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([publicProspectWhere,{category:{in:['Food gifts','Gift hampers']}}])})}));
+});
