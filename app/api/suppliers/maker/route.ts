@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
 import { fulfilmentOptions, makerImageSrc, makerKinds, makerSummarySelect } from '@/lib/makers';
 import prisma from '@/lib/prisma';
+import {businessSpecialties} from '@/lib/businessSpecialties';
 import {businessTypes,officialHttps} from '@/lib/businessTypes';
 
 const price = z.number().min(0.01).max(9999999999.99).multipleOf(0.01);
@@ -19,6 +20,7 @@ const actions = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('profile'),
     businessType:z.enum(businessTypes).optional(),
+    businessSpecialties:z.array(z.enum(businessSpecialties)).max(8).transform(values=>[...new Set(values)]).optional(),
     website:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v),'Enter a valid HTTPS website'),
     instagram:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v,'instagram.com'),'Enter a valid Instagram profile URL'),
     handle: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(50),
@@ -118,6 +120,7 @@ export const POST = requireAuth(async request => {
         where: { id: supplierId, OR: [{ makerHandle: null }, { makerHandle: data.handle }] },
         data: {
           ...(data.businessType?{businessType:data.businessType}:{}),
+          ...(data.businessSpecialties!==undefined?{businessSpecialties:data.businessSpecialties}:{}),
           ...(data.website!==undefined?{businessWebsite:officialHttps(data.website)||null}:{}),
           ...(data.instagram!==undefined?{businessInstagram:officialHttps(data.instagram,"instagram.com")||null}:{}),
           makerHandle: data.handle, makerBio: data.bio, makerTown: data.town,
