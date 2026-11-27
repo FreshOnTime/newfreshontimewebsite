@@ -278,6 +278,9 @@ model Supplier {
   reviewedAt DateTime?
   reviewVersion Int @default(0)
 
+  businessType     String      @default("maker")
+  businessWebsite  String?
+  businessInstagram String?
   makerHandle      String?     @unique
   makerPublished   Boolean     @default(false)
   makerBio         String?
@@ -296,6 +299,7 @@ model Supplier {
 
   @@index([status])
   @@index([name])
+  @@index([businessType])
   @@map("suppliers")
 }
 

@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 export const makerKinds = ['Bakery', 'Prepared food', 'Pantry', 'Produce', 'Dairy & eggs', 'Drinks', 'Other'] as const;
-export const fulfilmentOptions = ['Pickup', 'Maker delivery', 'Pickup or maker delivery', 'Market collection'] as const;
+export const fulfilmentOptions = ['Pickup', 'Maker delivery', 'Pickup or maker delivery', 'Market collection', 'Dine-in', 'Dine-in and takeaway', 'Direct enquiry'] as const;
 
 export const publicMakerWhere = {
   status: 'active',
@@ -13,7 +13,7 @@ export const publicMakerWhere = {
 
 export const makerSummarySelect = {
   id: true, name: true, makerHandle: true, makerBio: true, makerTown: true,
-  makerWhatsApp: true, makerFulfilment: true,
+  makerWhatsApp: true, makerFulfilment: true, businessType:true, businessWebsite:true, businessInstagram:true,
 } satisfies Prisma.SupplierSelect;
 
 export function openBatches(now = new Date()) {

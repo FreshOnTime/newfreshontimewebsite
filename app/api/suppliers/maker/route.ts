@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
 import { fulfilmentOptions, makerImageSrc, makerKinds, makerSummarySelect } from '@/lib/makers';
 import prisma from '@/lib/prisma';
+import {businessTypes,officialHttps} from '@/lib/businessTypes';
 
 const price = z.number().min(0.01).max(9999999999.99).multipleOf(0.01);
 const dateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, 'Choose a Sri Lanka date and time')
@@ -17,6 +18,9 @@ const id = z.string().min(1).max(100);
 const actions = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('profile'),
+    businessType:z.enum(businessTypes).optional(),
+    website:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v),'Enter a valid HTTPS website'),
+    instagram:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v,'instagram.com'),'Enter a valid Instagram profile URL'),
     handle: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(50),
     bio: z.string().trim().max(1200),
     town: z.string().trim().min(2).max(100),
@@ -71,8 +75,8 @@ async function approvedSupplier(userId: string, role: string) {
 }
 
 const fail = (error: string, status: number) => Response.json({ error }, { status });
-const approvalRequired = () => fail('Your maker page needs approval before you can publish. Check your notifications for updates.', 403);
-const missing = () => fail('This entry was not found in your maker studio.', 404);
+const approvalRequired = () => fail('Your business page needs approval before you can publish. Check your notifications for updates.', 403);
+const missing = () => fail('This entry was not found in your business studio.', 404);
 
 export const GET = requireAuth(async request => {
   const supplier = await approvedSupplier(request.user!.userId, request.user!.role);
@@ -113,6 +117,9 @@ export const POST = requireAuth(async request => {
       const updated = await prisma.supplier.updateMany({
         where: { id: supplierId, OR: [{ makerHandle: null }, { makerHandle: data.handle }] },
         data: {
+          ...(data.businessType?{businessType:data.businessType}:{}),
+          ...(data.website!==undefined?{businessWebsite:officialHttps(data.website)||null}:{}),
+          ...(data.instagram!==undefined?{businessInstagram:officialHttps(data.instagram,"instagram.com")||null}:{}),
           makerHandle: data.handle, makerBio: data.bio, makerTown: data.town,
           makerWhatsApp: phone.number, makerFulfilment: data.fulfilment, makerPublished: data.published,
         },
@@ -121,7 +128,7 @@ export const POST = requireAuth(async request => {
       return Response.json({ ok: true });
     }
 
-    if (!supplier.makerHandle) return fail('Save your maker profile first.', 409);
+    if (!supplier.makerHandle) return fail('Save your business profile first.', 409);
 
     switch (data.action) {
       case 'item': {
@@ -191,7 +198,7 @@ export const POST = requireAuth(async request => {
           await tx.makerStoryItem.createMany({ data: tags.map(tag => ({ ...tag, storyId: story.id })) });
           return 'saved';
         });
-        if (result === 'invalid-tags') return fail('Only tag items from your maker studio.', 400);
+        if (result === 'invalid-tags') return fail('Only tag items from your business studio.', 400);
         if (result === 'missing') return missing();
         break;
       }
