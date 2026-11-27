@@ -6,7 +6,7 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
@@ -53,7 +53,7 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
+          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
@@ -74,6 +74,9 @@ async function main(){
               if(width>=1280){const contact=page.getByRole('navigation',{name:'Discover FreshPick',exact:true}).getByRole('link',{name:'Contact',exact:true});assert(await contact.isVisible());assert.equal(await contact.getAttribute('href'),'/contact');}
               if(phone){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();const contact=page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Contact',exact:true});assert(await contact.isVisible());assert.equal(await contact.getAttribute('href'),'/contact');assert(await page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Saved picks'}).isVisible());await page.screenshot({path:out+'/current-mobile-menu-'+width+'.png',animations:'disabled'});await page.keyboard.press('Escape');await page.getByRole('button',{name:'Open menu'}).waitFor();await page.getByRole('button',{name:'Open search'}).click();await page.locator('#nav-search').waitFor();assert(await page.locator('#nav-search').isEditable());await page.getByRole('button',{name:'Close search'}).click();}
               assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
+              assert.equal(await page.locator('.fp-hub-path').count(),6);
+              assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
+              assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(184, 222, 156)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
               assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
@@ -81,6 +84,22 @@ async function main(){
               await page.locator('.fp26-search button').click();
               await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
               await page.getByRole('heading',{name:'No matching FreshPick profiles yet.'}).waitFor();
+            }
+            if(name==='atlas'){
+              await page.locator('.fp-atlas-search input[name=q]').fill('කොත්තු');
+              await page.locator('.fp-atlas-search button').click();
+              await page.waitForURL(url=>url.pathname==='/food-atlas'&&url.searchParams.get('q')==='කොත්තු');
+              assert.equal(await page.locator('.fp-atlas-card').count(),1);
+              assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
+            }
+            if(name==='atlas-dish'){
+              assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
+              await page.getByRole('button',{name:'Save',exact:true}).click();
+              assert.equal(await page.getByRole('button',{name:'Saved',exact:true}).getAttribute('aria-pressed'),'true');
+              const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('freshpick:saved-maker-picks')||'[]'));
+              assert(stored.some(p=>p.href==='/food-atlas/kottu'));
+              await page.getByRole('button',{name:'Saved',exact:true}).click();
+              assert.equal(await page.getByRole('link',{name:'Find related dining discoveries'}).getAttribute('href'),'/eat-drink?q=kottu');
             }
             if(name==='item'){
               const details = page.locator('.lux-detail').first();
