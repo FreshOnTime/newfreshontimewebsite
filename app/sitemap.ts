@@ -1,3 +1,4 @@
+import {dishes,dishPath} from '@/lib/foodAtlas';
 import { fieldNotes, notePath } from '@/lib/fieldNotes';
 import type { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
@@ -19,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.discoveryProspect.findMany({where:publicProspectWhere,select:{id:true}}),
   ]);
   const managed = new Set(managedGuides.map(row=>row.slug));
-  const paths = [...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
+  const paths = [...dishes.map(dishPath),...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
     ...items.map(i=>makerItemPath(i.supplier.makerHandle,i.slug)), ...stories.map(s=>`/makers/${s.supplier?.makerHandle}/stories/${s.slug}`),
     ...journal.map(j=>`/blog/${encodeURIComponent(j.slug)}`), ...editorialGuides.filter(g=>!managed.has(g.slug)).map(g => guidePath(g.slug))];
   return [...new Set(paths)].map(path=>({url:absoluteUrl(path)}));
