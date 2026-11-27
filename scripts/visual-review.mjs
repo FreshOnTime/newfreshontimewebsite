@@ -240,7 +240,8 @@ async function main(){
           const expectPrivate=async(label)=>{
             const response=await visitor.goto(publicUrl,{waitUntil:'networkidle'});
             assert(response&&[200,404].includes(response.status()),label+': unexpected HTTP status '+response?.status());
-            await visitor.locator('#main-content').getByRole('heading',{name:'We couldn’t find that page.',exact:true}).waitFor();
+            await visitor.locator('#main-content h1#not-found-title').waitFor({state:'visible'});
+             assert.equal(await visitor.locator('#main-content h1#not-found-title').textContent(),'A little off the food trail.');
             assert.equal(await visitor.locator('#main-content').getByText(content.title,{exact:true}).count(),0,label+': private title rendered');
             assert.equal(await visitor.locator('#main-content').getByText(content.body,{exact:true}).count(),0,label+': private body rendered');
             const html=await response.text();
