@@ -10,12 +10,12 @@ const routes = [
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
-  ['journal','/stories'],['journal-dining','/stories?topic=Dining%20guide'],['dining-guide','/stories/a-table-for-two'],['buying-guide','/stories/the-price-on-the-jar'],['gifting-guide','/stories/a-gift-worth-opening'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
+  ['journal','/stories'],['journal-dining','/stories?topic=Dining%20guide'],['dining-guide','/stories/a-table-for-two'],['buying-guide','/stories/the-price-on-the-jar'],['gifting-guide','/stories/a-gift-worth-opening'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['account-choice','/auth/signup'],['not-found','/freshpick-visual-missing-page-404'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
 ];
 const out = process.env.VISUAL_OUTPUT_DIR || 'visual-review';
-async function ready(page,path) {
+async function ready(page,path,expectedStatus=200) {
   const response = await page.goto(path,{waitUntil:'networkidle',timeout:60000});
-  assert(response && response.ok(), 'Failed to load '+path);
+  assert(response && response.status()===expectedStatus, 'Unexpected status for '+path+': '+response?.status());
   await page.evaluate(async()=>{await document.fonts.ready; await Promise.all(Array.from(document.images).map(async i=>{i.loading='eager';try{await i.decode()}catch{}}));});
 }
 async function capture(page,name) {
@@ -53,9 +53,11 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
-          try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
+          if((width===320||width===430)&&!['homepage','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','account-choice','not-found','contact'].includes(name))continue;
+          try{await ready(page,new URL(path,base).href,name==='not-found'?404:200);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
+            if(name==='not-found'){assert.equal(await page.locator('main h1').count(),1);assert.equal(await page.getByRole('link',{name:'Discover food',exact:true}).getAttribute('href'),'/discover');}
+            if(name==='account-choice'){assert(await page.getByRole('heading',{name:'Member account',exact:true}).isVisible());assert(await page.getByRole('heading',{name:'Business page',exact:true}).isVisible());}
             if(name==='homepage'){
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
