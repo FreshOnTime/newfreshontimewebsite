@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import {listLiveVendors} from '@/lib/liveVendorService';
+import {liveLabels,liveDate} from '@/lib/liveVendor';
+import {SectionHeading} from './Editorial';
+export async function LiveShelf({title}:{title:string}){const vendors=await listLiveVendors().catch(error=>{console.error('Live shelf unavailable',error);return null});return <section className="fp26-guide-section"><SectionHeading title={title} href="/live" label="FreshPick Live"/><p className="fp26-meta mb-3">Food trucks, coffee carts and pop-ups — find their latest vendor-reported serving stops.</p>{vendors&&vendors.length>0?<div className="fp-atlas-grid">{vendors.slice(0,3).map(v=><Link className="fp-atlas-card" href="/live" key={v.handle}><p className="fp26-label">{liveLabels[v.kind]} · Serving</p><h3>{v.name}</h3><p>{v.location}, {v.area}</p><p>Until {liveDate(v.servingUntil)}</p></Link>)}</div>:<p className="fp26-meta">{vendors===null?'Live locations are temporarily unavailable.':'No serving stops reported yet. Check back for updates.'}</p>}<Link href="/live" className="fp26-action mt-3">Explore live vendors</Link></section>}
