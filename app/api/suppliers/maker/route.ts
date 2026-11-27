@@ -90,7 +90,7 @@ const missing = () => fail('This entry was not found in your business studio.', 
 export const GET = requireAuth(async request => {
   const supplier = await approvedSupplier(request.user!.userId, request.user!.role);
   if (!supplier) return approvalRequired();
-  const [items, stories, catalogue] = await Promise.all([
+  const [items, stories] = await Promise.all([
     prisma.makerItem.findMany({
       where: { supplierId: supplier.id },
       orderBy: { createdAt: 'desc' },
@@ -101,13 +101,8 @@ export const GET = requireAuth(async request => {
       orderBy: { updatedAt: 'desc' },
       select: { id: true, slug: true, title: true, excerpt: true, content: true, category:true, featuredImage:true, published: true, makerItems: { select: { itemId: true } } },
     }),
-    prisma.product.findMany({
-      where: { supplierId: supplier.id, archived: false },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, description: true, price: true, image: true },
-    }),
   ]);
-  return Response.json({ supplier, items, stories, catalogue }, { headers: { 'Cache-Control': 'private, no-store' } });
+  return Response.json({ supplier, items, stories }, { headers: { 'Cache-Control': 'private, no-store' } });
 });
 
 export const POST = requireAuth(async request => {

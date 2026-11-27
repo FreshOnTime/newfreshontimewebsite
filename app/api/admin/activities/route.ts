@@ -5,14 +5,14 @@ import prisma from '@/lib/prisma';
 import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 const querySchema = z.object({
-  page: z.string().optional().transform((v) => (v ? Math.max(parseInt(v), 1) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(parseInt(v), 100) : 20)),
-  resourceType: z.enum(['user', 'customer', 'supplier', 'category', 'product', 'order', 'auth']).optional(),
-  action: z.string().optional(),
-  userId: z.string().optional(),
+  page: z.coerce.number().int().min(1).max(100000).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  resourceType: z.string().trim().min(1).max(64).regex(/^[a-z][a-z0-9_-]*$/i).optional(),
+  action: z.string().trim().max(200).optional(),
+  userId: z.string().trim().max(200).optional(),
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
-  search: z.string().optional(),
+  search: z.string().trim().max(200).optional(),
 });
 
 function toActivityType(resourceType?: string | null, action?: string): string {
@@ -30,8 +30,6 @@ interface AuditLogSummary {
   action: string;
   resourceType: string;
   resourceId: string | null;
-  before: Prisma.JsonValue | null;
-  after: Prisma.JsonValue | null;
   ip: string | null;
   userAgent: string | null;
   timestamp: Date | string;
@@ -81,10 +79,11 @@ export const GET = requireAdminSimple(async (request) => {
     const [logs, total] = await Promise.all([
       prisma.auditLog.findMany({
         where,
-        orderBy: { timestamp: 'desc' },
+        orderBy: [{ timestamp: 'desc' },{id:'desc'}],
         skip,
         take: limit,
-        include: {
+        select: {
+          id:true,userId:true,action:true,resourceType:true,resourceId:true,ip:true,userAgent:true,timestamp:true,
           user: { select: { firstName: true, lastName: true, email: true } },
         },
       }),
@@ -96,7 +95,7 @@ export const GET = requireAdminSimple(async (request) => {
       const userName = u
         ? [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || String(l.userId)
         : undefined;
-      const log = { ...l, _id: l.id };
+      const log = { _id:l.id, action:l.action,resourceType:l.resourceType,resourceId:l.resourceId,ip:l.ip,userAgent:l.userAgent };
 
       return {
         _id: l.id,
@@ -113,10 +112,11 @@ export const GET = requireAdminSimple(async (request) => {
 
     return NextResponse.json({
       activities,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) }
-    });
+      pagination: { page, limit, total, pages: Math.max(1,Math.ceil(total / limit)) }
+    },{headers:{'Cache-Control':'private, no-store'}});
   } catch (error) {
-    console.error('Get activities error:', error);
-    return NextResponse.json({ error: 'Failed to fetch activities' }, { status: 500 });
+    if(error instanceof z.ZodError)return NextResponse.json({error:'Invalid audit filters'},{status:400,headers:{'Cache-Control':'private, no-store'}});
+    console.error('Get activities error:', error instanceof Error?error.name:'Error');
+    return NextResponse.json({ error: 'Failed to fetch activities' }, { status: 500,headers:{'Cache-Control':'private, no-store'} });
   }
 });

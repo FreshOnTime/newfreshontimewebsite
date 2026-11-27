@@ -10,6 +10,7 @@ import {businessMediaSource,readArticleCover} from '@/lib/businessMedia';
 import {businessSetup,businessPresentation} from '@/lib/businessPresentation';
 import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import {readWorkspace} from '@/lib/api/workspace-read';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
 import {businessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
@@ -20,8 +21,8 @@ type Profile = {
   makerHandle: string | null; makerBio: string | null; makerTown: string | null;
   makerWhatsApp: string | null; makerFulfilment: string | null; makerPublished: boolean;
 };
-type CatalogueItem = { id: string; name: string; description: string | null; price: string | null; image: string | null };
-type Item = CatalogueItem & {
+type OfferingFields = { id: string; name: string; description: string | null; price: string | null; image: string | null };
+type Item = OfferingFields & {
   slug: string; kind: string; madeToOrder: boolean; published: boolean;
   batches: { id: string; readyAt: string; cutoff: string; soldOut: boolean }[];
 };
@@ -29,7 +30,7 @@ type Story = {
   id: string; slug: string; title: string; excerpt: string; content: string; category?:string|null; featuredImage?:unknown;
   published: boolean; makerItems: { itemId: string }[];
 };
-type Studio = { supplier: Profile; items: Item[]; stories: Story[]; catalogue: CatalogueItem[] };
+type Studio = { supplier: Profile; items: Item[]; stories: Story[] };
 const fields = 'block min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-normal';
 const label = 'grid gap-1.5 text-sm font-semibold';
 const primary = 'inline-flex min-h-11 items-center rounded-lg bg-brand-green px-4 text-sm font-semibold text-white disabled:opacity-50';
@@ -44,18 +45,15 @@ async function uploadedMedia(form:FormData,name:string,previous?:string|null){
 }
 
 async function readStudio(signal?: AbortSignal): Promise<Studio> {
-  const response = await authenticatedApiFetch('/api/suppliers/maker', { signal, cache: 'no-store' });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Unable to load your business studio.');
-  return data;
+  return readWorkspace<Studio>('/api/suppliers/maker',signal);
 }
 
 export default function MakerStudio() {
   const [studio, setStudio] = useState<Studio>();
   const [notice, setNotice] = useState<{ text: string; error?: boolean }>();
   const [busy, setBusy] = useState(false);
+  const [loadVersion,setLoadVersion]=useState(0);
   const [itemEdit, setItemEdit] = useState('');
-  const [copyId, setCopyId] = useState('');
   const [tab,setTab] = useState('Profile');
   const [storyEdit, setStoryEdit] = useState('');
   const [editorVersion,setEditorVersion]=useState(0);
@@ -66,7 +64,7 @@ export default function MakerStudio() {
       if (!controller.signal.aborted) setNotice({ text: error.message, error: true });
     });
     return () => controller.abort();
-  }, []);
+  }, [loadVersion]);
 
   async function save(build: () => object | Promise<object>, message: string, onSaved?: () => void) {
     setBusy(true);
@@ -92,9 +90,9 @@ export default function MakerStudio() {
     }
   }
 
-  if (!studio) return <section className="fp-workspace-surface"><h2 className="fp-workspace-heading">Your publishing workspace</h2><p role={notice?.error ? 'alert' : 'status'} className="text-sm text-muted-foreground">{notice?.text || 'Loading business studio…'}</p>{notice?.error&&<div className="flex flex-wrap gap-3 mt-4"><Link href="/contact" className="maker-button">Contact FreshPick</Link><Link href="/for-businesses" className="editorial-link">How business approval works</Link></div>}</section>;
+  if (!studio) return <section className="fp-workspace-surface"><h2 className="fp-workspace-heading">Your publishing workspace</h2><p role={notice?.error ? 'alert' : 'status'} className="text-sm text-muted-foreground">{notice?.text || 'Loading business studio…'}</p>{notice?.error&&<div className="flex flex-wrap gap-3 mt-4"><button type="button" className="maker-button" onClick={()=>{setNotice(undefined);setLoadVersion(v=>v+1)}}>Try again</button><Link href="/contact" className="editorial-link">Contact FreshPick</Link><Link href="/for-businesses" className="editorial-link">How business approval works</Link></div>}</section>;
 
-  const { supplier, items, catalogue, stories } = studio;
+  const { supplier, items, stories } = studio;
   const venue=isVenueOnly(supplier.businessType);
   const item = items.find(entry => entry.id === itemEdit);
   const copy = catalogue.find(entry => entry.id === copyId);
@@ -139,7 +137,7 @@ export default function MakerStudio() {
         kind: form.get('kind'), price: form.get('price') ? Number(form.get('price')) : null, image,
         madeToOrder: form.has('madeToOrder'), published: form.has('published'),
       };
-    }, 'Item saved.', () => { element.reset(); setItemEdit(''); setCopyId(''); });
+    }, 'Item saved.', () => { element.reset(); setItemEdit(''); });
   }
 
   function submitBatch(event: FormEvent<HTMLFormElement>) {
@@ -216,14 +214,7 @@ export default function MakerStudio() {
     {supplier.makerHandle && <>
       <section hidden={tab !== 'Items'} className={panel}>
         <h2 className={heading}>{item ? 'Edit offering' : venue?'Add a menu item':'Add a product'}</h2>
-        {!item && catalogue.length > 0 && <label className={label}>Start from your catalogue
-          <select className={fields} value={copyId} onChange={event => setCopyId(event.target.value)}>
-            <option value="">Create from scratch</option>
-            {catalogue.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}
-          </select>
-          <span className="text-xs font-normal text-muted-foreground">Copies the product details into a maker listing you can edit here.</span>
-        </label>}
-        <form key={item?.id || copy?.id || 'new-item'} onSubmit={submitItem} className="grid gap-4 md:grid-cols-2">
+        <form key={item?.id || 'new-item'} onSubmit={submitItem} className="grid gap-4 md:grid-cols-2">
           <label className={label}>Item name<input name="name" className={fields} defaultValue={source?.name || ''} required minLength={2} maxLength={120} /></label>
           <label className={label}>Category
             <select name="kind" className={fields} defaultValue={item?.kind || 'Bakery'}>{makerKinds.map(kind => <option key={kind}>{kind}</option>)}</select>
@@ -245,7 +236,7 @@ export default function MakerStudio() {
           <span>{entry.name} · {entry.published ? 'Published' : 'Hidden'}</span>
           <div className="flex gap-4">
             {entry.published && supplier.makerPublished && <Link href={makerItemPath(supplier.makerHandle, entry.slug)} className={plain}>View</Link>}
-            <button type="button" disabled={busy} onClick={() => { setItemEdit(entry.id); setCopyId(''); }} className={plain}>Edit<span className="sr-only"> {entry.name}</span></button>
+            <button type="button" disabled={busy} onClick={() => { setItemEdit(entry.id); }} className={plain}>Edit<span className="sr-only"> {entry.name}</span></button>
           </div>
         </div>)}
       </section>

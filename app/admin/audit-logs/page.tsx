@@ -1,6 +1,6 @@
 "use client";
 
-import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import { readWorkspace } from '@/lib/api/workspace-read';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -44,8 +44,10 @@ export default function AuditLogsPage() {
   const [userId, setUserId] = useState<string>(searchParams.get('userId') || '');
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
 
-  const page = Number(searchParams.get('page') || '1');
-  const limit = Number(searchParams.get('limit') || '20');
+  const page = Math.max(1,Math.min(100000,Number(searchParams.get('page'))||1));
+  const limit = Math.max(1,Math.min(100,Number(searchParams.get('limit'))||20));
+  const applied=searchParams.toString();
+  const [version,setVersion]=useState(0);
   const resourceTypeSelectValue = resourceType === '' ? 'all' : resourceType;
 
   useEffect(() => {
@@ -54,28 +56,22 @@ export default function AuditLogsPage() {
       setLoading(true);
       setError(null);
       try {
-        const params = new URLSearchParams();
-        params.set('page', String(page));
-        params.set('limit', String(limit));
-        if (resourceType) params.set('resourceType', resourceType);
-        if (action) params.set('action', action);
-        if (userId) params.set('userId', userId);
-        if (search) params.set('search', search);
-        const res = await authenticatedApiFetch(`/api/admin/activities?${params.toString()}`, { signal: controller.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const params = new URLSearchParams(applied);
+        params.set('page',String(page));params.set('limit',String(limit));
+        const data=await readWorkspace<{activities:Activity[];pagination:Pagination}>(`/api/admin/activities?${params}`,controller.signal);
+        if(controller.signal.aborted)return;
         setActivities(data.activities || []);
         setPagination(data.pagination || { page: 1, limit: 20, total: 0, pages: 0 });
       } catch (e) {
-        if ((e as { name?: string } | undefined)?.name === 'AbortError') return;
-        setError('Failed to load audit logs');
+        if (controller.signal.aborted) return;
+        setError(e instanceof Error?e.message:'Failed to load audit logs');
       } finally {
-        setLoading(false);
+        if(!controller.signal.aborted)setLoading(false);
       }
     }
     load();
     return () => controller.abort();
-  }, [page, limit, resourceType, action, userId, search]);
+  }, [page, limit, applied,version]);
 
   const applyFilters = () => {
     const params = new URLSearchParams();
@@ -112,10 +108,7 @@ export default function AuditLogsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-normal">Audit Logs</h1>
-        <p className="text-muted-foreground">Track changes and actions performed by admins.</p>
-      </div>
+      <header className="fp-workspace-hero"><p>FreshPick / Administration</p><h1>Audit trail.</h1><p>Review recorded administrative actions, separate from account notifications.</p></header>
 
       <Card>
         <CardHeader>
@@ -136,7 +129,7 @@ export default function AuditLogsPage() {
                   <SelectItem value="category">Category</SelectItem>
                   <SelectItem value="product">Product</SelectItem>
                   <SelectItem value="order">Order</SelectItem>
-                  <SelectItem value="auth">Auth</SelectItem>
+                  <SelectItem value="auth">Authentication</SelectItem><SelectItem value="notification">Notifications</SelectItem><SelectItem value="blog">Journal articles</SelectItem><SelectItem value="discovery_content">Food &amp; culture</SelectItem><SelectItem value="discovery_prospect">External listings</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -146,13 +139,13 @@ export default function AuditLogsPage() {
             </div>
             <div className="md:col-span-1">
               <label className="text-xs text-muted-foreground">User ID</label>
-              <Input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="Mongo ObjectId"/>
+              <Input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="Account ID"/>
             </div>
             <div className="md:col-span-2">
               <label className="text-xs text-muted-foreground">Search</label>
               <div className="flex gap-2">
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search action, resource, IP..."/>
-                <Button onClick={applyFilters} variant="default"><Search className="h-4 w-4"/></Button>
+                <Button onClick={applyFilters} aria-label="Apply audit filters" variant="default"><Search className="h-4 w-4"/></Button>
                 <Button onClick={clearFilters} variant="outline">Reset</Button>
               </div>
             </div>
@@ -166,7 +159,7 @@ export default function AuditLogsPage() {
           <CardDescription>{pagination.total} result(s)</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && <div className="text-red-600 text-sm mb-3">{error}</div>}
+          {error && <div role="alert" className="text-red-600 text-sm mb-3">{error}<button className="ml-3 min-h-11 underline" onClick={()=>setVersion(v=>v+1)}>Try again</button></div>}
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -186,7 +179,7 @@ export default function AuditLogsPage() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Spinner /> Loading...</div>
                     </TableCell>
                   </TableRow>
-                ) : activities.length === 0 ? (
+                ) : error ? <TableRow><TableCell colSpan={6}>Audit logs unavailable. Retry to load the records.</TableCell></TableRow> : activities.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6}>
                       <div className="text-sm text-muted-foreground">No activities found.</div>
@@ -195,7 +188,7 @@ export default function AuditLogsPage() {
                 ) : (
                   activities.map((a) => (
                     <TableRow key={a._id}>
-                      <TableCell className="whitespace-nowrap">{new Date(a.timestamp).toLocaleString()}</TableCell>
+                      <TableCell className="whitespace-nowrap">{new Date(a.timestamp).toLocaleString('en-LK',{timeZone:'Asia/Colombo'})}</TableCell>
                       <TableCell className="whitespace-nowrap">{a.userName || a.userId || '—'}</TableCell>
                       <TableCell className="whitespace-nowrap">{badgeFor(a.type)}</TableCell>
                       <TableCell className="max-w-[520px]"><div className="truncate" title={a.description}>{a.description}</div></TableCell>
@@ -211,8 +204,8 @@ export default function AuditLogsPage() {
           <div className="flex items-center justify-between mt-4">
             <div className="text-xs text-muted-foreground">Page {pagination.page} of {pagination.pages} • {pagination.total} total</div>
             <div className="flex gap-2">
-              <Button variant="outline" disabled={pagination.page <= 1} onClick={() => onPageChange(pagination.page - 1)}>Prev</Button>
-              <Button variant="outline" disabled={pagination.page >= pagination.pages} onClick={() => onPageChange(pagination.page + 1)}>Next</Button>
+              <Button variant="outline" disabled={loading||pagination.page <= 1} onClick={() => onPageChange(pagination.page - 1)}>Prev</Button>
+              <Button variant="outline" disabled={loading||pagination.page >= pagination.pages} onClick={() => onPageChange(pagination.page + 1)}>Next</Button>
             </div>
           </div>
         </CardContent>

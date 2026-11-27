@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import {authenticatedApiFetch} from '@/lib/api/authenticated-fetch';
+import {readWorkspace} from '@/lib/api/workspace-read';
 import {ArrowUpRight,BookOpen,Building2,CheckCircle,MapPin,Mail,Users,Layers,MessageSquare,Store,Radio,RefreshCw} from 'lucide-react';
 type Data={metrics:Record<string,number|null>;auth:{managedEnabled:boolean;legacyMailConfigured:boolean}};
 const groups=[
@@ -10,7 +10,7 @@ const groups=[
 ];
 export default function DiscoveryOverview(){
  const [data,setData]=useState<Data>(),[error,setError]=useState(''),[loading,setLoading]=useState(true),[version,setVersion]=useState(0);
- useEffect(()=>{const controller=new AbortController();authenticatedApiFetch('/api/admin/discovery-overview',{cache:'no-store',signal:controller.signal}).then(async r=>{if(!r.ok)throw Error('Unable to load discovery metrics.');return r.json() as Promise<Data>}).then(v=>{setData(v);setError('')}).catch(e=>{if(!controller.signal.aborted)setError(e.message)}).finally(()=>{if(!controller.signal.aborted)setLoading(false)});return()=>controller.abort()},[version]);
+ useEffect(()=>{const controller=new AbortController();readWorkspace<Data>('/api/admin/discovery-overview',controller.signal).then(v=>{if(!controller.signal.aborted){setData(v);setError('')}}).catch(e=>{if(!controller.signal.aborted)setError(e.message)}).finally(()=>{if(!controller.signal.aborted)setLoading(false)});return()=>controller.abort()},[version]);
  return <div className="space-y-7"><header className="fp-workspace-hero"><p>FreshPick / Platform operations</p><h1>Discovery control centre.</h1><p>Manage owner applications, published pages and editorial content. External listings are not registered businesses.</p><div className="flex flex-wrap gap-3 mt-5">{!loading&&!error&&typeof data?.metrics.pendingApplications==="number"&&data.metrics.pendingApplications>0&&<Link href="/admin/supplier-applications" className="fp-workspace-primary">Review {data.metrics.pendingApplications} pending {data.metrics.pendingApplications===1?"application":"applications"} <ArrowUpRight size={16}/></Link>}<Link href="/admin/discovery-content" className="fp-workspace-secondary">Manage food &amp; culture</Link></div></header>
  <div className="flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{loading?'Loading live metrics…':error||'Current database counts, not traffic estimates.'}</p><button type="button" disabled={loading} onClick={()=>{setLoading(true);setVersion(v=>v+1)}} className="inline-flex min-h-11 items-center gap-2 rounded-md border bg-white px-3 text-sm"><RefreshCw size={15}/> Refresh</button></div>
  <div className="fp-workspace-surface"><h2 className="fp-workspace-heading">How businesses join</h2><p className="text-sm text-muted-foreground">Account created → business application submitted → administrator reviews identity and contact → approved owner opens Business Studio → owner publishes the page. Live serving updates need separate approval. External editorial links are not applications.</p></div>

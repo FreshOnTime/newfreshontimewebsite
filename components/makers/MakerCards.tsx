@@ -1,20 +1,11 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { formatMakerDate, formatMakerPrice, makerImageSrc, makerItemPath, makerWhatsAppLink } from '@/lib/makers';
+import { formatMakerDate, formatMakerPrice, makerItemPath, makerWhatsAppLink } from '@/lib/makers';
 
 type Money = number | string | { toString(): string };
 
-export function MakerPhoto({ image, name }: { image: string | null; name: string }) {
-  const source = makerImageSrc(image);
-  return source ? (
-    // eslint-disable-next-line @next/next/no-img-element -- Supplier images may be hosted on different domains.
-    <img src={source} alt={name} loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/3] w-full rounded-xl object-cover" />
-  ) : (
-    <div className="fp-monogram" aria-hidden="true">
-      <span>{name.trim().slice(0, 1).toUpperCase()}</span>
-    </div>
-  );
-}
+export {MakerPhoto} from './MakerPhoto';
+import {MakerPhoto} from './MakerPhoto';
 
 export function MakerItemCard({ handle, item, makerName, makerTown, menuItem=false }: {
   handle: string | null;
