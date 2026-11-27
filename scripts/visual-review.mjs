@@ -68,6 +68,12 @@ async function main(){
               await page.getByRole('button',{name:'Café',exact:true}).click();
               assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
             }
+            if(name==='dining'){
+              await page.getByRole('navigation',{name:'Business type'}).getByRole('link',{name:'Café',exact:true}).click();
+              await page.waitForURL(url=>url.pathname==='/eat-drink'&&url.searchParams.get('type')==='cafe');
+              assert(await page.getByRole('heading',{name:'Café Kumbuk',exact:true}).isVisible());
+              assert.equal(await page.getByRole('heading',{name:'Ministry of Crab',exact:true}).count(),0);
+            }
             if(name==='gifting'){
               await page.getByLabel('Total budget (LKR)').fill('10000');
               await page.getByLabel('Quantity').fill('5');
@@ -113,7 +119,7 @@ async function main(){
             try {
               const page=await context.newPage();
               await ready(page,new URL('/makers',base).href);
-              await page.getByRole('heading',{name:'The directory is opening.'}).waitFor();
+              await page.getByRole('heading',{name:'Independent food brands to explore'}).waitFor();
               await page.getByRole('heading',{name:'Meet the world of local food'}).waitFor();
               assert.equal(await page.locator('#makers-results').count(),0);
               await capture(page,'directory-launch-'+width);
