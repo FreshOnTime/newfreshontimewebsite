@@ -137,6 +137,12 @@ async function main(){
               assert(await page.getByRole('button',{name:'Send enquiry'}).isEnabled());
               assert.equal(await page.locator('.fp-contact-submit').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
             }
+            if(name==='maker-profile'){
+              await page.getByRole('heading',{name:'Explore baked creations',exact:true}).waitFor();
+              assert(await page.getByRole('heading',{name:'Enquire about your order',exact:true}).isVisible());
+              const schemas=await page.locator('script[type="application/ld+json"]').evaluateAll(nodes=>nodes.map(n=>JSON.parse(n.textContent||'{}')));
+              assert(schemas.some(s=>s['@type']==='ProfilePage'),'Missing public business profile schema');
+            }
             if(name==='join'){
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('gift_creator');
               await page.getByRole('checkbox',{name:'Food hampers',exact:true}).check();
@@ -190,7 +196,16 @@ async function main(){
             await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
             assert(await page.getByRole('checkbox',{name:'Food hampers',exact:true}).isVisible());
+            assert(await page.getByRole('progressbar',{name:'Business page setup progress'}).isVisible());
             await capture(page,'maker-studio-'+width);
+            await page.getByRole('button',{name:'Articles',exact:true}).click();
+            await page.getByRole('textbox',{name:'Article body',exact:true}).fill('A fictional article draft.');
+            await page.getByRole('button',{name:'Heading',exact:true}).click();
+            await page.getByRole('button',{name:'Preview article',exact:true}).click();
+            assert(await page.locator('[aria-label="Article preview"]').isVisible());
+            await page.getByRole('button',{name:'Back to editing',exact:true}).click();
+            assert((await page.getByRole('textbox',{name:'Article body',exact:true}).inputValue()).includes('## '));
+            await capture(page,'maker-editor-'+width);
           }catch(error){errors.push(String(error));}
         }else errors.push('Maker Studio requires a non-sensitive test login.');
       }finally{await context.close();}
