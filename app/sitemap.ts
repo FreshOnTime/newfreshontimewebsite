@@ -22,5 +22,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = [...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
     ...items.map(i=>makerItemPath(i.supplier.makerHandle,i.slug)), ...stories.map(s=>`/makers/${s.supplier?.makerHandle}/stories/${s.slug}`),
     ...journal.map(j=>`/blog/${encodeURIComponent(j.slug)}`), ...editorialGuides.filter(g=>!managed.has(g.slug)).map(g => guidePath(g.slug))];
-  return paths.map(path=>({url:absoluteUrl(path)}));
+  return [...new Set(paths)].map(path=>({url:absoluteUrl(path)}));
 }

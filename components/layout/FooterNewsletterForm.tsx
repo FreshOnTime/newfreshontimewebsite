@@ -42,14 +42,14 @@ export function FooterNewsletterForm() {
           autoComplete="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="Email Address"
+          placeholder="Your email address"
           disabled={status === "submitting"}
           className="w-full rounded-lg border border-brand-cream bg-brand-cream px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-brand-green focus:outline-none md:w-full disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="rounded-lg border border-brand-leaf bg-brand-leaf px-5 py-3 text-xs font-bold uppercase text-brand-ink transition-colors hover:bg-brand-leaf/85 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg border border-brand-leaf bg-brand-leaf px-5 py-3 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand-leaf/85 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === "submitting" ? "Joining…" : "Subscribe"}
         </button>

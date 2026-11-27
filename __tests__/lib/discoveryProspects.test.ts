@@ -31,3 +31,5 @@ it('keeps reviewed imported businesses searchable under the same type filters',a
  await listProspects('dining','','',1,{type:'cafe'});
  expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([publicProspectWhere,{category:{in:['Café','Café / mobile coffee']}}])})}));
 });
+
+it('excludes dining categories from the independent food brand directory',async()=>{(prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([]);await listProspects('makers','','',1);expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([{category:{notIn:expect.arrayContaining(['Restaurant','Café','Bakery','Home bakery','Home catering','Home kitchen'])}}])})}));});

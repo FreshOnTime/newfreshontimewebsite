@@ -1,0 +1,110 @@
+/* FreshPick / The Tasting Room. Public-facing finish layer, loaded after legacy styles.
+   Named primitives are intentional: photos, panels, controls. No blanket radius or admin overrides. */
+.freshpick-market[data-fp-theme="tasting-room"]{
+  --background:42 42% 95%;--foreground:154 18% 15%;--card:43 100% 98%;--card-foreground:154 18% 15%;
+  --popover:43 100% 98%;--popover-foreground:154 18% 15%;--primary:158 31% 21%;--primary-foreground:0 0% 100%;
+  --secondary:90 18% 92%;--secondary-foreground:158 31% 21%;--muted:42 25% 90%;--muted-foreground:135 7% 35%;
+  --border:42 23% 83%;--input:42 15% 69%;--ring:158 31% 21%;--radius:12px;
+  background:var(--fp-paper);color:var(--fp-ink);
+}
+.freshpick-market[data-fp-theme="tasting-room"]>main{
+  --background:42 42% 95%;--foreground:154 18% 15%;--card:43 100% 98%;
+  background:var(--fp-paper);color:var(--fp-ink);font-family:var(--fp-sans);
+}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-header{background:var(--fp-paper);border-color:var(--fp-rule)}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-header nav a{font-size:.87rem;letter-spacing:-.01em}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-header nav a[aria-current=page]{color:var(--fp-green);border-color:var(--fp-green)}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-header :is(button,a)[aria-label]{border-radius:12px}
+.freshpick-market[data-fp-theme="tasting-room"] #header-search input{border-radius:var(--fp-r-control);background:var(--fp-surface)}
+.freshpick-market[data-fp-theme="tasting-room"] #heritage-mobile-menu{background:var(--fp-paper)}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer{background:var(--fp-footer);border-radius:24px 24px 0 0}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer h2{font:400 clamp(2.4rem,4vw,3.8rem)/1.05 var(--fp-serif);letter-spacing:-.02em}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer input{background:var(--fp-surface);border-color:var(--fp-rule);color:var(--fp-ink);border-radius:var(--fp-r-control)}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer button[type=submit]{background:var(--fp-green);border-color:var(--fp-green);color:#fff;border-radius:var(--fp-r-control)}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer button:focus-visible{outline-color:#FFFDF8}
+.freshpick-market>main[data-publication=true]{--studio-radius:var(--fp-r-panel)}
+.freshpick-market>main[data-publication=true] .fp26-sectionhead{border-color:var(--fp-rule);align-items:baseline;padding-top:1rem;margin-bottom:1.15rem}
+.freshpick-market>main[data-publication=true] .fp26-sectionhead h2{letter-spacing:-.015em;line-height:1.09}
+.freshpick-market>main[data-publication=true] .fp26-label,.freshpick-market>main[data-publication=true] .fp26-issue{font-size:.74rem;letter-spacing:.065em}
+.freshpick-market>main[data-publication=true] .fp26-deck{line-height:1.65}
+.freshpick-market>main[data-publication=true] .fp26-storycopy h3{overflow-wrap:anywhere}
+.freshpick-market>main[data-publication=true] :is(.fp26-action,.maker-button,.modern-primary,.studio-outline-action,.editorial-button){border-radius:var(--fp-r-control);min-height:48px;transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+.freshpick-market>main[data-publication=true] :is(.fp26-action,.maker-button,.modern-primary,.editorial-button){background:var(--fp-green);color:#fff}
+.freshpick-market>main[data-publication=true] :is(.fp26-action,.maker-button,.modern-primary,.editorial-button):hover{background:#19372C}
+.freshpick-market>main[data-publication=true] :is(.fp26-search,.fp26-filters,.directory-search-form){border-radius:var(--fp-r-panel);background:var(--fp-surface);border:1px solid #BDB9AC;box-shadow:var(--fp-shadow)}
+.freshpick-market>main[data-publication=true] .fp26-search button{border-radius:var(--fp-r-control);background:var(--fp-green);color:#fff;width:48px;height:48px}
+.freshpick-market>main[data-publication=true] .fp26-search button:hover{background:#19372C}
+.freshpick-market>main[data-publication=true] :is(.fp26-topicnav,.fp-quick-links) a{border-radius:var(--fp-r-control);min-height:42px;background:var(--fp-surface);padding:.5rem .9rem}
+.freshpick-market>main[data-publication=true] .fp26-topicnav a[aria-current=page]{background:var(--fp-green);color:#fff}
+.freshpick-market>main[data-publication=true] :is(.fp26-hero-photo,.fp26-pagephoto,.fp26-tilephoto,.fp26-article-photo,.fp-curated-lead-photo,.fp-destination-photo,.fp26-storytile .fp26-tilephoto,.journal-card-media,.journal-item-photo,.fp-read .fp-image,.studio-band-photo,.directory-masthead-photo,.fp-business-hero figure,.lux-storefront-feature,.fp-monogram){border-radius:var(--fp-r-image);overflow:hidden}
+.freshpick-market>main[data-publication=true] :is(.journal-card-media img,.journal-item-photo img,.lux-storefront-feature img){border-radius:var(--fp-r-image)}
+.freshpick-market>main[data-publication=true] :is(.fp26-panel,.fp26-profilegrid aside,.fp26-empty,.fp26-notice,.fp26-directory-tools a,.fp26-business-grid article,.fp-business-preview,.fp-business-previewcard,.fp26-giftplan,.fp-gift-jump,.fp-why-discovery,.fp-connect-grid article,.lux-storefront,.lux-order-panel,.fp-empty,.fp-process>section,.join-feature-grid>div,.fp-join){border-radius:var(--fp-r-panel)}
+.freshpick-market>main[data-publication=true] :is(.fp26-panel,.fp-business-previewcard,.fp26-business-grid article){background:var(--fp-surface);border-color:var(--fp-rule)}
+.freshpick-market>main[data-publication=true] :is(.fp26-input,.fp26-gift-fields input,.fp26-gift-fields select){border-radius:var(--fp-r-control);background:var(--fp-surface);border-color:#BDB9AC;font-size:16px}
+.freshpick-market>main[data-publication=true] :is(.fp26-socials a,.fp-business-tabs button){border-radius:var(--fp-r-control);min-height:44px}
+.freshpick-market>main[data-publication=true] .fp-business-tabs button[aria-pressed=true]{background:var(--fp-green);color:white}
+.freshpick-market>main[data-publication=true] .fp-explore-intro{max-width:920px;padding:clamp(1.6rem,3.8vw,3.4rem) 0 0;margin-bottom:clamp(2rem,4vw,3.5rem)}
+.freshpick-market>main[data-publication=true] .fp-explore-intro h1{font-size:clamp(3.3rem,6.1vw,6.2rem);line-height:1.03;color:var(--fp-green);letter-spacing:-.028em}
+.freshpick-market>main[data-publication=true] .fp-explore-intro .fp26-search{margin-top:1rem;padding:7px 7px 7px 16px;min-height:64px}
+.freshpick-market>main[data-publication=true] .fp-curated-list{border-radius:var(--fp-r-image);overflow:hidden;background:var(--fp-rule)}
+.freshpick-market>main[data-publication=true] .fp-curated-entry{background:var(--fp-surface)}
+.freshpick-market>main[data-publication=true] .fp-curated-feature{gap:clamp(1rem,2.8vw,2.5rem)}
+.freshpick-market>main[data-publication=true] .fp-curated-lead{border-bottom:0}
+.freshpick-market>main[data-publication=true] .fp-curated-lead>div:last-child{padding:1.1rem .2rem .4rem}
+.freshpick-market>main[data-publication=true] .fp-curated-lead h3{font-size:clamp(2.4rem,4.1vw,4rem);color:var(--fp-green)}
+/* Signature feature: a deep green and amber gift edit, framed like a gift box, not a generic CTA banner. */
+.freshpick-market>main[data-publication=true] .fp-gift-feature{background:var(--fp-green);color:var(--fp-surface);border-radius:var(--fp-r-panel);overflow:hidden;padding:12px;gap:0}
+.freshpick-market>main[data-publication=true] .fp-gift-image{border-radius:var(--fp-r-image);overflow:hidden}
+.freshpick-market>main[data-publication=true] .fp-gift-copy h2{color:var(--fp-surface);font-size:clamp(2.5rem,4.4vw,4.3rem);line-height:1.02}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-label{color:#FFD08A}
+.freshpick-market>main[data-publication=true] .fp-gift-copy>p:not(.fp26-label){color:#F0F5EC}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-action{background:var(--fp-green);color:white}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-action:hover{background:#19372C}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-textlink{color:var(--fp-surface)}
+.freshpick-market>main[data-publication=true] .fp-gift-copy :is(a,button):focus-visible{outline-color:#FFFDF8}
+.freshpick-market>main[data-publication=true] .fp-occasion{border-radius:var(--fp-r-image);background:var(--fp-surface);transition:background-color .2s,border-color .2s}
+.freshpick-market>main[data-publication=true] .fp-occasion:hover{background:var(--fp-soft);border-color:#A3AFA0}
+.freshpick-market>main[data-publication=true] .fp-connect-grid article{background:var(--fp-soft)}
+.freshpick-market>main[data-publication=true] .fp-connect-grid article:nth-child(2){background:var(--fp-amber-soft)}
+.freshpick-market>main[data-publication=true] .fp26-business-band{border-color:var(--fp-rule)}
+.freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth aside{border-radius:var(--fp-r-panel);overflow:hidden}
+.freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth aside>div:last-child{background:var(--fp-green)}
+.freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth :is(input,select,textarea):not([type=checkbox]):not([type=radio]){border-radius:var(--fp-r-control)}
+.freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth button[type=submit]{border-radius:var(--fp-r-control)}
+@media(max-width:760px){
+ .freshpick-market>main[data-publication=true] .fp-explore-intro{padding-top:1rem}
+ .freshpick-market>main[data-publication=true] .fp-explore-intro h1{font-size:clamp(3.2rem,11vw,5.5rem)}
+ .freshpick-market>main[data-publication=true] .fp-explore-intro .fp26-search{padding:9px 10px}
+ .freshpick-market>main[data-publication=true] .fp-explore-intro .fp26-search button{height:100%;min-height:48px}
+ .freshpick-market>main[data-publication=true] .fp26-sectionhead{align-items:start;flex-wrap:wrap}
+ .freshpick-market>main[data-publication=true] .fp-gift-feature{padding:8px}
+ .freshpick-market>main[data-publication=true] .fp-gift-copy{padding:1.25rem .9rem 1.4rem}
+ .freshpick-market>main[data-publication=true] .fp-feature-actions{gap:.75rem}
+ .freshpick-market[data-fp-theme="tasting-room"] .heritage-footer{border-radius:18px 18px 0 0}
+}
+@media(prefers-reduced-motion:reduce){.freshpick-market[data-fp-theme="tasting-room"] :is(.fp-occasion,.fp26-action,.fp26-search button){transition:none}}
+
+/* Compact native filters for Food & Brands, using the same GET form as search.
+   Native controls support keyboard, mobile pickers and no-JavaScript navigation. */
+.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.85fr) minmax(0,1fr) minmax(0,.95fr) auto;gap:.4rem;padding:.7rem;align-items:center}
+.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) auto}
+.fp-brand-filters label{min-width:0;padding:.15rem .55rem}
+.fp-brand-filters label.fp-filter-select{display:block}
+.fp-filter-select select{display:block;width:100%;min-width:0;min-height:40px;padding:.45rem 1.65rem .45rem .65rem;font:400 16px/1.4 var(--fp-sans);color:var(--fp-ink);background:var(--fp-surface);border:1px solid var(--fp-rule);border-radius:var(--fp-r-control);text-overflow:ellipsis}
+.fp-filter-select select:focus-visible{outline:2px solid var(--fp-green);outline-offset:2px}
+.fp-brand-filters .fp26-action{white-space:nowrap}
+@media(max-width:1100px){.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters,.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:.6rem}.fp-brand-filters .fp26-action{grid-column:3;grid-row:1/3;align-self:stretch;height:auto}.fp-brand-filters label.fp-filter-select{border-left:0}.fp-brand-filters label.fp-filter-select+label.fp-filter-select{border-left:1px solid var(--fp-rule)}}
+@media(max-width:760px){.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters,.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;padding:.65rem}.fp-brand-filters label:not(.fp-filter-select){grid-column:1/-1;border-left:0}.fp-brand-filters .fp-filter-select{border-top:1px solid var(--fp-rule);padding-top:.5rem}.fp-brand-filters.fp-product-filters .fp-filter-select{grid-column:1/-1}.fp-brand-filters .fp26-action{grid-column:1/-1;grid-row:auto;width:100%;height:48px}.fp-brand-filters label.fp-filter-select+label.fp-filter-select{border-left:0}}
+
+/* Restrained square corners and image-led discovery disciplines. */
+.freshpick-market>main[data-publication=true] :is(.fp26-action,.maker-button,.modern-primary,.studio-outline-action,.editorial-button){border-radius:8px}
+.freshpick-market>main[data-publication=true] .fp26-search button{border-radius:10px}
+.freshpick-market>main[data-publication=true] .fp-connect-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem}
+.fp-connect-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid var(--fp-rule);border-radius:var(--fp-r-image);background:var(--fp-surface)}
+.fp-connect-photo{position:relative;aspect-ratio:4/3;overflow:hidden}.fp-connect-photo img{object-fit:cover;transition:transform .25s ease}.fp-connect-card:hover img{transform:scale(1.025)}
+.fp-connect-copy{padding:1.15rem;display:flex;flex-direction:column;align-items:start;flex:1}.fp-connect-copy h3{font:400 var(--fp-h3)/1.08 var(--fp-serif);margin:0 0 .6rem}.fp-connect-copy p{font-size:.9rem;color:var(--fp-muted);line-height:1.6;margin-bottom:1rem}.fp-connect-copy .fp26-textlink{margin-top:auto}
+.fp-brand-switch{margin:0 0 1.2rem}.fp-brand-switch .fp26-topicnav{margin-bottom:.65rem;padding-bottom:.6rem}
+.fp-gift-collection{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:1.3rem 1.6rem;border:1px solid var(--fp-rule);border-radius:var(--fp-r-image);background:var(--fp-soft)}.fp-gift-collection h2{font:400 var(--fp-h3)/1.1 var(--fp-serif);margin:.5rem 0}.fp-gift-collection p:not(.fp26-label){font-size:.9rem;line-height:1.55;color:var(--fp-muted);max-width:65ch}.fp-gift-collection .fp26-action{flex:none}
+.fp-discovery-answers{display:grid;gap:.8rem;margin:1.3rem 0 2rem}.fp-discovery-answers details{border-bottom:1px solid var(--fp-rule);padding:.8rem 0}.fp-discovery-answers summary{cursor:pointer;font-weight:600;min-height:32px}.fp-discovery-answers p{font-size:.95rem;line-height:1.65;color:var(--fp-muted);margin:.6rem 0}
+@media(max-width:760px){.freshpick-market>main[data-publication=true] .fp-connect-grid{grid-template-columns:1fr}.fp-connect-photo{aspect-ratio:16/10}.fp-gift-collection{flex-direction:column;align-items:start}}
+@media(prefers-reduced-motion:reduce){.fp-connect-photo img{transition:none}.fp-connect-card:hover img{transform:none}}

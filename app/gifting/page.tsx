@@ -1,7 +1,7 @@
 import {DiscoveryDirectory,type DirectoryParams} from '@/components/discovery/Directory';
-import {pageMetadata} from '@/lib/seo';
+import {directoryMetadata} from '@/lib/seo';
 export const dynamic='force-dynamic';
-export const metadata=pageMetadata({path:'/gifting',title:"Food gifting",description:"Find potential gift suppliers and plan your enquiry for a personal celebration or corporate occasion."});
+export async function generateMetadata({searchParams}:{searchParams:Promise<DirectoryParams>}){return directoryMetadata("/gifting","Food gift suppliers in Sri Lanka","Discover local chocolate, tea and hamper suppliers. Contact them directly for gift options, pricing and availability.",await searchParams);}
 export default async function Page({searchParams}:{searchParams:Promise<DirectoryParams>}){
- return <DiscoveryDirectory mode="gifting" params={await searchParams} path="/gifting" title="Food gifting" description="Find potential gift suppliers and plan your enquiry for a personal celebration or corporate occasion." eyebrow="Gifting" photo="/images/categories/bakery.webp"/>;
+ return <DiscoveryDirectory mode="gifting" params={await searchParams} path="/gifting" title="Gift suppliers" description="Discover local chocolate, tea and hamper suppliers. Contact them directly for gift options, pricing and availability." eyebrow="Curated collection" photo="/images/categories/bakery.webp"/>;
 }

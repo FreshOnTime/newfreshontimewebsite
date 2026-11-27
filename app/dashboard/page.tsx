@@ -15,7 +15,7 @@ export default function Dashboard() {
   }, [loading, user, router]);
   if (loading || !user || user.role === 'admin') return <p className="editorial-wrap py-12" role="status">Opening your account…</p>;
   const maker = user.role === 'supplier';
-  return <div className="fp-dash editorial-wrap py-10">
+  return <div className="fp-dash editorial-wrap py-6 md:py-10">
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
       <h1 className="maker-headline">{maker ? 'Business studio.' : 'Your FreshPick.'}</h1>
       <button onClick={async () => { await logout(); router.replace('/'); }} className="text-sm underline">Sign out</button>

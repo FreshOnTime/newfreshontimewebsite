@@ -3,7 +3,7 @@ const source = (path: string) => readFileSync(path,'utf8');
 
 it('preserves progressive enhancement and real food discovery in the premium homepage', () => {
   const page = source('app/page.tsx');
-  expect(source('components/discovery/ExploreSearch.tsx')).toContain("path:'/discover'");
+  expect(source('components/discovery/ExploreSearch.tsx')).toContain('action="/discover"');
   expect(source('components/discovery/ExploreSearch.tsx')).toContain('name="q"');
   expect(page).toContain('href="/for-businesses"');
   expect(page).toContain('supplier:publicMakerWhere');
@@ -17,7 +17,8 @@ it('keeps discovery navigation keyboard accessible and respects reduced motion',
   expect(rail).toContain('aria-label');
   expect(rail).toContain('observer.disconnect()');
   const directory = source('components/discovery/Directory.tsx');
-  expect(directory).toContain('aria-label="Browse by craft"');
+  expect(directory).toContain('<select name="kind" defaultValue={kind');
+  expect(directory).toContain('<select name="type" defaultValue={type');
   expect(directory).toContain('aria-current');
 });
 it('only recommends published items from the same maker', () => {
