@@ -78,3 +78,6 @@
 @media(max-width:900px){.fp-contact-grid{grid-template-columns:minmax(0,1fr)}.fp-contact-grid>form{grid-row:1}}
 @media(max-width:767px){.fp-business-type-grid,.fp-contact-hero{grid-template-columns:minmax(0,1fr)}.fp-business-live-note{flex-direction:column;align-items:start}.fp-contact-hero figure{aspect-ratio:16/9}.fp-contact-form .fp-contact-submit{width:100%}.fp-contact-page{padding-top:1rem}}
 @media(prefers-reduced-motion:reduce){.freshpick-market>main[data-publication=true] .fp-contact-form .fp-contact-field{transition:none}}
+
+/* Additional discovery facets wrap in balanced rows instead of squeezing select controls. */
+@media(min-width:768px){.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;align-items:end}.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters label{min-width:0;border-left:0;padding:.15rem .45rem}.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters select{width:100%;min-width:0}.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters .fp26-action{grid-column:auto;grid-row:auto;min-height:46px;height:auto;align-self:end;justify-content:center}}
