@@ -4,6 +4,8 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import LiveStudio from './LiveStudio';
 import SpecialtyPicker from './SpecialtyPicker';
+import ArticleEditor from './ArticleEditor';
+import {businessSetup,businessPresentation} from '@/lib/businessPresentation';
 import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
@@ -47,6 +49,7 @@ export default function MakerStudio() {
   const [copyId, setCopyId] = useState('');
   const [tab,setTab] = useState('Profile');
   const [storyEdit, setStoryEdit] = useState('');
+  const [editorVersion,setEditorVersion]=useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -91,6 +94,10 @@ export default function MakerStudio() {
   const sourceImage = makerImageSrc(source?.image ?? null);
   const openItems = items.filter(entry => entry.published);
   const profilePath = `/makers/${supplier.makerHandle}`;
+  const publicStories=stories.filter(entry=>entry.published).length;
+  const setup=businessSetup(supplier,openItems.length,publicStories);
+  const completed=setup.filter(step=>step.complete).length;
+  const presentation=businessPresentation(supplier.businessType);
 
   function submitProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -141,13 +148,14 @@ export default function MakerStudio() {
     void save(() => ({
       action: 'story', id: story?.id, category:form.get('category')||null, title: form.get('title'), excerpt: form.get('excerpt'),
       content: form.get('content'), itemIds: form.getAll('itemIds'), published: form.has('published'),
-    }), 'Story saved.', () => { element.reset(); setStoryEdit(''); });
+    }), 'Story saved.', () => { element.reset(); setStoryEdit(''); setEditorVersion(v=>v+1); });
   }
 
   return <div className="fp-studio space-y-5" aria-busy={busy}>
     {notice && <p role={notice.error ? 'alert' : 'status'} className={`sticky top-4 z-10 rounded-lg border bg-background p-3 text-sm ${notice.error ? 'border-red-300 text-red-700' : 'border-border text-brand-green'}`}>{notice.text}</p>}
-    <div className="fp-studio-counts" aria-label="Studio totals">{[[items.length, venue?"Menu items":"Products"], ...(!venue?[[items.reduce((sum, item) => sum + item.batches.length, 0), "Batches"]]:[]), [stories.length, "Articles"]].map(([count, label]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</div>
-    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{(venue?['Profile','Items','Stories','Live']:['Profile','Items','Batches','Stories','Live']).map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 border-b border-border px-5 text-sm'}>{name==="Items"&&venue?"Menu":name==="Stories"?"Articles":name}</button>)}</nav>}
+    <section className="fp-studio-overview rounded-xl bg-[#173e2b] text-white p-5 sm:p-7" aria-labelledby="studio-overview-title"><div className="flex flex-wrap items-start justify-between gap-4"><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-widest text-[#b9e98c]">Your business on FreshPick</p><h2 id="studio-overview-title" className="mt-2 font-serif text-3xl">Build a page worth discovering.</h2><p className="mt-2 text-sm text-[#e0e9df]">{supplier.makerPublished?"Your profile is published. Keep your information and offerings current.":"Your profile is private until you publish it."}</p></div>{supplier.makerPublished&&supplier.makerHandle&&<Link href={profilePath} className="inline-flex min-h-11 items-center rounded-md bg-[#b9e98c] px-4 text-sm font-semibold text-[#173e2b]">View public page</Link>}</div><div className="mt-5"><p className="text-sm font-semibold">{completed} of {setup.length} setup steps complete</p><progress aria-label="Business page setup progress" value={completed} max={setup.length} className="mt-2 h-2 w-full accent-[#b9e98c]"/><ul className="mt-4 grid gap-2 sm:grid-cols-2">{setup.map(step=><li key={step.key} className="flex items-center gap-2 text-sm"><span aria-hidden="true" className={step.complete?"text-[#b9e98c]":"text-white/70"}>{step.complete?"✓":"○"}</span>{step.label}<span className="sr-only"> — {step.complete?"Complete":"Not completed"}</span></li>)}</ul><p className="mt-3 text-xs text-[#e0e9df]">These are recommendations, not mandatory publishing requirements.</p></div></section>
+    <div className="fp-studio-counts" aria-label="Studio totals">{[[openItems.length, venue?"Published menu items":"Published products"], ...(!venue?[[items.reduce((sum, item) => sum + item.batches.length, 0), "Batches"]]:[]), [publicStories, "Published articles"]].map(([count, label]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</div>
+    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{(venue?['Profile','Items','Stories','Live']:['Profile','Items','Batches','Stories','Live']).map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 border-b border-border px-5 text-sm'}>{name==="Items"?presentation.navigation:name==="Stories"?"Articles":name}</button>)}</nav>}
     {tab==='Live'&&<LiveStudio/>}
     <section hidden={tab !== 'Profile'} className={panel}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -245,11 +253,11 @@ export default function MakerStudio() {
 
       <section hidden={tab !== 'Stories'} className={panel}>
         <h2 className={heading}>{story ? 'Edit article' : 'Write an article'}</h2>
-        <form key={story?.id || 'new-story'} onSubmit={submitStory} className="grid gap-4">
+        <form key={(story?.id || 'new-story')+':'+editorVersion} onSubmit={submitStory} className="grid gap-4">
           <label className={label}>Title<input name="title" className={fields} defaultValue={story?.title || ''} required minLength={3} maxLength={150} /></label>
           <label className={label}>Article topic<select name="category" className={fields} defaultValue={story?.category&&businessArticleTopics.some(t=>t===story.category)?story.category:""}><option value="">Choose a topic (optional)</option>{businessArticleTopics.map(t=><option key={t}>{t}</option>)}</select></label>
           <label className={label}>Short summary<textarea name="excerpt" className={fields} rows={2} defaultValue={story?.excerpt || ''} required minLength={3} maxLength={300} /></label>
-          <label className={label}>Article body<textarea name="content" className={fields} rows={7} defaultValue={story?.content || ''} required minLength={3} maxLength={18000} /></label>
+          <ArticleEditor initial={story?.content||""} fieldClass={fields}/>
           {items.length > 0 && <fieldset className="space-y-2">
             <legend className="mb-2 text-sm font-semibold">Link up to 10 offerings (optional)</legend>
             {items.map(entry => <label key={entry.id} className="flex items-center gap-2 text-sm">
