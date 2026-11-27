@@ -11,7 +11,7 @@ export function ServiceWorkerRegistration() {
 
         const register = async () => {
             try {
-                const registration = await navigator.serviceWorker.register("/sw.js");
+                const registration = await navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" });
                 if (cancelled) return;
 
                 console.log("[SW] Registered:", registration.scope);

@@ -245,7 +245,11 @@ async function main(){
         try{
           const publicPage=await guest.newPage();
           await ready(publicPage,new URL('/',base).href);
-          const original=await publicPage.locator('#home-headline').innerText();
+          // Reproduce the real returning-visitor path with an active worker, not a bypassed cache.
+          await publicPage.evaluate(()=>navigator.serviceWorker.ready);
+          await publicPage.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
+          await ready(publicPage,new URL('/',base).href);
+          const original=await publicPage.locator('#main-content #home-headline').innerText();
           const saved=await write(pageEndpoint,'PATCH',{key:'home',version,config:changed,action:'draft'});assert(saved.ok,'Page draft failed: '+JSON.stringify(saved.body));version=saved.body.page.version;
           const stored=await db.sitePageContent.findUniqueOrThrow({where:{key:'home'}});
           assert.equal(stored.draft.title,changed.title,'Draft must be saved');
@@ -256,8 +260,16 @@ async function main(){
           await ready(publicPage,new URL('/',base).href);
           assert.equal(await publicPage.locator('#home-headline').innerText(),original,'Draft must not change public headline');
           const publishedPage=await write(pageEndpoint,'PATCH',{key:'home',version,config:changed,action:'publish'});assert(publishedPage.ok,'Page publish failed: '+JSON.stringify(publishedPage.body));version=publishedPage.body.page.version;
+          const publishedRow=await db.sitePageContent.findUniqueOrThrow({where:{key:'home'}});
+          assert.equal(publishedRow.live.title,changed.title,'Publish must persist live headline');
+          assert(publishedRow.publishedAt,'Publish timestamp missing');
+          const publishedHtml=await guest.request.get(new URL('/',base).href,{headers:{'Cache-Control':'no-cache'}});
+          assert(publishedHtml.ok()&&(await publishedHtml.text()).includes(changed.title),'Published headline missing from server response');
           await ready(publicPage,new URL('/',base).href);
-          assert.equal(await publicPage.locator('#home-headline').innerText(),changed.title,'Published headline missing');
+          await publicPage.locator('#main-content').getByRole('heading',{name:changed.title,exact:true}).waitFor({timeout:15000});
+          assert.equal(await publicPage.locator('#main-content #home-headline').innerText(),changed.title,'Published headline missing with active service worker');
+          const pageCache=await publicPage.evaluate(async()=>{const keys=await caches.keys();const entries=await Promise.all(keys.filter(k=>k.startsWith('freshpick-')).map(async key=>(await (await caches.open(key)).keys()).map(r=>new URL(r.url))));return entries.flat().some(url=>url.pathname==='/'||url.searchParams.has('_rsc'));});
+          assert(!pageCache,'CMS documents or RSC payloads must not be stored in Cache Storage');
         }finally{
           try{if(version!==initial.version){const restored=await write(pageEndpoint,'PATCH',{key:'home',version,config:initial.config,action:'publish'});assert(restored.ok,'Restore fixture page failed');}}finally{await guest.close();await db.$disconnect();}
         }

@@ -1,50 +1,9 @@
 /// <reference lib="webworker" />
 
-const STATIC_CACHE = "freshpick-static-v4";
-const DYNAMIC_CACHE = "freshpick-dynamic-v5";
+const STATIC_CACHE = "freshpick-static-v5";
 
-// These routes are public catalogue/marketing content. Account, bag, checkout,
-// order, dashboard, and admin pages are intentionally excluded so no
-// user-specific response can be stored by the browser.
-const PUBLIC_PAGE_PATHS = new Set([
-    "/",
-    "/products",
-    "/search",
-    "/meals",
-    "/homemade",
-    "/categories",
-    "/deals",
-    "/subscriptions",
-    "/about",
-    "/b2b",
-    "/blog",
-    "/discover",
-    "/help",
-]);
-
-function isCacheablePublicPage(url) {
-    return (
-        PUBLIC_PAGE_PATHS.has(url.pathname) ||
-        url.pathname.startsWith("/categories/") ||
-        url.pathname.startsWith("/products/") ||
-        url.pathname.startsWith("/blog/")
-    );
-}
-
-function staleWhileRevalidate(request) {
-    return caches.open(DYNAMIC_CACHE).then(async (cache) => {
-        const cached = await cache.match(request);
-        const network = fetch(request)
-            .then((response) => {
-                if (response.ok) cache.put(request, response.clone());
-                return response;
-            })
-            .catch(() => cached);
-
-        return cached || network;
-    });
-}
-
+// CMS documents and RSC payloads are always fetched from the network.
+// An offline fallback is not a cached copy of a previously published page.
 const STATIC_ASSETS = [
     "/offline",
     "/fresh-pick.svg",
@@ -65,7 +24,7 @@ self.addEventListener("activate", (event) => {
         caches.keys().then((keys) => {
             return Promise.all(
                 keys
-                    .filter((key) => key !== STATIC_CACHE && key !== DYNAMIC_CACHE)
+                    .filter((key) => key.startsWith("freshpick-") && key !== STATIC_CACHE)
                     .map((key) => caches.delete(key))
             );
         })
@@ -83,33 +42,22 @@ self.addEventListener("fetch", (event) => {
     if (url.protocol === "chrome-extension:") return;
 
     if (request.mode === "navigate") {
-        if (isCacheablePublicPage(url)) {
-            event.respondWith(
-                staleWhileRevalidate(request).catch(() => caches.match("/offline"))
-            );
-            return;
-        }
-
-        event.respondWith(fetch(request).catch(() => caches.match("/offline")));
+        event.respondWith(fetch(request, { cache: "no-store" }).catch(() => caches.match("/offline").then(response => response || Response.error())));
         return;
     }
 
-    // Next.js client-side navigation requests RSC payloads. Only explicitly
-    // public routes are allowed into the dynamic cache. Private/account RSC
-    // responses must always remain network-only.
-    if (request.headers.get("RSC") === "1") {
-        if (isCacheablePublicPage(url)) {
-            event.respondWith(staleWhileRevalidate(request));
-        }
+    // All Next.js RSC payloads, including public content, remain network-only.
+    if (request.headers.get("RSC") === "1" || url.searchParams.has("_rsc")) {
+        event.respondWith(fetch(request, { cache: "no-store" }));
         return;
     }
 
-    if (url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?)$/)) {
+    if (url.pathname.startsWith("/_next/static/") || STATIC_ASSETS.includes(url.pathname)) {
         event.respondWith(
             caches.match(request).then((cached) => {
                 const fetchPromise = fetch(request)
                     .then((response) => {
-                        if (response.ok) {
+                        if (response.ok && !response.headers.get("Cache-Control")?.includes("no-store")) {
                             caches.open(STATIC_CACHE).then((cache) => {
                                 cache.put(request, response.clone());
                             });
