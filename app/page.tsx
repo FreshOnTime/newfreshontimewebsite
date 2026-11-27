@@ -1,3 +1,4 @@
+import {LiveShelf} from '@/components/discovery/LiveShelf';
 import {Fragment} from 'react';
 import {getPageConfig} from '@/lib/sitePages';
 import {GuideShelfFromCms} from '@/components/discovery/DiscoveryGuides';
@@ -25,6 +26,7 @@ export default async function Home(){
  return <div className="fp26-home fp-discovery-home"><div className="fp26-shell">
  <section className="fp-explore-intro" aria-labelledby="home-headline"><p className="fp26-label">{config.eyebrow}</p><h1 id="home-headline">{config.title}</h1><p className="fp26-deck">{config.description}</p><ExploreSearch/></section>
  {config.sections.filter(section=>section.enabled).map(section=>{const intro=section.intro?<p className="fp26-meta mb-4">{section.intro}</p>:null;switch(section.id){
+ case 'live': return <Fragment key={section.id}>{intro}<LiveShelf title={section.title}/></Fragment>;
  case 'paths': return <Fragment key={section.id}>{intro}<HubPaths title={section.title}/></Fragment>;
  case 'dining': return <Fragment key={section.id}>{intro}<EditorialPicks group="dining" feature heading={section.title}/></Fragment>;
  case 'profiles': return <Fragment key={section.id}>{intro}{(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}</Fragment>;
