@@ -1,5 +1,5 @@
 import { absoluteUrl, SITE_URL } from '@/lib/config/site';
-import { catalogueMetadata, pageMetadata, privateMetadata, serializeJsonLd } from '@/lib/seo';
+import { breadcrumbJsonLd, catalogueMetadata, pageMetadata, privateMetadata, serializeJsonLd } from '@/lib/seo';
 import { PUBLIC_PAGES } from '@/lib/publicPages';
 import sitemap from '@/app/sitemap';
 import robots from '@/app/robots';
@@ -25,6 +25,19 @@ it('gives public pages distinct canonical URLs and working share asset paths', (
   expect(pageMetadata({ title: 'Blog | FreshPick', description: '', path: '/blog' }).title).toEqual({ absolute: 'Blog | FreshPick' });
   expect(meta.openGraph).toMatchObject({ url: absoluteUrl('/help'), images: [{ url: absoluteUrl('/opengraph-image') }] });
   expect(absoluteUrl('https://images.example.com/food.jpg')).toBe('https://images.example.com/food.jpg');
+});
+
+it('describes ordered public breadcrumb URLs with safe JSON-LD', () => {
+  const schema = breadcrumbJsonLd([{name:'Food Atlas',path:'/food-atlas'},{name:'Kottu & <food>',path:'/food-atlas/kottu'}]);
+  expect(schema).toEqual({
+    '@context':'https://schema.org','@type':'BreadcrumbList',
+    itemListElement:[
+      {'@type':'ListItem',position:1,name:'Food Atlas',item:absoluteUrl('/food-atlas')},
+      {'@type':'ListItem',position:2,name:'Kottu & <food>',item:absoluteUrl('/food-atlas/kottu')},
+    ],
+  });
+  expect(serializeJsonLd(schema)).not.toMatch(/[<>&]/);
+  expect(JSON.parse(serializeJsonLd(schema))).toEqual(schema);
 });
 
 it('preserves paginated canonicals and excludes faceted catalogue URLs from indexing', () => {
