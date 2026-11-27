@@ -139,7 +139,7 @@ export default function MakerStudio() {
     const element = event.currentTarget;
     const form = new FormData(element);
     void save(() => ({
-      action: 'story', id: story?.id, category:form.get('category')||undefined, title: form.get('title'), excerpt: form.get('excerpt'),
+      action: 'story', id: story?.id, category:form.get('category')||null, title: form.get('title'), excerpt: form.get('excerpt'),
       content: form.get('content'), itemIds: form.getAll('itemIds'), published: form.has('published'),
     }), 'Story saved.', () => { element.reset(); setStoryEdit(''); });
   }
