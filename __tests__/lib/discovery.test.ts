@@ -57,6 +57,7 @@ it('indexes published maker profiles, items, stories and editorial articles', as
   const urls = (await sitemap()).map(page => page.url);
   expect(urls).toEqual(expect.arrayContaining(['/makers/local-baker','/makers/local-baker/items/sourdough','/makers/local-baker/stories/from-our-kitchen'].map(absoluteUrl)));
   expect(urls).not.toContain(absoluteUrl('/checkout'));
+  expect(urls).not.toContain(absoluteUrl('/food-products'));
   expect(urls).toContain(absoluteUrl('/places/approved-cafe'));
   expect(urls).toContain(absoluteUrl('/guides/test-guide'));
   expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({reviewStatus:'approved',permissionStatus:'cleared',reviewedAt:{not:null}})}));

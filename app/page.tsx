@@ -9,6 +9,7 @@ import {HubPaths,AtlasShelf,ReturnShelf,CultureShelf} from '@/components/discove
 import ExploreSearch from '@/components/discovery/ExploreSearch';
 import {DiscoveryChapters,SectionHeading} from '@/components/discovery/Editorial';
 import {EditorialPicks,OccasionShelf,GiftCollectionLink,ConnectShelf} from '@/components/discovery/Curated';
+import {MakerBusinessCard} from '@/components/makers/MakerCards';
 import {ProspectCard} from '@/components/discovery/Directory';
 import {publicMakerWhere} from '@/lib/makers';
 import {publicProspectWhere,publicProspectSelect,diningCategories} from '@/lib/discovery';
@@ -20,7 +21,7 @@ export async function generateMetadata(){const c=await getPageConfig('home');ret
 export default async function Home(){
  const [config,venues,prospects,stories]=await Promise.all([
  getPageConfig('home'),
- prisma.supplier.findMany({where:{...publicMakerWhere,businessType:{in:[...diningBusinessTypes]}},take:4,orderBy:[{name:'asc'},{id:'asc'}],select:{id:true,name:true,makerHandle:true,makerTown:true,makerBio:true,businessType:true}}).catch(e=>{console.error('Homepage venues',e);return []}),
+ prisma.supplier.findMany({where:{...publicMakerWhere,businessType:{in:[...diningBusinessTypes]}},take:4,orderBy:[{name:'asc'},{id:'asc'}],select:{id:true,name:true,makerHandle:true,makerTown:true,makerBio:true,businessType:true,makerItems:{where:{published:true,image:{not:null}},select:{image:true,name:true},orderBy:[{createdAt:'desc'},{id:'asc'}],take:1}}}).catch(e=>{console.error('Homepage venues',e);return []}),
  prisma.discoveryProspect.findMany({where:{...publicProspectWhere,category:{in:diningCategories}},select:publicProspectSelect,take:4,orderBy:[{reviewedAt:'desc'},{id:'asc'}]}).catch(e=>{console.error('Homepage profiles',e);return []}),
  prisma.blog.findMany({where:{published:true,isDeleted:false,supplier:publicMakerWhere},take:3,orderBy:[{publishedAt:'desc'},{id:'asc'}],select:{id:true,title:true,slug:true,excerpt:true,supplier:{select:{name:true,makerHandle:true}}}}).catch(e=>{console.error('Homepage articles',e);return []})
  ]);
@@ -30,7 +31,7 @@ export default async function Home(){
  case 'live': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<LiveShelf title={section.title}/></div>;
  case 'paths': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<HubPaths title={section.title}/></div>;
  case 'dining': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<EditorialPicks group="dining" feature heading={section.title}/></div>;
- case 'profiles': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}{(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}</div>;
+ case 'profiles': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}{(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><MakerBusinessCard key={v.id} name={v.name} handle={v.makerHandle} category={businessTypeLabel(v.businessType)} town={v.makerTown} description={v.makerBio} photo={v.makerItems[0]}/>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}</div>;
  case 'atlas': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<AtlasShelf title={section.title}/></div>;
  case 'culture': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<CultureShelf title={section.title}/></div>;
  case 'connections': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<ConnectShelf title={section.title}/></div>;

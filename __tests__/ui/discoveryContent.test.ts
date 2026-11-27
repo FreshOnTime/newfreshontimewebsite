@@ -23,12 +23,14 @@ it('uses a common publication shell, editorial typography and compact sparse sta
  expect(read('app/for-businesses/page.tsx')).toContain('<BusinessExplorer/>');
 });
 
-it('keeps products separate from businesses and restaurants in the new discovery experience',()=>{
+it('retains distinct product and venue item types in global search, while routing product browsing through makers',()=>{
  const directory=read('components/discovery/Directory.tsx');
- // Product results must never include imported business profiles or external editorial selections.
+ // Existing product detail results remain searchable, but the standalone product directory redirects.
  expect(directory).toMatch(/mode\s*===\s*['"]products['"]\s*\?\s*Promise\.resolve\(\[\]\s+as\s+PublicProspect\[\]\)/);
  expect(directory).toMatch(/const showEditorial\s*=.*mode\s*!==\s*['"]products['"]/);
  expect(directory).toContain('Menu discoveries');
+ expect(read('app/food-products/page.tsx')).toContain("permanentRedirect('/makers'");
+ expect(directory).not.toContain('<FoodBrandTabs');
  expect(directory).toContain('businessType:{notIn:[...venueOnlyTypes]}');
  expect(directory).toContain("mode==='all'?prisma.blog.findMany");
  expect(read('components/discovery/BusinessExplorer.tsx')).toContain('/join?type=');

@@ -6,16 +6,16 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['live','/live'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['live','/live'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products?kind=Drinks'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
-  ['journal','/stories'],['journal-dining','/stories?topic=Dining%20guide'],['dining-guide','/stories/a-table-for-two'],['buying-guide','/stories/the-price-on-the-jar'],['gifting-guide','/stories/a-gift-worth-opening'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
+  ['journal','/stories'],['journal-dining','/stories?topic=Dining%20guide'],['dining-guide','/stories/a-table-for-two'],['buying-guide','/stories/the-price-on-the-jar'],['gifting-guide','/stories/a-gift-worth-opening'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup-choice','/auth/signup'],['signup','/auth/signup/customer'],['missing-page','/visual-review-missing-page-404'],['forgot','/auth/forgot'],
 ];
 const out = process.env.VISUAL_OUTPUT_DIR || 'visual-review';
-async function ready(page,path) {
+async function ready(page,path,allowNotFound=false) {
   const response = await page.goto(path,{waitUntil:'networkidle',timeout:60000});
-  assert(response && response.ok(), 'Failed to load '+path);
+  assert(response && (response.ok()||allowNotFound&&response.status()===404), 'Failed to load '+path);
   await page.evaluate(async()=>{await document.fonts.ready; await Promise.all(Array.from(document.images).map(async i=>{i.loading='eager';try{await i.decode()}catch{}}));});
 }
 async function capture(page,name) {
@@ -53,8 +53,8 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
-          try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
+          if((width===320||width===430)&&!['homepage','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup-choice','signup','missing-page','contact'].includes(name))continue;
+          try{await ready(page,new URL(path,base).href,name==='missing-page');await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
@@ -147,14 +147,44 @@ async function main(){
               assert.equal(await page.getByRole('heading',{name:'Ministry of Crab',exact:true}).count(),0);
             }
             if(name==='food-products'){
-              await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Drinks');
-              await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
-              await page.waitForURL(url=>url.pathname==='/food-products'&&url.searchParams.get('kind')==='Drinks');
+              assert.equal(new URL(page.url()).pathname,'/makers');
+              assert.equal(new URL(page.url()).searchParams.get('kind'),'Drinks');
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Drinks');
+            }
+            if(name==='signup-choice'){
+              assert.equal(await page.locator('.fp-account-option').count(),2);
+              assert.equal(await page.locator('.fp-account-option').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(24, 33, 29)');
+              const member=page.locator('.fp-account-option').filter({hasText:'Member account'});
+              assert.equal(await member.getAttribute('href'),'/auth/signup/customer');
+              assert.equal(await page.locator('.fp-account-option').filter({hasText:'Business page'}).getAttribute('href'),'/join');
+            }
+            if(name==='signup'){
+              assert(await page.locator('.fp-member-form').isVisible());
+              assert(await page.getByRole('button',{name:'Create account',exact:true}).isVisible());
+            }
+            if(name==='missing-page'){
+              await page.getByRole('heading',{name:'We couldn’t find that page.',exact:true}).waitFor();
+              assert(await page.locator('meta[name="robots"]').evaluateAll(nodes=>nodes.some(n=>n.getAttribute('content')?.includes('noindex'))));
+              assert.equal(await page.getByRole('link',{name:'Explore FreshPick',exact:true}).getAttribute('href'),'/discover');
+            }
+            if(name==='maker-profile'){
+              assert(await page.locator('#maker-items').isVisible());
+              const cards=page.locator('#maker-items .fp-item-card');
+              assert(await cards.count()>0);
+              const media=await cards.first().locator('.journal-card-media').evaluate(el=>{const rect=el.getBoundingClientRect();return {w:rect.width,h:rect.height}});
+              assert(Math.abs(media.w-media.h)<3,'Product image should be square');
+              assert((await cards.first().getAttribute('href')).startsWith(maker+'/items/'));
+            }
+            if(name==='dining-guide'){
+              assert.equal(await page.getByRole('link',{name:'Continue exploring',exact:true}).getAttribute('href'),'/eat-drink');
+              assert.equal(await page.locator('.fp-continue-exploring .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
             }
             if(name==='gifting'){assert.equal(await page.getByText('Make the occasion special.',{exact:true}).count(),0);assert(await page.getByRole('heading',{name:'Gift ideas from local businesses'}).isVisible());}
             if(name==='discovery'){await page.getByRole('combobox',{name:'What are you looking for?',exact:true}).selectOption('dining');await page.locator('.fp26-filters input[name=q]').fill('coffee');await page.locator('.fp26-filters input[name=area]').fill('Colombo');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/eat-drink'&&url.searchParams.get('q')==='coffee'&&url.searchParams.get('area')==='Colombo');}
             if(name==='directory'){
+              assert(await page.getByRole('navigation',{name:'Footer Food & culture',exact:true}).isVisible());
+              const selectStyle=await page.getByRole('combobox',{name:'Food category',exact:true}).evaluate(el=>({radius:parseFloat(getComputedStyle(el).borderTopLeftRadius),appearance:getComputedStyle(el).appearance,height:el.getBoundingClientRect().height}));
+              assert(selectStyle.radius>=8&&selectStyle.appearance==='none'&&selectStyle.height>=48,'Filter style not applied');
               await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Pantry');
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();

@@ -39,3 +39,9 @@
 @media(max-width:1100px){.freshpick-market>main[data-publication=true] .fp26-directory .fp26-filters.fp-brand-filters,.freshpick-market>main[data-publication=true] .fp26-directory .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.freshpick-market>main[data-publication=true] .fp26-directory .fp26-filters.fp-brand-filters button{grid-column:1/-1;grid-row:auto;width:100%}}
 @media(max-width:767px){.freshpick-market>main[data-publication=true] .fp26-directory .fp26-filters.fp-brand-filters,.freshpick-market>main[data-publication=true] .fp26-directory .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:minmax(0,1fr)}.freshpick-market .fp-footer-links{grid-template-columns:repeat(2,minmax(0,1fr))}.fp-card-action{min-height:44px}.fp-maker-offerings,.fp-maker-contact{padding:12px}}
 @media(prefers-reduced-motion:reduce){.fp-business-discovery-card{transition:none}}
+
+/* Ensure form and card keyboard focus stays visible, without double outlines. */
+.fp-business-card-link:focus-visible,.fp-item-card:focus-visible{outline:3px solid #698B65;outline-offset:-3px}
+.freshpick-market>main[data-publication=true] .fp-business-onboard .maker-hero-copy{min-width:0}
+.fp-maker-contact .fp26-socials a{min-height:44px;border-radius:8px}
+@media(max-width:480px){.fp-recovery-copy .fp26-action,.fp-continue-exploring .fp26-action{width:100%;white-space:normal}.fp-account-option{padding:14px}.fp-account-option-top{gap:.5rem}}
