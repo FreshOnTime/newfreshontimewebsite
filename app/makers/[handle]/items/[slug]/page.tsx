@@ -71,6 +71,6 @@ export default async function MakerItemPage({ params }: Props) {
         {!venue&&<p className="text-sm text-muted-foreground">Ask {maker.name} about payment and collection or delivery.</p>}
       </div>
     </div>
-    {related.length > 0 && <section className="fp-section"><div className="fp-section-head"><h2>More from {maker.name}</h2><Link href={`/makers/${handle}`} className="fp-inline">Meet the maker</Link></div><div className="journal-item-grid">{related.map(entry => <MakerItemCard key={entry.id} handle={handle} item={entry}/>)}</div></section>}
+    {related.length > 0 && <section className="fp-section"><div className="fp-section-head"><h2>More from {maker.name}</h2><Link href={`/makers/${handle}`} className="fp-inline">{venue?"View venue":"View business"}</Link></div><div className="journal-item-grid">{related.map(entry => <MakerItemCard key={entry.id} handle={handle} item={entry} menuItem={venue}/>)}</div></section>}
   </div>;
 }

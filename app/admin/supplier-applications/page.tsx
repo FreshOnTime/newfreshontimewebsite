@@ -7,11 +7,13 @@ import { authenticatedApiFetch as apiFetch } from '@/lib/api/authenticated-fetch
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import {businessTypeLabel} from '@/lib/businessTypes';
 import { Badge } from '@/components/ui/badge';
 
 interface Application {
   id: string;
   name: string;
+  businessType?:string;
   contactName: string;
   city?: string | null;
   email: string | null;
@@ -52,7 +54,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
     <Card>
       <CardContent className="space-y-5 pt-6">
         <div>
-          <h2 className="text-xl font-semibold">{application.name}</h2>
+          <h2 className="text-xl font-semibold">{application.name}</h2><p className="text-xs font-semibold text-brand-green">{businessTypeLabel(application.businessType)}</p>
           <p className="mt-1 break-words text-sm text-muted-foreground">
             {application.city && `${application.city} · `}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
           </p>
@@ -97,7 +99,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
               <Textarea className="mt-2" maxLength={5000} value={notes} onChange={event => setNotes(event.target.value)} />
             </label>
             <p className="text-xs leading-6 text-muted-foreground">
-              Approval opens Maker Studio for publishing. The maker receives an in-app notification when the application status changes.
+              Approval opens Business Studio for publishing. The business receives an in-app notification when the application status changes.
             </p>
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             <Button disabled={busy || (status === application.applicationStatus && notes === application.reviewNotes)}>

@@ -26,6 +26,7 @@ it('uses a common publication shell, editorial typography and compact sparse sta
 it('keeps products separate from businesses and restaurants in the new discovery experience',()=>{
  const directory=read('components/discovery/Directory.tsx');
  expect(directory).toContain("mode==='products'||");
+ expect(directory).toContain('Menu discoveries');
  expect(directory).toContain('businessType:{notIn:[...venueOnlyTypes]}');
  expect(directory).toContain("mode==='all'?prisma.blog.findMany");
  expect(read('components/discovery/BusinessExplorer.tsx')).toContain('/join?type=');

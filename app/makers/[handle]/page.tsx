@@ -52,7 +52,7 @@ export default async function MakerPage({ params }: Props) {
     {items.length>0&&<section id="maker-items">
       <div className="fp-section-head"><h2 className="editorial-title">{venue?"Explore the menu":"Explore their products"}</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
       <div className="mt-4 journal-item-grid">
-        {items.map(item => <MakerItemCard key={item.id} handle={handle} item={item} />)}
+        {items.map(item => <MakerItemCard key={item.id} handle={handle} item={item} menuItem={venue} />)}
       </div>
     </section>}
     {stories.length > 0 && <section id="maker-stories">

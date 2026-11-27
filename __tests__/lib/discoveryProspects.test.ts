@@ -25,3 +25,9 @@ it('bounds filter input and rejects invalid page values',()=>{
  expect(pageNumber('0')).toBe(1);
  expect(pageNumber('2')).toBe(2);
 });
+
+it('keeps reviewed imported businesses searchable under the same type filters',async()=>{
+ (prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([]);
+ await listProspects('dining','','',1,{type:'cafe'});
+ expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({AND:expect.arrayContaining([publicProspectWhere,{category:{in:['Café','Café / mobile coffee']}}])})}));
+});
