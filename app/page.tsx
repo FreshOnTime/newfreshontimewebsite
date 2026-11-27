@@ -26,7 +26,7 @@ export default async function Home() {
   return <div className="lux-home fp-modern-home">
     <section className="fp26-hero" aria-labelledby="home-headline">
       <div className="fp26-hero-copy">
-        <div className="fp26-issue"><span>Independent food discovery</span><span>Sri Lanka / No. 01</span></div>
+        <div className="fp26-issue"><span>Independent food discovery</span><span>Sri Lanka</span></div>
         <h1 id="home-headline">Good food.<br/>Great finds.</h1>
         <div className="fp26-hero-bottom"><p>Discover the people, places and flavours that make Sri Lanka worth tasting.</p>
           <Link href="/discover" className="fp26-textlink">Explore FreshPick <ArrowUpRight size={20} aria-hidden="true"/></Link></div>

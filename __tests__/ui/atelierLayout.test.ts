@@ -3,9 +3,9 @@ const source = (path: string) => readFileSync(path,'utf8');
 
 it('preserves progressive enhancement and real food discovery in the premium homepage', () => {
   const page = source('app/page.tsx');
-  expect(page).toContain('action="/makers"');
+  expect(page).toContain('action="/discover"');
   expect(page).toContain('name="q"');
-  expect(page).toContain('href="/join"');
+  expect(page).toContain('href="/for-businesses"');
   expect(page).toContain('supplier: publicMakerWhere');
   expect(page).toContain('batches.length > 0');
 });

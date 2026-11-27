@@ -20,3 +20,6 @@ The 47 prospects are research leads, not verified active vendors, supplier accou
 - Seed twice and verify stable 47 rows and unchanged review status.
 - At 320, 768, 1440px check hero, navigation, filters, cards and keyboard focus. Verify links and image licenses. Check calculators against hand-calculated values including zero and empty inputs.
 - No production migration or deployment until staging and visual review pass.
+
+## Design rationale and CI
+The uploaded magazine spread is the visual reference for the split hero, generous breathing room, serif display type and photographic counterpart. Use the existing outlined logo, not a recreated logo. The design also follows the public frontend-design guidance at https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md: deliberate hierarchy, subject-specific layout and a restrained interaction system rather than generic gradients or repeated decorative cards. The CI workflow now imports the seed twice and checks the publication constraint; the visual-review script targets the new homepage and discovery routes at 390 and 1440 pixels. These checks are configured, not claimed to have passed.

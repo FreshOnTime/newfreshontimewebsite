@@ -53,6 +53,12 @@ jobs:
     - name: Apply database migrations
       run: npx prisma migrate deploy
 
+    - name: Verify review-only discovery seed
+      run: |
+        psql 'postgresql://postgres:postgres@localhost:5432/freshpick_test' -v ON_ERROR_STOP=1 -f prisma/seeds/freshpick-discovery.sql
+        psql 'postgresql://postgres:postgres@localhost:5432/freshpick_test' -v ON_ERROR_STOP=1 -f prisma/seeds/freshpick-discovery.sql
+        node scripts/verify-discovery-seed.mjs
+
     - name: Run linter
       run: npm run lint
 

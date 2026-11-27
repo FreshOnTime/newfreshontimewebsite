@@ -4,10 +4,10 @@ import nextConfig from '@/next.config';
 
 it('opens discovery and maker publishing from the homepage', () => {
   const html = readFileSync('app/page.tsx', 'utf8');
-  expect(html).toContain('action="/makers"');
-  expect(html).toContain('href="/join"');
+  expect(html).toContain('action="/discover"');
+  expect(html).toContain('href="/for-businesses"');
   expect(html).toContain('supplier: publicMakerWhere');
-  expect(MARKET_NAVIGATION.map(link => link.href)).toEqual(['/makers','/stories','/saved','/about']);
+  expect(MARKET_NAVIGATION.map(link => link.href)).toEqual(['/discover','/makers','/eat-drink','/food-products','/gifting','/stories','/food-tools']);
 });
 
 it('maps previous public commerce and procurement links to maker workflows', async () => {
@@ -15,5 +15,5 @@ it('maps previous public commerce and procurement links to maker workflows', asy
   for (const [source,destination] of [['/products/:path*','/makers'],['/checkout','/makers'],['/b2b','/join'],['/supply','/join']]) {
     expect(redirects).toContainEqual(expect.objectContaining({source,destination}));
   }
-  expect(redirects.some(rule => rule.source === '/orders/:path*')).toBe(false);
+  expect(redirects.some(rule => rule.source === '/orders/:path*' || rule.source === '/discover')).toBe(false);
 });
