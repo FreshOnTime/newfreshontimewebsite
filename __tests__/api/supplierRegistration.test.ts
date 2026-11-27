@@ -145,3 +145,12 @@ it('rejects unsupported business types before any writes',async()=>{
  expect((await POST(request({...body,businessType:'invalid'}))).status).toBe(400);
  expect(prisma.$transaction).not.toHaveBeenCalled();
 });
+
+it('persists a gift creator with multiple validated specialities',async()=>{
+ expect((await POST(request({...body,businessType:'gift_creator',businessSpecialties:['food-hampers','corporate-gifts','food-hampers']}))).status).toBe(201);
+ expect(prisma.supplier.create).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({businessType:'gift_creator',businessSpecialties:['food-hampers','corporate-gifts']})}));
+});
+it('rejects unrecognised business specialities before any writes',async()=>{
+ expect((await POST(request({...body,businessSpecialties:['invalid']}))).status).toBe(400);
+ expect(prisma.$transaction).not.toHaveBeenCalled();
+});
