@@ -9,3 +9,6 @@ it('accepts official platform profile URL formats and rejects missing or unsafe 
  for(const url of ['',undefined,'http://x.com/example','https://x.com.evil.test/example','https://x.com@evil.test/example','https://x.com/','javascript:alert(1)'])expect(socialProfileUrl('x',url)).toBe('');
  expect(socialProfileUrl('bluesky','https://bsky.app/')).toBe('');
 });
+
+import { SOCIAL_LINKS } from '@/lib/config/site';
+it('resolves the shared site configuration and exposes all five social platforms',()=>{expect(Object.keys(SOCIAL_LINKS).sort()).toEqual(['bluesky','facebook','instagram','linkedin','x']);});

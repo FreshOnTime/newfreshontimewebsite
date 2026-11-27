@@ -1,4 +1,4 @@
-import { socialProfileUrl } from './socialProfiles';
+import { socialProfileUrl } from '../socialProfiles';
 
 const normalizeUrl = (value: string) => value.trim().replace(/\/+$/, "");
 
