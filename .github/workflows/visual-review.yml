@@ -7,7 +7,7 @@ permissions:
 jobs:
   screenshots:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:16
@@ -63,6 +63,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: freshpick-390-and-1440-review
+          name: freshpick-responsive-320-to-1440-review
           path: visual-review/*.png
           if-no-files-found: error

@@ -20,23 +20,42 @@ async function ready(page,path) {
 }
 async function capture(page,name) {
   await page.screenshot({path:out+'/'+name+'.png',fullPage:true,animations:'disabled'});
-  const overflow = await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth+1);
-  assert(!overflow,'Horizontal overflow: '+name);
+  const overflow=await page.evaluate(()=>{const root=document.documentElement;return root.scrollWidth>root.clientWidth+1?{width:root.clientWidth,scrollWidth:root.scrollWidth,offenders:[...document.querySelectorAll('main *,header *,footer *')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.right>root.clientWidth+2&&!el.closest('.lux-rail-track,.lux-result-jump,.lux-account-nav,.lux-craft-tabs')}).slice(0,8).map(el=>({tag:el.tagName,classes:el.getAttribute('class'),right:Math.round(el.getBoundingClientRect().right)}))}:null});
+  assert(!overflow,'Horizontal overflow: '+name+' '+JSON.stringify(overflow));
   if (/^(homepage|discovery|dining|food-products|gifting|food-tools|businesses|journal)(-|$)/.test(name)) assert.equal(await page.locator('main h1').count(),1,'Expected a single main headline: '+name);
   const broken=await page.evaluate(()=>Array.from(document.querySelectorAll('main img')).filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc));
   assert.equal(broken.length,0,'Broken main images: '+name+' '+broken.join(','));
+}
+async function checkMobile(page,name){
+ const measurements=await page.evaluate(()=>{
+   const width=document.documentElement.clientWidth;
+   const visible=el=>{const r=el.getBoundingClientRect(),style=getComputedStyle(el);return r.width>0&&r.height>0&&style.visibility!=='hidden'&&style.display!=='none'};
+   const header=[...document.querySelectorAll('.fp-header-inner button[aria-label],.fp-header-inner a[aria-label]')].filter(visible).map(el=>({name:el.getAttribute('aria-label'),w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right}));
+   const forms=[...document.querySelectorAll('.fp26-search input,.fp26-search button,.fp26-filters input:not([type=hidden]),.fp26-filters select,.fp26-filters button')].filter(visible).map(el=>({name:el.getAttribute('name')||el.getAttribute('aria-label')||el.tagName,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,height:el.getBoundingClientRect().height,font:parseFloat(getComputedStyle(el).fontSize),button:el.tagName==='BUTTON'}));
+   const home=document.querySelector('.fp26-search'),action=home?.querySelector('button');
+   const auth=document.querySelector('.fp-auth-fields'),aside=document.querySelector('.fp-auth-editorial');
+   return {width,header,forms,homeAction:home&&action?{form:home.clientWidth,button:action.getBoundingClientRect().width}:null,authFirst:auth&&aside?auth.getBoundingClientRect().top<aside.getBoundingClientRect().top:true};
+ });
+ assert(measurements.width<=430,'Mobile viewport unexpectedly widened: '+name+' '+measurements.width);
+ for(const item of measurements.header)assert(item.w>=43&&item.h>=43&&item.left>=-1&&item.right<=measurements.width+1,'Header control too small or clipped: '+name+' '+JSON.stringify(item));
+ for(const item of measurements.forms)assert(item.left>=-1&&item.right<=measurements.width+1&&item.height>=43&&(item.button||item.font>=16),'Form control clipped, undersized or prone to iOS zoom: '+name+' '+JSON.stringify(item));
+ if(measurements.homeAction)assert(measurements.homeAction.button>=measurements.homeAction.form-32,'Homepage search action should fill its row: '+name);
+ assert(measurements.authFirst,'Mobile auth form must precede promotional imagery: '+name);
 }
 async function main(){
   await fs.mkdir(out,{recursive:true});
   const browser=await chromium.launch({headless:true});
   const errors=[];
   try{
-    for(const width of [390,768,1440]){
-      const context=await browser.newContext({viewport:{width,height:width===390?844:900},deviceScaleFactor:1});
+    for(const width of [320,390,430,768,1440]){
+      const phone=width<768;
+      const context=await browser.newContext({viewport:{width,height:phone?844:900},deviceScaleFactor:1,...(phone?{isMobile:true,hasTouch:true}:{})});
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
+          if((width===320||width===430)&&!['homepage','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
+            if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
@@ -46,13 +65,13 @@ async function main(){
               assert.equal(finish.paper,'rgb(248, 245, 238)');
               assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
               assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(36, 69, 57)');
-              assert(finish.search>=16&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
+              assert(finish.search>=(phone?12:16)&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
               await capture(page,'motion-homepage-'+width);
               await page.locator('.heritage-header').screenshot({path:out+'/current-header-'+width+'.png'});
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
-              if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
+              if(phone){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();assert(await page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Saved picks'}).isVisible());await page.screenshot({path:out+'/current-mobile-menu-'+width+'.png',animations:'disabled'});await page.keyboard.press('Escape');await page.getByRole('button',{name:'Open menu'}).waitFor();await page.getByRole('button',{name:'Open search'}).click();await page.locator('#nav-search').waitFor();assert(await page.locator('#nav-search').isEditable());await page.getByRole('button',{name:'Close search'}).click();}
               assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
               assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
