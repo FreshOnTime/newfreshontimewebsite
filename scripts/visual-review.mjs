@@ -83,16 +83,16 @@ async function main(){
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
               await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
-              await page.locator('.fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
-              await page.getByRole('heading',{name:'No matching FreshPick profiles yet.'}).waitFor();
+              await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
+              await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
             }
             if(name==='atlas'){
               await page.locator('.fp-atlas-search input[name=q]').fill('කොත්තු');
               await page.locator('.fp-atlas-search button').click();
               await page.waitForURL(url=>url.pathname==='/food-atlas'&&url.searchParams.get('q')==='කොත්තු');
-              await page.locator('[data-atlas-query="කොත්තු"][data-result-count="1"]').waitFor();
-              assert.equal(await page.locator('.fp-atlas-card').count(),1);
-              assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
+              await page.locator('#main-content [data-atlas-query="කොත්තු"][data-result-count="1"]').waitFor();
+              assert.equal(await page.locator('#main-content .fp-atlas-card').count(),1);
+              assert(await page.locator('#main-content').getByRole('heading',{name:'Kottu',exact:true}).isVisible());
             }
             if(name==='atlas-dish'){
               assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
@@ -133,12 +133,12 @@ async function main(){
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
               await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand',{waitUntil:'domcontentloaded'});
-              await page.locator('.fp26-resultbar[data-kind="Pantry"][data-type="food_brand"]').waitFor();
+              await page.locator('#main-content .fp26-resultbar[data-kind="Pantry"][data-type="food_brand"]').waitFor();
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Pantry');
               assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).inputValue(),'food_brand');
-              await page.getByRole('link',{name:'Clear filters',exact:true}).click();
+              await page.locator('#main-content').getByRole('link',{name:'Clear filters',exact:true}).click();
               await page.waitForURL(url=>url.pathname==='/makers'&&![...url.searchParams.values()].some(Boolean),{waitUntil:'domcontentloaded'});
-              await page.locator('.fp26-resultbar[data-kind=""][data-type=""]').waitFor();
+              await page.locator('#main-content .fp26-resultbar[data-kind=""][data-type=""]').waitFor();
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
@@ -200,17 +200,39 @@ async function main(){
         await page.getByRole('button',{name:/Kottu/}).waitFor();
         await capture(page,'admin-discovery-cms-390');
         const write=async(url,method,data)=>page.evaluate(async({url,method,data})=>{const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return {status:r.status,ok:r.ok,body:await r.json().catch(()=>null)};},{url,method,data});
-        const content={kind:'event',slug:'visual-cms-lifecycle',title:'CMS lifecycle fixture',category:'Workshop',summary:'Private draft test',body:'Isolated test',aliases:[],variations:[],relatedDishes:[],searchTerm:'',sourceUrl:'https://example.org/fixture',sourceName:'Test fixture',location:'Test venue',startsAt:new Date(Date.now()+86400000).toISOString(),endsAt:new Date(Date.now()+90000000).toISOString(),published:false,confirmed:false};
+        const content={kind:'event',slug:'visual-cms-lifecycle',title:'CMS lifecycle fixture '+Date.now(),category:'Workshop',summary:'Private draft test',body:'Private event body '+Date.now(),aliases:[],variations:[],relatedDishes:[],searchTerm:'',sourceUrl:'https://example.org/fixture',sourceName:'Test fixture',location:'Test venue',startsAt:new Date(Date.now()+86400000).toISOString(),endsAt:new Date(Date.now()+90000000).toISOString(),published:false,confirmed:false};
         const created=await write(endpoint,'POST',content);assert.equal(created.status,201,JSON.stringify(created.body));
         const draft=created.body.record;
         const publicUrl=new URL('/experiences/events/'+content.slug,base).href;
-        assert.equal((await context.request.get(publicUrl)).status(),404,'Draft must not be public');
-        const published=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content:{...content,published:true,confirmed:true}});assert(published.ok,'Publish failed: '+JSON.stringify(published.body));
-        const live=published.body.record;
-        assert.equal((await context.request.get(publicUrl)).status(),200,'Published event must be public');
-        const stale=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content});assert.equal(stale.status,409);
-        const hidden=await write(endpoint,'PATCH',{id:live.id,version:live.updatedAt,content});assert(hidden.ok,'Unpublish failed: '+JSON.stringify(hidden.body));
-        assert.equal((await context.request.get(publicUrl)).status(),404,'Unpublished event must be hidden');
+        // Next.js can send 200 for a streamed notFound() response. Assert actual
+        // anonymous visibility, noindex and absence of the private payload.
+        const eventGuest=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+        try{
+          const visitor=await eventGuest.newPage();
+          const expectPrivate=async(label)=>{
+            const response=await visitor.goto(publicUrl,{waitUntil:'networkidle'});
+            assert(response&&[200,404].includes(response.status()),label+': unexpected HTTP status '+response?.status());
+            await visitor.locator('#main-content').getByRole('heading',{name:'We couldn’t find that page.',exact:true}).waitFor();
+            assert.equal(await visitor.locator('#main-content').getByText(content.title,{exact:true}).count(),0,label+': private title rendered');
+            assert.equal(await visitor.locator('#main-content').getByText(content.body,{exact:true}).count(),0,label+': private body rendered');
+            const html=await response.text();
+            assert(!html.includes(content.title)&&!html.includes(content.body),label+': private payload present in HTML');
+            assert(await visitor.locator('meta[name="robots"]').evaluateAll(nodes=>nodes.some(n=>n.getAttribute('content')?.includes('noindex'))),label+': missing noindex');
+            const sitemap=await eventGuest.request.get(new URL('/sitemap.xml',base).href);
+            assert(sitemap.ok(),label+': sitemap unavailable');
+            assert(!(await sitemap.text()).includes('/experiences/events/'+content.slug),label+': private URL present in sitemap');
+          };
+          await expectPrivate('Draft must not be public');
+          const published=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content:{...content,published:true,confirmed:true}});assert(published.ok,'Publish failed: '+JSON.stringify(published.body));
+          const live=published.body.record;
+          const response=await visitor.goto(publicUrl,{waitUntil:'networkidle'});
+          assert(response?.ok(),'Published event must be public');
+          await visitor.locator('#main-content').getByRole('heading',{name:content.title,exact:true}).waitFor();
+          assert(await visitor.locator('#main-content').getByText(content.body,{exact:true}).isVisible(),'Published event body missing');
+          const stale=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content});assert.equal(stale.status,409);
+          const hidden=await write(endpoint,'PATCH',{id:live.id,version:live.updatedAt,content});assert(hidden.ok,'Unpublish failed: '+JSON.stringify(hidden.body));
+          await expectPrivate('Unpublished event must be hidden');
+        }finally{await eventGuest.close();}
         const pageEndpoint=new URL('/api/admin/site-pages',base).href;
         const pageData=await page.evaluate(async url=>(await (await fetch(url,{credentials:'same-origin'})).json()),pageEndpoint);
         const initial=pageData.pages.find(p=>p.key==='home');
@@ -239,7 +261,7 @@ async function main(){
         }finally{
           try{if(version!==initial.version){const restored=await write(pageEndpoint,'PATCH',{key:'home',version,config:initial.config,action:'publish'});assert(restored.ok,'Restore fixture page failed');}}finally{await guest.close();await db.$disconnect();}
         }
-      }catch(error){errors.push('CMS lifecycle: '+String(error));}finally{await context.close();}
+      }catch(error){errors.push('CMS lifecycle: '+(error instanceof Error?error.stack||error.message:String(error)));}finally{await context.close();}
     }
     const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
     try{
