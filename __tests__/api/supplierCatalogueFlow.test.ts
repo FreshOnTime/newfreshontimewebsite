@@ -278,3 +278,9 @@ it('notifies linked supplier accounts after a successful catalogue import', asyn
     })],
   });
 });
+
+it('requires explicit evidence before changing a pending business to approved',async()=>{
+ db.supplier.findUnique.mockResolvedValue({id:'supplier-1',name:'Grower One',applicationStatus:'pending',reviewVersion:2});
+ const response=await reviewSupplierApplication(req('http://localhost/api/admin/supplier-applications','PATCH',{id:'supplier-1',version:2,status:'approved',notes:'Unconfirmed'},{userId:'admin-1',role:'admin'}));
+ expect(response.status).toBe(400);expect(db.supplier.updateMany).not.toHaveBeenCalled();
+});
