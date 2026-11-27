@@ -1,0 +1,13 @@
+import Link from 'next/link';
+import {notFound} from 'next/navigation';
+import {getContent,getPublishedDishes,contentPath} from '@/lib/discoveryContent';
+import {pageMetadata,serializeJsonLd} from '@/lib/seo';
+import {absoluteUrl} from '@/lib/config/site';
+import {SavePick} from '@/components/makers/SavedPicks';
+import {ShareDiscovery} from '@/components/discovery/ShareDiscovery';
+import {DishCards} from '@/components/discovery/Hub';
+import {SectionHeading} from '@/components/discovery/Editorial';
+export const dynamic='force-dynamic';
+type Props={params:Promise<{slug:string}>};
+export async function generateMetadata({params}:Props){const g=await getContent('guide',(await params).slug);return g?pageMetadata({path:contentPath(g.kind,g.slug),title:g.title,description:g.summary.slice(0,155),type:'article'}):{robots:{index:false}};}
+export default async function Guide({params}:Props){const g=await getContent('guide',(await params).slug);if(!g)notFound();const path=contentPath(g.kind,g.slug);const dishes=(await getPublishedDishes()).filter(d=>g.relatedDishes.includes(d.slug));return <div className="fp26-shell"><article><script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd({'@context':'https://schema.org','@type':'Article',headline:g.title,description:g.summary,mainEntityOfPage:absoluteUrl(path),datePublished:g.publishedAt?.toISOString(),dateModified:g.updatedAt.toISOString(),author:{'@type':'Organization',name:'FreshPick editorial'},publisher:{'@type':'Organization',name:'FreshPick Sri Lanka'},citation:g.sourceUrl})}}/><header className="fp26-article-title"><Link className="fp26-label" href="/guides">{g.category}</Link><h1>{g.title}</h1><p className="fp26-deck">{g.summary}</p><p className="fp26-meta">FreshPick editorial · Updated <time dateTime={g.updatedAt.toISOString()}>{new Intl.DateTimeFormat('en-LK',{dateStyle:'medium',timeZone:'Asia/Colombo'}).format(g.updatedAt)}</time></p><div className="fp26-byline"><SavePick href={path} title={g.title} kind="Guide"/><ShareDiscovery title={g.title} url={absoluteUrl(path)}/></div></header><div className="fp26-reading">{g.variations.length>0&&<><h2>Key points</h2><ul>{g.variations.map((p,i)=><li key={i}>{p}</li>)}</ul></>}{g.body.split(/\n\s*\n/).filter(Boolean).map((p,i)=><p key={i} className="whitespace-pre-line break-words">{p}</p>)}<h2>Source &amp; further reading</h2><p><a href={g.sourceUrl} target="_blank" rel="noopener noreferrer">{g.sourceName}</a></p><Link href="/eat-drink" className="fp26-action">Explore dining</Link></div></article>{dishes.length>0&&<section className="fp26-guide-section"><SectionHeading title="Related dishes" href="/food-atlas"/><DishCards entries={dishes}/></section>}</div>}

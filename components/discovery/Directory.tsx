@@ -10,7 +10,8 @@ import prisma from '@/lib/prisma';
 import {publicMakerWhere,makerKinds} from '@/lib/makers';
 import {EditorialPicks,OccasionShelf,FoodBrandTabs} from './Curated';
 import {DishCards} from './Hub';
-import {getPublishedDishes} from '@/lib/discoveryContent';
+import {GuideCards} from './DiscoveryGuides';
+import {getPublishedDishes,readPublishedContent} from '@/lib/discoveryContent';
 import {matchDishes} from '@/lib/foodAtlas';
 import {editorialMatches} from '@/lib/editorialDiscoveries';
 export function SocialLinks({business}:{business:PublicProspect}){const links=[['Website',publicLink(business.website)],['Instagram',publicLink(business.instagram,'instagram.com')],['Facebook',publicLink(business.facebook,'facebook.com')],['TikTok',publicLink(business.tiktok,'tiktok.com')]] as const;return <div className="fp26-socials">{links.map(([label,url])=>url&&<a key={label} href={url} target="_blank" rel="noopener noreferrer">{label}<ArrowUpRight size={16} aria-hidden="true"/></a>)}</div>}
@@ -41,7 +42,8 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const unavailable=[prospectResult,makerResult,itemResult,storyResult].some(r=>r.status==='rejected');
  for(const result of [prospectResult,makerResult,itemResult,storyResult])if(result.status==='rejected')console.error('Discovery query failed',result.reason);
  const atlasMatches=mode==='all'&&!articlesOnly&&page===1&&q&&!area?matchDishes(q,await getPublishedDishes().catch(error=>{console.error('Atlas search unavailable',error);return []})):[];
- const hasResults=prospects.length+makers.length+items.length+stories.length+notes.length+atlasMatches.length>0,more=[prospects,makers,items,stories].some(r=>r.length>24);
+ const guideMatches=mode==='all'&&page===1&&!area&&(q||articlesOnly)?(await readPublishedContent('guide').catch(error=>{console.error('Guide search unavailable',error);return []})).filter(g=>[g.title,g.summary,g.category,...g.aliases].some(v=>v.toLowerCase().includes(q.toLowerCase()))):[];
+ const hasResults=prospects.length+makers.length+items.length+stories.length+notes.length+atlasMatches.length+guideMatches.length>0,more=[prospects,makers,items,stories].some(r=>r.length>24);
  const href=(extra:Record<string,string>)=>path+'?'+new URLSearchParams({...(q?{q}:{}),...(area?{area}:{}),...(kind?{kind}:{}),...(type?{type}:{}),...(articlesOnly?{scope:'articles'}:{}),...extra});
  const filtered=!!(q||area||kind||type||articlesOnly||page>1);
  const showEditorial=page===1&&!kind&&!articlesOnly&&mode!=='products';
@@ -52,7 +54,7 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  <form key={JSON.stringify([path,q,area,kind,type,articlesOnly])} action={path} className={'fp26-filters'+(mode==='makers'||mode==='products'||mode==='all'?' fp-brand-filters'+(mode==='makers'?'':' fp-product-filters'):'')} role="search">
  {kind&&mode!=='makers'&&mode!=='products'&&<input type="hidden" name="kind" value={kind}/>}
  {type&&mode!=='makers'&&<input type="hidden" name="type" value={type}/>}
- {mode==='all'&&<label className="fp-filter-select"><span id="discovery-scope-label">What are you looking for?</span><select name="scope" defaultValue={articlesOnly?"articles":""} aria-labelledby="discovery-scope-label"><option value="">Everything</option><option value="dining">Restaurants & cafés</option><option value="dishes">Dishes & food culture</option><option value="makers">Food brands & makers</option><option value="products">Food products</option><option value="articles">Articles & guides</option><option value="gifting">Gift suppliers</option></select></label>}
+ {mode==='all'&&<label className="fp-filter-select"><span id="discovery-scope-label">What are you looking for?</span><select name="scope" defaultValue={articlesOnly?"articles":""} aria-labelledby="discovery-scope-label"><option value="">Everything</option><option value="dining">Restaurants & cafés</option><option value="dishes">Dishes & food culture</option><option value="makers">Food brands & makers</option><option value="products">Food products</option><option value="articles">Articles & guides</option><option value="guides">Comparisons & meal ideas</option><option value="gifting">Gift suppliers</option></select></label>}
  <label className="fp-directory-keyword"><span>{settings.search}</span><div><Search size={19} aria-hidden="true"/><input name="q" defaultValue={q} maxLength={100} placeholder={settings.placeholder}/></div></label>
  <label className="fp-directory-location"><span>Town or area</span><div><MapPin size={19} aria-hidden="true"/><input name="area" defaultValue={area} maxLength={100} placeholder="All of Sri Lanka"/></div></label>
  {mode==='makers'&&<label className="fp-filter-select"><span id="discovery-type-label">Business type</span><select name="type" defaultValue={type||''} aria-labelledby="discovery-type-label"><option value="">Any business type</option>{(eligibleTypes||[]).map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label>}
@@ -63,6 +65,7 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  <div className="fp26-resultbar"><p>{filtered?'Search results':'Browse the collection'}</p>{filtered&&<Link href={path} className="fp26-textlink">Clear filters</Link>}</div>
  {unavailable&&<p role="status" className="fp26-notice">Some listings are temporarily unavailable. Other guides remain accessible.</p>}
  {makers.length>0&&<section id="makers-results" className="fp26-guide-section"><SectionHeading title={mode==='dining'?'Restaurants, cafés & dining businesses':'Owner-managed businesses'}/><div className="fp26-resultgrid">{makers.slice(0,24).map(m=><article className="fp26-index" key={m.id}><p className="fp26-label">{businessTypeLabel(m.businessType)}</p><h3><Link href={'/makers/'+m.makerHandle}>{m.name}<ArrowUpRight size={18}/></Link></h3>{m.makerTown&&<p className="fp26-location"><MapPin size={14}/>{m.makerTown}</p>}{m.makerBio&&<p className="line-clamp-3">{m.makerBio}</p>}</article>)}</div></section>}
+ {guideMatches.length>0&&<section className="fp26-guide-section"><SectionHeading title="Food guides & comparisons"/><GuideCards entries={guideMatches}/></section>}
  {atlasMatches.length>0&&<section className="fp26-guide-section"><SectionHeading title="Food Atlas"/><DishCards entries={atlasMatches}/></section>}
  {products.length>0&&<section className="fp26-guide-section"><SectionHeading title="Food products"/><div className="journal-item-grid">{products.slice(0,24).map(item=><MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown}/>)}</div></section>}
  {dishes.length>0&&<section className="fp26-guide-section"><SectionHeading title="Menu discoveries"/><div className="journal-item-grid">{dishes.slice(0,24).map(item=><MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown} menuItem/>)}</div></section>}

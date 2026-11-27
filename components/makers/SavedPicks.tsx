@@ -16,7 +16,7 @@ function snapshot() { try { return localStorage.getItem(key) || '[]'; } catch { 
 function picks(raw: string): Pick[] {
   try {
     const entries: unknown = JSON.parse(raw);
-    return Array.isArray(entries) ? entries.filter(p => p && typeof p.href === 'string' && /^\/(?:makers\/[a-z0-9-]+(?:\/(?:items|stories)\/[a-z0-9-]+)?|stories\/[a-z0-9-]+|places\/[a-z0-9-]+|food-atlas\/[a-z0-9-]+|traditions\/[a-z0-9-]+|experiences\/events\/[a-z0-9-]+)$/.test(p.href) && typeof p.title === 'string' && typeof p.kind === 'string') : [];
+    return Array.isArray(entries) ? entries.filter(p => p && typeof p.href === 'string' && /^\/(?:makers\/[a-z0-9-]+(?:\/(?:items|stories)\/[a-z0-9-]+)?|stories\/[a-z0-9-]+|places\/[a-z0-9-]+|food-atlas\/[a-z0-9-]+|traditions\/[a-z0-9-]+|guides\/[a-z0-9-]+|experiences\/events\/[a-z0-9-]+)$/.test(p.href) && typeof p.title === 'string' && typeof p.kind === 'string') : [];
   } catch { return []; }
 }
 const serverSnapshot = () => '[]';
