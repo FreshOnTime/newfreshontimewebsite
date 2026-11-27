@@ -12,3 +12,5 @@ it('uses a phone-width search action and moves auth fields ahead of promotional 
 it('covers small and large phone sizes with touch-enabled browser checks',()=>{
  const review=read('scripts/visual-review.mjs');expect(review).toContain('[320,390,430,768,1440]');expect(review).toContain('hasTouch:true');expect(review).toContain('checkMobile(page');expect(review).toContain('Horizontal overflow:');
 });
+
+it('includes one Contact link in the shared desktop and mobile navigation',()=>{const nav=read('components/layout/Navbar.tsx');expect(nav).toContain('{label:"Contact",href:"/contact"}');expect(nav).not.toContain('moreLinks');expect(nav).toContain('links.map');expect(nav).toContain('[...links,{label:"Saved picks"');});
