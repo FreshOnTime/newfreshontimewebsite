@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import {processEmailOutbox} from './emailOutboxService';
 import type { Prisma } from '@prisma/client';
 
 export function frontendUrl() {
@@ -15,13 +16,16 @@ export async function sendEmail(to: string, subject: string, html: string, text?
   if (options?.dedupeKey) return db.emailOutbox.upsert({ where: { dedupeKey: options.dedupeKey }, create: data, update: {} });
   return db.emailOutbox.create({ data });
 }
+async function attemptAuthDelivery(id:string){try{await processEmailOutbox(1,id);}catch{console.error('Authentication email remains queued; delivery provider unavailable.');}}
 export async function sendVerificationEmail(email: string, token: string) {
   const link = `${frontendUrl()}/auth/verify?token=${encodeURIComponent(token)}`;
-  return sendEmail(email, 'Verify your account', `<p>Please verify your email by clicking <a href="${link}">this link</a>.</p>`, `Verify your account: ${link}`);
+  const queued=await sendEmail(email, 'Verify your account', `<p>Please verify your email by clicking <a href="${link}">this link</a>.</p>`, `Verify your account: ${link}`);
+  await attemptAuthDelivery(queued.id);return queued;
 }
 export async function sendPasswordResetEmail(email: string, token: string) {
   const link = `${frontendUrl()}/auth/reset-password?token=${encodeURIComponent(token)}`;
-  return sendEmail(email, 'Reset your password', `<p>Reset your password <a href="${link}">here</a>. If you did not request this, ignore this email.</p>`, `Reset your password: ${link}`);
+  const queued=await sendEmail(email, 'Reset your password', `<p>Reset your password <a href="${link}">here</a>. If you did not request this, ignore this email.</p>`, `Reset your password: ${link}`);
+  await attemptAuthDelivery(queued.id);return queued;
 }
 export async function sendOrderEmail(to: string, order: { _id?: string; total?: number }, tx?: Prisma.TransactionClient) {
   return sendEmail(to, `Order Confirmation #${order._id}`, `<p>Thank you for order #${order._id}.</p><p>Total: ${order.total}</p>`, `Order #${order._id} placed.`, { tx, dedupeKey: `order-confirmation:${order._id}` });
