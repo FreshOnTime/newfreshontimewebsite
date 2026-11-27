@@ -30,7 +30,7 @@ export const GET = requireAdminSimple(async request => {
         skip: (page-1)*20,
         take: 20,
         select: {
-          id: true, name: true, contactName: true, email: true, phone: true, city: true,businessType:true,
+          id: true, name: true, contactName: true, email: true, phone: true, city: true,businessType:true,businessSpecialties:true,
           notes: true, applicationStatus: true, reviewNotes: true,
           reviewVersion: true, reviewedAt: true, createdAt: true,
         },
