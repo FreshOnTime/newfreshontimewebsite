@@ -16,7 +16,7 @@ function snapshot() { try { return localStorage.getItem(key) || '[]'; } catch { 
 function picks(raw: string): Pick[] {
   try {
     const entries: unknown = JSON.parse(raw);
-    return Array.isArray(entries) ? entries.filter(p => p && typeof p.href === 'string' && /^\/(?:makers\/[a-z0-9-]+(?:\/(?:items|stories)\/[a-z0-9-]+)?|stories\/[a-z0-9-]+)$/.test(p.href) && typeof p.title === 'string' && typeof p.kind === 'string') : [];
+    return Array.isArray(entries) ? entries.filter(p => p && typeof p.href === 'string' && /^\/(?:makers\/[a-z0-9-]+(?:\/(?:items|stories)\/[a-z0-9-]+)?|stories\/[a-z0-9-]+|places\/[a-z0-9-]+)$/.test(p.href) && typeof p.title === 'string' && typeof p.kind === 'string') : [];
   } catch { return []; }
 }
 const serverSnapshot = () => '[]';
@@ -36,10 +36,10 @@ export function SavePick({ href, title, kind }: Pick) {
 export function SavedPicks() {
   const entries = picks(useSyncExternalStore(subscribe, snapshot, serverSnapshot));
   return <>
-    <PageBand title="Your saved picks." intro="Your own collection of makers, food and stories, kept in this browser."/>
+    <PageBand title="Your saved picks." intro="Your own collection of places, food businesses, products and stories, kept in this browser."/>
     <div className="editorial-wrap py-8">
       {entries.length ? <div className="fp-saved-list">{entries.map(p => <article key={p.href}><Link href={p.href}><span className="fp-kicker">{p.kind}</span><h2>{p.title}</h2></Link><SavePick {...p}/></article>)}</div> :
-        <div className="fp-empty"><div><h2>Start your collection.</h2><p>Tap Save on a maker, an item or a story and you’ll find it here.</p></div><Link className="maker-button" href="/stories">Explore the journal</Link></div>}
+        <div className="fp-empty"><div><h2>Start your collection.</h2><p>Tap Save on a business, product or article and you’ll find it here.</p></div><Link className="maker-button" href="/stories">Explore the journal</Link></div>}
     </div>
   </>;
 }
