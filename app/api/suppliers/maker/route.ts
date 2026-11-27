@@ -52,7 +52,7 @@ const actions = z.discriminatedUnion('action', [
   z.object({ action: z.literal('batch-status'), id, soldOut: z.boolean() }),
   z.object({
     action: z.literal('story'),
-    category:z.enum(businessArticleTopics).optional(),
+    category:z.enum(businessArticleTopics).nullable().optional(),
     id: id.optional(),
     title: z.string().trim().min(3).max(150),
     excerpt: z.string().trim().min(3).max(300),
