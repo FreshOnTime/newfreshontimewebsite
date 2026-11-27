@@ -4,7 +4,7 @@ import { SOCIAL_LINKS } from "@/lib/config/site";
 import { SOCIAL_LABELS,type SocialPlatform } from "@/lib/socialProfiles";
 
 const groups = [
-  { title: 'Explore', links: [['Explore','/discover'],['Food & brands','/makers'],['Dining','/eat-drink'],['Products','/food-products'],['Gift suppliers','/gifting'],['Journal','/stories']] },
+  { title: 'Explore', links: [['Explore','/discover'],['Food & brands','/makers'],['Dining','/eat-drink'],['Food Atlas','/food-atlas'],['Experiences','/experiences'],['Products','/food-products'],['Gift suppliers','/gifting'],['Journal','/stories']] },
   { title: 'FreshPick', links: [['About FreshPick','/about'],['How it works','/how-it-works'],['Editorial archive','/blog']] },
   { title: 'For businesses', links: [['For businesses','/for-businesses'],['List your business','/join'],['Business studio','/dashboard'],['Listing corrections','/contact']] },
   { title: 'Here to help', links: [['Help','/help'],['Account','/profile'],['Contact','/contact']] },
