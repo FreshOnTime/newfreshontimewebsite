@@ -10,7 +10,7 @@ const routes = [
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
-  ['journal','/stories'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
+  ['journal','/stories'],['journal-dining','/stories?topic=Dining%20guide'],['dining-guide','/stories/a-table-for-two'],['buying-guide','/stories/the-price-on-the-jar'],['gifting-guide','/stories/a-gift-worth-opening'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
 ];
 const out = process.env.VISUAL_OUTPUT_DIR || 'visual-review';
 async function ready(page,path) {
@@ -22,13 +22,16 @@ async function capture(page,name) {
   await page.screenshot({path:out+'/'+name+'.png',fullPage:true,animations:'disabled'});
   const overflow = await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth+1);
   assert(!overflow,'Horizontal overflow: '+name);
+  if (/^(homepage|discovery|dining|food-products|gifting|food-tools|businesses|journal)(-|$)/.test(name)) assert.equal(await page.locator('main h1').count(),1,'Expected a single main headline: '+name);
+  const broken=await page.evaluate(()=>Array.from(document.querySelectorAll('main img')).filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc));
+  assert.equal(broken.length,0,'Broken main images: '+name+' '+broken.join(','));
 }
 async function main(){
   await fs.mkdir(out,{recursive:true});
   const browser=await chromium.launch({headless:true});
   const errors=[];
   try{
-    for(const width of [390,1440]){
+    for(const width of [390,768,1440]){
       const context=await browser.newContext({viewport:{width,height:width===390?844:900},deviceScaleFactor:1});
       const page=await context.newPage();
       try{
@@ -37,6 +40,8 @@ async function main(){
             if(name==='homepage'){
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
+              const family=await page.locator('main h1').evaluate(node=>getComputedStyle(node).fontFamily);
+              assert(family.includes('Instrument Serif'),'Unexpected homepage font: '+family);
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
               await capture(page,'motion-homepage-'+width);

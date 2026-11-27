@@ -11,10 +11,10 @@ interface PremiumPageHeaderProps {
   imageLayout?: 'feature' | 'compact';
 }
 
-export default function PremiumPageHeader({ title, subtitle, backgroundImage, count, isLoading }: PremiumPageHeaderProps) {
+export default function PremiumPageHeader({ title, subtitle, backgroundImage, count, isLoading, eyebrow }: PremiumPageHeaderProps) {
   if (isLoading) return <div className="fp-band" role="status"><div className="editorial-wrap py-12">Loading…</div></div>;
   return <>
-    <PageBand title={title} intro={subtitle} image={backgroundImage || undefined}/>
+    <PageBand title={title} intro={subtitle} image={backgroundImage || undefined} eyebrow={eyebrow}/>
     {count !== undefined && <p className="editorial-wrap pt-4 text-sm" aria-live="polite">{count} {count === 1 ? 'item' : 'items'}</p>}
   </>;
 }

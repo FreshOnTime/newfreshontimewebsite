@@ -45,14 +45,13 @@ export default async function MakerPage({ params }: Props) {
       {maker.makerBio && <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words leading-7 text-muted-foreground">{maker.makerBio}</p>}
       </div>{leadItem && <Link href={`/makers/${handle}/items/${leadItem.slug}`} className="lux-storefront-feature"><MakerPhoto image={leadItem.image} name={leadItem.name}/><span>From this maker · {leadItem.name} <span aria-hidden="true">↗</span></span></Link>}
     </header>
-    <nav className="lux-result-jump" aria-label="Maker page sections"><a href="#maker-items">Food & items</a>{stories.length > 0 && <a href="#maker-stories">Stories</a>}</nav>
-    <section id="maker-items">
+    {(items.length>0||stories.length>0)&&<nav className="lux-result-jump" aria-label="Maker page sections">{items.length>0&&<a href="#maker-items">Food & items</a>}{stories.length > 0 && <a href="#maker-stories">Stories</a>}</nav>}
+    {items.length>0&&<section id="maker-items">
       <div className="fp-section-head"><h2 className="editorial-title">From this kitchen</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
-      {items.length === 0 && <p className="mt-3 text-muted-foreground">This maker hasn’t published any items yet.</p>}
       <div className="mt-4 journal-item-grid">
         {items.map(item => <MakerItemCard key={item.id} handle={handle} item={item} />)}
       </div>
-    </section>
+    </section>}
     {stories.length > 0 && <section id="maker-stories">
       <div className="fp-section-head"><h2 className="editorial-title">The maker’s journal</h2></div>
       <div className="mt-4 divide-y divide-border border-y border-border">
