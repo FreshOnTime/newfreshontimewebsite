@@ -49,8 +49,8 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  {kind&&mode!=='makers'&&mode!=='products'&&<input type="hidden" name="kind" value={kind}/>}
  {type&&mode!=='makers'&&<input type="hidden" name="type" value={type}/>}
  {mode==='all'&&<label className="fp-filter-select"><span>What are you looking for?</span><select name="scope" defaultValue={articlesOnly?"articles":""}><option value="">Everything</option><option value="dining">Restaurants & cafés</option><option value="makers">Food brands & makers</option><option value="products">Food products</option><option value="articles">Articles & guides</option><option value="gifting">Gift suppliers</option></select></label>}
- <label><span>{settings.search}</span><div><Search size={19} aria-hidden="true"/><input name="q" defaultValue={q} maxLength={100} placeholder={settings.placeholder}/></div></label>
- <label><span>Town or area</span><div><MapPin size={19} aria-hidden="true"/><input name="area" defaultValue={area} maxLength={100} placeholder="All of Sri Lanka"/></div></label>
+ <label className="fp-directory-keyword"><span>{settings.search}</span><div><Search size={19} aria-hidden="true"/><input name="q" defaultValue={q} maxLength={100} placeholder={settings.placeholder}/></div></label>
+ <label className="fp-directory-location"><span>Town or area</span><div><MapPin size={19} aria-hidden="true"/><input name="area" defaultValue={area} maxLength={100} placeholder="All of Sri Lanka"/></div></label>
  {mode==='makers'&&<label className="fp-filter-select"><span>Business type</span><select name="type" defaultValue={type||''}><option value="">Any business type</option>{(eligibleTypes||[]).map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label>}
  {(mode==='makers'||mode==='products')&&<label className="fp-filter-select"><span>Food category</span><select name="kind" defaultValue={kind||''}><option value="">Any food category</option>{makerKinds.map(k=><option key={k} value={k}>{k}</option>)}</select></label>}
  <button className="fp26-action" type="submit">Search <ArrowRight size={18} aria-hidden="true"/></button></form>

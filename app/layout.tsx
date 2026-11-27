@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./discovery.css";
 import "./discovery-polish.css";
+import "./discovery-mobile.css";
 import { Toaster } from "@/components/ui/sonner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
