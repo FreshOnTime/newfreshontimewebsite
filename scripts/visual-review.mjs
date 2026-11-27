@@ -109,7 +109,7 @@ async function main(){
               await page.locator('.fp26-filters button[type=submit]').click();
               await page.waitForURL(url=>url.pathname==='/explore/bakeries'&&url.searchParams.get('q')==='visual');
               await page.locator('#main-content .fp26-resultbar[data-query="visual"][data-type="bakery"]').waitFor();
-              assert(await page.locator('#main-content').getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
+              await page.locator('#main-content').getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).first().waitFor();
             }
             if(name==='department-coffee'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'cafe');assert(await page.getByRole('heading',{name:'Café Kumbuk',exact:true}).isVisible());}
             if(name==='department-produce'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-kind'),'Produce');}
@@ -217,7 +217,7 @@ async function main(){
             const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:process.env.VISUAL_LOGIN,password:process.env.VISUAL_PASSWORD}});
             assert(login.ok(),'Test account login failed');
             await ready(page,new URL('/dashboard',base).href);
-            await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
+            await page.getByRole('heading',{name:'Your business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
             assert(await page.getByRole('checkbox',{name:'Food hampers',exact:true}).isVisible());
             assert(await page.getByRole('progressbar',{name:'Business page setup progress'}).isVisible());
@@ -275,6 +275,10 @@ async function main(){
         const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:'visual-admin@example.invalid',password:process.env.VISUAL_PASSWORD}});
         assert(login.ok(),'CMS admin fixture login failed');
         const page=await context.newPage();
+        await ready(page,new URL('/admin',base).href);
+        await page.getByRole('heading',{name:'Discovery control centre.'}).waitFor({timeout:20000});
+        await page.getByRole('heading',{name:'Account & delivery health'}).waitFor();
+        await capture(page,'admin-discovery-overview-390');
         await ready(page,new URL('/admin/discovery-content',base).href);
         await page.getByRole('heading',{name:'Food & Culture CMS'}).waitFor({timeout:20000});
         await page.getByRole('button',{name:/Kottu/}).waitFor();
