@@ -136,3 +136,12 @@ it('accepts a maker application with a town and contact details only', async () 
     data: expect.objectContaining({ city: 'Nawala', makerTown: 'Nawala', applicationStatus: 'pending', notes: undefined }),
   }));
 });
+
+it('registers a restaurant for review using the existing business account workflow',async()=>{
+ expect((await POST(request({...body,businessType:'restaurant'}))).status).toBe(201);
+ expect(prisma.supplier.create).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({businessType:'restaurant',applicationStatus:'pending',status:'inactive'})}));
+});
+it('rejects unsupported business types before any writes',async()=>{
+ expect((await POST(request({...body,businessType:'invalid'}))).status).toBe(400);
+ expect(prisma.$transaction).not.toHaveBeenCalled();
+});

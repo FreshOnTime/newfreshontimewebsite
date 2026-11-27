@@ -49,7 +49,10 @@ async function main(){
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
               if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
               const rail = page.getByRole('navigation',{name:'Browse FreshPick'});
-              assert.equal(await rail.getByRole('link').count(),6);
+              assert.equal(await rail.getByRole('link').count(),5);
+              await page.getByRole('button',{name:'Eat & drink',exact:true}).click();
+              assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/eat-drink');
+              await page.getByRole('button',{name:'Everything',exact:true}).click();
               await rail.screenshot({path:out+'/discovery-rail-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
@@ -63,9 +66,19 @@ async function main(){
               await details.locator('summary').click();
               assert(await details.evaluate(node=>node.open),'Item accordion did not open');
             }
+            if(name==='businesses'){
+              await page.getByRole('button',{name:'Café',exact:true}).click();
+              assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
+            }
+            if(name==='gifting'){
+              await page.getByLabel('Total budget (LKR)').fill('10000');
+              await page.getByLabel('Quantity').fill('5');
+              await page.getByLabel('Gift enquiry brief').waitFor();
+              assert((await page.getByLabel('Gift enquiry brief').inputValue()).includes('Quantity: 5'));
+            }
             if(name==='directory'){
               await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).click();
-              await page.waitForURL('**/makers?kind=Bakery');
+              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Bakery');
               assert.equal(await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).getAttribute('aria-current'),'page');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
@@ -78,7 +91,7 @@ async function main(){
             const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:process.env.VISUAL_LOGIN,password:process.env.VISUAL_PASSWORD}});
             assert(login.ok(),'Test account login failed');
             await ready(page,new URL('/dashboard',base).href);
-            await page.getByRole('heading',{name:'Maker studio.'}).waitFor({timeout:20000});
+            await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
             await capture(page,'maker-studio-'+width);
           }catch(error){errors.push(String(error));}
