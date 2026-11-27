@@ -7,6 +7,7 @@ import { authenticatedApiFetch as apiFetch } from '@/lib/api/authenticated-fetch
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import {specialtyLabel} from '@/lib/businessSpecialties';
 import {businessTypeLabel} from '@/lib/businessTypes';
 import { Badge } from '@/components/ui/badge';
 
@@ -14,6 +15,7 @@ interface Application {
   id: string;
   name: string;
   businessType?:string;
+  businessSpecialties?:string[];
   contactName: string;
   city?: string | null;
   email: string | null;
@@ -55,6 +57,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
       <CardContent className="space-y-5 pt-6">
         <div>
           <h2 className="text-xl font-semibold">{application.name}</h2><p className="text-xs font-semibold text-brand-green">{businessTypeLabel(application.businessType)}</p>
+          {!!application.businessSpecialties?.length && <p className="mt-1 text-sm text-muted-foreground">{application.businessSpecialties.map(specialtyLabel).join(' · ')}</p>}
           <p className="mt-1 break-words text-sm text-muted-foreground">
             {application.city && `${application.city} · `}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
           </p>
