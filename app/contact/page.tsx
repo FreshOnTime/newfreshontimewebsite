@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { MessageSquare, MapPin } from "lucide-react";
+import { MessageSquare, MapPin, ArrowUpRight, Send } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import PremiumPageHeader from "@/components/ui/PremiumPageHeader";
 import { apiFetch } from "@/lib/api/client";
 import { contactSchema, enquiryReference, enquiryTypes, type EnquiryType } from "@/lib/contactEnquiries";
 
@@ -55,30 +56,14 @@ export default function ContactPage() {
     } finally { sending.current = false; }
   }
 
-  const fieldClass = "h-12 rounded-none border-0 border-b border-border bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0";
+  const fieldClass = "fp-contact-field h-12 w-full text-base font-normal";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <PremiumPageHeader
-        title="Speak with FreshPick."
-        subtitle="For help with your account, a maker page or a listing, contact FreshPick. For product availability, reservations or fulfilment, contact the business directly."
-        eyebrow="Contact FreshPick"
-      />
-
-      <section className="editorial-wrap py-12 md:py-20">
-        <div className="grid min-w-0 gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
-          <aside>
-            <span className="text-xs font-bold normal-case text-brand-green">Your enquiry</span>
-            <h2 className="mt-7 font-serif text-2xl font-normal leading-tight md:text-2xl">
-              A human answer,<br /><span className="not-italic text-brand-green">when you need one.</span>
-            </h2>
-            <div className="mt-6 space-y-6 border-t border-border pt-8 text-sm font-normal text-muted-foreground">
-              <p className="flex items-start gap-3"><MessageSquare className="mt-1 h-5 w-5 shrink-0 text-brand-green" aria-hidden="true" /><span>Your message goes to the FreshPick team’s enquiry inbox. Include an email address so we can contact you about your question.</span></p>
-              <p className="flex gap-3"><MapPin className="h-5 w-5 stroke-1 text-brand-green" /> Greater Colombo, Sri Lanka</p>
-            </div>
-          </aside>
-
-          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-7 rounded-[4px] border border-brand-green/15 bg-white p-5 md:grid-cols-2 md:p-9"><legend className="sr-only">Send an enquiry to FreshPick</legend>
+    <div className="fp26-shell fp-contact-page">
+      <header className="fp-contact-hero"><div><p className="fp26-label">Contact FreshPick</p><h1>Good food starts with a conversation.</h1><p className="fp26-deck">Have a question, a food discovery to share or an idea for FreshPick? We would love to hear from you.</p></div><figure><Image src="/images/editorial/hands-at-work.webp" alt="Hands preparing dough, editorial photograph" fill priority sizes="(max-width:760px) 100vw, 36vw"/></figure></header>
+      <section className="fp-contact-grid">
+          <aside className="fp-contact-aside"><p className="fp26-label">How can we help?</p><h2>Let’s talk.</h2><div className="fp-contact-options"><div><MessageSquare size={22} aria-hidden="true"/><h3>Platform help &amp; feedback</h3><p>Ask about your account, a listing, or suggest an improvement. Your enquiry goes to the FreshPick team.</p></div><div><ArrowUpRight size={22} aria-hidden="true"/><h3>For food businesses</h3><p>Discover how to publish your profile, menus, products and stories.</p><Link href="/for-businesses">Explore business features</Link></div><div><MapPin size={22} aria-hidden="true"/><h3>Contact a food business</h3><p>For availability, bookings and fulfilment, contact the relevant business directly using its public profile.</p><Link href="/discover">Find a business</Link></div></div><p className="fp-contact-region">Sri Lanka · Independent food discovery</p></aside>
+          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="fp-contact-form grid min-w-0 grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-2"><legend className="sr-only">Send an enquiry to FreshPick</legend><div className="md:col-span-2"><h2>Send us a message</h2><p className="fp-contact-form-hint">Include your email so we can respond to your enquiry.</p></div>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Name
               <Input className={` ${fieldClass} mt-2`} autoComplete="name" maxLength={100} value={name} onChange={(event) => setName(event.target.value)} required />
@@ -89,7 +74,7 @@ export default function ContactPage() {
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Enquiry
-              <select value={type} onChange={(event) => setType(event.target.value as EnquiryType)} className="mt-2 h-12 w-full border-0 border-b border-border bg-transparent px-0 text-sm font-normal normal-case tracking-normal outline-none focus:border-primary">
+              <select value={type} onChange={(event) => setType(event.target.value as EnquiryType)} className="fp-contact-field mt-2 h-12 w-full text-base font-normal">
                 <option value="question">Question</option>
                 <option value="issue">Issue</option>
                 <option value="suggestion">Suggestion</option>
@@ -98,14 +83,14 @@ export default function ContactPage() {
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Priority
-              <select value={priority} onChange={(event) => setPriority(event.target.value as "low" | "normal" | "high")} className="mt-2 h-12 w-full border-0 border-b border-border bg-transparent px-0 text-sm font-normal normal-case tracking-normal outline-none focus:border-primary">
+              <select value={priority} onChange={(event) => setPriority(event.target.value as "low" | "normal" | "high")} className="fp-contact-field mt-2 h-12 w-full text-base font-normal">
                 <option value="low">Low</option>
                 <option value="normal">Normal</option>
                 <option value="high">High</option>
               </select>
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
-              Order ID <span className="font-normal normal-case tracking-normal text-muted-foreground">(optional)</span>
+              Reference or order ID <span className="font-normal normal-case tracking-normal text-muted-foreground">(optional)</span>
               <Input className={` ${fieldClass} mt-2`} maxLength={100} value={orderId} onChange={(event) => setOrderId(event.target.value)} />
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
@@ -114,19 +99,18 @@ export default function ContactPage() {
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground md:col-span-2">
               Message
-              <Textarea className="mt-2 rounded-lg border-border bg-background p-4 font-normal normal-case tracking-normal focus-visible:ring-1 focus-visible:ring-primary" maxLength={5000} value={message} onChange={(event) => setMessage(event.target.value)} rows={6} required />
+              <Textarea className="fp-contact-field mt-2 min-h-36 p-3 text-base font-normal" maxLength={5000} value={message} onChange={(event) => setMessage(event.target.value)} rows={6} required />
             </label>
 
             <div className="col-span-1 flex flex-wrap items-center gap-4 md:col-span-2">
-              <Button type="submit" className="h-12 rounded-xl bg-brand-green-deep px-8 text-sm font-semibold text-white hover:bg-brand-green" disabled={status === "sending"}>
-                {status === "sending" ? "Sending…" : "Send enquiry"}
+              <Button type="submit" className="fp-contact-submit h-12 px-7 text-sm font-semibold" disabled={status === "sending"}>
+                {status === "sending" ? "Sending…" : "Send enquiry"} <Send size={16} aria-hidden="true"/>
               </Button>
               <p role={status === "error" ? "alert" : "status"} aria-live="polite" className={`text-sm ${status === "error" ? "text-red-600" : "text-brand-green"} `}>
                 {feedback}
               </p>
             </div>
           </fieldset></form>
-        </div>
       </section>
     </div>
   );

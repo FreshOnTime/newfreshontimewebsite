@@ -1,5 +1,5 @@
 /* Discovery hub: ink duotone marks and light-green actions; retain existing mobile safeguards. */
-.freshpick-market>main[data-publication=true]{--fp-action-light:#B8DE9C;--fp-action-hover:#A5D383;--fp-ink-action:#202E28;--fp-focus:#698B65}
+.freshpick-market>main[data-publication=true]{--fp-action-light:#A9DB76;--fp-action-hover:#97CE62;--fp-ink-action:#202E28;--fp-focus:#698B65}
 .fp-hub-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .fp-hub-path{min-width:0;display:grid;grid-template-columns:48px minmax(0,1fr) 16px;align-items:center;gap:10px;padding:14px 12px;background:var(--fp-surface);border:1px solid var(--fp-rule);border-radius:10px;transition:background-color .18s,border-color .18s;color:var(--fp-ink)}
 .fp-hub-path>img{background:var(--fp-soft);padding:5px;width:44px;height:44px;border-radius:8px}

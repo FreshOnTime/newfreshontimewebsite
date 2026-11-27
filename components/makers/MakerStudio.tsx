@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import LiveStudio from './LiveStudio';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
@@ -144,7 +145,8 @@ export default function MakerStudio() {
   return <div className="fp-studio space-y-5" aria-busy={busy}>
     {notice && <p role={notice.error ? 'alert' : 'status'} className={`sticky top-4 z-10 rounded-lg border bg-background p-3 text-sm ${notice.error ? 'border-red-300 text-red-700' : 'border-border text-brand-green'}`}>{notice.text}</p>}
     <div className="fp-studio-counts" aria-label="Studio totals">{[[items.length, venue?"Menu items":"Products"], ...(!venue?[[items.reduce((sum, item) => sum + item.batches.length, 0), "Batches"]]:[]), [stories.length, "Articles"]].map(([count, label]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</div>
-    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{(venue?['Profile','Items','Stories']:['Profile','Items','Batches','Stories']).map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 border-b border-border px-5 text-sm'}>{name==="Items"&&venue?"Menu":name==="Stories"?"Articles":name}</button>)}</nav>}
+    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{(venue?['Profile','Items','Stories','Live']:['Profile','Items','Batches','Stories','Live']).map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 border-b border-border px-5 text-sm'}>{name==="Items"&&venue?"Menu":name==="Stories"?"Articles":name}</button>)}</nav>}
+    {tab==='Live'&&<LiveStudio/>}
     <section hidden={tab !== 'Profile'} className={panel}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className={heading}>Public profile</h2>

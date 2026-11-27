@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import {ArrowUpRight,ArrowRight,Utensils,MapPin,Coffee,Croissant,Users} from 'lucide-react';
+import {ArrowUpRight,ArrowRight,MapPin} from 'lucide-react';
 import {editorialMatches,type EditorialGroup} from '@/lib/editorialDiscoveries';
 import {SectionHeading} from './Editorial';
 
@@ -10,12 +10,12 @@ export function EditorialPicks({group,q='',area='',limit=4,type,feature=false,he
  return <section className="fp26-guide-section fp-curated-picks"><SectionHeading title={heading||(group==='dining'?'Colombo dining discoveries':group==='makers'?'Independent food brands to explore':'Gift ideas from local businesses')}/><p className="fp26-meta mb-4">Independent editorial finds, linked to official websites. Not FreshPick partners or customer reviews. Confirm details directly.</p><div className={feature?"fp-curated-feature":"fp-curated-standard"}>{feature&&<Link href="/stories/a-table-for-two" className="fp-curated-lead"><div className="fp-curated-lead-photo"><Image src="/images/categories/cooked-food.webp" alt="Prepared food, editorial illustration" fill priority sizes="(max-width:760px) 100vw,40vw"/></div><div><p className="fp26-label">The weekend edit</p><h3>Make time for a good meal.</h3><p>Read our guide to choosing a table, then explore places through their own websites.</p><span className="fp26-textlink">Read the dining guide <ArrowUpRight size={16}/></span></div></Link>}<div className="fp-curated-list">{entries.map(p=><article key={p.id} className="fp-curated-entry"><p className="fp26-label">{p.category}</p><h3>{p.name}</h3><p className="fp26-location"><MapPin size={14} aria-hidden="true"/>{p.area}</p><p>{p.description}</p><a href={p.url} target="_blank" rel="noopener noreferrer" className="fp26-textlink">Official website <ArrowUpRight size={16} aria-hidden="true"/></a></article>)}</div></div></section>
 }
 const occasions=[
- {title:'Coffee & cafés',desc:'Find a place for your next cup.',href:'/eat-drink?type=cafe',icon:Coffee},
- {title:'Date night',desc:'A practical guide to choosing a table for two.',href:'/stories/a-table-for-two',icon:Utensils},
- {title:'Family & group meals',desc:'Explore restaurants and ask about group seating.',href:'/eat-drink?type=restaurant',icon:Users},
- {title:'Bakeries & sweet treats',desc:'Explore bakeries and their offerings.',href:'/eat-drink?type=bakery',icon:Croissant},
+ {title:'Coffee & cafés',desc:'Find a place for your next cup.',href:'/eat-drink?type=cafe',image:'/images/categories/beverages.webp',alt:'Illustrative café refreshments'},
+ {title:'Date night',desc:'A practical guide to choosing a table for two.',href:'/stories/a-table-for-two',image:'/images/categories/cooked-food.webp',alt:'Prepared food, editorial illustration'},
+ {title:'Family & group meals',desc:'Explore restaurants and ask about group seating.',href:'/eat-drink?type=restaurant',image:'/images/categories/pantry-staples.webp',alt:'Shared food and small bowls'},
+ {title:'Bakeries & sweet treats',desc:'Explore bakeries and their offerings.',href:'/eat-drink?type=bakery',image:'/images/categories/bakery.webp',alt:'Assorted artisan bread'},
 ] as const;
-export function OccasionShelf({title='Explore by occasion'}:{title?:string}={}){return <section className="fp26-guide-section fp-occasion-section"><SectionHeading title={title} href="/eat-drink" label="Browse dining"/><div className="fp-occasion-grid">{occasions.map(({title,desc,href,icon:Icon})=><Link key={title} href={href} className="fp-occasion"><Icon size={26} strokeWidth={1.5} aria-hidden="true"/><h3>{title}</h3><p>{desc}</p><ArrowRight size={17} aria-hidden="true"/></Link>)}</div></section>}
+export function OccasionShelf({title='Explore by occasion'}:{title?:string}={}){return <section className="fp26-guide-section fp-occasion-section"><SectionHeading title={title} href="/eat-drink" label="Browse dining"/><div className="fp-occasion-grid">{occasions.map(({title,desc,href,image,alt})=><Link key={title} href={href} className="fp-occasion"><div className="fp-occasion-photo"><Image src={image} alt={alt} fill sizes="(max-width:760px) 46vw, 24vw"/></div><div className="fp-occasion-copy"><h3>{title}</h3><p>{desc}</p><ArrowRight size={17} aria-hidden="true"/></div></Link>)}</div></section>}
 export function ConnectShelf({title='Explore the world of food'}:{title?:string}={}){
  const sections=[
  {title:'Dining & hospitality',desc:'Restaurants, cafés, bakeries and caterers. Explore menus, stories and ways to get in touch.',href:'/eat-drink',image:'/images/editorial/restaurant-kitchen.webp',alt:'A restaurant kitchen',label:'Explore dining'},

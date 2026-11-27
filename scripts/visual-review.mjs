@@ -6,7 +6,7 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['live','/live'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
@@ -53,7 +53,7 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
+          if((width===320||width===430)&&!['homepage','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
@@ -64,7 +64,7 @@ async function main(){
               const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-collection .fp26-action')).borderTopLeftRadius)}));
               assert.equal(finish.paper,'rgb(248, 245, 238)');
               assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
-              assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(36, 69, 57)');
+              assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert(finish.search>=(phone?12:16)&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
@@ -75,8 +75,17 @@ async function main(){
               if(phone){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();const contact=page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Contact',exact:true});assert(await contact.isVisible());assert.equal(await contact.getAttribute('href'),'/contact');assert(await page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Saved picks'}).isVisible());await page.screenshot({path:out+'/current-mobile-menu-'+width+'.png',animations:'disabled'});await page.keyboard.press('Escape');await page.getByRole('button',{name:'Open menu'}).waitFor();await page.getByRole('button',{name:'Open search'}).click();await page.locator('#nav-search').waitFor();assert(await page.locator('#nav-search').isEditable());await page.getByRole('button',{name:'Close search'}).click();}
               assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
               assert.equal(await page.locator('.fp-hub-path').count(),6);
+              assert.equal(await page.locator('.fp-occasion-photo img').count(),4);
+              assert.equal(await page.locator('.fp-home-panel[data-home-section="guides"] .fp-guide-feature-photo img').count(),1);
+              assert.equal(await page.locator('.fp-home-business .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
+              const carousel=page.locator('.fp-hero-carousel');
+              await carousel.getByRole('button',{name:'Next discovery'}).click();
+              await carousel.getByRole('heading',{name:'Discover the craft behind the food.',exact:true}).waitFor();
+              assert.equal(await carousel.getByRole('link',{name:'Explore',exact:true}).getAttribute('href'),'/makers');
+              await carousel.getByRole('button',{name:'Previous discovery'}).click();
+              await carousel.getByRole('heading',{name:'Find something delicious.',exact:true}).waitFor();
               assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
-              assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(184, 222, 156)');
+              assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
               assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
@@ -85,6 +94,14 @@ async function main(){
               await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
               await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
               await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
+            }
+            if(name==='live'){
+              await page.getByRole('heading',{name:'Visual review fixture — bakery'}).waitFor();
+              assert.equal(await page.getByRole('link',{name:'Open GPS pin'}).count(),1);
+              await page.getByRole('combobox',{name:'Vendor type'}).selectOption('coffee_cart');
+              assert(await page.getByRole('heading',{name:'No matching serving stops yet.'}).isVisible());
+              await page.getByRole('button',{name:'Clear filters'}).click();
+              assert(await page.getByRole('heading',{name:'Visual review fixture — bakery'}).isVisible());
             }
             if(name==='atlas'){
               await page.locator('.fp-atlas-search input[name=q]').fill('කොත්තු');
@@ -110,7 +127,16 @@ async function main(){
               await details.locator('summary').click();
               assert(await details.evaluate(node=>node.open),'Item accordion did not open');
             }
+            if(name==='contact'){
+              assert.equal(await page.locator('.fp-contact-hero img').count(),1);
+              await page.getByRole('textbox',{name:'Name',exact:true}).fill('Visual fixture');
+              await page.getByRole('textbox',{name:'Email',exact:true}).fill('visual@example.invalid');
+              await page.getByRole('textbox',{name:'Message',exact:true}).fill('Visual review only; not submitted.');
+              assert(await page.getByRole('button',{name:'Send enquiry'}).isEnabled());
+              assert.equal(await page.locator('.fp-contact-submit').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
+            }
             if(name==='businesses'){
+              assert.equal(await page.locator('.fp-business-type-card img').count(),3);
               await page.getByRole('button',{name:'Café',exact:true}).click();
               assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
             }
