@@ -10,7 +10,7 @@ import Wordmark from "@/components/brand/Wordmark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const moreLinks = [{ label: 'Contact', href: '/contact' }];
-const iconButton = "flex h-11 w-9 max-[359px]:w-8 sm:w-11 items-center justify-center rounded-lg text-brand-green transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green";
+const iconButton = "flex h-11 w-9 max-[359px]:w-8 sm:w-11 items-center justify-center rounded-[3px] text-brand-green transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,7 +41,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="heritage-header sticky top-0 z-50 border-b border-brand-green/10 bg-[#fffdf9]">
+    <header className="heritage-header sticky top-0 z-50 border-b border-brand-green/10 bg-[#fffefa]">
       <div className="editorial-wrap max-[359px]:px-3 flex h-[72px] items-center justify-between gap-2 sm:gap-5 lg:h-[76px]">
         <Link href="/" aria-label="FreshPick home" className="shrink-0"><Wordmark className="text-[26px] max-[359px]:text-[22px] sm:text-[30px] lg:text-[30px]" /></Link>
           <nav aria-label="Discover FreshPick" className="hidden h-full items-center gap-4 2xl:gap-6 xl:flex">

@@ -1,23 +1,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, Store, Utensils, ShoppingBasket, Gift, BookOpen, Calculator } from 'lucide-react';
-import {fieldNotes,notePath} from '@/lib/fieldNotes';
-
-export const discoverySections=[
- {name:'Makers',href:'/makers',icon:Store},
- {name:'Eat & drink',href:'/eat-drink',icon:Utensils},
- {name:'Products',href:'/food-products',icon:ShoppingBasket},
- {name:'Gifting',href:'/gifting',icon:Gift},
- {name:'Journal',href:'/stories',icon:BookOpen},
- {name:'Food tools',href:'/food-tools',icon:Calculator},
-] as const;
-export function DiscoveryRail(){return <nav className="fp26-rail" aria-label="Browse FreshPick">{discoverySections.map(({name,href,icon:Icon})=><Link href={href} key={href}><Icon size={21} strokeWidth={1.5} aria-hidden="true"/><strong>{name}</strong><ArrowUpRight size={14} aria-hidden="true"/></Link>)}</nav>;}
-export function EditorialHeader({eyebrow,title,description,photo,alt}:{eyebrow:string;title:string;description:string;photo?:string;alt?:string}) {
- return <header className={'fp26-pagehead'+(photo?'':' fp26-compacthead')}><div><p className="fp26-label">{eyebrow}</p><h1>{title}</h1><p className="fp26-deck">{description}</p></div>{photo&&<div className="fp26-pagephoto"><Image src={photo} alt={alt||''} fill sizes="(max-width: 760px) 100vw, 38vw"/></div>}</header>;
+import {ArrowUpRight,ArrowRight,Store,Utensils,ShoppingBasket,Gift,BookOpen,Calculator} from 'lucide-react';
+import {fieldNotes,notePath,type FieldNote} from '@/lib/fieldNotes';
+const sections=[{name:'Makers',href:'/makers',icon:Store},{name:'Eat & drink',href:'/eat-drink',icon:Utensils},{name:'Products',href:'/food-products',icon:ShoppingBasket},{name:'Gifting',href:'/gifting',icon:Gift},{name:'Journal',href:'/stories',icon:BookOpen},{name:'Food tools',href:'/food-tools',icon:Calculator}];
+export const discoverySections=sections;
+export function DiscoveryRail(){return <nav className="fp26-rail" aria-label="Browse FreshPick">{sections.map(({name,href,icon:Icon})=><Link href={href} key={href}><Icon size={19} strokeWidth={1.65} aria-hidden="true"/><span>{name}</span></Link>)}</nav>}
+export function EditorialHeader({eyebrow,title,description,photo,alt}:{eyebrow?:string;title:string;description?:string;photo?:string;alt?:string}){
+ return <header className={'fp26-pagehead'+(photo?' fp26-has-photo':'')}><div className="fp26-pagehead-copy">{eyebrow&&<p className="fp26-label">{eyebrow}</p>}<h1>{title}</h1>{description&&<p className="fp26-deck">{description}</p>}</div>{photo&&<div className="fp26-pagephoto"><Image src={photo} alt={alt||''} fill sizes="(max-width:760px) 100vw, 36vw"/></div>}</header>;
 }
-export function GuideShelf({slugs,heading='From the journal'}:{slugs:string[];heading?:string}){
- const guides=slugs.flatMap(slug=>{const note=fieldNotes.find(n=>n.slug===slug);return note?[note]:[]});
- if(!guides.length)return null;
- return <section className="fp26-guide-section"><div className="fp26-sectionhead"><h2>{heading}</h2><Link className="fp26-textlink" href="/stories">All stories <ArrowUpRight size={15} aria-hidden="true"/></Link></div><div className="fp26-guidegrid">{guides.map(note=><Link key={note.slug} href={notePath(note)} className="fp26-storytile"><div className="fp26-tilephoto"><Image src={note.image} alt={note.alt} fill sizes="(max-width:760px) 100vw, 33vw"/></div><p className="fp26-label">{note.category}</p><h3>{note.title}<ArrowUpRight size={18} aria-hidden="true"/></h3><p>{note.excerpt}</p></Link>)}</div></section>;
-}
-export function DiscoveryChapters(){return <GuideShelf slugs={['a-table-for-two','the-price-on-the-jar','a-gift-worth-opening']} heading="Good food, better decisions"/>;}
+export function SectionHeading({title,href,label}:{title:string;href?:string;label?:string}){return <div className="fp26-sectionhead"><h2>{title}</h2>{href&&<Link className="fp26-textlink" href={href}>{label||'Explore'} <ArrowUpRight size={16} aria-hidden="true"/></Link>}</div>}
+function notesFor(slugs:string[]){return slugs.flatMap(slug=>{const note=fieldNotes.find(n=>n.slug===slug);return note?[note]:[]})}
+export function StoryTile({note,compact=false}:{note:FieldNote;compact?:boolean}){return <Link href={notePath(note)} className={'fp26-storytile'+(compact?' fp26-storycompact':'')}><div className="fp26-tilephoto"><Image src={note.image} alt={note.alt} fill sizes={compact?'(max-width:760px) 120px, 160px':'(max-width:760px) 100vw, 40vw'}/></div><div className="fp26-storycopy"><p className="fp26-label">{note.category}</p><h3>{note.title}</h3><p>{note.excerpt}</p><span className="fp26-storylink">Read the guide <ArrowUpRight size={15} aria-hidden="true"/></span></div></Link>}
+export function GuideShelf({slugs,heading='From the journal',compact=false}:{slugs:string[];heading?:string;compact?:boolean}){const guides=notesFor(slugs);if(!guides.length)return null;return <section className="fp26-guide-section"><SectionHeading title={heading} href="/stories" label="The journal"/><div className={compact?'fp26-guidecompact':guides.length===1?'fp26-guide-single':'fp26-guidegrid'}>{guides.map(note=><StoryTile key={note.slug} note={note} compact={compact}/>)}</div></section>}
+export function DiscoveryChapters(){const [lead,...rest]=notesFor(['a-table-for-two','the-price-on-the-jar','a-gift-worth-opening','the-bread-window']);if(!lead)return null;return <section className="fp26-guide-section fp26-lead-section"><SectionHeading title="The good food guide" href="/stories" label="All stories"/><div className="fp26-editorial-grid"><StoryTile note={lead}/><div className="fp26-editorial-rail">{rest.map(note=><StoryTile key={note.slug} note={note} compact/>)}</div></div></section>}
+export function DirectoryTools({mode}:{mode:string}){const tools=mode==='dining'?[{title:'Estimate the whole bill',desc:'Include drinks, service charges and tax.',href:'/food-tools#true-bill'}]:mode==='products'?[{title:'Compare price per 100g',desc:'Compare different pack sizes on equal terms.',href:'/food-tools#unit-price'}]:mode==='gifting'?[{title:'Plan your gift order',desc:'Check quantities, packaging and deadlines before paying.',href:'/stories/a-gift-worth-opening'}]:[{title:'Dining bill estimator',desc:'Plan an eating-out budget.',href:'/food-tools#true-bill'},{title:'Unit price comparison',desc:'Find the better price per 100g.',href:'/food-tools#unit-price'}];return <div className="fp26-directory-tools">{tools.map(t=><Link key={t.href} href={t.href}><div><strong>{t.title}</strong><p>{t.desc}</p></div><ArrowRight size={20} aria-hidden="true"/></Link>)}</div>}

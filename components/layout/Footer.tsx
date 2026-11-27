@@ -4,9 +4,9 @@ import { FooterNewsletterForm } from "@/components/layout/FooterNewsletterForm";
 import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/config/site";
 
 const groups = [
-  { title: 'The market', links: [['Discover','/discover'],['Makers','/makers'],['Eat & drink','/eat-drink'],['Products','/food-products'],['Gifting','/gifting'],['Food tools','/food-tools']] },
+  { title: 'Explore', links: [['Discover','/discover'],['Makers','/makers'],['Eat & drink','/eat-drink'],['Products','/food-products'],['Gifting','/gifting'],['Food tools','/food-tools']] },
   { title: 'FreshPick', links: [['About FreshPick','/about'],['How it works','/how-it-works'],['Editorial archive','/blog']] },
-  { title: 'For makers', links: [['For businesses','/for-businesses'],['Become a maker','/join'],['Maker studio','/dashboard'],['Get in touch','/contact']] },
+  { title: 'For businesses', links: [['For businesses','/for-businesses'],['Become a maker','/join'],['Maker studio','/dashboard'],['Listing corrections','/contact']] },
   { title: 'Here to help', links: [['Help','/help'],['Account','/profile'],['Contact','/contact']] },
 ];
 export function Footer() {
@@ -14,7 +14,7 @@ export function Footer() {
     <footer className="heritage-footer mt-8 bg-brand-green-deep text-white">
       <div className="editorial-wrap">
         <div className="grid gap-8 border-b border-white/20 py-9 md:grid-cols-2 md:items-center md:gap-12 md:py-12">
-          <div><p className="text-[10px] uppercase tracking-[0.16em] text-white/85">FreshPick newsletter</p><h2 className="mt-4 max-w-xl font-heading text-4xl font-normal leading-[1.08] tracking-[-.025em] text-white md:text-6xl">Food worth discovering.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">Food stories, seasonal inspiration and news from FreshPick.</p></div>
+          <div><p className="text-[10px] uppercase tracking-[0.16em] text-white/85">FreshPick newsletter</p><h2 className="mt-4 max-w-xl font-heading text-4xl font-normal leading-[1.08] tracking-[-.025em] text-white md:text-6xl">The FreshPick newsletter.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">New food guides, maker stories and discovery updates.</p></div>
           <FooterNewsletterForm />
         </div>
         <div className="grid gap-8 py-10 lg:grid-cols-[1fr_2fr] md:py-12">
