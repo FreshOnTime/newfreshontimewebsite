@@ -30,12 +30,12 @@ export function SupplierSignupForm() {
       await refreshAuth(); router.push('/dashboard');
     } catch (e) { setError(e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); }
   }
-  return <div className="maker-hero fp-join"><div className="maker-hero-copy">
-    <h1 className="maker-headline">Your business.<br/><em>Your story.</em></h1>
+  return <div className="maker-hero fp-join fp-business-onboard"><div className="maker-hero-copy">
+    <p className="fp26-label">Business registration</p><h1 className="maker-headline">Your business.<br/><em>Your story.</em></h1>
     <p className="my-5 max-w-lg leading-7">Create a discovery profile for your restaurant, café, bakery or food brand. Once approved, share your offerings and publish articles in the FreshPick journal. Customers contact you directly.</p>
-    {loading ? <p>Loading account…</p> : user?.role === 'supplier' ? <Link href="/dashboard" className="maker-button">Open business studio</Link> : !user ? <div className="flex flex-wrap items-center gap-5"><Link className="maker-button" href={"/auth/signup/customer?redirect="+encodeURIComponent(joinPath)}>Create your login</Link><Link className="underline" href={"/auth/login?redirect="+encodeURIComponent(joinPath)}>Already registered? Sign in</Link></div> :
+    <ol className="fp-onboard-steps"><li><strong>01 · Create your login</strong><span>Sign in or create a private member account.</span></li><li><strong>02 · Apply for a profile</strong><span>Tell us what you make, where you operate and how customers can contact you.</span></li><li><strong>03 · Publish after approval</strong><span>Use Business Studio to manage offerings, articles and your public page.</span></li></ol>{loading ? <p>Loading account…</p> : user?.role === 'supplier' ? <Link href="/dashboard" className="maker-button">Open business studio</Link> : !user ? <div className="flex flex-wrap items-center gap-5"><Link className="maker-button" href={"/auth/signup/customer?redirect="+encodeURIComponent(joinPath)}>Create your business login</Link><Link className="underline" href={"/auth/login?redirect="+encodeURIComponent(joinPath)}>Already registered? Sign in</Link></div> :
       <form onSubmit={submit} className="grid w-full max-w-lg gap-4">
-        <label>Business type<select name="businessType" defaultValue={initialType} className="block w-full rounded-[3px] border p-3">{businessTypes.map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label>
+        <label>Business type<select name="businessType" defaultValue={initialType} className="block w-full rounded-lg border p-3">{businessTypes.map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label>
         <label>Business name<input required maxLength={150} name="name" className="block w-full rounded-lg border p-3"/></label>
         <label>Town<input required minLength={2} maxLength={100} name="town" className="block w-full rounded-lg border p-3"/></label>
         {!user.phoneNumber && <label>Contact phone<input type="tel" name="phone" required className="block w-full rounded-lg border p-3"/></label>}

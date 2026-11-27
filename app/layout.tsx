@@ -6,6 +6,7 @@ import "./discovery-polish.css";
 import "./discovery-mobile.css";
 import "./discovery-hub.css";
 import "./discovery-experience.css";
+import "./discovery-usability.css";
 import { Toaster } from "@/components/ui/sonner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";

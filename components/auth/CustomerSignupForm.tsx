@@ -9,13 +9,14 @@ import type { ServerError } from '@/contexts/AuthContext';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/auth/PasswordInput';
 import { signupSchema, validateInput } from '@/lib/utils/validation';
-import { accountDestination, accountLink } from '@/lib/authNavigation';
+import { accountDestination, accountLink, safeAccountRedirect } from '@/lib/authNavigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 const inputClass = 'h-12 rounded-lg border-border bg-background px-4 shadow-none focus-visible:ring-primary/20';
 
 export function CustomerSignupForm({ requestedDestination, managed = false }: { requestedDestination?: string; managed?: boolean }) {
+  const isBusinessJourney = safeAccountRedirect(requestedDestination)?.split("?")[0] === "/join";
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -82,7 +83,7 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
   if (verificationSent) return <section className="mx-auto max-w-md space-y-4 py-12"><h1 className="font-serif text-4xl">Check your inbox.</h1><p>We sent a verification link to {formData.email}. Verify your email, then sign in to FreshPick.</p><Link href={accountLink('/auth/login', requestedDestination)} className="maker-button">Back to sign in</Link></section>;
 
   return (
-    <div className="bg-background">
+    <div className="fp-member-signup">
 
       <section className="px-0 py-4 sm:px-4 lg:px-2 xl:py-8">
         <div className="mx-auto max-w-3xl">
@@ -94,12 +95,12 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
           </div>
 
           <div className="mt-6 border-b border-border pb-8">
-            <span className="text-xs font-bold normal-case text-brand-green">Create your FreshPick</span>
-            <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Join FreshPick</h1>
-            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">Create an account to discover restaurants and food businesses, save your favourites, or publish your own business profile.</p>
+            <span className="text-xs font-bold normal-case text-brand-green">{isBusinessJourney ? "Step 1 · Your login" : "Member account"}</span>
+            <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">{isBusinessJourney ? "Create your business login." : "Your food journey starts here."}</h1>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">{isBusinessJourney ? "Create a private login first. Next, submit your business details for review." : "Join FreshPick to explore food, discover local businesses and keep your account ready for future discoveries. Saved picks currently stay in this browser."}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-9 space-y-10">
+          <form onSubmit={handleSubmit} className="fp-member-form mt-6 space-y-7">
             <section>
               <div className="mb-5 flex items-end justify-between gap-4">
                 <div>
@@ -142,7 +143,7 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
 
             <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-md text-xs font-normal leading-5 text-muted-foreground">Your login details stay private.</p>
-              <Button type="submit" disabled={isLoading} className="h-12 shrink-0 rounded-lg bg-brand-leaf px-7 text-sm font-semibold normal-case text-brand-ink shadow-none hover:bg-brand-leaf/85">
+              <Button type="submit" disabled={isLoading} className="fp-account-submit h-12 shrink-0 rounded-lg px-7 text-sm font-semibold normal-case shadow-none">
                 {isLoading ? 'Creating account…' : <span className="inline-flex items-center gap-2">Create account <ArrowRight className="h-4 w-4" /></span>}
               </Button>
             </div>
