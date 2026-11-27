@@ -21,6 +21,7 @@ const groups = [
   ] },
   { name: 'Publishing', items: [
     { name: 'Blog', href: '/admin/blogs', icon: BookOpen },
+    { name: 'Website pages', href: '/admin/site-pages', icon: Layers },
     { name: 'Food & Culture CMS', href: '/admin/discovery-content', icon: BookOpen },
     { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
     { name: 'Collections', href: '/admin/collections', icon: Layers },

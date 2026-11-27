@@ -1087,3 +1087,14 @@ model DiscoveryContent {
   @@index([kind, published, startsAt])
   @@map("discovery_content")
 }
+
+// Draft and published copies remain separate; only published config reaches public pages.
+model SitePageContent {
+  key String @id
+  draft Json
+  live Json
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+  publishedAt DateTime?
+  @@map("site_page_content")
+}
