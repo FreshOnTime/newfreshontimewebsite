@@ -13,3 +13,5 @@ export const specialtyLabels: Record<BusinessSpecialty,string> = {
 export const giftSpecialties: BusinessSpecialty[] = ['food-hampers','corporate-gifts','wedding-favours','custom-food-gifts'];
 export function specialtyLabel(value:string){return specialtyLabels[value as BusinessSpecialty]||value;}
 export function matchSpecialties(query:string){const q=query.trim().toLowerCase();return q?businessSpecialties.filter(s=>s.includes(q)||specialtyLabels[s].toLowerCase().includes(q)):[];}
+
+export const businessArticleTopics = ['Behind the business','Recipes & serving ideas','Products & menus','Seasonal collections','Food gifting','Events & announcements'] as const;
