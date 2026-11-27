@@ -1,5 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { GET as llms } from '@/app/llms.txt/route';
 import { PUBLIC_PAGES, publicPageMetadata } from '@/lib/publicPages';
 import { absoluteUrl } from '@/lib/config/site';
 import { ABOUT_FAQS, BUSINESS_FAQS, DIASPORA_FAQS, PRODUCER_FAQS } from '@/lib/answerContent';
@@ -34,14 +33,14 @@ describe('public discovery and citation readiness', () => {
     }
   });
 
-  it('publishes a readable llms.txt pointing to real canonical discovery pages', () => {
-    const llms = readFileSync(join(process.cwd(), 'public', 'llms.txt'), 'utf8');
-    expect(llms).toContain('# FreshPick Sri Lanka');
-    for (const path of ['/products', '/categories', '/help', '/blog', '/b2b', '/contact']) {
-      expect(llms).toContain(absoluteUrl(path));
+  it('publishes a readable llms.txt pointing to real canonical discovery pages', async () => {
+    const body = await llms().text();
+    expect(body).toContain('# FreshPick Sri Lanka');
+    for (const path of ['/explore/coffee-cafes','/explore/bakeries','/locations/colombo','/help','/blog','/for-businesses','/contact']) {
+      expect(body).toContain(absoluteUrl(path));
     }
-    expect(llms).toContain(absoluteUrl('/sitemap.xml'));
-    expect(llms).not.toMatch(/Lorem ipsum|TODO|https:\/\/example\.com/);
-    expect(llms).not.toContain(absoluteUrl('/admin'));
+    expect(body).toContain(absoluteUrl('/sitemap.xml'));
+    expect(body).not.toMatch(/Lorem ipsum|TODO|https:\/\/example\.com/);
+    expect(body).not.toContain(absoluteUrl('/admin'));
   });
 });
