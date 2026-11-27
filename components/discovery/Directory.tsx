@@ -4,7 +4,7 @@ import {businessSpecialties,specialtyLabels,specialtyLabel,giftSpecialties,match
 import {ArrowUpRight,Search,MapPin,ArrowLeft,ArrowRight} from 'lucide-react';
 import {EditorialHeader,GuideShelf,SectionHeading} from './Editorial';
 import {listProspects,searchText,pageNumber,publicLink,type DiscoveryMode,type PublicProspect} from '@/lib/discovery';
-import {businessTypes,businessTypeLabels,businessTypeLabel,diningBusinessTypes,venueOnlyTypes,isVenueOnly} from '@/lib/businessTypes';
+import {businessTypes,businessTypeLabels,businessTypeLabel,diningBusinessTypes,venueOnlyTypes,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
 import {publicItemSelect} from '@/lib/makerQueries';
 import {MakerItemCard} from '@/components/makers/MakerCards';
 import {fieldNotes,notePath} from '@/lib/fieldNotes';
@@ -25,7 +25,7 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const q=searchText(params.q),area=searchText(params.area??params.town),page=pageNumber(params.page),settings=config[mode];
  const articlesOnly=mode==='all'&&params.scope==='articles';
  const kind=makerKinds.find(k=>k===params.kind);
- const eligibleTypes=mode==='dining'?[...diningBusinessTypes]:mode==='makers'||mode==='products'?businessTypes.filter(t=>!venueOnlyTypes.some(v=>v===t)):undefined;
+ const eligibleTypes:BusinessType[]|undefined=mode==='dining'?[...diningBusinessTypes]:mode==='makers'||mode==='products'?businessTypes.filter(t=>!venueOnlyTypes.some(v=>v===t)):undefined;
  const type=businessTypes.find(t=>t===params.type&&(!eligibleTypes||eligibleTypes.includes(t)));
  const specialty=businessSpecialties.find(s=>s===params.specialty);
  const matchedSpecialties=matchSpecialties(q);
@@ -58,7 +58,7 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  return <div className="fp26-shell fp26-directory">
  <EditorialHeader eyebrow={eyebrow} title={title} description={description} photo={!filtered&&mode!=='all'?photo:undefined}/>
  {(mode==='makers'||mode==='products')&&<FoodBrandTabs products={mode==='products'}/>}
- <form key={JSON.stringify([path,q,area,kind,type,specialty,articlesOnly])} action={path} className={'fp26-filters'+(mode==='makers'||mode==='products'||mode==='all'?' fp-brand-filters'+(mode==='makers'?'':' fp-product-filters'):'')} role="search">
+ <form key={JSON.stringify([path,q,area,kind,type,specialty,articlesOnly])} action={path} className={'fp26-filters fp-taxonomy-filters'+(mode==='makers'||mode==='products'||mode==='all'?' fp-brand-filters'+(mode==='makers'?'':' fp-product-filters'):'')} role="search">
  {kind&&mode!=='makers'&&mode!=='products'&&<input type="hidden" name="kind" value={kind}/>}
  {type&&mode!=='makers'&&mode!=='products'&&mode!=='gifting'&&<input type="hidden" name="type" value={type}/>}
  {mode==='all'&&<label className="fp-filter-select"><span id="discovery-scope-label">What are you looking for?</span><select name="scope" defaultValue={articlesOnly?"articles":""} aria-labelledby="discovery-scope-label"><option value="">Everything</option><option value="dining">Restaurants & cafés</option><option value="dishes">Dishes & food culture</option><option value="makers">Food brands & makers</option><option value="products">Food products</option><option value="articles">Articles & guides</option><option value="guides">Comparisons & meal ideas</option><option value="live">Food trucks & pop-ups</option><option value="gifting">Gift suppliers</option></select></label>}
