@@ -1,4 +1,4 @@
-import {businessTypeLabel, isVenueOnly, officialHttps} from './businessTypes';
+import {businessTypeLabel, officialHttps} from './businessTypes';
 import {absoluteUrl} from './config/site';
 import {specialtyLabel} from './businessSpecialties';
 
@@ -18,10 +18,9 @@ export function businessJsonLd(b:PublicBusiness){
  const path='/makers/'+b.makerHandle;
  const sameAs=[officialHttps(b.businessWebsite),officialHttps(b.businessInstagram,'instagram.com')].filter(Boolean);
  // Town alone is not a verified street address; do not assert location-based rich-result eligibility.
- return {'@context':'https://schema.org','@type':'ProfilePage','@id':absoluteUrl(path)+'#profile',url:absoluteUrl(path),name:b.name,inLanguage:'en-LK',mainEntity:{'@type':'Organization','@id':absoluteUrl(path)+'#business',name:b.name,url:absoluteUrl(path),description:businessDescription(b),...(b.makerTown?{areaServed:{'@type':'Place',name:b.makerTown}}:{}),...(sameAs.length?{sameAs}:{}),...(b.businessSpecialties?.length?{knowsAbout:b.businessSpecialties.map(specialtyLabel)}:{})}};
+ return {'@context':'https://schema.org','@type':'ProfilePage','@id':absoluteUrl(path)+'#profile',url:absoluteUrl(path),name:b.name,inLanguage:'en-LK',mainEntity:{'@type':'Organization','@id':absoluteUrl(path)+'#business',name:b.name,url:absoluteUrl(path),description:businessDescription(b),...(b.makerTown?{location:{'@type':'Place',name:b.makerTown}}:{}),...(sameAs.length?{sameAs}:{}),...(b.businessSpecialties?.length?{knowsAbout:b.businessSpecialties.map(specialtyLabel)}:{})}};
 }
 type SetupProfile={makerHandle?:string|null;makerBio?:string|null;makerTown?:string|null;makerWhatsApp?:string|null;businessSpecialties?:string[];makerPublished?:boolean};
 export function businessSetup(p:SetupProfile,publicItems:number,publicStories:number){
  return [{key:'identity',label:'Set a public page address',complete:!!p.makerHandle},{key:'description',label:'Introduce your business',complete:!!p.makerBio?.trim()},{key:'classification',label:'Choose business specialities',complete:!!p.businessSpecialties?.length},{key:'contact',label:'Add town and public contact',complete:!!(p.makerTown?.trim()&&p.makerWhatsApp?.trim())},{key:'offerings',label:'Publish an offering',complete:publicItems>0},{key:'stories',label:'Publish an article',complete:publicStories>0},{key:'visibility',label:'Make your page public',complete:!!p.makerPublished}] as const;
 }
-export function offeringLabel(type:string|null|undefined){return isVenueOnly(type)?'Menu items':'Products';}
