@@ -1,5 +1,9 @@
 import {z} from 'zod';
-export const pageKeys=['home','explore','dining','brands','products','atlas','traditions','experiences','journal','businesses','guides','live'] as const;
+import {foodDepartments} from './foodDepartments';
+export const departmentPageKeys=['department-places','department-coffee-cafes','department-restaurants','department-bakeries','department-caterers','department-produce','department-food-brands','department-makers','department-food-gifts'] as const;
+export type DepartmentPageKey=typeof departmentPageKeys[number];
+export function departmentPageKey(slug:string):DepartmentPageKey {const key=departmentPageKeys.find(k=>k==='department-'+slug);if(!key)throw new Error('Unknown food department');return key;}
+export const pageKeys=['home','explore','dining','brands','products','atlas','traditions','experiences','journal','businesses','guides','live',...departmentPageKeys] as const;
 export type PageKey=typeof pageKeys[number];
 export const sectionIds=['paths','live','dining','profiles','atlas','culture','connections','occasions','brands','journal','guides','saved','gifts','businessStories','business'] as const;
 export type SectionId=typeof sectionIds[number];
@@ -9,7 +13,9 @@ export const pageConfigSchema=pageFields.superRefine((v,ctx)=>{if(new Set(v.sect
 export type PageConfig=z.infer<typeof pageConfigSchema>;
 export function validatePageConfig(key:PageKey,value:unknown){const parsed=pageConfigSchema.safeParse(value);if(!parsed.success)return null;if(key==='home'&&parsed.data.sections.length===sectionIds.length-1&&!parsed.data.sections.some(s=>s.id==='live')){const at=parsed.data.sections.findIndex(s=>s.id==='paths');parsed.data.sections.splice(at+1,0,{id:'live',title:sectionTitles.live,intro:'',enabled:true});}const ids=parsed.data.sections.map(x=>x.id);if(key==='home'?(ids.length!==sectionIds.length||!sectionIds.every(id=>ids.includes(id))):ids.length!==0)return null;return parsed.data;}
 const page=(eyebrow:string,title:string,description:string,seoTitle:string,seoDescription:string):PageConfig=>({eyebrow,title,description,seoTitle,seoDescription,sections:[]});
+const departmentDefaults=Object.fromEntries(foodDepartments.map(d=>[departmentPageKey(d.slug),page('Explore Sri Lanka / Food departments',d.title,d.description+' '+d.note,d.title+' in Sri Lanka',d.description.slice(0,155))])) as Record<DepartmentPageKey,PageConfig>;
 export const pageDefaults:Record<PageKey,PageConfig>={
+ ...departmentDefaults,
  home:{...page('The Sri Lankan food guide','Find your next favourite.','Discover Sri Lanka’s food in one place. Find where to eat, learn what to try, meet local makers and explore products, traditions and food events. Save your favourites and connect directly with businesses.','Sri Lankan food & restaurant discovery','Discover Sri Lankan restaurants, dishes, independent food brands, products, traditions and events on FreshPick.'),sections:sectionIds.map(id=>({id,title:sectionTitles[id],intro:'',enabled:true}))},
  explore:page('Food, places and stories','Explore FreshPick','Search across restaurants, food businesses, products and articles in one place.','Explore food in Sri Lanka','Search restaurants, cafés, independent food brands, dishes, products and guides in one place.'),
  dining:page('Eat & drink','Eat & drink','Find restaurants, cafés, bakeries and catering businesses. Explore their menus and articles, then contact them directly.','Restaurants, cafés & dining in Sri Lanka','Find restaurants, cafés, bakeries and catering businesses. Explore menus and stories, then contact them directly.'),

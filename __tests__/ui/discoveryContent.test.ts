@@ -30,7 +30,7 @@ it('keeps products separate from businesses and restaurants in the new discovery
  expect(directory).toMatch(/const showEditorial\s*=.*mode\s*!==\s*['"]products['"]/);
  expect(directory).toContain('Menu discoveries');
  expect(directory).toContain('businessType:{notIn:[...venueOnlyTypes]}');
- expect(directory).toContain("mode==='all'?prisma.blog.findMany");
+ expect(directory).toContain("mode==='all'&&(!department||!!department.type)?prisma.blog.findMany");
  expect(read('components/discovery/BusinessExplorer.tsx')).toContain('/join?type=');
  expect(read('components/makers/MakerStudio.tsx')).toContain('Publish article in the journal');
  expect(directory).not.toContain('<GiftPlanner/>');

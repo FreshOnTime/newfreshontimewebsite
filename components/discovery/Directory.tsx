@@ -26,9 +26,9 @@ const config={all:{search:'Search by name or keyword',placeholder:'Restaurants, 
 export async function DiscoveryDirectory({mode,params,path,title,description,eyebrow,photo,department}:{mode:DiscoveryMode;params:DirectoryParams;path:string;title:string;description:string;eyebrow:string;photo?:string;department?:FoodDepartment}){
  const q=searchText(params.q),area=nationwideArea(params.area??params.town),page=pageNumber(params.page),settings=config[mode];
  const articlesOnly=!department&&mode==='all'&&params.scope==='articles';
- const kind=makerKinds.find(k=>k===(department?.kind??params.kind));
+ const kind=makerKinds.find(k=>k===(department?department.kind:params.kind));
  const eligibleTypes:BusinessType[]|undefined=mode==='dining'?[...diningBusinessTypes]:mode==='makers'||mode==='products'?businessTypes.filter(t=>!venueOnlyTypes.some(v=>v===t)):undefined;
- const type=businessTypes.find(t=>t===(department?.type??params.type)&&(!eligibleTypes||eligibleTypes.includes(t)));
+ const type=businessTypes.find(t=>t===(department?department.type:params.type)&&(!eligibleTypes||eligibleTypes.includes(t)));
  const specialty=businessSpecialties.find(s=>s===params.specialty);
  const matchedSpecialties=matchSpecialties(q);
  const match={contains:q,mode:'insensitive' as const};
@@ -41,29 +41,29 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const [prospectResult,makerResult,itemResult,storyResult]=await Promise.allSettled([
  mode==='products'?Promise.resolve([] as PublicProspect[]):specialty||articlesOnly?Promise.resolve([] as PublicProspect[]):listProspects(mode,q,area,page,{type,kind}),
  !articlesOnly&&['all','dining','makers','gifting'].includes(mode)?prisma.supplier.findMany({where:businessWhere,select:{id:true,name:true,makerTown:true,makerHandle:true,makerBio:true,businessType:true,businessSpecialties:true},skip:offset,take:25,orderBy:[{name:'asc'},{id:'asc'}]}):Promise.resolve([]),
- (!articlesOnly&&(['all','products','gifting'].includes(mode)||(mode==='dining'&&!!q)))?prisma.makerItem.findMany({where:{published:true,supplier:mode==='all'?{...supplier,AND:classification}:mode==='dining'?{...supplier,AND:classification,businessType:{in:venueOnlyTypes.filter(t=>!type||t===type)}}:productSupplier,AND:[...(q?[{OR:[{name:match},{description:match},{supplier:{name:match}}]}]:[]),...(mode==='gifting'?[giftItem]:[]),...(kind?[{kind}]:[])]},select:{...publicItemSelect,supplier:{select:{name:true,makerHandle:true,makerTown:true,businessType:true}}},skip:offset,take:25,orderBy:[{createdAt:'desc'},{id:'asc'}]}):Promise.resolve([]),
- mode==='all'&&!department?prisma.blog.findMany({where:{published:true,isDeleted:false,supplier:{...supplier,AND:classification},...(q?{OR:[{title:match},{excerpt:match},{category:match},{supplier:{name:match}}]}:{})},select:{id:true,title:true,excerpt:true,slug:true,supplier:{select:{name:true,makerHandle:true}}},skip:offset,take:25,orderBy:[{publishedAt:'desc'},{id:'asc'}]}):Promise.resolve([])
+ (!articlesOnly&&(['all','products','gifting'].includes(mode)||(mode==='dining'&&(!!q||!!department))))?prisma.makerItem.findMany({where:{published:true,supplier:mode==='all'?{...supplier,AND:classification}:mode==='dining'?{...supplier,AND:classification,businessType:{in:venueOnlyTypes.filter(t=>!type||t===type)}}:productSupplier,AND:[...(q?[{OR:[{name:match},{description:match},{supplier:{name:match}}]}]:[]),...(mode==='gifting'?[giftItem]:[]),...(kind?[{kind}]:[])]},select:{...publicItemSelect,supplier:{select:{name:true,makerHandle:true,makerTown:true,businessType:true}}},skip:offset,take:25,orderBy:[{createdAt:'desc'},{id:'asc'}]}):Promise.resolve([]),
+ mode==='all'&&(!department||!!department.type)?prisma.blog.findMany({where:{published:true,isDeleted:false,supplier:{...supplier,AND:classification},...(q?{OR:[{title:match},{excerpt:match},{category:match},{supplier:{name:match}}]}:{})},select:{id:true,title:true,excerpt:true,slug:true,supplier:{select:{name:true,makerHandle:true}}},skip:offset,take:25,orderBy:[{publishedAt:'desc'},{id:'asc'}]}):Promise.resolve([])
  ]);
  const prospects=prospectResult.status==='fulfilled'?prospectResult.value:[],makers=makerResult.status==='fulfilled'?makerResult.value:[],items=itemResult.status==='fulfilled'?itemResult.value:[],stories=storyResult.status==='fulfilled'?storyResult.value:[];
  const products=items.filter(item=>!isVenueOnly(item.supplier.businessType));
  const dishes=items.filter(item=>isVenueOnly(item.supplier.businessType));
- const notes=mode==='all'&&page===1&&!area&&!specialty&&!type&&(q||articlesOnly)?fieldNotes.filter(n=>[n.title,n.excerpt,n.category].some(v=>v.toLowerCase().includes(q.toLowerCase()))):[];
+ const notes=mode==='all'&&!department&&page===1&&!area&&!specialty&&!type&&(q||articlesOnly)?fieldNotes.filter(n=>[n.title,n.excerpt,n.category].some(v=>v.toLowerCase().includes(q.toLowerCase()))):[];
  const unavailable=[prospectResult,makerResult,itemResult,storyResult].some(r=>r.status==='rejected');
  for(const result of [prospectResult,makerResult,itemResult,storyResult])if(result.status==='rejected')console.error('Discovery query failed',result.reason);
- const atlasMatches=mode==='all'&&!articlesOnly&&page===1&&q&&!area&&!specialty&&!type?matchDishes(q,await getPublishedDishes().catch(error=>{console.error('Atlas search unavailable',error);return []})):[];
- const guideMatches=mode==='all'&&page===1&&!specialty&&!type&&(q||articlesOnly)?matchGuides(await readPublishedContent('guide').catch(error=>{console.error('Guide search unavailable',error);return []}),q,area):[];
+ const atlasMatches=mode==='all'&&!department&&!articlesOnly&&page===1&&q&&!area&&!specialty&&!type?matchDishes(q,await getPublishedDishes().catch(error=>{console.error('Atlas search unavailable',error);return []})):[];
+ const guideMatches=mode==='all'&&!department&&page===1&&!specialty&&!type&&(q||articlesOnly)?matchGuides(await readPublishedContent('guide').catch(error=>{console.error('Guide search unavailable',error);return []}),q,area):[];
  const hasResults=prospects.length+makers.length+items.length+stories.length+notes.length+atlasMatches.length+guideMatches.length>0,more=[prospects,makers,items,stories].some(r=>r.length>24);
- const href=(extra:Record<string,string>)=>path+'?'+new URLSearchParams({...(q?{q}:{}),...(area?{area}:{}),...(kind?{kind}:{}),...(type?{type}:{}),...(specialty?{specialty}:{}),...(articlesOnly?{scope:'articles'}:{}),...extra});
+ const href=(extra:Record<string,string>)=>path+'?'+new URLSearchParams({...(q?{q}:{}),...(area?{area}:{}),...(!department&&kind?{kind}:{}),...(!department&&type?{type}:{}),...(specialty?{specialty}:{}),...(articlesOnly?{scope:'articles'}:{}),...extra});
  const filtered=!!(q||area||(!department&&kind)||(!department&&type)||specialty||articlesOnly||page>1);
- const showEditorial=(!department||department.mode==='dining'||department.mode==='gifting'||department.mode==='makers')&&page===1&&!kind&&!specialty&&!articlesOnly&&mode!=='products';
- const editorialCount=showEditorial?((mode==='all'||mode==='dining'?editorialMatches('dining',q,area,type).length:0)+(mode==='all'||mode==='gifting'?editorialMatches('gifting',q,area,type).length:0)+(mode==='makers'?editorialMatches('makers',q,area,type).length:0)):0;
+ const showEditorial=(!department||department.mode==='dining'||department.mode==='gifting'||department.mode==='makers'||department.type==='food_brand')&&page===1&&!kind&&!specialty&&!articlesOnly&&mode!=='products';
+ const editorialCount=showEditorial?(((mode==='all'&&!department)||mode==='dining'?editorialMatches('dining',q,area,type).length:0)+((mode==='all'&&!department)||mode==='gifting'?editorialMatches('gifting',q,area,type).length:0)+(mode==='makers'||department?.type==='food_brand'?editorialMatches('makers',q,area,type).length:0)):0;
  return <div className="fp26-shell fp26-directory">
  <EditorialHeader eyebrow={eyebrow} title={title} description={description} photo={!filtered&&(mode!=='all'||department)?photo:undefined}/>
  {department&&<DepartmentNav active={department.slug}/>}
  {!department&&(mode==='makers'||mode==='products')&&<FoodBrandTabs products={mode==='products'}/>}
  <form key={JSON.stringify([path,q,area,kind,type,specialty,articlesOnly])} action={path} className={'fp26-filters fp-taxonomy-filters'+(mode==='makers'||mode==='products'||mode==='all'?' fp-brand-filters'+(mode==='makers'?'':' fp-product-filters'):'')} role="search">
- {kind&&mode!=='makers'&&mode!=='products'&&<input type="hidden" name="kind" value={kind}/>}
- {type&&mode!=='makers'&&mode!=='products'&&mode!=='gifting'&&<input type="hidden" name="type" value={type}/>}
+ {!department&&kind&&mode!=='makers'&&mode!=='products'&&<input type="hidden" name="kind" value={kind}/>}
+ {!department&&type&&mode!=='makers'&&mode!=='products'&&mode!=='gifting'&&<input type="hidden" name="type" value={type}/>}
  {!department&&mode==='all'&&<label className="fp-filter-select"><span id="discovery-scope-label">What are you looking for?</span><select name="scope" defaultValue={articlesOnly?"articles":""} aria-labelledby="discovery-scope-label"><option value="">Everything</option><option value="dining">Restaurants & cafés</option><option value="dishes">Dishes & food culture</option><option value="makers">Food brands & makers</option><option value="products">Food products</option><option value="articles">Articles & guides</option><option value="guides">Comparisons & meal ideas</option><option value="live">Food trucks & pop-ups</option><option value="gifting">Gift suppliers</option></select></label>}
  <label className="fp-directory-keyword"><span>{settings.search}</span><div><Search size={19} aria-hidden="true"/><input name="q" defaultValue={q} maxLength={100} placeholder={settings.placeholder}/></div></label>
  <label className="fp-directory-location"><span>Town or area</span><div><MapPin size={19} aria-hidden="true"/><input name="area" defaultValue={area||"Sri Lanka"} maxLength={100} placeholder="Sri Lanka or a town"/></div></label>
@@ -83,10 +83,10 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  {prospects.length>0&&<section className="fp26-guide-section"><SectionHeading title={settings.list}/><div className="fp26-resultgrid">{prospects.slice(0,24).map(b=><ProspectCard key={b.id} business={b}/>)}</div><p className="fp26-meta">Reviewed business details. Confirm current offerings directly.</p></section>}
  {(stories.length>0||notes.length>0)&&<section className="fp26-guide-section"><SectionHeading title="Articles"/><div className="fp26-resultgrid">{stories.slice(0,24).map(story=><article className="fp26-index" key={story.id}><p className="fp26-label">{story.supplier?.name}</p><h3><Link href={'/makers/'+story.supplier?.makerHandle+'/stories/'+story.slug}>{story.title}</Link></h3><p>{story.excerpt}</p></article>)}{notes.map(n=><article className="fp26-index" key={n.slug}><p className="fp26-label">FreshPick editorial</p><h3><Link href={notePath(n)}>{n.title}</Link></h3><p>{n.excerpt}</p></article>)}</div></section>}
  {!hasResults&&!unavailable&&editorialCount===0&&<section className="fp26-empty"><div><h2>{filtered?articlesOnly?'No matching articles yet.':'No matching FreshPick profiles yet.':mode==='makers'?'The directory is opening.':'Verified listings are being added.'}</h2><p>{filtered?'Try another search or reset your filters.':'Explore the independent editorial selections below where available, or suggest a business.'}</p></div><Link className="fp26-textlink" href={filtered?path:'/for-businesses'}>{filtered?'Browse all':'Suggest a business'} <ArrowUpRight size={16}/></Link></section>}
- {showEditorial&&(mode==='all'||mode==='dining')&&<EditorialPicks group="dining" q={q} area={area} type={type}/>}
- {showEditorial&&(mode==='all'||mode==='gifting')&&<EditorialPicks group="gifting" q={q} area={area} type={type}/>
+ {showEditorial&&((mode==='all'&&!department)||mode==='dining')&&<EditorialPicks group="dining" q={q} area={area} type={type}/>}
+ {showEditorial&&((mode==='all'&&!department)||mode==='gifting')&&<EditorialPicks group="gifting" q={q} area={area} type={type}/>
  }
- {showEditorial&&mode==='makers'&&<EditorialPicks group="makers" q={q} area={area} type={type}/>}
+ {showEditorial&&(mode==='makers'||department?.type==='food_brand')&&<EditorialPicks group="makers" q={q} area={area} type={type}/>}
  {!department&&mode==='all'&&!filtered&&<OccasionShelf/>}
  {(page>1||more)&&<nav className="fp26-pagination" aria-label="Result pages">{page>1&&<Link href={href({page:String(page-1)})}><ArrowLeft size={16}/> Previous</Link>}<span>Page {page}</span>{more&&<Link href={href({page:String(page+1)})}>Next <ArrowRight size={16}/></Link>}</nav>}
  
