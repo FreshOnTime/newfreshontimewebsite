@@ -1060,3 +1060,30 @@ model DiscoveryProspect {
   @@index([reviewStatus, category])
   @@map("discovery_prospects")
 }
+
+model DiscoveryContent {
+  id          String    @id @default(uuid())
+  kind        String
+  slug        String
+  title       String
+  category    String
+  summary     String
+  body        String
+  aliases     String[]  @default([])
+  variations  String[]  @default([])
+  relatedDishes String[] @default([])
+  searchTerm  String    @default("")
+  sourceUrl   String    @default("")
+  sourceName  String    @default("")
+  location    String    @default("")
+  startsAt    DateTime?
+  endsAt      DateTime?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@unique([kind, slug])
+  @@index([kind, published, startsAt])
+  @@map("discovery_content")
+}
