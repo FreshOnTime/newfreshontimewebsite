@@ -1,12 +1,5 @@
 import Link from 'next/link';
-import { CraftShelf, PageBand } from '@/components/makers/Edition';
-export const metadata = { title: 'About FreshPick' };
-export default function About() {
-  return <>
-    <PageBand title="People make the market." intro="FreshPick brings the people behind Sri Lanka’s food into view." image="/images/editorial/sri-lankan-fields.webp" alt="Cultivated fields along the road to Nuwara Eliya"/>
-    <section className="fp-about editorial-wrap"><h2>From a single kitchen<br/>to a whole island.</h2><div>
-      <p>A baker opens a Saturday batch. A grower shares what’s in season. A home cook writes down a family recipe. Every maker gets a page for their food and the stories that go with it.</p>
-      <p>You can find them by town or craft, save something for later and ask a question directly on WhatsApp. The maker sets the price, availability and pickup or delivery arrangements.</p>
-      <Link className="fp-inline" href="/join">Create your maker page</Link></div></section><div className="fp-paper"><CraftShelf/></div>
-  </>;
-}
+import {EditorialHeader,SectionHeading} from '@/components/discovery/Editorial';
+export const metadata={title:'About FreshPick'};
+export default function About(){return <div className="fp26-shell pb-12"><EditorialHeader eyebrow="About FreshPick" title="Good food brings us together." description="An independent guide to Sri Lankan food, its makers and the places that serve it." photo="/images/editorial/sri-lankan-fields.webp" alt="Cultivated Sri Lankan fields"/>
+ <div className="fp26-reading"><h2>Make discovery easier.</h2><p>Local food is scattered across social feeds, menus and small business websites. FreshPick brings useful information into a single place, so people can find food, compare value and contact the businesses behind it.</p><h2>Keep the relationship direct.</h2><p>Businesses set their own prices, availability, payments and delivery or collection arrangements. We provide discovery, guides and practical tools; we do not fulfil orders.</p><h2>Put accuracy before volume.</h2><p>We review independent listings before publication, distinguish them from owner-managed profiles, and provide a way to suggest corrections.</p></div><SectionHeading title="Explore FreshPick"/><div className="fp26-directory-tools"><Link href="/discover">Find food and businesses</Link><Link href="/stories">Read the food journal</Link><Link href="/for-businesses">Introduce your business</Link></div></div>}
