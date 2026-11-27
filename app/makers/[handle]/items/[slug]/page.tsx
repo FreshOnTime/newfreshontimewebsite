@@ -44,16 +44,16 @@ export default async function MakerItemPage({ params }: Props) {
   const venue=isVenueOnly(maker.businessType);
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, item.name);
   return <div className="fp-item-page editorial-wrap py-10 md:py-16">
-    <nav aria-label="Breadcrumb" className="journal-breadcrumb"><Link href={venue?"/eat-drink":"/food-products"}>{venue?"Eat & drink":"Products"}</Link><span aria-hidden="true">/</span><Link href={`/makers/${handle}`}>{maker.name}</Link><span aria-hidden="true">/</span><span aria-current="page">{item.name}</span></nav>
+    <nav aria-label="Breadcrumb" className="journal-breadcrumb"><Link href={venue?"/eat-drink":"/makers"}>{venue?"Eat & drink":"Food brands & makers"}</Link><span aria-hidden="true">/</span><Link href={`/makers/${handle}`}>{maker.name}</Link><span aria-hidden="true">/</span><span aria-current="page">{item.name}</span></nav>
     <div className="journal-item-layout mt-5 grid items-start gap-8 lg:grid-cols-2">
       <div className="journal-item-photo lux-item-visual"><MakerPhoto image={item.image} name={item.name} /></div>
       <div className="space-y-4 journal-item-info">
         <p className="fp-kicker">{item.kind}</p><Link href={`/makers/${handle}`} className="journal-text-cta">{venue?"Served by":"Made by"} {maker.name}</Link>
         <h1 className="break-words font-serif text-4xl text-brand-green md:text-5xl">{item.name}</h1>
         <SavePick href={makerItemPath(handle, slug)} title={item.name} kind={venue?"Menu item":"Product"} />
-        <div className="journal-item-order lux-order-panel">
+        <div className="journal-item-order lux-order-panel fp-item-enquiry">
           <p className="journal-price">{item.price != null ? formatMakerPrice(item.price) : 'Contact the business for a price'}</p>
-          <p>{venue?'Menu item · confirm current availability':item.madeToOrder ? 'Made to order' : item.batches.length ? 'Open for preorders' : 'No open batches right now'}</p>
+          <p>{venue?'Menu item · confirm current availability':item.madeToOrder ? 'Made to order' : item.batches.length ? 'Open for preorders' : 'Ask the maker about availability'}</p>
           <p className="text-sm">{[maker.makerTown, maker.makerFulfilment].filter(Boolean).join(' · ')}</p>
           {enquiry && <a href={enquiry} target="_blank" rel="noopener noreferrer" className="maker-button">Enquire on WhatsApp</a>}
           <p className="text-xs text-muted-foreground">{venue?"Confirm menu prices, availability and reservations directly with the venue.":"Confirm availability and fulfilment directly with the business."}</p>

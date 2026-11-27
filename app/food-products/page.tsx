@@ -1,9 +1,9 @@
-import {getPageConfig} from '@/lib/sitePages';
-import {DiscoveryDirectory,type DirectoryParams} from '@/components/discovery/Directory';
-import {directoryMetadata} from '@/lib/seo';
-export const dynamic='force-dynamic';
-export async function generateMetadata({searchParams}:{searchParams:Promise<DirectoryParams>}){const c=await getPageConfig('products');return directoryMetadata('/food-products',c.seoTitle,c.seoDescription,await searchParams);}
-export default async function Page({searchParams}:{searchParams:Promise<DirectoryParams>}){
- const c=await getPageConfig('products');
- return <DiscoveryDirectory mode="products" params={await searchParams} path="/food-products" title={c.title} description={c.description} eyebrow={c.eyebrow} photo="/images/categories/bakery.webp"/>;
+import {permanentRedirect} from 'next/navigation';
+import {searchText,pageNumber} from '@/lib/discovery';
+import {makerKinds} from '@/lib/makers';
+import type {DirectoryParams} from '@/components/discovery/Directory';
+export default async function FoodProducts({searchParams}:{searchParams:Promise<DirectoryParams>}){
+ const p=await searchParams,query=new URLSearchParams();const q=searchText(p.q),area=searchText(p.area??p.town),kind=makerKinds.find(k=>k===p.kind);
+ if(q)query.set('q',q);if(area)query.set('area',area);if(kind)query.set('kind',kind);const page=pageNumber(p.page);if(page>1)query.set('page',String(page));
+ permanentRedirect('/makers'+(query.size?'?'+query.toString():''));
 }

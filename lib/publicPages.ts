@@ -9,7 +9,6 @@ export const PUBLIC_PAGES = [
   { path: '/makers', title: 'Independent food businesses in Sri Lanka', description: 'Discover independent Sri Lankan food brands and speciality producers.' },
   { path: '/discover', title: 'Explore food in Sri Lanka', description: 'Search restaurants, cafés, food brands, products and articles.' },
   { path: '/eat-drink', title: 'Eat and drink', description: 'Discover reviewed restaurants, cafés and caterers in Sri Lanka.' },
-  { path: '/food-products', title: 'Food products', description: 'Explore independent producers and food products.' },
   { path: '/gifting', title: 'Food gift suppliers in Sri Lanka', description: 'Discover chocolate, tea and hamper suppliers and contact them directly.' },
   { path: '/food-tools', title: 'Food tools', description: 'Estimate dining bills and compare food unit prices.' },
   { path: '/for-businesses', title: 'For food businesses', description: 'Introduce your food business to FreshPick.' },

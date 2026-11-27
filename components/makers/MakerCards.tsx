@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight,MapPin } from 'lucide-react';
 import { formatMakerDate, formatMakerPrice, makerImageSrc, makerItemPath, makerWhatsAppLink } from '@/lib/makers';
 
 type Money = number | string | { toString(): string };
@@ -21,7 +21,7 @@ export function MakerItemCard({ handle, item, makerName, makerTown, menuItem=fal
   makerName?: string;
   makerTown?: string | null;
   menuItem?:boolean;
-  item: { slug: string; name: string; kind: string; image: string | null; price: Money | null; madeToOrder: boolean };
+  item: { slug: string; name: string; kind: string; image: string | null; price: Money | null; madeToOrder: boolean; description?:string };
 }) {
   return <Link href={makerItemPath(handle, item.slug)} className="fp-item-card group block">
     <div className="journal-card-media"><MakerPhoto image={item.image} name={item.name} /></div>
@@ -31,7 +31,7 @@ export function MakerItemCard({ handle, item, makerName, makerTown, menuItem=fal
         {item.name}<ArrowUpRight size={16} className="shrink-0 opacity-60 group-hover:opacity-100" aria-hidden="true" />
       </h3>
       {makerName && <p className="journal-card-origin">{makerName}{makerTown ? ` · ${makerTown}` : ""}</p>}
-      {item.price != null && <p className="mt-1 text-sm text-muted-foreground">{formatMakerPrice(item.price)}</p>}
+      {item.description&&<p className="fp-card-description line-clamp-2">{item.description}</p>}{item.price != null && <p className="mt-1 text-sm text-muted-foreground">{formatMakerPrice(item.price)}</p>}<span className="fp-card-action">View {menuItem?"menu item":"product"} <ArrowUpRight size={15} aria-hidden="true"/></span>
     </div>
   </Link>;
 }
@@ -52,4 +52,9 @@ export function BatchDetails({ batch, itemName, phone }: {
       Ask about this batch <ArrowUpRight size={15} aria-hidden="true" />
     </a>}
   </div>;
+}
+
+export function MakerBusinessCard({name,handle,href,category,town,description,photo}:{name:string;handle?:string|null;href?:string;category:string;town?:string|null;description?:string|null;photo?:{image:string|null;name:string}}){
+ const target=href||('/makers/'+encodeURIComponent(handle||''));
+ return <article className="fp-business-discovery-card"><Link className="fp-business-card-link" href={target}><div className="fp-business-card-media"><MakerPhoto image={photo?.image||null} name={photo?.name||name}/>{photo&&makerImageSrc(photo.image)&&<span>Featured offering</span>}</div><div className="fp-business-card-copy"><p className="fp26-label">{category}</p><h3>{name}</h3>{town&&<p className="fp26-location"><MapPin size={14} aria-hidden="true"/>{town}</p>}{description&&<p className="fp-card-description line-clamp-3">{description}</p>}<span className="fp-card-action">Explore business <ArrowUpRight size={16} aria-hidden="true"/></span></div></Link></article>;
 }
