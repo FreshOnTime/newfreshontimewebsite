@@ -63,11 +63,14 @@ it('keeps private pages out of indexing without blocking rendering assets', () =
 it('indexes published maker profiles, items, stories and editorial articles', async () => {
   (prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([{id:'approved-cafe'}]);
   (prisma.discoveryContent.findMany as jest.Mock).mockResolvedValue([{kind:'guide',slug:'test-guide',updatedAt:new Date('2026-11-01T00:00:00Z')}]);
-  (prisma.supplier.findMany as jest.Mock).mockResolvedValue([{makerHandle:'local-baker'}]);
+  (prisma.supplier.findMany as jest.Mock).mockResolvedValue([{makerHandle:'local-baker',updatedAt:new Date('2026-11-02T00:00:00Z')}]);
   (prisma.makerItem.findMany as jest.Mock).mockResolvedValue([{slug:'sourdough',supplier:{makerHandle:'local-baker'}}]);
   (prisma.blog.findMany as jest.Mock).mockImplementation(({where}) =>
     where.supplier ? [{slug:'from-our-kitchen',supplier:{makerHandle:'local-baker'}}] : []);
-  const urls = (await sitemap()).map(page => page.url);
+  const entries=await sitemap();const urls=entries.map(page=>page.url);
+  expect(entries.find(e=>e.url===absoluteUrl('/guides/test-guide'))?.lastModified).toEqual(new Date('2026-11-01T00:00:00Z'));
+  expect(urls).toContain(absoluteUrl('/locations/colombo'));
+  expect(entries.find(e=>e.url===absoluteUrl('/makers/local-baker'))?.lastModified).toEqual(new Date('2026-11-02T00:00:00Z'));
   expect(urls).toEqual(expect.arrayContaining(['/makers/local-baker','/makers/local-baker/items/sourdough','/makers/local-baker/stories/from-our-kitchen'].map(absoluteUrl)));
   expect(urls).not.toContain(absoluteUrl('/checkout'));
   expect(urls).toContain(absoluteUrl('/places/approved-cafe'));
