@@ -4,37 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Wordmark from '@/components/brand/Wordmark';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ArrowUpRight, MessageSquare, Mail } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ArrowUpRight, MessageSquare, Mail, Store, MapPin, Radio } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 const groups = [
-  { name: 'Store', items: [
-    { name: 'Overview', href: '/admin', icon: LayoutDashboard },
-    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-    { name: 'Products', href: '/admin/products', icon: Package },
-    { name: 'Categories', href: '/admin/categories', icon: Tags },
-    { name: 'Customers', href: '/admin/customers', icon: Users },
-    { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Subscriptions', href: '/admin/subscriptions', icon: Layers },
-    { name: 'Suppliers', href: '/admin/suppliers', icon: Building2 },
-  ] },
-  { name: 'Publishing', items: [
-    { name: 'Blog', href: '/admin/blogs', icon: BookOpen },
-    { name: 'Website pages', href: '/admin/site-pages', icon: Layers },
-    { name: 'Food & Culture CMS', href: '/admin/discovery-content', icon: BookOpen },
-    { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
-    { name: 'Collections', href: '/admin/collections', icon: Layers },
-  ] },
-  { name: 'Support', items: [
-    { name: 'Enquiry inbox', href: '/admin/enquiries', icon: MessageSquare },
-  ] },
-  { name: 'Business', items: [
-    { name: 'Business enquiries', href: '/admin/business-leads', icon: Handshake },
-    { name: 'Live vendors', href: '/admin/live-vendors', icon: Building2 },
-    { name: 'Discovery prospects', href: '/admin/discovery-prospects', icon: Building2 },
-    { name: 'Reports', href: '/admin/analytics', icon: BarChart3 },
-  ] },
+ {name:'Discovery',items:[{name:'Control centre',href:'/admin',icon:LayoutDashboard},{name:'Business applications',href:'/admin/supplier-applications',icon:Building2},{name:'Business directory',href:'/admin/suppliers',icon:Store},{name:'Discovery review',href:'/admin/discovery-prospects',icon:MapPin},{name:'Live vendors',href:'/admin/live-vendors',icon:Radio}]},
+ {name:'Publishing',items:[{name:'Journal articles',href:'/admin/blogs',icon:BookOpen},{name:'Website pages',href:'/admin/site-pages',icon:Layers},{name:'Food & Culture CMS',href:'/admin/discovery-content',icon:BookOpen}]},
+ {name:'Community & support',items:[{name:'Enquiry inbox',href:'/admin/enquiries',icon:MessageSquare},{name:'Business enquiries',href:'/admin/business-leads',icon:Handshake},{name:'Members & access',href:'/admin/users',icon:Users}]},
+ {name:'Legacy operations',items:[{name:'Orders',href:'/admin/orders',icon:ShoppingCart},{name:'Products',href:'/admin/products',icon:Package},{name:'Categories',href:'/admin/categories',icon:Tags},{name:'Customers',href:'/admin/customers',icon:Users},{name:'Subscriptions',href:'/admin/subscriptions',icon:Layers},{name:'Collections',href:'/admin/collections',icon:Layers},{name:'Newsletter archive',href:'/admin/newsletter',icon:Mail},{name:'Store reports',href:'/admin/analytics',icon:BarChart3}]}
 ];
 
 export function AdminSidebar() {
@@ -57,7 +35,7 @@ export function AdminSidebar() {
         <DialogTrigger asChild><button type="button" aria-label="Open admin navigation" className="flex h-11 w-11 items-center justify-center text-foreground"><Menu className="h-5 w-5" aria-hidden="true" /></button></DialogTrigger>
         <DialogContent className="left-0 top-0 block h-[100svh] max-h-none w-[min(320px,100vw)] max-w-none translate-x-0 translate-y-0 rounded-none border-0 px-6 py-0 sm:max-h-none sm:rounded-none [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:items-center [&>button]:justify-center [&>button]:right-2 [&>button]:top-2">
           <DialogTitle className="sr-only">Admin navigation</DialogTitle>
-          <DialogDescription className="sr-only">Store operations, publishing and business tools.</DialogDescription>
+          <DialogDescription className="sr-only">Discovery administration, publishing, community support and legacy tools.</DialogDescription>
           <SidebarContent pathname={pathname} onNavigate={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
@@ -73,11 +51,11 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
       {groups.map(group => <div key={group.name}>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{group.name}</p>
         <ul className="-mx-2 space-y-1">{group.items.map(item => {
-          const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/subscriptions' && pathname === '/admin/subscription-deliveries') || (item.href === '/admin/suppliers' && ['/admin/supplier-uploads', '/admin/supplier-applications'].includes(pathname));
+          const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/')) || (item.href === '/admin/subscriptions' && pathname === '/admin/subscription-deliveries') || (item.href === '/admin/suppliers' && ['/admin/supplier-uploads'].includes(pathname));
           return <li key={item.href}><Link href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors', active ? 'bg-brand-green-deep text-white' : 'text-foreground hover:bg-brand-green/10 hover:text-brand-green')}><item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />{item.name}</Link></li>;
         })}</ul>
       </div>)}
-      <Link href="/" onClick={onNavigate} className="flex min-h-11 items-center justify-between border-t border-border pt-4 text-xs font-semibold uppercase text-brand-green">View store <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+      <Link href="/" onClick={onNavigate} className="flex min-h-11 items-center justify-between border-t border-border pt-4 text-xs font-semibold uppercase text-brand-green">View FreshPick <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
     </nav>
   </>;
 }

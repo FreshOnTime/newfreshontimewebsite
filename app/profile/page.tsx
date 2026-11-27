@@ -136,11 +136,11 @@ export default function ProfilePage() {
 
             <section className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
               <AccountLink href="/makers" title="Explore makers" copy="Browse items by town or craft" />
-              <AccountLink href="/orders" title="Orders" copy="Track and revisit your purchases" />
+              
               <AccountLink href="/profile/messages" title="Messages" copy="Read updates from the FreshPick team" />
               <AccountLink href="/profile/notifications" title="Notifications" copy="Read FreshPick announcements and account updates" />
               <AccountLink href="/saved" title="Saved picks" copy="Revisit bookmarked makers and stories" />
-              <AccountLink href="/profile/agent-access" title="AI shopping assistants" copy="Authorize or revoke an agent to prepare your bags" />
+              <AccountLink href="/auth/forgot" title="Password recovery" copy="Request a password reset link" />
             </section>
           </aside>
         </div>
