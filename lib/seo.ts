@@ -19,7 +19,7 @@ export function pageMetadata({ title, description, path, image, type = 'website'
   const imageUrl = absoluteUrl(image || '/opengraph-image');
   return {
     title: { absolute: fullTitle }, description, keywords: keywords ? [...keywords] : undefined,
-    alternates: { canonical: url },
+    alternates: { canonical: url,types:{'application/rss+xml':absoluteUrl('/feed.xml')} },
     openGraph: { title: fullTitle, description, url, type, siteName: SITE_NAME_LONG, locale: 'en_LK', ...(type==='article'?{...(publishedAt?{publishedTime:publishedAt.toISOString()}:{}),...(updatedAt?{modifiedTime:updatedAt.toISOString()}:{})}:{}), images: [{ url: imageUrl, ...(image ? {} : { width: 1200, height: 630 }), alt: title }] },
     twitter: { card: 'summary_large_image', title: fullTitle, description, images: [imageUrl] },
   };

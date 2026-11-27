@@ -19,7 +19,7 @@ try{
   const row={path,checks:{},errors:[]};report.push(row);
   try{
    const response=await page.goto(new URL(path,base).href,{waitUntil:'domcontentloaded',timeout:30000});
-   assert.equal(response?.status(),200);await page.locator('main h1').first().waitFor();
+   assert.equal(response?.status(),200);const html=await response.text();assert(html.includes('<h1'),'Missing server-rendered headline');await page.locator('main h1').first().waitFor();
    await page.locator('link[rel=canonical]').first().waitFor({state:'attached'});
    const data=await page.evaluate(()=>({title:document.title,description:document.querySelector('meta[name=description]')?.getAttribute('content'),canonical:[...document.querySelectorAll('link[rel=canonical]')].map(x=>x.getAttribute('href')),robots:document.querySelector('meta[name=robots]')?.getAttribute('content')||'',h1:document.querySelectorAll('main h1').length,schemas:[...document.querySelectorAll('script[type="application/ld+json"]')].map(x=>JSON.parse(x.textContent||''))}));
    const check=(key,value)=>{row.checks[key]=Boolean(value);if(!value)row.errors.push(key);};
@@ -28,7 +28,7 @@ try{
    check('canonical',data.canonical.length===1&&data.canonical[0]===canonicalBase+path);
    check('indexable',!data.robots.includes('noindex'));
    check('sitemap',urls.includes(canonicalBase+path));
-   check('single H1',data.h1===1);check('JSON-LD',data.schemas.length>0&&data.schemas.every(s=>s['@context']==='https://schema.org'));
+   check('single H1',data.h1===1);check('RSS discovery',await page.locator('link[rel=alternate][type="application/rss+xml"]').count()>0);check('JSON-LD',data.schemas.length>0&&data.schemas.every(s=>s['@context']==='https://schema.org'));
    if(['/food-atlas/kottu','/guides/hoppers-vs-string-hoppers','/traditions/avurudu-food-traditions'].includes(path)){const article=data.schemas.find(s=>s['@type']==='Article');check('article dates and source',article?.datePublished&&article?.dateModified&&article?.citation&&article?.author?.url);check('visible modification date',await page.locator('main time[datetime]').count()>0);}
   }catch(e){row.errors.push(String(e.message));}
  }
