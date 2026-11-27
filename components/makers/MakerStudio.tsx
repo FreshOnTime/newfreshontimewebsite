@@ -5,6 +5,8 @@ import Link from 'next/link';
 import LiveStudio from './LiveStudio';
 import SpecialtyPicker from './SpecialtyPicker';
 import ArticleEditor from './ArticleEditor';
+import MediaField from './MediaField';
+import {businessMediaSource,readArticleCover} from '@/lib/businessMedia';
 import {businessSetup,businessPresentation} from '@/lib/businessPresentation';
 import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
@@ -13,6 +15,7 @@ import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMake
 import {businessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
 
 type Profile = {
+  businessLogo?:string|null;businessCover?:string|null;
   businessType?:BusinessType;businessSpecialties?:string[];businessWebsite?:string|null;businessInstagram?:string|null;
   makerHandle: string | null; makerBio: string | null; makerTown: string | null;
   makerWhatsApp: string | null; makerFulfilment: string | null; makerPublished: boolean;
@@ -23,7 +26,7 @@ type Item = CatalogueItem & {
   batches: { id: string; readyAt: string; cutoff: string; soldOut: boolean }[];
 };
 type Story = {
-  id: string; slug: string; title: string; excerpt: string; content: string; category?:string|null;
+  id: string; slug: string; title: string; excerpt: string; content: string; category?:string|null; featuredImage?:unknown;
   published: boolean; makerItems: { itemId: string }[];
 };
 type Studio = { supplier: Profile; items: Item[]; stories: Story[]; catalogue: CatalogueItem[] };
@@ -33,6 +36,12 @@ const primary = 'inline-flex min-h-11 items-center rounded-lg bg-brand-green px-
 const plain = 'text-sm font-semibold text-brand-green underline disabled:opacity-50';
 const panel = 'space-y-4 rounded-xl border border-border bg-background p-5 md:p-6';
 const heading = 'font-serif text-2xl text-brand-green';
+
+async function uploadedMedia(form:FormData,name:string,previous?:string|null){
+ const file=form.get(name);
+ if(file instanceof File&&file.size){const upload=new FormData();upload.set('image',file);const response=await authenticatedApiFetch('/api/upload/images/products',{method:'POST',body:upload});const result=await response.json();if(!response.ok)throw new Error(result.error||'Unable to upload image.');const src=businessMediaSource(result.data?.url);if(!src)throw new Error('Image upload did not return a valid image.');return src;}
+ return form.has(name+'Remove')?null:businessMediaSource(previous)||null;
+}
 
 async function readStudio(signal?: AbortSignal): Promise<Studio> {
   const response = await authenticatedApiFetch('/api/suppliers/maker', { signal, cache: 'no-store' });
@@ -50,6 +59,7 @@ export default function MakerStudio() {
   const [tab,setTab] = useState('Profile');
   const [storyEdit, setStoryEdit] = useState('');
   const [editorVersion,setEditorVersion]=useState(0);
+  const [profileVersion,setProfileVersion]=useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -102,10 +112,11 @@ export default function MakerStudio() {
   function submitProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    void save(() => ({
+    void save(async () => ({
+      logo:await uploadedMedia(form,'logo',supplier.businessLogo),cover:await uploadedMedia(form,'cover',supplier.businessCover),
       action: 'profile', businessType:form.get('businessType'),businessSpecialties:form.getAll('businessSpecialties'),website:form.get('website'),instagram:form.get('instagram'), handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
       phone: form.get('phone'), fulfilment: form.get('fulfilment'), published: form.has('published'),
-    }), 'Business profile and specialities saved.');
+    }), 'Business profile and specialities saved.',()=>setProfileVersion(v=>v+1));
   }
 
   function submitItem(event: FormEvent<HTMLFormElement>) {
@@ -145,10 +156,17 @@ export default function MakerStudio() {
     event.preventDefault();
     const element = event.currentTarget;
     const form = new FormData(element);
-    void save(() => ({
+    void save(async () => {
+      const previous=readArticleCover(story?.featuredImage);
+      const alt=String(form.get('articleCoverAlt')||'').trim();
+      const file=form.get('articleCover');
+      if((file instanceof File&&file.size||previous&&!form.has('articleCoverRemove'))&&!alt)throw new Error('Describe the article cover image before saving.');
+      const cover=await uploadedMedia(form,'articleCover',previous?.url);
+      return {
+      featuredImage:cover?{url:cover,alt}:null,
       action: 'story', id: story?.id, category:form.get('category')||null, title: form.get('title'), excerpt: form.get('excerpt'),
       content: form.get('content'), itemIds: form.getAll('itemIds'), published: form.has('published'),
-    }), 'Story saved.', () => { element.reset(); setStoryEdit(''); setEditorVersion(v=>v+1); });
+    }; }, 'Story saved.', () => { element.reset(); setStoryEdit(''); setEditorVersion(v=>v+1); });
   }
 
   return <div className="fp-studio space-y-5" aria-busy={busy}>
@@ -162,9 +180,10 @@ export default function MakerStudio() {
         <h2 className={heading}>Public profile</h2>
         {supplier.makerPublished && <Link href={profilePath} className={plain}>View your page</Link>}
       </div>
-      <form onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
+      <form key={profileVersion} onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
         <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{businessTypes.map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
         <div className="md:col-span-2"><SpecialtyPicker initial={supplier.businessSpecialties}/></div>
+        <div className="md:col-span-2 grid gap-4 sm:grid-cols-2"><MediaField name="logo" title="Business logo" current={supplier.businessLogo} hint="Square image recommended."/><MediaField name="cover" title="Business cover photo" current={supplier.businessCover} hint="Wide landscape photograph recommended."/></div>
         <label className={label}>Public handle
           <input name="handle" className={fields} defaultValue={supplier.makerHandle || ''} readOnly={!!supplier.makerHandle}
             required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" minLength={3} maxLength={50} placeholder="your-business-name" />
@@ -257,6 +276,7 @@ export default function MakerStudio() {
           <label className={label}>Title<input name="title" className={fields} defaultValue={story?.title || ''} required minLength={3} maxLength={150} /></label>
           <label className={label}>Article topic<select name="category" className={fields} defaultValue={story?.category&&businessArticleTopics.some(t=>t===story.category)?story.category:""}><option value="">Choose a topic (optional)</option>{businessArticleTopics.map(t=><option key={t}>{t}</option>)}</select></label>
           <label className={label}>Short summary<textarea name="excerpt" className={fields} rows={2} defaultValue={story?.excerpt || ''} required minLength={3} maxLength={300} /></label>
+          <MediaField name="articleCover" title="Article cover image" current={readArticleCover(story?.featuredImage)?.url} hint="Use a landscape photo relevant to the article."/><label className={label}>Cover image description<input name="articleCoverAlt" maxLength={200} className={fields} defaultValue={readArticleCover(story?.featuredImage)?.alt||""} placeholder="Describe what appears in the image"/></label>
           <ArticleEditor initial={story?.content||""} fieldClass={fields}/>
           {items.length > 0 && <fieldset className="space-y-2">
             <legend className="mb-2 text-sm font-semibold">Link up to 10 offerings (optional)</legend>

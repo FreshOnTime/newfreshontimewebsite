@@ -13,7 +13,7 @@ export const publicMakerWhere = {
 
 export const makerSummarySelect = {
   id: true, name: true, makerHandle: true, makerBio: true, makerTown: true,
-  makerWhatsApp: true, makerFulfilment: true, businessType:true, businessSpecialties:true, businessWebsite:true, businessInstagram:true,
+  makerWhatsApp: true, makerFulfilment: true, businessType:true, businessSpecialties:true, businessWebsite:true, businessInstagram:true, businessLogo:true, businessCover:true,
 } satisfies Prisma.SupplierSelect;
 
 export function openBatches(now = new Date()) {
