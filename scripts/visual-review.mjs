@@ -92,6 +92,8 @@ async function main(){
               assert.equal(await page.locator('.fp-department-card').count(),9);
               assert.equal(await page.locator('.fp-department-card').first().getAttribute('href'),'/explore/places');
               assert.equal(await page.locator('#home-area').inputValue(),'Sri Lanka');
+              assert.equal(await page.locator('[data-home-section="culture"]').count(),0);
+              assert(await page.locator('.fp-dish-black-card').count()>0);
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
@@ -106,8 +108,8 @@ async function main(){
               await page.locator('.fp26-filters input[name=q]').fill('visual');
               await page.locator('.fp26-filters button[type=submit]').click();
               await page.waitForURL(url=>url.pathname==='/explore/bakeries'&&url.searchParams.get('q')==='visual');
-              assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'bakery');
-              assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
+              await page.locator('#main-content .fp26-resultbar[data-query="visual"][data-type="bakery"]').waitFor();
+              assert(await page.locator('#main-content').getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
             }
             if(name==='department-coffee'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'cafe');assert(await page.getByRole('heading',{name:'Café Kumbuk',exact:true}).isVisible());}
             if(name==='department-produce'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-kind'),'Produce');}

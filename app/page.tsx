@@ -5,7 +5,7 @@ import {getPageConfig} from '@/lib/sitePages';
 import {GuideShelfFromCms} from '@/components/discovery/DiscoveryGuides';
 import Link from 'next/link';
 import {ArrowUpRight} from 'lucide-react';
-import {HubPaths,AtlasShelf,ReturnShelf,CultureShelf} from '@/components/discovery/Hub';
+import {HubPaths,AtlasShelf,ReturnShelf} from '@/components/discovery/Hub';
 import ExploreSearch from '@/components/discovery/ExploreSearch';
 import {DiscoveryChapters,SectionHeading} from '@/components/discovery/Editorial';
 import {EditorialPicks,OccasionShelf,GiftCollectionLink,ConnectShelf} from '@/components/discovery/Curated';
@@ -32,7 +32,7 @@ export default async function Home(){
  case 'dining': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<EditorialPicks group="dining" feature heading={section.title}/></div>;
  case 'profiles': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}{(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}</div>;
  case 'atlas': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<AtlasShelf title={section.title}/></div>;
- case 'culture': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<CultureShelf title={section.title}/></div>;
+ case 'culture': return null;
  case 'connections': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<ConnectShelf title={section.title}/></div>;
  case 'occasions': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<OccasionShelf title={section.title}/></div>;
  case 'brands': return <div key={section.id} className="fp-home-panel" data-home-section={section.id}>{intro}<EditorialPicks group="makers" limit={3} heading={section.title}/></div>;
