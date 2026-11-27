@@ -83,12 +83,14 @@ async function main(){
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
               await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
+              await page.locator('.fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
               await page.getByRole('heading',{name:'No matching FreshPick profiles yet.'}).waitFor();
             }
             if(name==='atlas'){
               await page.locator('.fp-atlas-search input[name=q]').fill('කොත්තු');
               await page.locator('.fp-atlas-search button').click();
               await page.waitForURL(url=>url.pathname==='/food-atlas'&&url.searchParams.get('q')==='කොත්තු');
+              await page.locator('[data-atlas-query="කොත්තු"][data-result-count="1"]').waitFor();
               assert.equal(await page.locator('.fp-atlas-card').count(),1);
               assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
             }
@@ -130,11 +132,13 @@ async function main(){
               await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Pantry');
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
-              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand');
+              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand',{waitUntil:'domcontentloaded'});
+              await page.locator('.fp26-resultbar[data-kind="Pantry"][data-type="food_brand"]').waitFor();
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Pantry');
               assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).inputValue(),'food_brand');
               await page.getByRole('link',{name:'Clear filters',exact:true}).click();
-              await page.waitForURL(url=>url.pathname==='/makers'&&!url.search);
+              await page.waitForURL(url=>url.pathname==='/makers'&&![...url.searchParams.values()].some(Boolean),{waitUntil:'domcontentloaded'});
+              await page.locator('.fp26-resultbar[data-kind=""][data-type=""]').waitFor();
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
@@ -210,12 +214,31 @@ async function main(){
         const pageEndpoint=new URL('/api/admin/site-pages',base).href;
         const pageData=await page.evaluate(async url=>(await (await fetch(url,{credentials:'same-origin'})).json()),pageEndpoint);
         const initial=pageData.pages.find(p=>p.key==='home');
-        const changed={...initial.config,title:'CMS draft fixture headline'};
-        const saved=await write(pageEndpoint,'PATCH',{key:'home',version:initial.version,config:changed,action:'draft'});assert(saved.ok,'Page draft failed: '+JSON.stringify(saved.body));
-        const draftHtml=await (await context.request.get(new URL('/',base).href)).text();assert(!draftHtml.includes('CMS draft fixture headline'),'Draft must not be public');
-        const publishedPage=await write(pageEndpoint,'PATCH',{key:'home',version:saved.body.page.version,config:changed,action:'publish'});assert(publishedPage.ok,'Page publish failed');
-        const liveHtml=await (await context.request.get(new URL('/',base).href)).text();assert(liveHtml.includes('CMS draft fixture headline'),'Published headline missing');
-        const restored=await write(pageEndpoint,'PATCH',{key:'home',version:publishedPage.body.page.version,config:initial.config,action:'publish'});assert(restored.ok,'Restore fixture page failed');
+        assert(initial,'Home CMS configuration missing');
+        const changed={...initial.config,title:'CMS private draft fixture '+Date.now()};
+        const guest=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+        const {PrismaClient}=await import('@prisma/client');
+        const db=new PrismaClient();
+        let version=initial.version;
+        try{
+          const publicPage=await guest.newPage();
+          await ready(publicPage,new URL('/',base).href);
+          const original=await publicPage.locator('#home-headline').innerText();
+          const saved=await write(pageEndpoint,'PATCH',{key:'home',version,config:changed,action:'draft'});assert(saved.ok,'Page draft failed: '+JSON.stringify(saved.body));version=saved.body.page.version;
+          const stored=await db.sitePageContent.findUniqueOrThrow({where:{key:'home'}});
+          assert.equal(stored.draft.title,changed.title,'Draft must be saved');
+          assert.notEqual(stored.live.title,changed.title,'Draft must not overwrite published JSON');
+          const response=await guest.request.get(new URL('/',base).href,{headers:{'Cache-Control':'no-cache'}});
+          assert(response.ok(),'Guest homepage failed');
+          assert(!(await response.text()).includes(changed.title),'Draft must not be in anonymous response');
+          await ready(publicPage,new URL('/',base).href);
+          assert.equal(await publicPage.locator('#home-headline').innerText(),original,'Draft must not change public headline');
+          const publishedPage=await write(pageEndpoint,'PATCH',{key:'home',version,config:changed,action:'publish'});assert(publishedPage.ok,'Page publish failed: '+JSON.stringify(publishedPage.body));version=publishedPage.body.page.version;
+          await ready(publicPage,new URL('/',base).href);
+          assert.equal(await publicPage.locator('#home-headline').innerText(),changed.title,'Published headline missing');
+        }finally{
+          try{if(version!==initial.version){const restored=await write(pageEndpoint,'PATCH',{key:'home',version,config:initial.config,action:'publish'});assert(restored.ok,'Restore fixture page failed');}}finally{await guest.close();await db.$disconnect();}
+        }
       }catch(error){errors.push('CMS lifecycle: '+String(error));}finally{await context.close();}
     }
     const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
