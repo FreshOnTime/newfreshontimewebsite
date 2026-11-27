@@ -59,7 +59,6 @@ export default function MakerStudio() {
   const [tab,setTab] = useState('Profile');
   const [storyEdit, setStoryEdit] = useState('');
   const [editorVersion,setEditorVersion]=useState(0);
-  const [profileVersion,setProfileVersion]=useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -111,12 +110,13 @@ export default function MakerStudio() {
 
   function submitProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const element=event.currentTarget;
+    const form = new FormData(element);
     void save(async () => ({
       logo:await uploadedMedia(form,'logo',supplier.businessLogo),cover:await uploadedMedia(form,'cover',supplier.businessCover),
       action: 'profile', businessType:form.get('businessType'),businessSpecialties:form.getAll('businessSpecialties'),website:form.get('website'),instagram:form.get('instagram'), handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
       phone: form.get('phone'), fulfilment: form.get('fulfilment'), published: form.has('published'),
-    }), 'Business profile and specialities saved.',()=>setProfileVersion(v=>v+1));
+    }), 'Business profile and specialities saved.',()=>{element.querySelectorAll<HTMLInputElement>('input[type=file]').forEach(input=>input.value='');element.querySelectorAll<HTMLInputElement>('input[name=logoRemove],input[name=coverRemove]').forEach(input=>input.checked=false);});
   }
 
   function submitItem(event: FormEvent<HTMLFormElement>) {
@@ -180,7 +180,7 @@ export default function MakerStudio() {
         <h2 className={heading}>Public profile</h2>
         {supplier.makerPublished && <Link href={profilePath} className={plain}>View your page</Link>}
       </div>
-      <form key={profileVersion} onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
+      <form key={JSON.stringify([supplier.businessLogo,supplier.businessCover])} onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
         <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{businessTypes.map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
         <div className="md:col-span-2"><SpecialtyPicker initial={supplier.businessSpecialties}/></div>
         <div className="md:col-span-2 grid gap-4 sm:grid-cols-2"><MediaField name="logo" title="Business logo" current={supplier.businessLogo} hint="Square image recommended."/><MediaField name="cover" title="Business cover photo" current={supplier.businessCover} hint="Wide landscape photograph recommended."/></div>
