@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
 import { fulfilmentOptions, makerImageSrc, makerKinds, makerSummarySelect } from '@/lib/makers';
 import prisma from '@/lib/prisma';
-import {businessSpecialties} from '@/lib/businessSpecialties';
+import {businessSpecialties,businessArticleTopics} from '@/lib/businessSpecialties';
 import {businessTypes,officialHttps} from '@/lib/businessTypes';
 
 const price = z.number().min(0.01).max(9999999999.99).multipleOf(0.01);
@@ -52,6 +52,7 @@ const actions = z.discriminatedUnion('action', [
   z.object({ action: z.literal('batch-status'), id, soldOut: z.boolean() }),
   z.object({
     action: z.literal('story'),
+    category:z.enum(businessArticleTopics).optional(),
     id: id.optional(),
     title: z.string().trim().min(3).max(150),
     excerpt: z.string().trim().min(3).max(300),
@@ -92,7 +93,7 @@ export const GET = requireAuth(async request => {
     prisma.blog.findMany({
       where: { supplierId: supplier.id, isDeleted: false },
       orderBy: { updatedAt: 'desc' },
-      select: { id: true, slug: true, title: true, excerpt: true, content: true, published: true, makerItems: { select: { itemId: true } } },
+      select: { id: true, slug: true, title: true, excerpt: true, content: true, category:true, published: true, makerItems: { select: { itemId: true } } },
     }),
     prisma.product.findMany({
       where: { supplierId: supplier.id, archived: false },
@@ -173,6 +174,7 @@ export const POST = requireAuth(async request => {
 
           const fields = {
             title: data.title, excerpt: data.excerpt, content: data.content,
+            ...(data.category!==undefined?{category:data.category}:{}),
             authorName: supplier.name, published: data.published,
           };
           const tags = data.itemIds.map(itemId => ({ itemId }));
