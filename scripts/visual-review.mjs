@@ -64,7 +64,7 @@ async function main(){
               const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-collection .fp26-action')).borderTopLeftRadius)}));
               assert.equal(finish.paper,'rgb(248, 245, 238)');
               assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
-              assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(36, 69, 57)');
+              assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert(finish.search>=(phone?12:16)&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
@@ -75,8 +75,17 @@ async function main(){
               if(phone){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();const contact=page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Contact',exact:true});assert(await contact.isVisible());assert.equal(await contact.getAttribute('href'),'/contact');assert(await page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Saved picks'}).isVisible());await page.screenshot({path:out+'/current-mobile-menu-'+width+'.png',animations:'disabled'});await page.keyboard.press('Escape');await page.getByRole('button',{name:'Open menu'}).waitFor();await page.getByRole('button',{name:'Open search'}).click();await page.locator('#nav-search').waitFor();assert(await page.locator('#nav-search').isEditable());await page.getByRole('button',{name:'Close search'}).click();}
               assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
               assert.equal(await page.locator('.fp-hub-path').count(),6);
+              assert.equal(await page.locator('.fp-occasion-photo img').count(),4);
+              assert.equal(await page.locator('.fp-home-panel[data-home-section="guides"] .fp-guide-feature-photo img').count(),1);
+              assert.equal(await page.locator('.fp-home-business .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
+              const carousel=page.locator('.fp-hero-carousel');
+              await carousel.getByRole('button',{name:'Next discovery'}).click();
+              await carousel.getByRole('heading',{name:'Discover the craft behind the food.',exact:true}).waitFor();
+              assert.equal(await carousel.getByRole('link',{name:'Explore',exact:true}).getAttribute('href'),'/makers');
+              await carousel.getByRole('button',{name:'Previous discovery'}).click();
+              await carousel.getByRole('heading',{name:'Find something delicious.',exact:true}).waitFor();
               assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
-              assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(184, 222, 156)');
+              assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
               assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
@@ -118,7 +127,16 @@ async function main(){
               await details.locator('summary').click();
               assert(await details.evaluate(node=>node.open),'Item accordion did not open');
             }
+            if(name==='contact'){
+              assert.equal(await page.locator('.fp-contact-hero img').count(),1);
+              await page.getByRole('textbox',{name:'Name',exact:true}).fill('Visual fixture');
+              await page.getByRole('textbox',{name:'Email',exact:true}).fill('visual@example.invalid');
+              await page.getByRole('textbox',{name:'Message',exact:true}).fill('Visual review only; not submitted.');
+              assert(await page.getByRole('button',{name:'Send enquiry'}).isEnabled());
+              assert.equal(await page.locator('.fp-contact-submit').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
+            }
             if(name==='businesses'){
+              assert.equal(await page.locator('.fp-business-type-card img').count(),3);
               await page.getByRole('button',{name:'Café',exact:true}).click();
               assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
             }
