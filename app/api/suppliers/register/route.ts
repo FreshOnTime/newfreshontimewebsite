@@ -4,11 +4,13 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 import { phoneSchema } from '@/lib/utils/validation';
+import { businessSpecialties } from '@/lib/businessSpecialties';
 import { businessTypes } from '@/lib/businessTypes';
 import { withRateLimit } from '@/lib/utils/rateLimit';
 
 const supplierSchema = z.object({
   businessType: z.enum(businessTypes).optional(),
+  businessSpecialties: z.array(z.enum(businessSpecialties)).max(8).transform(values=>[...new Set(values)]).optional(),
   companyName: z.string().trim().min(1).max(150),
   contactName: z.string().trim().min(1).max(100),
   email: z.string().trim().email().optional().or(z.literal('')),
@@ -76,6 +78,7 @@ async function handleRegister(request: NextRequest) {
             data: {
               name: body.companyName,
               ...(body.businessType ? {businessType:body.businessType}:{}),
+              ...(body.businessSpecialties !== undefined ? {businessSpecialties:body.businessSpecialties}:{}),
               contactName: body.contactName,
               email: body.email || null,
               phone: body.phone,
@@ -95,7 +98,7 @@ async function handleRegister(request: NextRequest) {
       const existing = await tx.supplier.findFirst({ where: { OR: [{ phone: body.phone }, ...(body.email ? [{ email: body.email }] : [])] } });
       if (existing) throw new RegistrationError('A supplier with these contact details already exists. Contact FreshPick to link your account.', 409);
       const supplier = await tx.supplier.create({ data: {
-        name: body.companyName, ...(body.businessType?{businessType:body.businessType}:{}), contactName: body.contactName, email: body.email || undefined,
+        name: body.companyName, ...(body.businessType?{businessType:body.businessType}:{}), ...(body.businessSpecialties!==undefined?{businessSpecialties:body.businessSpecialties}:{}), contactName: body.contactName, email: body.email || undefined,
         phone: body.phone, street: body.address?.addressLine1, city: body.town || body.address?.city, makerTown: body.town,
         state: body.address?.province, zipCode: body.address?.postalCode, country: body.address?.country,
         status: 'inactive', applicationStatus: 'pending', paymentTerms: 'net_30', notes: productNotes,

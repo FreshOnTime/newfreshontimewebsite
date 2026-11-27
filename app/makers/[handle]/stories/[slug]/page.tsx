@@ -10,6 +10,7 @@ import { BatchDetails, MakerItemCard } from '@/components/makers/MakerCards';
 import { findPublicMaker, publicItemSelect } from '@/lib/makerQueries';
 import { makerWhatsAppLink, openBatches } from '@/lib/makers';
 import prisma from '@/lib/prisma';
+import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { pageMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ const findStory = cache(async (handle: string, slug: string) => {
   const story = await prisma.blog.findFirst({
     where: { supplierId: maker.id, slug, published: true, isDeleted: false },
     select: {
-      title: true, excerpt: true, content: true,
+      title: true, excerpt: true, content: true, category:true,
       makerItems: {
         where: { item: { supplierId: maker.id, published: true } },
         select: { item: { select: {
@@ -51,6 +52,7 @@ export default async function MakerStoryPage({ params }: Props) {
     <article className="journal-maker-article">
       <header className="journal-story-header">
       <p className="fp-kicker">From the makers · {Math.max(1,Math.ceil(story.content.trim().split(/\s+/).length/220))} min read</p><div className="mt-3"><Link href={`/makers/${handle}`} className="journal-text-cta">{maker.name} · {maker.makerTown}</Link></div>
+      {story.category&&businessArticleTopics.some(t=>t===story.category)&&<Link className="journal-text-cta mt-2 inline-block" href={'/stories?topic='+encodeURIComponent('business:'+story.category)}>{story.category}</Link>}
       <h1 className="mt-4 break-words font-serif text-4xl text-brand-green md:text-6xl">{story.title}</h1>
       <div className="flex flex-wrap items-center gap-3"><SavePick href={`/makers/${handle}/stories/${slug}`} title={story.title} kind="Story" /><ShareDiscovery title={story.title} url={absoluteUrl(`/makers/${handle}/stories/${slug}`)}/></div>
         <p className="mt-4 break-words text-lg leading-8 text-muted-foreground">{story.excerpt}</p>

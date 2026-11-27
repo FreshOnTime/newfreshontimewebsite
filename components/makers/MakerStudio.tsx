@@ -3,13 +3,15 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import LiveStudio from './LiveStudio';
+import SpecialtyPicker from './SpecialtyPicker';
+import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
 import {businessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
 
 type Profile = {
-  businessType?:BusinessType;businessWebsite?:string|null;businessInstagram?:string|null;
+  businessType?:BusinessType;businessSpecialties?:string[];businessWebsite?:string|null;businessInstagram?:string|null;
   makerHandle: string | null; makerBio: string | null; makerTown: string | null;
   makerWhatsApp: string | null; makerFulfilment: string | null; makerPublished: boolean;
 };
@@ -19,7 +21,7 @@ type Item = CatalogueItem & {
   batches: { id: string; readyAt: string; cutoff: string; soldOut: boolean }[];
 };
 type Story = {
-  id: string; slug: string; title: string; excerpt: string; content: string;
+  id: string; slug: string; title: string; excerpt: string; content: string; category?:string|null;
   published: boolean; makerItems: { itemId: string }[];
 };
 type Studio = { supplier: Profile; items: Item[]; stories: Story[]; catalogue: CatalogueItem[] };
@@ -94,9 +96,9 @@ export default function MakerStudio() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     void save(() => ({
-      action: 'profile', businessType:form.get('businessType'),website:form.get('website'),instagram:form.get('instagram'), handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
+      action: 'profile', businessType:form.get('businessType'),businessSpecialties:form.getAll('businessSpecialties'),website:form.get('website'),instagram:form.get('instagram'), handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
       phone: form.get('phone'), fulfilment: form.get('fulfilment'), published: form.has('published'),
-    }), 'Maker profile saved.');
+    }), 'Business profile and specialities saved.');
   }
 
   function submitItem(event: FormEvent<HTMLFormElement>) {
@@ -137,7 +139,7 @@ export default function MakerStudio() {
     const element = event.currentTarget;
     const form = new FormData(element);
     void save(() => ({
-      action: 'story', id: story?.id, title: form.get('title'), excerpt: form.get('excerpt'),
+      action: 'story', id: story?.id, category:form.get('category')||null, title: form.get('title'), excerpt: form.get('excerpt'),
       content: form.get('content'), itemIds: form.getAll('itemIds'), published: form.has('published'),
     }), 'Story saved.', () => { element.reset(); setStoryEdit(''); });
   }
@@ -154,6 +156,7 @@ export default function MakerStudio() {
       </div>
       <form onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
         <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{businessTypes.map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
+        <div className="md:col-span-2"><SpecialtyPicker initial={supplier.businessSpecialties}/></div>
         <label className={label}>Public handle
           <input name="handle" className={fields} defaultValue={supplier.makerHandle || ''} readOnly={!!supplier.makerHandle}
             required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" minLength={3} maxLength={50} placeholder="your-business-name" />
@@ -244,6 +247,7 @@ export default function MakerStudio() {
         <h2 className={heading}>{story ? 'Edit article' : 'Write an article'}</h2>
         <form key={story?.id || 'new-story'} onSubmit={submitStory} className="grid gap-4">
           <label className={label}>Title<input name="title" className={fields} defaultValue={story?.title || ''} required minLength={3} maxLength={150} /></label>
+          <label className={label}>Article topic<select name="category" className={fields} defaultValue={story?.category&&businessArticleTopics.some(t=>t===story.category)?story.category:""}><option value="">Choose a topic (optional)</option>{businessArticleTopics.map(t=><option key={t}>{t}</option>)}</select></label>
           <label className={label}>Short summary<textarea name="excerpt" className={fields} rows={2} defaultValue={story?.excerpt || ''} required minLength={3} maxLength={300} /></label>
           <label className={label}>Article body<textarea name="content" className={fields} rows={7} defaultValue={story?.content || ''} required minLength={3} maxLength={18000} /></label>
           {items.length > 0 && <fieldset className="space-y-2">
@@ -259,7 +263,7 @@ export default function MakerStudio() {
           </div>
         </form>
         {stories.map(entry => <div key={entry.id} className="flex flex-wrap justify-between gap-3 border-t border-border pt-3 text-sm">
-          <span>{entry.title} · {entry.published ? 'Published' : 'Draft'}</span>
+          <span>{entry.title}{entry.category?' · '+entry.category:''} · {entry.published ? 'Published' : 'Draft'}</span>
           <div className="flex gap-4">
             {entry.published && supplier.makerPublished && <Link href={`${profilePath}/stories/${entry.slug}`} className={plain}>View</Link>}
             <button type="button" disabled={busy} onClick={() => setStoryEdit(entry.id)} className={plain}>Edit<span className="sr-only"> {entry.title}</span></button>

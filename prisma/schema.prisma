@@ -279,6 +279,7 @@ model Supplier {
   reviewVersion Int @default(0)
 
   businessType     String      @default("maker")
+  businessSpecialties String[] @default([])
   businessWebsite  String?
   businessInstagram String?
   makerHandle      String?     @unique
@@ -301,6 +302,7 @@ model Supplier {
   @@index([status])
   @@index([name])
   @@index([businessType])
+  @@index([businessSpecialties], type: Gin)
   @@map("suppliers")
 }
 

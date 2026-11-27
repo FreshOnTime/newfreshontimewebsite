@@ -137,6 +137,14 @@ async function main(){
               assert(await page.getByRole('button',{name:'Send enquiry'}).isEnabled());
               assert.equal(await page.locator('.fp-contact-submit').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
             }
+            if(name==='join'){
+              await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('gift_creator');
+              await page.getByRole('checkbox',{name:'Food hampers',exact:true}).check();
+              const target=await page.getByRole('link',{name:'Create your login',exact:true}).getAttribute('href');
+              const next=new URL(target,base).searchParams.get('redirect');
+              assert.equal(new URL(next,base).searchParams.get('type'),'gift_creator');
+              assert.equal(new URL(next,base).searchParams.get('specialty'),'food-hampers');
+            }
             if(name==='businesses'){
               assert.equal(await page.locator('.fp-business-type-card img').count(),3);
               await page.getByRole('button',{name:'Café',exact:true}).click();
@@ -154,7 +162,7 @@ async function main(){
               await page.waitForURL(url=>url.pathname==='/food-products'&&url.searchParams.get('kind')==='Drinks');
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Drinks');
             }
-            if(name==='gifting'){assert.equal(await page.getByText('Make the occasion special.',{exact:true}).count(),0);assert(await page.getByRole('heading',{name:'Gift ideas from local businesses'}).isVisible());}
+            if(name==='gifting'){assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());await page.getByRole('combobox',{name:'Business speciality',exact:true}).selectOption('food-hampers');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/gifting'&&url.searchParams.get('specialty')==='food-hampers');await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).waitFor();assert(await page.getByRole('heading',{name:'Visual review assortment',exact:true}).isVisible());await ready(page,new URL('/gifting',base).href);assert.equal(await page.getByText('Make the occasion special.',{exact:true}).count(),0);assert(await page.getByRole('heading',{name:'Gift ideas from local businesses'}).isVisible());}
             if(name==='discovery'){await page.getByRole('combobox',{name:'What are you looking for?',exact:true}).selectOption('dining');await page.locator('.fp26-filters input[name=q]').fill('coffee');await page.locator('.fp26-filters input[name=area]').fill('Colombo');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/eat-drink'&&url.searchParams.get('q')==='coffee'&&url.searchParams.get('area')==='Colombo');}
             if(name==='directory'){
               await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Pantry');
@@ -181,6 +189,7 @@ async function main(){
             await ready(page,new URL('/dashboard',base).href);
             await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
+            assert(await page.getByRole('checkbox',{name:'Food hampers',exact:true}).isVisible());
             await capture(page,'maker-studio-'+width);
           }catch(error){errors.push(String(error));}
         }else errors.push('Maker Studio requires a non-sensitive test login.');

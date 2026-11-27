@@ -1,5 +1,5 @@
 import { absoluteUrl, SITE_URL } from '@/lib/config/site';
-import { breadcrumbJsonLd, catalogueMetadata, pageMetadata, privateMetadata, serializeJsonLd } from '@/lib/seo';
+import { breadcrumbJsonLd, directoryMetadata, catalogueMetadata, pageMetadata, privateMetadata, serializeJsonLd } from '@/lib/seo';
 import { PUBLIC_PAGES } from '@/lib/publicPages';
 import sitemap from '@/app/sitemap';
 import robots from '@/app/robots';
@@ -114,4 +114,8 @@ it.each(['page=-1', 'page=0', 'page=NaN', 'page=1.5', 'page=100001', 'limit=0', 
   const response = await GET(new Request(`https://freshpick.lk/api/blogs?${query}`) as never);
   expect(response.status).toBe(400);
   expect(prisma.blog.findMany).not.toHaveBeenCalled();
+});
+
+it('keeps business speciality filter URLs out of the index',()=>{
+ expect(directoryMetadata('/makers','Businesses','Explore food businesses',{specialty:'food-hampers'})).toMatchObject({alternates:{canonical:absoluteUrl('/makers')},robots:{index:false,follow:true}});
 });
