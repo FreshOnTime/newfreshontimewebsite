@@ -93,6 +93,8 @@ async function main(){
               assert.equal(await page.locator('.fp-department-card').first().getAttribute('href'),'/explore/places');
               assert.equal(await page.locator('#home-area').inputValue(),'Sri Lanka');
               assert.equal(await page.locator('[data-home-section="culture"]').count(),0);
+              if(!phone&&width>=1440){const journal=page.getByRole('button',{name:'Journal and food culture'});await journal.click();await page.getByRole('menuitem',{name:'Food guides & comparisons'}).waitFor();await page.keyboard.press('Escape');}
+
               assert(await page.locator('.fp-dish-black-card').count()>0);
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
@@ -115,8 +117,10 @@ async function main(){
             if(name==='department-produce'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-kind'),'Produce');}
             if(name==='tradition-detail'){assert(await page.locator('.fp-culture-hero').isVisible());}
             if(['directory','food-products','discovery','dining','department-bakery','department-coffee','department-produce'].includes(name)){
-              const fit=await page.locator('.fp-taxonomy-filters select').evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect(),p=n.closest('label').getBoundingClientRect();return r.width<=p.width+1&&r.height>=44&&r.right<=p.right+1}));
-              assert(fit,'Dropdown overflows its field or is too small: '+name+' '+width);
+              await page.waitForFunction(()=>{const forms=[...document.querySelectorAll('main .fp-taxonomy-filters')].filter(f=>f.getBoundingClientRect().width>0&&f.getBoundingClientRect().height>0);return forms.length===1;});
+              const geometry=await page.locator('main .fp-taxonomy-filters select:visible').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect(),p=n.closest('label').getBoundingClientRect();return {name:n.name,w:r.width,h:r.height,parent:p.width,left:r.left-p.left,right:r.right-p.right}}));
+              assert(geometry.length>0,'Missing taxonomy controls: '+name);
+              assert(geometry.every(r=>r.w<=r.parent+1&&r.h>=44&&r.right<=1&&r.left>=-1),'Dropdown overflows its field or is too small: '+name+' '+width+' '+JSON.stringify(geometry));
             }
             if(name==='live'){
               await page.getByRole('heading',{name:'Visual review fixture — bakery'}).waitFor();
