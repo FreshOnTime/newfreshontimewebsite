@@ -42,12 +42,11 @@ async function main(){
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
               const family=await page.locator('main h1').evaluate(node=>getComputedStyle(node).fontFamily);
               assert(family.includes('Instrument Serif'),'Unexpected homepage font: '+family);
-              const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),gift:parseFloat(getComputedStyle(document.querySelector('.fp-gift-feature')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-copy .fp26-action')).borderTopLeftRadius)}));
+              const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-collection .fp26-action')).borderTopLeftRadius)}));
               assert.equal(finish.paper,'rgb(248, 245, 238)');
               assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
-              assert.equal(await page.locator('.fp-gift-feature').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(36, 69, 57)');
-              assert.equal(await page.locator('.fp-gift-copy .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(244, 151, 26)');
-              assert(finish.search>=16&&finish.gift>=20&&finish.image>=12&&finish.button>=24,'Premium radius tokens not applied: '+JSON.stringify(finish));
+              assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(36, 69, 57)');
+              assert(finish.search>=16&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
               await capture(page,'motion-homepage-'+width);
@@ -55,8 +54,8 @@ async function main(){
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
               if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
               assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
-              assert.equal(await page.getByRole('link',{name:'Plan your gift',exact:true}).getAttribute('href'),'/gifting#gift-planner');
-              assert.equal(await page.getByRole('link',{name:'Find a restaurant',exact:true}).getAttribute('href'),'/eat-drink');
+              assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
+              assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
@@ -86,19 +85,15 @@ async function main(){
               await page.waitForURL(url=>url.pathname==='/food-products'&&url.searchParams.get('kind')==='Drinks');
               assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Drinks');
             }
-            if(name==='gifting'){
-              await page.getByLabel('Total budget (LKR)').fill('10000');
-              await page.getByLabel('Quantity').fill('5');
-              await page.getByLabel('Gift enquiry brief').waitFor();
-              assert((await page.getByLabel('Gift enquiry brief').inputValue()).includes('Quantity: 5'));
-            }
+            if(name==='gifting'){assert.equal(await page.getByText('Make the occasion special.',{exact:true}).count(),0);assert(await page.getByRole('heading',{name:'Gift ideas from local businesses'}).isVisible());}
+            if(name==='discovery'){await page.getByLabel('What are you looking for?',{exact:true}).selectOption('dining');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/eat-drink');}
             if(name==='directory'){
-              await page.getByLabel('Food category',{exact:true}).selectOption('Bakery');
-              await page.getByLabel('Business type',{exact:true}).selectOption('bakery');
+              await page.getByLabel('Food category',{exact:true}).selectOption('Pantry');
+              await page.getByLabel('Business type',{exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
-              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Bakery'&&url.searchParams.get('type')==='bakery');
-              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Bakery');
-              assert.equal(await page.getByLabel('Business type',{exact:true}).inputValue(),'bakery');
+              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand');
+              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Pantry');
+              assert.equal(await page.getByLabel('Business type',{exact:true}).inputValue(),'food_brand');
               await page.getByRole('link',{name:'Clear filters',exact:true}).click();
               await page.waitForURL(url=>url.pathname==='/makers'&&!url.search);
               assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'');

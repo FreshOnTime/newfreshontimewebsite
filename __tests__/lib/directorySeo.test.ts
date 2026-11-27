@@ -1,0 +1,3 @@
+import {directoryMetadata} from '@/lib/seo';
+const get=(query:Parameters<typeof directoryMetadata>[3])=>directoryMetadata('/discover','Explore food','Find local businesses',query);
+it('indexes canonical pages and keeps search variations out of the index',()=>{expect(get({}).robots).toBeUndefined();expect(get({q:'coffee'}).robots).toMatchObject({index:false,follow:true});expect(get({scope:'articles'}).robots).toMatchObject({index:false,follow:true});expect(get({type:'cafe',page:'2'}).alternates?.canonical).toEqual(get({}).alternates?.canonical);expect(String(get({page:'2'}).alternates?.canonical)).toContain('?page=2');expect(get({q:''}).robots).toBeUndefined();});

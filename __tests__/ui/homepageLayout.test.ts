@@ -7,7 +7,7 @@ it('opens discovery and maker publishing from the homepage', () => {
   expect(readFileSync('components/discovery/ExploreSearch.tsx','utf8')).toContain('action="/discover"');
   expect(html).toContain('href="/for-businesses"');
   expect(html).toContain('supplier:publicMakerWhere');
-  expect(MARKET_NAVIGATION.map(link => link.href)).toEqual(['/discover','/eat-drink','/makers','/gifting','/stories']);
+  expect(MARKET_NAVIGATION.map(link => link.href)).toEqual(['/discover','/eat-drink','/makers','/stories']);
 });
 
 it('maps previous public commerce and procurement links to maker workflows', async () => {
