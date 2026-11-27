@@ -6,7 +6,7 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
@@ -53,7 +53,7 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
+          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','traditions','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
@@ -182,6 +182,32 @@ async function main(){
         }
       } catch(error) { errors.push(String(error)); }
       finally { await db.$disconnect(); }
+    }
+    if(process.env.FRESHPICK_VISUAL_FIXTURES==='1'){
+      const context=await browser.newContext({viewport:{width:390,height:844}});
+      try{
+        const endpoint=new URL('/api/admin/discovery-content',base).href;
+        assert.equal((await context.request.get(endpoint)).status(),401);
+        const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:'visual-admin@example.invalid',password:process.env.VISUAL_PASSWORD}});
+        assert(login.ok(),'CMS admin fixture login failed');
+        const page=await context.newPage();
+        await ready(page,new URL('/admin/discovery-content',base).href);
+        await page.getByRole('heading',{name:'Food & Culture CMS'}).waitFor({timeout:20000});
+        await page.getByRole('button',{name:/Kottu/}).waitFor();
+        await capture(page,'admin-discovery-cms-390');
+        const headers={Origin:new URL(base).origin};
+        const content={kind:'event',slug:'visual-cms-lifecycle',title:'CMS lifecycle fixture',category:'Workshop',summary:'Private draft test',body:'Isolated test',aliases:[],variations:[],relatedDishes:[],searchTerm:'',sourceUrl:'https://example.org/fixture',sourceName:'Test fixture',location:'Test venue',startsAt:new Date(Date.now()+86400000).toISOString(),endsAt:new Date(Date.now()+90000000).toISOString(),published:false,confirmed:false};
+        const created=await context.request.post(endpoint,{headers,data:content});assert.equal(created.status(),201);
+        const draft=(await created.json()).record;
+        const publicUrl=new URL('/experiences/events/'+content.slug,base).href;
+        assert.equal((await context.request.get(publicUrl)).status(),404,'Draft must not be public');
+        const published=await context.request.patch(endpoint,{headers,data:{id:draft.id,version:draft.updatedAt,content:{...content,published:true,confirmed:true}}});assert(published.ok(),'Publish failed');
+        const live=(await published.json()).record;
+        assert.equal((await context.request.get(publicUrl)).status(),200,'Published event must be public');
+        const stale=await context.request.patch(endpoint,{headers,data:{id:draft.id,version:draft.updatedAt,content}});assert.equal(stale.status(),409);
+        const hidden=await context.request.patch(endpoint,{headers,data:{id:live.id,version:live.updatedAt,content}});assert(hidden.ok(),'Unpublish failed');
+        assert.equal((await context.request.get(publicUrl)).status(),404,'Unpublished event must be hidden');
+      }catch(error){errors.push('CMS lifecycle: '+String(error));}finally{await context.close();}
     }
     const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
     try{
