@@ -7,7 +7,7 @@ export const publicContentSelect={slug:true,kind:true,title:true,category:true,s
 export const readPublishedContent=async(kind:ContentKind)=>prisma.discoveryContent.findMany({where:{...publishedContentWhere,kind},select:publicContentSelect,orderBy:[{publishedAt:'desc'},{slug:'asc'}],take:500});
 export const getPublishedDishes=async():Promise<AtlasDish[]>=>{
  const rows=await readPublishedContent('dish');
- return rows.map(r=>({slug:r.slug,name:r.title,aliases:r.aliases,category:r.category,intro:r.summary,detail:r.body,try:r.variations,search:r.searchTerm||r.title,source:r.sourceUrl,sourceName:r.sourceName}));
+ return rows.map(r=>({slug:r.slug,name:r.title,aliases:r.aliases,category:r.category,intro:r.summary,detail:r.body,try:r.variations,search:r.searchTerm||r.title,source:r.sourceUrl,sourceName:r.sourceName,publishedAt:r.publishedAt,updatedAt:r.updatedAt}));
 };
 export const getContent=async(kind:ContentKind,slug:string)=>prisma.discoveryContent.findFirst({where:{...publishedContentWhere,kind,slug},select:publicContentSelect});
 export const getUpcomingEvents=async()=>prisma.discoveryContent.findMany({where:{...publishedContentWhere,kind:'event',startsAt:{not:null},endsAt:{gte:new Date()}},select:publicContentSelect,orderBy:[{startsAt:'asc'},{slug:'asc'}],take:100});

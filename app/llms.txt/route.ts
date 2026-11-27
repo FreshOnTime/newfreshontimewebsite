@@ -24,6 +24,8 @@ export function GET() {
     'Owner-managed published pages, reviewed external listings and editorial references are distinct. Verify current prices, menus, availability, and identity from the linked primary sources. FreshPick is not the seller, delivery service or booking provider. Cite the specific relevant public page, not this file alone.',
     '',
     '## Discovery resources',
+    `- [Editorial policy](${absoluteUrl('/editorial-policy')}): source standards and corrections`,
+    `- [Editorial RSS feed](${absoluteUrl('/feed.xml')}): recent published food and culture entries`,
     `- [XML sitemap](${absoluteUrl('/sitemap.xml')}): public canonical pages`,
     `- [Crawler rules](${absoluteUrl('/robots.txt')}): crawl preferences`,
     '',

@@ -63,11 +63,14 @@ jobs:
             sleep 2
           done
           if [ "$ready" != true ]; then cat /tmp/visual-server.log; exit 1; fi
+          node scripts/seo-browser-audit.mjs || { cat /tmp/visual-server.log; exit 1; }
           node scripts/visual-review.mjs || { cat /tmp/visual-server.log; exit 1; }
       - name: Upload screenshots (isolated test data)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: freshpick-responsive-320-to-1440-review
-          path: visual-review/*.png
+          path: |
+            visual-review/*.png
+            visual-review/seo-audit.json
           if-no-files-found: error
