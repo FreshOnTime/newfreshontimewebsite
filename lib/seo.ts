@@ -1,3 +1,4 @@
+import {nationwideArea} from './foodDepartments';
 import type { Metadata } from 'next';
 import { absoluteUrl, SITE_NAME_LONG } from '@/lib/config/site';
 
@@ -47,7 +48,7 @@ export function breadcrumbJsonLd(items: readonly { name: string; path: string }[
 
 /** Search/filter variants are useful to visitors but should not flood the index. */
 export function directoryMetadata(path:string,title:string,description:string,query:{q?:unknown;area?:unknown;town?:unknown;kind?:unknown;type?:unknown;scope?:unknown;specialty?:unknown;page?:unknown}):Metadata {
- const filtered=[query.q,query.area,query.town,query.kind,query.type,query.scope,query.specialty].some(v=>Array.isArray(v)||typeof v==='string'&&v.trim()!=='');
+ const filtered=[query.q,Array.isArray(query.area)?query.area:nationwideArea(query.area),Array.isArray(query.town)?query.town:nationwideArea(query.town),query.kind,query.type,query.scope,query.specialty].some(v=>Array.isArray(v)||typeof v==='string'&&v.trim()!=='');
  const page=typeof query.page==='string'&&/^\d{1,4}$/.test(query.page)?Math.max(1,Number(query.page)):1;
  return {...pageMetadata({path:!filtered&&page>1?path+'?page='+page:path,title:!filtered&&page>1?title+' — page '+page:title,description}),...(filtered?{robots:{index:false,follow:true,googleBot:{index:false,follow:true}}}:{})};
 }

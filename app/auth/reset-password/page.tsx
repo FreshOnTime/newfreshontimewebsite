@@ -62,6 +62,7 @@ export default function ResetPasswordPage() {
           <h1 className="mt-3 font-serif text-4xl font-normal leading-tight">Choose a new one.</h1>
           <p className="mt-5 text-sm font-normal leading-7 text-muted-foreground">Use a password you do not reuse elsewhere. The reset link can only be used while its token remains valid.</p>
 
+          {!token&&<p role="alert" className="mt-5 text-sm text-rose-700">This link is incomplete or expired. <Link className="underline" href="/auth/forgot">Request another reset email</Link>.</p>}
           <form onSubmit={submit} className="mt-8 space-y-5 [&_label]:mb-2 [&_label]:block">
             <div>
               <label htmlFor="new-password" className="text-sm font-medium text-foreground">New password</label>
@@ -71,7 +72,7 @@ export default function ResetPasswordPage() {
               <label htmlFor="confirm-password" className="text-sm font-medium text-foreground">Confirm password</label>
               <PasswordInput id="confirm-password" autoComplete="new-password" minLength={8} required value={confirm} onChange={(event) => setConfirm(event.target.value)} placeholder="Repeat the password" className="h-12 w-full rounded-lg border border-border bg-background px-4 text-sm outline-none focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10" />
             </div>
-            <button type="submit" disabled={loading} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-leaf px-6 text-xs font-bold normal-case text-brand-ink hover:bg-brand-leaf/85 disabled:opacity-50">
+            <button type="submit" disabled={loading||!token||!!message} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-leaf px-6 text-xs font-bold normal-case text-brand-ink hover:bg-brand-leaf/85 disabled:opacity-50">
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Resetting</> : <>Reset password <ArrowRight className="h-4 w-4" /></>}
             </button>
           </form>

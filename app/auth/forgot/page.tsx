@@ -57,7 +57,7 @@ export default function ForgotPage() {
           {message && <div className="mt-5 rounded-lg border border-border bg-secondary px-4 py-3 text-sm leading-6 text-brand-green">{message}</div>}
           {error && <div className="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">{error}</div>}
 
-          <p className="mt-6 border-t border-border pt-5 text-xs font-normal leading-5 text-muted-foreground">Reset links expire for security. If the message does not arrive, check the email address and your spam folder before requesting another.</p>
+          <p className="mt-6 border-t border-border pt-5 text-xs font-normal leading-5 text-muted-foreground">Reset links expire for security. Delivery may be delayed. Check your email address and spam folder; if a new link still does not arrive, contact FreshPick.</p><Link href="/contact" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-brand-green underline">Contact support</Link>
         </div>
       </section>
     </div>

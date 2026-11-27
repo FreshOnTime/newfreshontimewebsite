@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, UserCog, CheckCircle, AlertCircle } from "lucide-react";
-import { AdminOverview } from "@/components/admin/AdminOverview";
+import DiscoveryOverview from "@/components/admin/DiscoveryOverview";
 import SupplierUploadsList from '@/components/admin/SupplierUploadsList';
 
 export default function AdminPage() {
@@ -57,17 +57,10 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      {/* Dashboard Overview */}
-      <div>
-        <h1 className="text-3xl font-normal mb-2">Dashboard</h1>
-          {/* Make User Admin Card */}
-        <AdminOverview />
-        <Link href="/admin/enquiries" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-5 text-brand-green"><span><span className="block font-semibold">Enquiry inbox</span><span className="mt-1 block text-sm text-muted-foreground">Review customer questions, producer enquiries and support requests.</span></span><span className="text-sm font-semibold">Open inbox →</span></Link>
-      </div>
-
-      {/* Admin Tools Section */}
-      <div className="border-t pt-6">
-        <h2 className="text-2xl font-normal mb-4">Admin Tools</h2>
+      <DiscoveryOverview />
+      {/* Advanced legacy administration remains accessible. */}
+      <details className="border-t pt-6">
+        <summary className="text-base font-semibold mb-4 cursor-pointer">Advanced access and legacy supplier tools</summary>
 
         {message && (
           <Alert className={`mb-6 ${messageType === 'success' ? 'border-primary bg-secondary' : 'border-red-500 bg-red-50'}`}>
@@ -129,7 +122,7 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </details>
     </div>
   );
 }

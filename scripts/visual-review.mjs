@@ -6,7 +6,7 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['live','/live'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['departments','/explore'],['department-bakery','/explore/bakeries'],['department-coffee','/explore/coffee-cafes'],['department-produce','/explore/produce'],['live','/live'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
@@ -53,7 +53,7 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','account-choice','not-found','contact'].includes(name))continue;
+          if((width===320||width===430)&&!['homepage','departments','department-bakery','department-coffee','department-produce','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','account-choice','not-found','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href,name==='not-found'?404:200);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='not-found'){assert.equal(await page.locator('main h1').count(),1);assert.equal(await page.getByRole('link',{name:'Discover food',exact:true}).getAttribute('href'),'/discover');}
@@ -89,13 +89,34 @@ async function main(){
               assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
               assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
-              assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
+              assert.equal(await page.locator('.fp-department-card').count(),9);
+              assert.equal(await page.locator('.fp-department-card').first().getAttribute('href'),'/explore/places');
+              assert.equal(await page.locator('#home-area').inputValue(),'Sri Lanka');
+              assert.equal(await page.locator('[data-home-section="culture"]').count(),0);
+              assert(await page.locator('.fp-dish-black-card').count()>0);
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
               await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
               await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
               await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
+            }
+            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),9);}
+            if(name==='department-bakery'){
+              assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'bakery');
+              assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
+              await page.locator('.fp26-filters input[name=q]').fill('visual');
+              await page.locator('.fp26-filters button[type=submit]').click();
+              await page.waitForURL(url=>url.pathname==='/explore/bakeries'&&url.searchParams.get('q')==='visual');
+              await page.locator('#main-content .fp26-resultbar[data-query="visual"][data-type="bakery"]').waitFor();
+              await page.locator('#main-content').getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).first().waitFor();
+            }
+            if(name==='department-coffee'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'cafe');assert(await page.getByRole('heading',{name:'Café Kumbuk',exact:true}).isVisible());}
+            if(name==='department-produce'){assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-kind'),'Produce');}
+            if(name==='tradition-detail'){assert(await page.locator('.fp-culture-hero').isVisible());}
+            if(['directory','food-products','discovery','dining','department-bakery','department-coffee','department-produce'].includes(name)){
+              const fit=await page.locator('.fp-taxonomy-filters select').evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect(),p=n.closest('label').getBoundingClientRect();return r.width<=p.width+1&&r.height>=44&&r.right<=p.right+1}));
+              assert(fit,'Dropdown overflows its field or is too small: '+name+' '+width);
             }
             if(name==='live'){
               await page.getByRole('heading',{name:'Visual review fixture — bakery'}).waitFor();
@@ -196,7 +217,7 @@ async function main(){
             const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:process.env.VISUAL_LOGIN,password:process.env.VISUAL_PASSWORD}});
             assert(login.ok(),'Test account login failed');
             await ready(page,new URL('/dashboard',base).href);
-            await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
+            await page.getByRole('heading',{name:'Your business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
             assert(await page.getByRole('checkbox',{name:'Food hampers',exact:true}).isVisible());
             assert(await page.getByRole('progressbar',{name:'Business page setup progress'}).isVisible());
@@ -254,6 +275,10 @@ async function main(){
         const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:'visual-admin@example.invalid',password:process.env.VISUAL_PASSWORD}});
         assert(login.ok(),'CMS admin fixture login failed');
         const page=await context.newPage();
+        await ready(page,new URL('/admin',base).href);
+        await page.getByRole('heading',{name:'Discovery control centre.'}).waitFor({timeout:20000});
+        await page.getByRole('heading',{name:'Account & delivery health'}).waitFor();
+        await capture(page,'admin-discovery-overview-390');
         await ready(page,new URL('/admin/discovery-content',base).href);
         await page.getByRole('heading',{name:'Food & Culture CMS'}).waitFor({timeout:20000});
         await page.getByRole('button',{name:/Kottu/}).waitFor();

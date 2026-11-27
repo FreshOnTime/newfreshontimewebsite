@@ -58,7 +58,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
   };
 
   return (
-    <article className="fp-archive-article min-h-screen bg-background">
+    <article className="fp-archive-article fp-premium-archive min-h-screen bg-background">
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
@@ -123,7 +123,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
 
       <section id="article-content" aria-label="Article content" className="scroll-mt-32 bg-background">
         <div className="editorial-wrap py-12 md:py-20">
-          <div className="mx-auto max-w-[770px]">
+          <div className="mx-auto max-w-[770px] fp-premium-reading">
             <div className="prose prose-base max-w-none break-words text-foreground/85 md:prose-lg prose-headings:font-heading prose-headings:font-semibold prose-headings:leading-[1.2] prose-headings:tracking-[-.035em] prose-headings:text-brand-green-deep prose-h2:mb-5 prose-h2:mt-12 prose-h2:text-3xl prose-h3:mt-9 prose-h3:text-2xl prose-p:leading-[1.95] prose-p:text-foreground/80 prose-strong:text-brand-green-deep prose-a:font-semibold prose-a:text-brand-green prose-a:underline prose-a:decoration-brand-green/30 prose-a:underline-offset-4 hover:prose-a:decoration-brand-green prose-li:leading-[1.85] prose-blockquote:rounded-r-xl prose-blockquote:border-l-4 prose-blockquote:border-brand-amber prose-blockquote:bg-white/75 prose-blockquote:px-6 prose-blockquote:py-4 prose-blockquote:not-italic prose-blockquote:text-brand-green-deep [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_pre]:overflow-x-auto prose-img:rounded-2xl">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -153,7 +153,7 @@ export function BlogPost({ blog, path = `/blog/${encodeURIComponent(blog.slug)}`
       <section className="border-t border-brand-green/10 bg-brand-cream py-14 md:py-20" aria-labelledby="keep-reading-heading">
         <div className="editorial-wrap grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,.8fr)] md:items-end">
           <div>
-            <h2 id="keep-reading-heading" className="max-w-[15ch] font-heading text-[clamp(2.2rem,4vw,3.7rem)] font-semibold leading-[1.1] tracking-[-.045em] text-brand-green-deep">There’s more at the market.</h2>
+            <h2 id="keep-reading-heading" className="max-w-[15ch] font-heading text-[clamp(2.2rem,4vw,3.7rem)] font-semibold leading-[1.1] tracking-[-.045em] text-brand-green-deep">There’s more to discover.</h2>
             <p className="mt-5 max-w-lg text-base leading-8 text-muted-foreground">Keep exploring practical guides and ingredients for everyday cooking.</p>
           </div>
           <nav aria-label="Keep exploring" className="flex flex-col gap-3 sm:flex-row md:justify-end">

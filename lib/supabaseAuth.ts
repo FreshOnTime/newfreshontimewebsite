@@ -25,9 +25,9 @@ export class ManagedAuthError extends Error {
   constructor(public readonly status: number, message: string) { super(message); }
 }
 function authConfig() {
-  const url = new URL(process.env.SUPABASE_URL || '');
+  const url = new URL(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '');
   if (url.protocol !== 'https:' && !(process.env.NODE_ENV !== 'production' && ['localhost','127.0.0.1'].includes(url.hostname) && url.protocol === 'http:')) throw new Error('Invalid Supabase Auth URL');
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!key) throw new Error('Supabase publishable key is required');
   return { root: url.origin + '/auth/v1', key };
 }
@@ -59,7 +59,9 @@ export async function managedVerify(tokenHash: string, type: 'email' | 'recovery
   return sessionRequest('/verify', { token_hash: tokenHash, type });
 }
 export async function managedRecovery(email: string) {
-  await authRequest('/recover', { email });
+  const site=new URL(process.env.FRONTEND_URL || (process.env.NODE_ENV==='production'?'':'http://localhost:3000'));
+  if(site.protocol!=='https:'&&!(process.env.NODE_ENV!=='production'&&['localhost','127.0.0.1'].includes(site.hostname)&&site.protocol==='http:'))throw new Error('Invalid recovery site URL');
+  await authRequest('/recover?redirect_to='+encodeURIComponent(site.origin+'/auth/reset-password'), { email });
 }
 export async function managedPasswordReset(tokenHash: string, password: string) {
   if (!managedPassword.safeParse(password).success) throw new ManagedAuthError(400, 'Use a password of at most 72 UTF-8 bytes.');

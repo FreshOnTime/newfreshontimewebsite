@@ -2,13 +2,13 @@ import { randomUUID } from 'crypto';
 import prisma from '@/lib/prisma';
 import sendgrid from '@sendgrid/mail';
 /** At-least-once delivery: a provider success followed by a DB failure can resend. */
-export async function processEmailOutbox(limit = 2) {
+export async function processEmailOutbox(limit = 2, onlyId?:string) {
   if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) throw new Error('Email provider is not configured');
   sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
   sendgrid.setTimeout(8000);
   const now = new Date();
   const eligibility = { OR: [{ status: 'pending', nextAttemptAt: { lte: now } }, { status: 'processing', leaseUntil: { lt: now } }], attempts: { lt: 6 } };
-  const rows = await prisma.emailOutbox.findMany({ where: eligibility, orderBy: { createdAt: 'asc' }, take: Math.min(Math.max(limit,1),2) });
+  const rows = await prisma.emailOutbox.findMany({ where: {...eligibility,...(onlyId?{id:onlyId}:{})}, orderBy: { createdAt: 'asc' }, take: Math.min(Math.max(limit,1),2) });
   let sent = 0, failed = 0;
   const deadline = Date.now()+20_000;
   for (const row of rows) {
@@ -17,6 +17,9 @@ export async function processEmailOutbox(limit = 2) {
     const claim = await prisma.emailOutbox.updateMany({ where: { id: row.id, ...eligibility }, data: { status: 'processing', claimToken, leaseUntil: new Date(Date.now()+5*60_000), attempts: { increment: 1 } } });
     if (!claim.count) continue;
     try {
+      if (['Reset your password','Verify your account'].includes(row.subject) && Date.now()-new Date(row.createdAt).getTime() >= (row.subject==='Reset your password'?3600_000:24*3600_000)) {
+        await prisma.emailOutbox.updateMany({where:{id:row.id,claimToken,status:'processing'},data:{status:'failed',claimToken:null,leaseUntil:null,lastError:'Authentication link expired before delivery.',html:'',text:null}});failed++;continue;
+      }
       if (row.dedupeKey?.startsWith('newsletter-welcome:')) {
         const [,id,version] = row.dedupeKey.split(':');
         const subscriber = await prisma.subscriber.findUnique({ where: { id } });
@@ -34,6 +37,7 @@ export async function processEmailOutbox(limit = 2) {
       failed++;
     }
   }
+  if(onlyId)return {sent,failed};
   // Recover workers that stopped during their final attempt, and remove old PII.
   await prisma.emailOutbox.updateMany({ where: { status: 'processing', attempts: { gte: 6 }, leaseUntil: { lt: now } }, data: { status: 'failed', claimToken: null, leaseUntil: null, lastError: 'Worker lease expired after final attempt.' } });
   await prisma.emailOutbox.deleteMany({ where: { status: { in: ['sent','failed'] }, createdAt: { lt: new Date(Date.now()-30*86400_000) } } });

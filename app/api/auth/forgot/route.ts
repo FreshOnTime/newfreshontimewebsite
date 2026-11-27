@@ -9,9 +9,9 @@ import { isRateLimited, makeKey } from '@/lib/middleware/rateLimiter';
 export const POST = async (request: NextRequest) => {
   try {
     const body = await request.json();
-    const email = body?.email?.toLowerCase?.();
+    const email = typeof body?.email==='string'?body.email.trim().toLowerCase():'';
 
-    if (!email) {
+    if (!email || email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
@@ -45,8 +45,8 @@ export const POST = async (request: NextRequest) => {
 
     await prisma.emailToken.create({ data: { userId: user.id, tokenHash, type: 'reset', expiresAt } });
 
-    // send reset email (non-blocking)
-    await sendPasswordResetEmail(user.email as string, rawToken).catch((e) => console.error('sendPasswordResetEmail error', e));
+    // Persist and attempt immediate delivery for legacy accounts, without exposing account existence.
+    await sendPasswordResetEmail(user.email as string, rawToken).catch((e) => console.error('Password recovery email could not be queued',e instanceof Error?e.name:'Error'));
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent' });
   } catch (error) {

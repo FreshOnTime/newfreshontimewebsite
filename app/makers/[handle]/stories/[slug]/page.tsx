@@ -52,10 +52,10 @@ export default async function MakerStoryPage({ params }: Props) {
   const { maker, story } = result;
   const cover=readArticleCover(story.featuredImage);
   return <div className="fp-maker-story editorial-wrap py-10 md:py-16">
-    <article className="journal-maker-article">
+    <article className="journal-maker-article fp-premium-article">
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd({"@context":"https://schema.org","@type":"Article",headline:story.title,description:story.excerpt,url:absoluteUrl(`/makers/${handle}/stories/${slug}`),mainEntityOfPage:absoluteUrl(`/makers/${handle}/stories/${slug}`),inLanguage:"en-LK",...(cover?{image:absoluteUrl(cover.url)}:{}),author:{"@type":"Organization",name:maker.name,url:absoluteUrl(`/makers/${handle}`)},publisher:{"@type":"Organization",name:"FreshPick",url:absoluteUrl("/")},...(story.publishedAt?{datePublished:story.publishedAt.toISOString()}:{}),dateModified:story.updatedAt.toISOString(),...(story.category?{articleSection:story.category}:{})})}}/>
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd(breadcrumbJsonLd([{name:"Journal",path:"/stories"},{name:maker.name,path:`/makers/${handle}`},{name:story.title,path:`/makers/${handle}/stories/${slug}`}]))}}/>
-      <header className="journal-story-header">
+      <header className="journal-story-header fp-premium-article-head">
       <p className="fp-kicker">From the makers · {Math.max(1,Math.ceil(story.content.trim().split(/\s+/).length/220))} min read</p><div className="mt-3"><Link href={`/makers/${handle}`} className="journal-text-cta">{maker.name} · {maker.makerTown}</Link></div>
       {story.category&&businessArticleTopics.some(t=>t===story.category)&&<Link className="journal-text-cta mt-2 inline-block" href={'/stories?topic='+encodeURIComponent('business:'+story.category)}>{story.category}</Link>}
       {story.publishedAt&&<p className="mt-2 text-sm text-muted-foreground"><time dateTime={story.publishedAt.toISOString()}>{new Intl.DateTimeFormat("en-LK",{dateStyle:"long",timeZone:"Asia/Colombo"}).format(story.publishedAt)}</time></p>}
@@ -65,7 +65,7 @@ export default async function MakerStoryPage({ params }: Props) {
       </header>
       {cover&&<BusinessMedia src={cover.url} alt={cover.alt} className="fp-article-cover"/>}
       <div className={story.makerItems.length ? "journal-story-columns" : "journal-story-columns journal-story-solo"}>
-      <div className="prose max-w-none break-words">
+      <div className="prose max-w-none break-words fp-premium-reading">
         <ReactMarkdown skipHtml disallowedElements={['img']} remarkPlugins={[remarkGfm]}
           components={{ a: ({ href, children }) => <a href={href} rel="ugc nofollow">{children}</a> }}>{story.content}</ReactMarkdown>
       </div>
