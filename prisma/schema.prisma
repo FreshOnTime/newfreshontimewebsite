@@ -278,6 +278,9 @@ model Supplier {
   reviewedAt DateTime?
   reviewVersion Int @default(0)
 
+  businessType     String      @default("maker")
+  businessWebsite  String?
+  businessInstagram String?
   makerHandle      String?     @unique
   makerPublished   Boolean     @default(false)
   makerBio         String?
@@ -296,6 +299,7 @@ model Supplier {
 
   @@index([status])
   @@index([name])
+  @@index([businessType])
   @@map("suppliers")
 }
 
@@ -1032,4 +1036,27 @@ model MakerStoryItem {
   @@id([storyId, itemId])
   @@index([itemId])
   @@map("maker_story_items")
+}
+
+
+model DiscoveryProspect {
+  id               String    @id
+  name             String
+  category         String
+  area             String?
+  products         String?
+  instagram        String?
+  facebook         String?
+  tiktok           String?
+  website          String?
+  sourceUrl        String
+  reviewStatus     String    @default("pending")
+  permissionStatus String    @default("not_assessed")
+  reviewNotes      String    @default("")
+  reviewedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([reviewStatus, category])
+  @@map("discovery_prospects")
 }

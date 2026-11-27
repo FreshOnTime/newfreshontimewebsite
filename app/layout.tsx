@@ -1,6 +1,7 @@
 import { serializeJsonLd } from '@/lib/seo';
 import type { Metadata } from "next";
 import "./globals.css";
+import "./discovery.css";
 import { Toaster } from "@/components/ui/sonner";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import AdminChromeGuard from "../components/layout/AdminChromeGuard";
@@ -11,9 +12,9 @@ import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL, SOCIAL_LINKS } from "@/lib/conf
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
   category: 'food',
-  keywords: ['FreshPick', 'local bakers and cooks', 'Sri Lankan local food'],
-  title: { default: 'Local food makers in Sri Lanka | FreshPick', template: '%s | FreshPick' },
-  description: 'Discover Sri Lankan bakers, cooks and growers. Explore their items, seasonal batches and stories.',
+  keywords: ['FreshPick','restaurants Sri Lanka','cafés Sri Lanka','food discovery','independent food businesses'],
+  title: { default: 'Discover Sri Lankan food, makers and dining | FreshPick', template: '%s | FreshPick' },
+  description: 'Discover independent Sri Lankan food makers, restaurants, cafés, products and stories.',
   openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Sri Lankan food makers on FreshPick' }] },
   twitter: { card: 'summary_large_image', images: ['/opengraph-image'] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
@@ -29,7 +30,7 @@ const organizationJsonLd = {
       "name": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/brand/freshpick-wordmark.svg`,
-      "description": "FreshPick connects people with independent food makers across Sri Lanka.",
+      "description": "FreshPick helps people discover restaurants, cafés, food businesses, products and food stories across Sri Lanka.",
       "sameAs": Object.values(SOCIAL_LINKS).filter(Boolean),
       "email": SUPPORT_EMAIL,
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
@@ -39,7 +40,7 @@ const organizationJsonLd = {
         "email": SUPPORT_EMAIL,
         "availableLanguage": "English"
       },
-      "knowsAbout": ["Sri Lankan food makers", "Home baking", "Food stories", "Local produce"]
+      "knowsAbout": ["Sri Lankan restaurants","Cafés","Food businesses","Food products","Food stories"]
     },
     {
       "@type": "WebSite",
@@ -52,7 +53,7 @@ const organizationJsonLd = {
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": `${SITE_URL}/makers?q={search_term_string}`
+          "urlTemplate": `${SITE_URL}/discover?q={search_term_string}`
         },
         "query-input": "required name=search_term_string"
       }

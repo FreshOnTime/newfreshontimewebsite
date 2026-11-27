@@ -30,7 +30,7 @@ export const GET = requireAdminSimple(async request => {
         skip: (page-1)*20,
         take: 20,
         select: {
-          id: true, name: true, contactName: true, email: true, phone: true, city: true,
+          id: true, name: true, contactName: true, email: true, phone: true, city: true,businessType:true,
           notes: true, applicationStatus: true, reviewNotes: true,
           reviewVersion: true, reviewedAt: true, createdAt: true,
         },
@@ -87,7 +87,7 @@ export const PATCH = requireAdminSimple(async request => {
               id: randomUUID(),
               title: approved ? 'Maker page approved' : status === 'rejected' ? 'Maker page update' : 'Maker page under review',
               message: approved
-                ? `${current.name} is approved. Open Maker Studio to publish your profile, items, batches and stories.`
+                ? `${current.name} is approved. Open Business Studio to publish your profile, offerings and articles.`
                 : status === 'rejected'
                   ? `${current.name} was not approved at this time. Open your dashboard or contact FreshPick for next steps.`
                   : `${current.name} has been moved back to pending review.`,

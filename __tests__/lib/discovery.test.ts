@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 import { GET } from '@/app/api/blogs/route';
 
 jest.mock('next/cache', () => ({ unstable_cache: (fn: unknown) => fn, revalidatePath: jest.fn(), revalidateTag: jest.fn() }));
-jest.mock('@/lib/prisma', () => ({ __esModule: true, default: { supplier: { findMany: jest.fn() }, makerItem: { findMany: jest.fn() }, product: { findMany: jest.fn() }, category: { findMany: jest.fn() }, blog: { findMany: jest.fn(), count: jest.fn() } } }));
+jest.mock('@/lib/prisma', () => ({ __esModule: true, default: { discoveryProspect: {findMany:jest.fn()}, supplier: { findMany: jest.fn() }, makerItem: { findMany: jest.fn() }, product: { findMany: jest.fn() }, category: { findMany: jest.fn() }, blog: { findMany: jest.fn(), count: jest.fn() } } }));
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -48,6 +48,7 @@ it('keeps private pages out of indexing without blocking rendering assets', () =
 });
 
 it('indexes published maker profiles, items, stories and editorial articles', async () => {
+  (prisma.discoveryProspect.findMany as jest.Mock).mockResolvedValue([{id:'approved-cafe'}]);
   (prisma.supplier.findMany as jest.Mock).mockResolvedValue([{makerHandle:'local-baker'}]);
   (prisma.makerItem.findMany as jest.Mock).mockResolvedValue([{slug:'sourdough',supplier:{makerHandle:'local-baker'}}]);
   (prisma.blog.findMany as jest.Mock).mockImplementation(({where}) =>
@@ -55,6 +56,8 @@ it('indexes published maker profiles, items, stories and editorial articles', as
   const urls = (await sitemap()).map(page => page.url);
   expect(urls).toEqual(expect.arrayContaining(['/makers/local-baker','/makers/local-baker/items/sourdough','/makers/local-baker/stories/from-our-kitchen'].map(absoluteUrl)));
   expect(urls).not.toContain(absoluteUrl('/checkout'));
+  expect(urls).toContain(absoluteUrl('/places/approved-cafe'));
+  expect(prisma.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({reviewStatus:'approved',permissionStatus:'cleared',reviewedAt:{not:null}})}));
   expect(prisma.makerItem.findMany).toHaveBeenCalledWith(expect.objectContaining({
     where: expect.objectContaining({ published:true, supplier:expect.objectContaining({makerPublished:true}) }),
   }));

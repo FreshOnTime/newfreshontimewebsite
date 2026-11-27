@@ -1,18 +1,6 @@
 import Link from 'next/link';
-import { PageBand } from '@/components/makers/Edition';
-export const metadata = { title: 'How FreshPick works' };
-export default function HowItWorks() {
-  return <><PageBand title="How FreshPick works." intro="A place to find local food and a direct line to the person who makes it." image="/images/editorial/restaurant-kitchen.webp" alt="Cooks at work in a kitchen"/>
-    <div className="fp-process editorial-wrap">
-      <section><h2>For food lovers</h2><ol>
-        <li><strong>Look nearby.</strong> Browse a town, a craft or a maker you already know.</li>
-        <li><strong>Open an item.</strong> Read the details, check the batch date and save it for later.</li>
-        <li><strong>Message the maker.</strong> Agree on the quantity, price and pickup or delivery on WhatsApp.</li>
-      </ol><Link className="maker-button" href="/makers">Explore makers</Link></section>
-      <section><h2>For makers</h2><ol>
-        <li><strong>Introduce yourself.</strong> Create a login and send your maker name and town for review.</li>
-        <li><strong>Open your page.</strong> Add your WhatsApp number, your food and your collection options.</li>
-        <li><strong>Share what’s next.</strong> Open a batch or publish a story with tagged items. Handle each enquiry directly.</li>
-      </ol><Link className="maker-button" href="/join">Start a maker page</Link></section>
-    </div></>;
-}
+import {EditorialHeader,SectionHeading} from '@/components/discovery/Editorial';
+export const metadata={title:'How FreshPick works'};
+export default function HowItWorks(){return <div className="fp26-shell pb-12"><EditorialHeader eyebrow="How it works" title="Discover. Choose. Connect." description="Find useful food information, then make arrangements directly with the people behind it."/>
+ <SectionHeading title="For food lovers"/><ol className="fp26-steps">{[['01','Discover','Search for makers, products and places by name or area.'],['02','Choose','Read business profiles, menus, product details and articles. Save the discoveries you want to revisit.'],['03','Connect','Confirm availability, prices, reservations and fulfilment directly with the business.']].map(([n,t,d])=><li key={n}><p className="fp26-label">{n}</p><h3>{t}</h3><p>{d}</p></li>)}</ol><Link href="/discover" className="fp26-action mb-10">Start exploring</Link>
+ <SectionHeading title="For businesses"/><ol className="fp26-steps">{[['01','Introduce yourself','Choose your business type and submit your business details.'],['02','Get reviewed','FreshPick checks your information before publication.'],['03','Share your page','Connect customers to your own channels. Approved businesses can publish their offerings and articles.']].map(([n,t,d])=><li key={n}><p className="fp26-label">{n}</p><h3>{t}</h3><p>{d}</p></li>)}</ol><Link href="/for-businesses" className="fp26-action">See business options</Link></div>}

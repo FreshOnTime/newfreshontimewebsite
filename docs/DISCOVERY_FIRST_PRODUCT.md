@@ -1,0 +1,10 @@
+# Discovery-first product identity
+FreshPick is not a grocery checkout. Main navigation: Discover (universal results), Eat & Drink (dining businesses), Makers (independent non-venue businesses), Products (actual published non-venue products), Gifting (potential suppliers and an enquiry planner), Journal (editorial and owner-authored articles). Food Tools remain available by their existing URL and existing editorial links, but are no longer primary navigation. No fake venues, prices or reviews.
+
+The home page and business page now contain interactive search category and business-type selectors respectively, using real navigation and the existing registration flow. Existing restaurant/kitchen, bakery and drinks assets replace produce imagery in key entry points; no new third-party photos were sourced. Square layout and existing typography preserved.
+
+Restaurant/café owners use the existing authenticated, approval-gated supplier account and publishing model. They can publish menu items and articles. The additive migration adds business type and optional official website and Instagram to suppliers; existing records default to maker and should be reclassified individually if appropriate. Public owner-managed profile URLs remain /makers/[handle] for compatibility. Imported independent profiles remain review-only until explicitly approved; owner claiming/merging a seeded profile remains a separate future task.
+
+Deployment order: backup/staging, prisma migrate deploy, prisma generate, seed the earlier discovery prospect data, then review the records. Do not bypass verification. Existing preview P2021 indicated an unapplied first migration. No production database changes were made by this PR.
+
+Remaining opportunities: structured cuisine and opening hours, venue-owned photography, map search, verified profile claims, duplicate reconciliation, editorial collections, analytics and sponsored placements. No claim of live rollout or visual approval until latest CI and screenshots pass.

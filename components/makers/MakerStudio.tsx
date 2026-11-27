@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
+import {businessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
+
 type Profile = {
+  businessType?:BusinessType;businessWebsite?:string|null;businessInstagram?:string|null;
   makerHandle: string | null; makerBio: string | null; makerTown: string | null;
   makerWhatsApp: string | null; makerFulfilment: string | null; makerPublished: boolean;
 };
@@ -29,7 +32,7 @@ const heading = 'font-serif text-2xl text-brand-green';
 async function readStudio(signal?: AbortSignal): Promise<Studio> {
   const response = await authenticatedApiFetch('/api/suppliers/maker', { signal, cache: 'no-store' });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Unable to load your maker studio.');
+  if (!response.ok) throw new Error(data.error || 'Unable to load your business studio.');
   return data;
 }
 
@@ -74,9 +77,10 @@ export default function MakerStudio() {
     }
   }
 
-  if (!studio) return <p role={notice?.error ? 'alert' : 'status'} className="text-sm text-muted-foreground">{notice?.text || 'Loading maker studio…'}</p>;
+  if (!studio) return <p role={notice?.error ? 'alert' : 'status'} className="text-sm text-muted-foreground">{notice?.text || 'Loading business studio…'}</p>;
 
   const { supplier, items, catalogue, stories } = studio;
+  const venue=isVenueOnly(supplier.businessType);
   const item = items.find(entry => entry.id === itemEdit);
   const copy = catalogue.find(entry => entry.id === copyId);
   const story = stories.find(entry => entry.id === storyEdit);
@@ -89,7 +93,7 @@ export default function MakerStudio() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     void save(() => ({
-      action: 'profile', handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
+      action: 'profile', businessType:form.get('businessType'),website:form.get('website'),instagram:form.get('instagram'), handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
       phone: form.get('phone'), fulfilment: form.get('fulfilment'), published: form.has('published'),
     }), 'Maker profile saved.');
   }
@@ -139,17 +143,18 @@ export default function MakerStudio() {
 
   return <div className="fp-studio space-y-5" aria-busy={busy}>
     {notice && <p role={notice.error ? 'alert' : 'status'} className={`sticky top-4 z-10 rounded-lg border bg-background p-3 text-sm ${notice.error ? 'border-red-300 text-red-700' : 'border-border text-brand-green'}`}>{notice.text}</p>}
-    <div className="fp-studio-counts" aria-label="Studio totals">{[[items.length, "Items"], [items.reduce((sum, item) => sum + item.batches.length, 0), "Batches"], [stories.length, "Stories"]].map(([count, label]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</div>
-    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{['Profile','Items','Batches','Stories'].map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 border-b border-border px-5 text-sm'}>{name}</button>)}</nav>}
+    <div className="fp-studio-counts" aria-label="Studio totals">{[[items.length, venue?"Menu items":"Products"], ...(!venue?[[items.reduce((sum, item) => sum + item.batches.length, 0), "Batches"]]:[]), [stories.length, "Articles"]].map(([count, label]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</div>
+    {supplier.makerHandle && <nav aria-label="Publishing tools" className="flex flex-wrap gap-2">{(venue?['Profile','Items','Stories']:['Profile','Items','Batches','Stories']).map(name => <button type="button" key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={tab === name ? 'maker-button' : 'min-h-11 border-b border-border px-5 text-sm'}>{name==="Items"&&venue?"Menu":name==="Stories"?"Articles":name}</button>)}</nav>}
     <section hidden={tab !== 'Profile'} className={panel}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className={heading}>Public profile</h2>
         {supplier.makerPublished && <Link href={profilePath} className={plain}>View your page</Link>}
       </div>
       <form onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
+        <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{businessTypes.map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
         <label className={label}>Public handle
           <input name="handle" className={fields} defaultValue={supplier.makerHandle || ''} readOnly={!!supplier.makerHandle}
-            required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" minLength={3} maxLength={50} placeholder="nawala-bakes" />
+            required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" minLength={3} maxLength={50} placeholder="your-business-name" />
           <span className="text-xs font-normal text-muted-foreground">Lowercase letters, numbers and hyphens. Your handle becomes part of your permanent URL.</span>
         </label>
         <label className={label}>Town
@@ -159,16 +164,18 @@ export default function MakerStudio() {
           <input type="tel" name="phone" className={fields} defaultValue={supplier.makerWhatsApp || ''} required maxLength={32} />
           <span className="text-xs font-normal text-muted-foreground">Customers will see this number when they open WhatsApp.</span>
         </label>
-        <label className={label}>How customers get their items
+        <label className={label}>How customers visit or enquire
           <select name="fulfilment" className={fields} defaultValue={supplier.makerFulfilment || 'Pickup'}>
             {fulfilmentOptions.map(option => <option key={option}>{option}</option>)}
           </select>
         </label>
+        <label className={label}>Official website (optional)<input type="url" name="website" className={fields} defaultValue={supplier.businessWebsite||""} placeholder="https://"/></label>
+        <label className={label}>Instagram profile (optional)<input type="url" name="instagram" className={fields} defaultValue={supplier.businessInstagram||""} placeholder="https://www.instagram.com/…"/></label>
         <label className={`${label} md:col-span-2`}>About your business
           <textarea name="bio" className={fields} rows={3} defaultValue={supplier.makerBio || ''} maxLength={1200} />
         </label>
         <label className="flex items-center gap-2 text-sm md:col-span-2">
-          <input name="published" type="checkbox" defaultChecked={supplier.makerPublished} /> Make my profile, published items and stories public
+          <input name="published" type="checkbox" defaultChecked={supplier.makerPublished} /> Make my profile, published offerings and articles public
         </label>
         <div><button disabled={busy} className={primary}>Save profile</button></div>
       </form>
@@ -176,7 +183,7 @@ export default function MakerStudio() {
 
     {supplier.makerHandle && <>
       <section hidden={tab !== 'Items'} className={panel}>
-        <h2 className={heading}>{item ? 'Edit item' : 'Create an item'}</h2>
+        <h2 className={heading}>{item ? 'Edit offering' : venue?'Add a menu item':'Add a product'}</h2>
         {!item && catalogue.length > 0 && <label className={label}>Start from your catalogue
           <select className={fields} value={copyId} onChange={event => setCopyId(event.target.value)}>
             <option value="">Create from scratch</option>
@@ -232,20 +239,20 @@ export default function MakerStudio() {
       </section>
 
       <section hidden={tab !== 'Stories'} className={panel}>
-        <h2 className={heading}>{story ? 'Edit story' : 'Write a story'}</h2>
+        <h2 className={heading}>{story ? 'Edit article' : 'Write an article'}</h2>
         <form key={story?.id || 'new-story'} onSubmit={submitStory} className="grid gap-4">
           <label className={label}>Title<input name="title" className={fields} defaultValue={story?.title || ''} required minLength={3} maxLength={150} /></label>
           <label className={label}>Short summary<textarea name="excerpt" className={fields} rows={2} defaultValue={story?.excerpt || ''} required minLength={3} maxLength={300} /></label>
-          <label className={label}>Story<textarea name="content" className={fields} rows={7} defaultValue={story?.content || ''} required minLength={3} maxLength={18000} /></label>
+          <label className={label}>Article body<textarea name="content" className={fields} rows={7} defaultValue={story?.content || ''} required minLength={3} maxLength={18000} /></label>
           {items.length > 0 && <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-semibold">Tag up to 10 items</legend>
+            <legend className="mb-2 text-sm font-semibold">Link up to 10 offerings (optional)</legend>
             {items.map(entry => <label key={entry.id} className="flex items-center gap-2 text-sm">
               <input name="itemIds" type="checkbox" value={entry.id} defaultChecked={story?.makerItems.some(tag => tag.itemId === entry.id)} /> {entry.name}{!entry.published && ' (hidden item)'}
             </label>)}
           </fieldset>}
-          <label className="flex items-center gap-2 text-sm"><input name="published" type="checkbox" defaultChecked={story?.published ?? false} /> Publish story</label>
+          <label className="flex items-center gap-2 text-sm"><input name="published" type="checkbox" defaultChecked={story?.published ?? false} /> Publish article in the journal</label>
           <div className="flex items-center gap-4">
-            <button disabled={busy} className={primary}>Save story</button>
+            <button disabled={busy} className={primary}>Save article</button>
             {story && <button type="button" disabled={busy} onClick={() => setStoryEdit('')} className={plain}>Cancel edit</button>}
           </div>
         </form>

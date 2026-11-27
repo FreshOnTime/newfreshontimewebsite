@@ -96,7 +96,7 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
           <div className="mt-6 border-b border-border pb-8">
             <span className="text-xs font-bold normal-case text-brand-green">Create your FreshPick</span>
             <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">Join FreshPick</h1>
-            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">Create your login to start a maker page or manage your FreshPick account.</p>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">Create an account to discover restaurants and food businesses, save your favourites, or publish your own business profile.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-9 space-y-10">

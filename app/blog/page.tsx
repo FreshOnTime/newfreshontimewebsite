@@ -52,12 +52,12 @@ export default async function BlogPage() {
       <PageBand title="The editorial archive." intro="Food writing and guides from earlier FreshPick editions." image="/images/editorial/kitchen-basket.webp" alt="Fresh vegetables and herbs on a kitchen table"/>
 
       {featured && (
-        <section className="editorial-wrap py-14 md:py-20" aria-labelledby="featured-story-heading">
+        <section className="editorial-wrap py-8 md:py-12" aria-labelledby="featured-story-heading">
           <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
             <h2 id="featured-story-heading" className="font-heading text-2xl font-semibold tracking-[-.035em] text-brand-green-deep sm:text-3xl">Featured story</h2>
 
           </div>
-          <article className="grid min-w-0 overflow-hidden rounded-[1.5rem] bg-brand-green-deep text-white lg:grid-cols-[minmax(0,1.08fr)_minmax(0,.92fr)] lg:rounded-[2rem]">
+          <article className="grid min-w-0 overflow-hidden rounded-[4px] bg-brand-green-deep text-white lg:grid-cols-[minmax(0,1.08fr)_minmax(0,.92fr)]">
             <Link href={featuredHref} aria-label={"Read " + featured.title} className="group relative block min-h-[290px] overflow-hidden bg-brand-green sm:min-h-[420px] lg:min-h-[490px]">
               <BlogImage src={featured.featuredImage?.url || "/images/editorial/market-crates.webp"} alt={featured.featuredImage?.alt || featured.title} sizes="(max-width: 1023px) 100vw, 55vw" />
               <span aria-hidden="true" className="absolute inset-0 bg-black/5 transition-colors group-hover:bg-black/15" />
@@ -69,7 +69,7 @@ export default async function BlogPage() {
               </div>
               <h3 className="mt-6 max-w-[21ch] font-heading text-[clamp(2rem,3.2vw,3.5rem)] font-semibold leading-[1.12] tracking-[-.045em] text-white">{featured.title}</h3>
               <p className="mt-5 max-w-[47ch] text-base leading-8 text-white/80">{featured.excerpt}</p>
-              <Link href={featuredHref} className="mt-8 inline-flex min-h-12 w-fit items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-green-deep transition-colors hover:bg-brand-cream">
+              <Link href={featuredHref} className="mt-8 inline-flex min-h-12 w-fit items-center gap-3 rounded-[3px] bg-white px-6 py-3 text-sm font-semibold text-brand-green-deep transition-colors hover:bg-brand-cream">
                 Read the story <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
@@ -78,7 +78,7 @@ export default async function BlogPage() {
       )}
 
       {remainingGuides.length > 0 && (
-        <section className="border-y border-brand-green/10 bg-white/45 py-14 md:py-20" aria-labelledby="guides-heading">
+        <section className="border-y border-brand-green/10 bg-white/45 py-8 md:py-12" aria-labelledby="guides-heading">
           <div className="editorial-wrap">
             <div className="mb-9 grid gap-4 md:grid-cols-[1fr_.8fr] md:items-end">
               <div>
@@ -96,7 +96,7 @@ export default async function BlogPage() {
         </section>
       )}
 
-      <section className="editorial-wrap py-14 md:py-20" aria-labelledby="stories-heading">
+      <section className="editorial-wrap py-8 md:py-12" aria-labelledby="stories-heading">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
             <p className="text-sm font-semibold text-brand-green">From the market</p>

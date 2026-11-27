@@ -17,12 +17,12 @@ export default function Dashboard() {
   const maker = user.role === 'supplier';
   return <div className="fp-dash editorial-wrap py-10">
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
-      <h1 className="maker-headline">{maker ? 'Maker studio.' : 'Your FreshPick.'}</h1>
+      <h1 className="maker-headline">{maker ? 'Business studio.' : 'Your FreshPick.'}</h1>
       <button onClick={async () => { await logout(); router.replace('/'); }} className="text-sm underline">Sign out</button>
     </header>
-    {maker ? <MakerStudio/> : <div className="mb-8 flex flex-wrap gap-4"><Link className="maker-button" href="/makers">Explore makers</Link><Link className="editorial-link" href="/join">Create a maker page</Link></div>}
+    {maker ? <MakerStudio/> : <div className="mb-8 flex flex-wrap gap-4"><Link className="maker-button" href="/discover">Explore food and places</Link><Link className="editorial-link" href="/for-businesses">List a business</Link></div>}
     <nav aria-label="Account settings and history" className="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-border pt-5 text-sm underline">
-      <Link href="/saved">Saved picks</Link><Link href="/profile">Account settings</Link><Link href="/profile/notifications">Notifications</Link><Link href="/orders">Previous orders</Link><Link href="/profile/subscriptions">Manage existing subscriptions</Link>
+      <Link href="/saved">Saved picks</Link><Link href="/profile">Account settings</Link><Link href="/profile/notifications">Notifications</Link><Link href="/orders">Legacy order history</Link><Link href="/profile/subscriptions">Legacy subscriptions</Link>
     </nav>
   </div>;
 }

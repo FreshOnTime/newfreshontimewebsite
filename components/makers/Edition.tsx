@@ -2,7 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { DiscoveryRail } from './DiscoveryRail';
-import { fieldNotes, notePath } from '@/lib/fieldNotes';
+import { fieldNotes } from '@/lib/fieldNotes';
+import { EditorialHeader,GuideShelf } from '@/components/discovery/Editorial';
 
 const crafts = [
   ['Bakery', 'Bakery', '/images/categories/bakery.webp'],
@@ -24,21 +25,5 @@ export function CraftShelf() {
   </section>;
 }
 
-export function ReadingShelf({ exclude }: { exclude?: string }) {
-  return <section className="fp-section editorial-wrap" data-studio-chapter aria-label="FreshPick field notes">
-    <div className="fp-section-head"><div><h2>Go behind the food.</h2></div><Link href="/stories" className="fp-inline">The journal</Link></div>
-    <div className="fp-reads" data-studio-grid>{fieldNotes.filter(note => note.slug !== exclude).map(note =>
-      <Link key={note.slug} href={notePath(note)} className="fp-read">
-        <div className="fp-image"><Image src={note.image} alt={note.alt} fill sizes="(max-width: 639px) 95vw, 33vw" /></div>
-        <span className="fp-kicker">{note.category}</span><h3>{note.title}</h3><p>{note.excerpt}</p><span className="journal-read-link">Read the story <ArrowUpRight size={15} aria-hidden="true"/></span>
-      </Link>
-    )}</div>
-  </section>;
-}
-
-export function PageBand({ title, intro, image, alt }: { title: string; intro?: string; image?: string; alt?: string }) {
-  return <header className={'fp-band studio-page-band' + (image ? ' fp-band-photo' : '')}><div className="editorial-wrap">
-    <div><h1>{title}</h1>{intro && <p>{intro}</p>}</div>
-    {image && <div className="fp-image studio-band-photo"><Image src={image} alt={alt || ''} fill sizes="(max-width:639px) 100vw, 38vw" /></div>}
-  </div></header>;
-}
+export function ReadingShelf({exclude}:{exclude?:string}){return <div className="fp26-shell"><GuideShelf slugs={fieldNotes.filter(note=>note.slug!==exclude).slice(0,3).map(note=>note.slug)} heading="Keep reading" compact/></div>}
+export function PageBand({title,intro,image,alt,eyebrow}:{title:string;intro?:string;image?:string;alt?:string;eyebrow?:string}){return <div className="fp26-shell"><EditorialHeader title={title} description={intro} photo={image} alt={alt} eyebrow={eyebrow}/></div>}

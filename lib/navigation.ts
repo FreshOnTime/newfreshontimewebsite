@@ -1,6 +1,8 @@
 export const MARKET_NAVIGATION = [
-  { label: 'Explore makers', href: '/makers' },
-  { label: 'Food stories', href: '/stories' },
-  { label: 'Saved', href: '/saved' },
-  { label: 'About', href: '/about' },
+  { label:'Discover',href:'/discover' },
+  { label:'Eat & drink',href:'/eat-drink' },
+  { label:'Makers',href:'/makers' },
+  { label:'Products',href:'/food-products' },
+  { label:'Gifting',href:'/gifting' },
+  { label:'Journal',href:'/stories' },
 ] as const;

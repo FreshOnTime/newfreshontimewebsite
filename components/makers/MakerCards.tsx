@@ -16,16 +16,17 @@ export function MakerPhoto({ image, name }: { image: string | null; name: string
   );
 }
 
-export function MakerItemCard({ handle, item, makerName, makerTown }: {
+export function MakerItemCard({ handle, item, makerName, makerTown, menuItem=false }: {
   handle: string | null;
   makerName?: string;
   makerTown?: string | null;
+  menuItem?:boolean;
   item: { slug: string; name: string; kind: string; image: string | null; price: Money | null; madeToOrder: boolean };
 }) {
   return <Link href={makerItemPath(handle, item.slug)} className="fp-item-card group block">
     <div className="journal-card-media"><MakerPhoto image={item.image} name={item.name} /></div>
     <div className="p-3">
-      <p className="text-xs font-semibold text-muted-foreground">{item.kind}{item.madeToOrder ? ' · Made to order' : ''}</p>
+      <p className="text-xs font-semibold text-muted-foreground">{menuItem?'Menu item':item.kind}{!menuItem&&item.madeToOrder ? ' · Made to order' : ''}</p>
       <h3 className="mt-1 flex items-center justify-between gap-3 font-serif text-xl text-brand-green">
         {item.name}<ArrowUpRight size={16} className="shrink-0 opacity-60 group-hover:opacity-100" aria-hidden="true" />
       </h3>

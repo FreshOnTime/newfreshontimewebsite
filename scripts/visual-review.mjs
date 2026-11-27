@@ -6,11 +6,11 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
-  ['journal','/stories'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
+  ['journal','/stories'],['journal-dining','/stories?topic=Dining%20guide'],['dining-guide','/stories/a-table-for-two'],['buying-guide','/stories/the-price-on-the-jar'],['gifting-guide','/stories/a-gift-worth-opening'],['about','/about'],['how-it-works','/how-it-works'],['join','/join'],['saved','/saved'],['help','/help'],['contact','/contact'],['login','/auth/login'],['signup','/auth/signup/customer'],['forgot','/auth/forgot'],
 ];
 const out = process.env.VISUAL_OUTPUT_DIR || 'visual-review';
 async function ready(page,path) {
@@ -22,13 +22,16 @@ async function capture(page,name) {
   await page.screenshot({path:out+'/'+name+'.png',fullPage:true,animations:'disabled'});
   const overflow = await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth+1);
   assert(!overflow,'Horizontal overflow: '+name);
+  if (/^(homepage|discovery|dining|food-products|gifting|food-tools|businesses|journal)(-|$)/.test(name)) assert.equal(await page.locator('main h1').count(),1,'Expected a single main headline: '+name);
+  const broken=await page.evaluate(()=>Array.from(document.querySelectorAll('main img')).filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc));
+  assert.equal(broken.length,0,'Broken main images: '+name+' '+broken.join(','));
 }
 async function main(){
   await fs.mkdir(out,{recursive:true});
   const browser=await chromium.launch({headless:true});
   const errors=[];
   try{
-    for(const width of [390,1440]){
+    for(const width of [390,768,1440]){
       const context=await browser.newContext({viewport:{width,height:width===390?844:900},deviceScaleFactor:1});
       const page=await context.newPage();
       try{
@@ -36,22 +39,25 @@ async function main(){
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(name==='homepage'){
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
-              await page.locator('.studio-story-panel').first().scrollIntoViewIfNeeded();
+              await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
+              const family=await page.locator('main h1').evaluate(node=>getComputedStyle(node).fontFamily);
+              assert(family.includes('Instrument Serif'),'Unexpected homepage font: '+family);
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
               await capture(page,'motion-homepage-'+width);
               await page.locator('.heritage-header').screenshot({path:out+'/current-header-'+width+'.png'});
               await page.locator('.heritage-footer').screenshot({path:out+'/current-footer-'+width+'.png'});
               if(width===390){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();await page.screenshot({path:out+'/current-mobile-menu-390.png',animations:'disabled'});await page.getByRole('button',{name:'Close menu'}).click();}
-              const rail = page.getByRole('region',{name:'food crafts'});
-              const next = page.getByRole('button',{name:'Next food crafts'});
-              await next.click();
-              await page.waitForFunction(()=>document.querySelector('.lux-rail-track').scrollLeft>10);
-              await rail.screenshot({path:out+'/craft-gallery-'+width+'.png'});
+              const rail = page.getByRole('navigation',{name:'Browse FreshPick'});
+              assert.equal(await rail.getByRole('link').count(),5);
+              await page.getByRole('button',{name:'Eat & drink',exact:true}).click();
+              assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/eat-drink');
+              await page.getByRole('button',{name:'Everything',exact:true}).click();
+              await rail.screenshot({path:out+'/discovery-rail-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
-              await page.locator('.journal-discover button').click();
-              await page.waitForURL('**/makers?q=visual-no-match-000');
-              await page.getByRole('heading',{name:'No matches this time.'}).waitFor();
+              await page.locator('.fp26-search button').click();
+              await page.waitForURL('**/discover?q=visual-no-match-000');
+              await page.getByRole('heading',{name:'No matching results yet.'}).waitFor();
             }
             if(name==='item'){
               const details = page.locator('.lux-detail').first();
@@ -60,9 +66,19 @@ async function main(){
               await details.locator('summary').click();
               assert(await details.evaluate(node=>node.open),'Item accordion did not open');
             }
+            if(name==='businesses'){
+              await page.getByRole('button',{name:'Café',exact:true}).click();
+              assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
+            }
+            if(name==='gifting'){
+              await page.getByLabel('Total budget (LKR)').fill('10000');
+              await page.getByLabel('Quantity').fill('5');
+              await page.getByLabel('Gift enquiry brief').waitFor();
+              assert((await page.getByLabel('Gift enquiry brief').inputValue()).includes('Quantity: 5'));
+            }
             if(name==='directory'){
               await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).click();
-              await page.waitForURL('**/makers?kind=Bakery');
+              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Bakery');
               assert.equal(await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).getAttribute('aria-current'),'page');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
@@ -75,7 +91,7 @@ async function main(){
             const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:process.env.VISUAL_LOGIN,password:process.env.VISUAL_PASSWORD}});
             assert(login.ok(),'Test account login failed');
             await ready(page,new URL('/dashboard',base).href);
-            await page.getByRole('heading',{name:'Maker studio.'}).waitFor({timeout:20000});
+            await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
             await capture(page,'maker-studio-'+width);
           }catch(error){errors.push(String(error));}
@@ -100,7 +116,7 @@ async function main(){
               const page=await context.newPage();
               await ready(page,new URL('/makers',base).href);
               await page.getByRole('heading',{name:'The directory is opening.'}).waitFor();
-              await page.getByRole('heading',{name:'Find your kind of food.'}).waitFor();
+              await page.getByRole('heading',{name:'Meet the world of local food'}).waitFor();
               assert.equal(await page.locator('#makers-results').count(),0);
               await capture(page,'directory-launch-'+width);
             } finally { await context.close(); }
@@ -116,7 +132,7 @@ async function main(){
       const page=await reduced.newPage();
       await ready(page,new URL('/',base).href);
       assert.equal(await page.locator('main').getAttribute('data-studio-motion'),null,'Reduced motion must not activate GSAP');
-      assert(await page.getByRole('heading',{name:'Good food. Closer to home.'}).isVisible(),'Headline must remain visible');
+      assert(await page.getByRole('heading',{name:'Good food. Great finds.'}).isVisible(),'Headline must remain visible');
       await capture(page,'reduced-motion-homepage-390');
     }catch(error){errors.push(String(error));}finally{await reduced.close();}
   }finally{await browser.close();}

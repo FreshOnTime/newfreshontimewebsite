@@ -61,7 +61,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background text-foreground">
       <PremiumPageHeader
         title="Speak with FreshPick."
-        subtitle="For help with your account, a maker page or a listing, contact FreshPick. For availability and pickup, contact the maker on their item page."
+        subtitle="For help with your account, a maker page or a listing, contact FreshPick. For product availability, reservations or fulfilment, contact the business directly."
         eyebrow="Contact FreshPick"
       />
 
@@ -78,7 +78,7 @@ export default function ContactPage() {
             </div>
           </aside>
 
-          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-7 rounded-[1.75rem] border border-brand-green/10 bg-white/80 p-5 shadow-[0_18px_50px_-32px_rgba(16,46,30,.25)] md:grid-cols-2 md:p-9"><legend className="sr-only">Send an enquiry to FreshPick</legend>
+          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="grid min-w-0 grid-cols-1 gap-x-8 gap-y-7 rounded-[4px] border border-brand-green/15 bg-white p-5 md:grid-cols-2 md:p-9"><legend className="sr-only">Send an enquiry to FreshPick</legend>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Name
               <Input className={` ${fieldClass} mt-2`} autoComplete="name" maxLength={100} value={name} onChange={(event) => setName(event.target.value)} required />

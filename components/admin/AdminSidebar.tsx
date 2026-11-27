@@ -29,6 +29,7 @@ const groups = [
   ] },
   { name: 'Business', items: [
     { name: 'Business enquiries', href: '/admin/business-leads', icon: Handshake },
+    { name: 'Discovery prospects', href: '/admin/discovery-prospects', icon: Building2 },
     { name: 'Reports', href: '/admin/analytics', icon: BarChart3 },
   ] },
 ];
