@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, feat/discovery-hub-foundation ]
 
 jobs:
   test:
@@ -58,6 +58,9 @@ jobs:
         psql 'postgresql://postgres:postgres@localhost:5432/freshpick_test' -v ON_ERROR_STOP=1 -f prisma/seeds/freshpick-discovery.sql
         psql 'postgresql://postgres:postgres@localhost:5432/freshpick_test' -v ON_ERROR_STOP=1 -f prisma/seeds/freshpick-discovery.sql
         node scripts/verify-discovery-seed.mjs
+
+    - name: Verify live vendor database constraints
+      run: node scripts/verify-live-vendors.mjs
 
     - name: Run linter
       run: npm run lint

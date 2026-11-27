@@ -16,6 +16,7 @@ async function main() {
   }});
   const user = await db.user.create({ data: { firstName: 'Test maker', email: 'visual-review@example.invalid',
     passwordHash: await bcrypt.hash('VisualFixtureOnly123!', 10), role: 'supplier', supplierId: supplier.id, isEmailVerified: true }});
+  await db.liveVendor.create({data:{supplierId:supplier.id,kind:'truck',approval:'approved',reviewedBy:'fixture-admin',reviewedAt:new Date(),location:'Fictional test stop',area:'Test town',latitude:6.9,longitude:79.9,note:'Isolated fixture, not a real serving location',checkedInAt:new Date(),servingUntil:new Date(Date.now()+6*3600000)}});
   await db.user.create({data:{firstName:'Test admin',email:'visual-admin@example.invalid',passwordHash:await bcrypt.hash('VisualFixtureOnly123!',10),role:'admin',isEmailVerified:true}});
   await db.discoveryContent.create({data:{kind:'event',slug:'visual-review-event',title:'Visual review food event',category:'Workshop',summary:'Fictional event used only in isolated browser testing.',body:'Test content, not a real event.',sourceUrl:'https://example.org/fixture',sourceName:'Test fixture',location:'Test venue',startsAt:new Date(Date.now()+86400000),endsAt:new Date(Date.now()+90000000),published:true,publishedAt:new Date(),relatedDishes:['kottu']}});
   const item = await db.makerItem.create({ data: { supplierId:supplier.id, slug:'visual-review-loaf', name:'Visual review loaf',
