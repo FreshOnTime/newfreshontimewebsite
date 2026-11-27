@@ -98,7 +98,7 @@ async function main(){
               const page=await context.newPage();
               await ready(page,new URL('/makers',base).href);
               await page.getByRole('heading',{name:'The directory is opening.'}).waitFor();
-              await page.getByRole('heading',{name:'Find your kind of food.'}).waitFor();
+              await page.getByRole('heading',{name:'Meet the world of local food'}).waitFor();
               assert.equal(await page.locator('#makers-results').count(),0);
               await capture(page,'directory-launch-'+width);
             } finally { await context.close(); }

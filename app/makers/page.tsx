@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { DirectoryDiscovery } from '@/components/makers/DirectoryDiscovery';
+import { GuideShelf } from '@/components/discovery/Editorial';
+import { ProspectCard } from '@/components/discovery/Directory';
+import { listProspects } from '@/lib/discovery';
 import { Search, MapPin } from 'lucide-react';
 import { ArrowUpRight } from 'lucide-react';
 import { BatchDetails, MakerPhoto, MakerItemCard } from '@/components/makers/MakerCards';
@@ -22,7 +24,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
   const match = { contains: q, mode: 'insensitive' as const };
   const itemFilter = { published: true, ...(kind ? { kind } : {}) };
   const where = { ...publicMakerWhere, ...(kind ? { makerItems: { some: itemFilter } } : {}), ...(q ? { OR: [{name: match}, {makerItems: {some: {...itemFilter, name: match}}}] } : {}), ...(town ? { makerTown: { contains: town, mode: 'insensitive' as const } } : {}) };
-  const [items, batches, makers, stories] = await Promise.all([
+  const [items, batches, makers, stories, prospects] = await Promise.all([
     prisma.makerItem.findMany({ where: { ...itemFilter, supplier: where, ...(q ? { OR: [{name: match}, {supplier: {name: match}}] } : {}) },
       skip: (page-1)*pageSize, take: pageSize+1, orderBy: [{createdAt: 'desc'},{id: 'asc'}],
       select: { ...publicItemSelect, supplier: {select: {makerHandle: true, name: true, makerTown: true}} } }),
@@ -42,17 +44,18 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
       orderBy: [{ publishedAt: 'desc' }, { id: 'asc' }], take: pageSize + 1, skip: (page - 1) * pageSize,
       select: { id: true, title: true, slug: true, excerpt: true, supplier: { select: { name: true, makerHandle: true } } },
     }),
+    !kind?listProspects('makers',q,town,page).catch(error=>{console.error('Maker prospects',error);return []}):Promise.resolve([]),
   ]);
   const pageLink = (next: number) => `/makers?${new URLSearchParams({ ...(town ? { town } : {}), ...(kind ? {kind} : {}), ...(q ? {q} : {}), page: String(next) })}`;
 
   const craftLink = (value?: string) => `/makers?${new URLSearchParams({ ...(town ? {town} : {}), ...(q ? {q} : {}), ...(value ? {kind:value} : {}) })}`;
-  const hasResults = [items, batches, makers, stories].some(rows => rows.length > 0);
+  const hasResults = [items, batches, makers, stories, prospects].some(rows => rows.length > 0);
   const filtered = Boolean(town || kind || q || page > 1);
   const launch = !hasResults && !filtered;
   return <div className="fp-directory directory-experience">
     <header className={`directory-masthead ${filtered ? "directory-masthead-compact" : ""}`}>
       <div className="editorial-wrap directory-masthead-inner">
-        <div className="directory-masthead-copy"><p className="studio-overline">The FreshPick directory</p><h1>Find good food.<br/><span>Meet good people.</span></h1><p>Discover independent food makers, near you and across Sri Lanka.</p></div>
+        <div className="directory-masthead-copy"><p className="studio-overline">The FreshPick directory</p><h1>Meet the makers.</h1><p>Discover independent food makers, near you and across Sri Lanka.</p></div>
         {!filtered && <div className="directory-masthead-photo"><Image src="/images/editorial/kitchen-basket.webp" alt="A woven basket of fresh ingredients" fill priority sizes="(max-width:767px) 90vw, 48vw"/></div>}
       </div>
     </header>
@@ -67,8 +70,8 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         {(town || q || kind) && <Link href="/makers" className="mt-3 inline-block text-sm underline">Clear filters</Link>}
     </div>
     <div className="editorial-wrap lux-directory-results directory-results space-y-9 py-7">
-      {hasResults && <nav className="lux-result-jump" aria-label="Jump to results">{makers.length > 0 && <a href="#makers-results">Makers</a>}{items.length > 0 && <a href="#items-results">Food</a>}{batches.length > 0 && <a href="#batches-results">Preorders</a>}{stories.length > 0 && <a href="#stories-results">Stories</a>}</nav>}
-      {hasResults && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
+      {(makers.length>0||items.length>0||batches.length>0||stories.length>0) && <nav className="lux-result-jump" aria-label="Jump to results">{makers.length > 0 && <a href="#makers-results">Makers</a>}{items.length > 0 && <a href="#items-results">Food</a>}{batches.length > 0 && <a href="#batches-results">Preorders</a>}{stories.length > 0 && <a href="#stories-results">Stories</a>}</nav>}
+      {(makers.length>0||items.length>0) && <p className="journal-results-summary" aria-live="polite">{makers.length > pageSize ? `${pageSize}+` : makers.length} makers · {items.length > pageSize ? `${pageSize}+` : items.length} items on this page</p>}
       {makers.length > 0 && <section id="makers-results">
         <h2 className="editorial-title">Meet the makers</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-studio-grid>
@@ -113,6 +116,7 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
           </Link>)}
         </div>
       </section>}
+      {prospects.length>0&&<section aria-label="Independent maker profiles"><h2 className="editorial-title">Independent food businesses</h2><div className="fp26-resultgrid mt-5">{prospects.slice(0,24).map(b=><ProspectCard key={b.id} business={b}/>)}</div></section>}
       {!hasResults && <section className="directory-status" aria-live="polite">
         <div><p className="studio-overline">{launch ? 'Coming to FreshPick' : 'Search results'}</p>
           <h2>{filtered ? 'No matches this time.' : 'The directory is opening.'}</h2>
@@ -120,11 +124,11 @@ export default async function MakersPage({ searchParams }: { searchParams: Promi
         </div>
         {filtered ? <Link className="modern-primary" href="/makers">See all makers</Link> : <Link className="studio-outline-action" href="/stories">Explore the journal <ArrowUpRight size={17} aria-hidden="true"/></Link>}
       </section>}
-      {(page > 1 || [items, batches, makers, stories].some(results => results.length > pageSize)) && <nav aria-label="Maker discovery pages" className="flex gap-5 text-sm font-semibold text-brand-green">
+      {(page > 1 || ([items, batches, makers, stories].some(results => results.length > pageSize)||prospects.length>24)) && <nav aria-label="Maker discovery pages" className="flex gap-5 text-sm font-semibold text-brand-green">
         {page > 1 && <Link href={pageLink(page - 1)}>Previous page</Link>}
-        {[items, batches, makers, stories].some(results => results.length > pageSize) && <Link href={pageLink(page + 1)}>Next page</Link>}
+        {([items, batches, makers, stories].some(results => results.length > pageSize)||prospects.length>24) && <Link href={pageLink(page + 1)}>Next page</Link>}
       </nav>}
     </div>
-    {launch && <DirectoryDiscovery/>}
+    {launch && <div className="fp26-shell"><GuideShelf slugs={["the-bread-window","a-place-for-pepper","a-basket-of-greens"]} heading="Meet the world of local food"/></div>}
   </div>;
 }

@@ -24,7 +24,7 @@ export default async function FieldNotePage({ params }: Props) {
       <div className="fp-byline"><span>FreshPick editorial · {Math.max(1, Math.ceil(note.sections.map(([, body]) => body).join(" ").trim().split(/\s+/).length / 220))} min read</span><SavePick href={notePath(note)} title={note.title} kind="Field note" /></div>
     </div><div className="fp-image"><Image src={note.image} alt={note.alt} fill priority sizes="(max-width:700px) 95vw, 49vw"/></div></header>
     <div className="fp-article-body lux-reading-body">{note.sections.map(([heading, body]) => <section key={heading}><h2>{heading}</h2><p>{body}</p></section>)}
-      <Link className="maker-button" href={`/makers?kind=${encodeURIComponent(note.kind)}`}>Explore {note.kind.toLowerCase()}</Link>
+      <Link className="maker-button" href={("destination" in note && typeof note.destination==="string")?note.destination:`/makers?kind=${encodeURIComponent(note.kind)}`}>Continue exploring</Link>
     </div>
   </article><ReadingShelf exclude={slug}/></>;
 }

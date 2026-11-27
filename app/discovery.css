@@ -54,3 +54,54 @@
 @media(max-width:1000px){.fp26-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.fp26-rail a:nth-child(3n){border-right:0}.fp26-rail a:nth-child(-n+3){border-bottom:1px solid #c9cbbd}.fp26-resultgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.fp26-hero,.fp26-pagehead,.fp26-spreadgrid,.fp26-tools{grid-template-columns:1fr}.fp26-hero{min-height:0}.fp26-hero-copy{padding:1.5rem}.freshpick-market .fp26-hero h1{font-size:clamp(3.7rem,14.5vw,7.5rem);margin:1.6rem 0 2.1rem}.fp26-hero-photo{min-height:0;aspect-ratio:4/3}.fp26-shell{width:calc(100% - 2rem)}.fp26-rail{grid-template-columns:repeat(2,minmax(0,1fr));margin:1.5rem 0 3rem}.fp26-rail a:nth-child(3n){border-right:1px solid #c9cbbd}.fp26-rail a:nth-child(2n){border-right:0}.fp26-rail a:nth-child(-n+4){border-bottom:1px solid #c9cbbd}.fp26-rail small{display:none}.fp26-sectionhead{display:block}.fp26-sectionhead h2{margin-top:.65rem}.fp26-resultgrid{grid-template-columns:1fr}.fp26-pagephoto{min-height:0}.fp26-pagehead{margin-top:1.2rem}.fp26-filters{align-items:stretch}.fp26-filters label{min-width:100%}}
 @media(prefers-reduced-motion:reduce){.fp26-storytile img{transition:none}.fp26-storytile:hover img{transform:none}}
+
+/* Publication layout: editorial content first, utility controls second. */
+.freshpick-market .fp26-home{background:#fffdf9;color:#222720}
+.fp26-shell{width:min(calc(100% - 4rem),1320px)}
+.fp26-home .fp26-hero{margin:26px 0 0;border-top:2px solid #22392a;grid-template-columns:46% 54%;min-height:0;background:transparent;align-items:stretch}
+.fp26-home .fp26-hero-copy{padding:clamp(1.4rem,3vw,3.1rem) clamp(1.4rem,3vw,3.3rem) clamp(1.4rem,3vw,3.1rem) 0;justify-content:center}
+.fp26-home .fp26-issue{border:0;padding:0;font-size:11px;letter-spacing:.12em}
+.freshpick-market .fp26-home .fp26-hero h1{font-size:clamp(4rem,7.2vw,7.8rem);line-height:.94;letter-spacing:-.035em;margin:1.25rem 0;color:#202b22}
+.fp26-home .fp26-deck{font-family:Arial,"Helvetica Neue",sans-serif;font-size:clamp(1rem,1.4vw,1.2rem);line-height:1.65;color:#4b574c}
+.fp26-home .fp26-search{margin-top:1.4rem;border-color:#c7c9be;border-radius:4px;background:#fff;padding:4px 5px 4px 12px}
+.fp26-home .fp26-search button{background:#f4971a;border-radius:2px}
+.fp26-hero-note{margin-top:.7rem}
+.fp26-home .fp26-hero-photo{min-height:440px;aspect-ratio:unset}
+.fp26-home .fp26-hero-photo figcaption{background:#fffdf9;bottom:10px;right:10px;font-size:10px}
+.fp26-home .fp26-rail{margin:0 0 3.5rem;border-top:0;grid-template-columns:repeat(6,minmax(0,1fr))}
+.fp26-home .fp26-rail a{display:flex;align-items:center;justify-content:center;gap:.55rem;padding:1rem .55rem;min-height:58px}
+.fp26-home .fp26-rail a>svg:last-child{display:none}
+.fp26-home .fp26-rail strong{font-size:.85rem;white-space:nowrap}
+.fp26-guide-section{margin:0 0 3.5rem}
+.fp26-guidegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1rem,2.5vw,2rem)}
+.fp26-guidegrid .fp26-storytile{padding-bottom:1rem}
+.fp26-guidegrid .fp26-tilephoto{aspect-ratio:4/3}
+.freshpick-market .fp26-sectionhead h2{font-size:clamp(2.4rem,4vw,3.7rem);line-height:1.04;letter-spacing:-.02em}
+.freshpick-market .fp26-guidegrid h3{font-size:clamp(1.85rem,2.5vw,2.5rem);line-height:1.05;align-items:start}
+.fp26-guidegrid h3 svg{flex-shrink:0;margin-top:.35rem}
+.fp26-guidegrid .fp26-storytile p:last-child{font-size:.95rem;line-height:1.55;color:#505a50}
+.fp26-toolband{display:grid;grid-template-columns:1.15fr .85fr;gap:2rem;align-items:center;background:#183c2b;color:#fff;padding:clamp(1.5rem,4vw,3.5rem);margin:0 0 3.5rem}
+.fp26-toolband .fp26-label{color:#ffc368}
+.freshpick-market .fp26-toolband h2,.freshpick-market .fp26-business-band h2{font-size:clamp(2.5rem,4.5vw,4.2rem);line-height:1.02;margin:.7rem 0}
+.fp26-toolband p:not(.fp26-label){color:#e2e8df;max-width:42ch}
+.fp26-toolband-links a{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid #ffffff55;min-height:56px;font-size:1rem;color:#fff}
+.fp26-toolband-links a:hover{color:#ffc368}
+.fp26-business-band{border-top:1px solid #b7bdb1;display:flex;gap:2rem;align-items:center;justify-content:space-between;padding:2rem 0 3rem}
+.fp26-business-band p:not(.fp26-label){max-width:52ch;color:#505a50}
+.fp26-business-band .fp26-action{flex-shrink:0}
+.fp26-pagehead{margin:1.5rem 0;gap:2rem;grid-template-columns:1.3fr .7fr;border-top:2px solid #22392a;padding:1.3rem 0;border-bottom:1px solid #c9cbbd}
+.freshpick-market .fp26-pagehead h1{font-size:clamp(2.8rem,5.1vw,4.8rem);line-height:.98;margin:.65rem 0}
+.fp26-pagehead .fp26-deck{font:400 1rem/1.6 Arial,sans-serif;max-width:54ch}
+.fp26-pagephoto{min-height:0;aspect-ratio:16/9}
+.fp26-compacthead{display:block}
+.fp26-empty{margin:1rem 0 2rem;padding:1rem 1.25rem;background:#f2f1e9;border:0;border-left:3px solid #f4971a}
+.freshpick-market .fp26-empty h2{font-family:Arial,sans-serif;font-size:1rem;font-weight:600;line-height:1.35}
+.fp26-empty p{font-size:.9rem;margin:.35rem 0 .65rem}
+.fp26-filters{align-items:end;gap:12px}
+.fp26-filters label{font-size:.8rem}
+.fp26-filters input{border-radius:3px;background:#fff}
+.fp26-action{border-radius:3px}
+.fp26-index{border-color:#bdc6b8}
+.freshpick-market .fp26-index h2,.freshpick-market .fp26-index h3{font-size:clamp(1.75rem,2.2vw,2.35rem)}
+@media(max-width:1000px){.fp26-home .fp26-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.fp26-home .fp26-hero h1{font-size:clamp(3.5rem,8vw,6rem)}.fp26-home .fp26-hero-photo{min-height:380px}}
+@media(max-width:760px){.fp26-shell{width:calc(100% - 2rem)}.fp26-home .fp26-hero{grid-template-columns:1fr;margin-top:14px}.fp26-home .fp26-hero-copy{padding:1.5rem 0}.freshpick-market .fp26-home .fp26-hero h1{font-size:clamp(3.9rem,13.5vw,6.5rem)}.fp26-home .fp26-hero-photo{min-height:0;aspect-ratio:4/3}.fp26-home .fp26-rail{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:2rem}.fp26-home .fp26-rail a{justify-content:start;padding-left:12px}.fp26-guidegrid,.fp26-toolband,.fp26-pagehead{grid-template-columns:1fr}.fp26-guide-section,.fp26-toolband{margin-bottom:2.5rem}.fp26-guidegrid .fp26-tilephoto{aspect-ratio:16/10}.fp26-business-band{display:block}.fp26-business-band .fp26-action{margin-top:1rem}.fp26-pagephoto{aspect-ratio:16/8}.fp26-sectionhead{display:flex;align-items:start}.freshpick-market .fp26-sectionhead h2{margin-top:0}.fp26-sectionhead .fp26-textlink{flex-shrink:0;font-size:.76rem}}

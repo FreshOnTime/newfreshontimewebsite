@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PageBand, ReadingShelf } from '@/components/makers/Edition';
+import { EditorialHeader, GuideShelf } from '@/components/discovery/Editorial';
 import prisma from '@/lib/prisma';
 import { publicMakerWhere } from '@/lib/makers';
 
@@ -13,7 +13,7 @@ export default async function Stories({ searchParams }: { searchParams: Promise<
     select: { id: true, title: true, excerpt: true, slug: true, supplier: { select: { name: true, makerHandle: true } } },
   });
   return <>
-    <PageBand title="The food journal." intro="Kitchen notes, grower stories and things worth making time to cook." image="/images/editorial/recipe-ingredients.webp" alt="Ingredients laid out for cooking"/>
+    <div className="fp26-shell"><EditorialHeader eyebrow="FreshPick editorial" title="The food journal." description="Practical buying guides and stories about the food we eat."/><GuideShelf slugs={["a-table-for-two","the-price-on-the-jar","a-gift-worth-opening"]} heading="The good food guide"/></div>
     {rows.length > 0 && <section className="fp-section editorial-wrap"><div className="fp-section-head"><h2>From the makers</h2></div>
       <div className="fp-story-list">{rows.slice(0,20).map(row => <Link key={row.id} href={`/makers/${row.supplier?.makerHandle}/stories/${row.slug}`}>
         <span className="fp-kicker">{row.supplier?.name}</span><h3>{row.title}</h3><p>{row.excerpt}</p></Link>)}</div></section>}
@@ -21,6 +21,6 @@ export default async function Stories({ searchParams }: { searchParams: Promise<
       {page > 1 && <Link href={`/stories?page=${page - 1}`}>Previous</Link>}
       {rows.length > 20 && <Link href={`/stories?page=${page + 1}`}>Next</Link>}
     </nav>}
-    <div className="lux-journal-band"><ReadingShelf/></div><div className="editorial-wrap pb-10"><Link className="fp-inline" href="/blog">Browse the editorial archive</Link></div>
+    <div className="fp26-shell"><GuideShelf slugs={["the-bread-window","a-place-for-pepper","a-basket-of-greens"]} heading="Notes from the kitchen"/></div><div className="editorial-wrap pb-10"><Link className="fp-inline" href="/blog">Browse the editorial archive</Link></div>
   </>;
 }

@@ -41,9 +41,9 @@ export function Navbar() {
   }
 
   return (
-    <header className="heritage-header sticky top-0 z-50 border-b border-brand-green/10 bg-brand-cream/95 shadow-[0_8px_30px_-24px_rgba(16,46,30,.35)] backdrop-blur-xl supports-[backdrop-filter]:bg-brand-cream/85">
-      <div className="editorial-wrap max-[359px]:px-3 flex h-[72px] items-center justify-between gap-2 sm:gap-5 lg:h-[88px]">
-        <Link href="/" aria-label="FreshPick home" className="shrink-0"><Wordmark className="text-[26px] max-[359px]:text-[22px] sm:text-[30px] lg:text-[34px]" /></Link>
+    <header className="heritage-header sticky top-0 z-50 border-b border-brand-green/10 bg-[#fffdf9]">
+      <div className="editorial-wrap max-[359px]:px-3 flex h-[72px] items-center justify-between gap-2 sm:gap-5 lg:h-[76px]">
+        <Link href="/" aria-label="FreshPick home" className="shrink-0"><Wordmark className="text-[26px] max-[359px]:text-[22px] sm:text-[30px] lg:text-[30px]" /></Link>
           <nav aria-label="Discover FreshPick" className="hidden h-full items-center gap-4 2xl:gap-6 xl:flex">
             {links.map((link) => { const active = pathname === link.href || pathname.startsWith(`${link.href}/`); return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b text-[13px] font-medium tracking-normal transition-colors ${active ? "border-brand-green text-brand-green" : "border-transparent text-foreground hover:border-brand-green"}`}>{link.label}</Link>; })}
           </nav>
@@ -62,7 +62,7 @@ export function Navbar() {
             <button type="button" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="heritage-mobile-menu" onClick={() => { setMenuOpen((open) => !open); setSearchOpen(false); }} className={`${iconButton} xl:hidden`}>{menuOpen ? <X strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /> : <Menu strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" />}</button>
           </div>
       </div>
-      {searchOpen && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a dish, product, maker or place" className="h-12 min-w-0 flex-1 border-0 border-b border-border bg-transparent text-base outline-none focus:border-primary" /><button type="submit" className="editorial-button">Search</button></form></div>}
+      {searchOpen && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find food, a maker or a place" className="h-12 min-w-0 flex-1 border-0 border-b border-border bg-transparent text-base outline-none focus:border-primary" /><button type="submit" className="editorial-button">Search</button></form></div>}
       {menuOpen && <div id="heritage-mobile-menu" className="max-h-[75svh] overflow-y-auto border-t border-brand-green/10 bg-brand-cream/95 shadow-xl backdrop-blur-xl xl:hidden">
         <nav aria-label="Mobile discovery navigation" className="editorial-wrap grid gap-x-6 py-6 sm:grid-cols-2">{[...links,{label:"Saved picks",href:"/saved"},...moreLinks].map((link) => <Link key={link.href} href={link.href} aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined} className="flex min-h-12 items-center border-b border-border py-3 text-base font-semibold text-brand-green">{link.label}</Link>)}</nav>
       </div>}
