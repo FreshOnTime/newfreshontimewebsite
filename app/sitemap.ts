@@ -1,3 +1,4 @@
+import {foodDepartments,departmentPath} from '@/lib/foodDepartments';
 import {contentPath,publishedContentWhere} from '@/lib/discoveryContent';
 import { fieldNotes, notePath } from '@/lib/fieldNotes';
 import type { MetadataRoute } from 'next';
@@ -34,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   if (failedSources === 7) throw new Error('All dynamic sitemap sources unavailable');
   const managed = new Set(managedGuides.map(row=>row.slug));
-  const paths = [...content.map(c=>contentPath(c.kind,c.slug)),...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
+  const paths = ['/explore',...foodDepartments.map(d=>departmentPath(d.slug)),...content.map(c=>contentPath(c.kind,c.slug)),...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
     ...items.map(i=>makerItemPath(i.supplier.makerHandle,i.slug)), ...stories.map(s=>`/makers/${s.supplier?.makerHandle}/stories/${s.slug}`),
     ...journal.map(j=>`/blog/${encodeURIComponent(j.slug)}`), ...editorialGuides.filter(g=>!managed.has(g.slug)).map(g => guidePath(g.slug))];
   const dates=new Map(content.map(c=>[contentPath(c.kind,c.slug),c.updatedAt]));
