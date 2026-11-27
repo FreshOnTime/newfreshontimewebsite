@@ -46,8 +46,8 @@ export function breadcrumbJsonLd(items: readonly { name: string; path: string }[
 }
 
 /** Search/filter variants are useful to visitors but should not flood the index. */
-export function directoryMetadata(path:string,title:string,description:string,query:{q?:unknown;area?:unknown;town?:unknown;kind?:unknown;type?:unknown;scope?:unknown;page?:unknown}):Metadata {
- const filtered=[query.q,query.area,query.town,query.kind,query.type,query.scope].some(v=>Array.isArray(v)||typeof v==='string'&&v.trim()!=='');
+export function directoryMetadata(path:string,title:string,description:string,query:{q?:unknown;area?:unknown;town?:unknown;kind?:unknown;type?:unknown;scope?:unknown;specialty?:unknown;page?:unknown}):Metadata {
+ const filtered=[query.q,query.area,query.town,query.kind,query.type,query.scope,query.specialty].some(v=>Array.isArray(v)||typeof v==='string'&&v.trim()!=='');
  const page=typeof query.page==='string'&&/^\d{1,4}$/.test(query.page)?Math.max(1,Number(query.page)):1;
  return {...pageMetadata({path:!filtered&&page>1?path+'?page='+page:path,title:!filtered&&page>1?title+' — page '+page:title,description}),...(filtered?{robots:{index:false,follow:true,googleBot:{index:false,follow:true}}}:{})};
 }
