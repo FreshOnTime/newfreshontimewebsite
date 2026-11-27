@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import LiveStudio from './LiveStudio';
 import SpecialtyPicker from './SpecialtyPicker';
+import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
@@ -20,7 +21,7 @@ type Item = CatalogueItem & {
   batches: { id: string; readyAt: string; cutoff: string; soldOut: boolean }[];
 };
 type Story = {
-  id: string; slug: string; title: string; excerpt: string; content: string;
+  id: string; slug: string; title: string; excerpt: string; content: string; category?:string|null;
   published: boolean; makerItems: { itemId: string }[];
 };
 type Studio = { supplier: Profile; items: Item[]; stories: Story[]; catalogue: CatalogueItem[] };
@@ -138,7 +139,7 @@ export default function MakerStudio() {
     const element = event.currentTarget;
     const form = new FormData(element);
     void save(() => ({
-      action: 'story', id: story?.id, title: form.get('title'), excerpt: form.get('excerpt'),
+      action: 'story', id: story?.id, category:form.get('category')||undefined, title: form.get('title'), excerpt: form.get('excerpt'),
       content: form.get('content'), itemIds: form.getAll('itemIds'), published: form.has('published'),
     }), 'Story saved.', () => { element.reset(); setStoryEdit(''); });
   }
@@ -246,6 +247,7 @@ export default function MakerStudio() {
         <h2 className={heading}>{story ? 'Edit article' : 'Write an article'}</h2>
         <form key={story?.id || 'new-story'} onSubmit={submitStory} className="grid gap-4">
           <label className={label}>Title<input name="title" className={fields} defaultValue={story?.title || ''} required minLength={3} maxLength={150} /></label>
+          <label className={label}>Article topic<select name="category" className={fields} defaultValue={story?.category&&businessArticleTopics.some(t=>t===story.category)?story.category:""}><option value="">Choose a topic (optional)</option>{businessArticleTopics.map(t=><option key={t}>{t}</option>)}</select></label>
           <label className={label}>Short summary<textarea name="excerpt" className={fields} rows={2} defaultValue={story?.excerpt || ''} required minLength={3} maxLength={300} /></label>
           <label className={label}>Article body<textarea name="content" className={fields} rows={7} defaultValue={story?.content || ''} required minLength={3} maxLength={18000} /></label>
           {items.length > 0 && <fieldset className="space-y-2">
@@ -261,7 +263,7 @@ export default function MakerStudio() {
           </div>
         </form>
         {stories.map(entry => <div key={entry.id} className="flex flex-wrap justify-between gap-3 border-t border-border pt-3 text-sm">
-          <span>{entry.title} · {entry.published ? 'Published' : 'Draft'}</span>
+          <span>{entry.title}{entry.category?' · '+entry.category:''} · {entry.published ? 'Published' : 'Draft'}</span>
           <div className="flex gap-4">
             {entry.published && supplier.makerPublished && <Link href={`${profilePath}/stories/${entry.slug}`} className={plain}>View</Link>}
             <button type="button" disabled={busy} onClick={() => setStoryEdit(entry.id)} className={plain}>Edit<span className="sr-only"> {entry.title}</span></button>
