@@ -100,23 +100,23 @@ async function main(){
               assert.equal(await page.getByRole('heading',{name:'Ministry of Crab',exact:true}).count(),0);
             }
             if(name==='food-products'){
-              await page.getByLabel('Food category',{exact:true}).selectOption('Drinks');
+              await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Drinks');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
               await page.waitForURL(url=>url.pathname==='/food-products'&&url.searchParams.get('kind')==='Drinks');
-              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Drinks');
+              assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Drinks');
             }
             if(name==='gifting'){assert.equal(await page.getByText('Make the occasion special.',{exact:true}).count(),0);assert(await page.getByRole('heading',{name:'Gift ideas from local businesses'}).isVisible());}
-            if(name==='discovery'){await page.getByLabel('What are you looking for?',{exact:true}).selectOption('dining');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/eat-drink');}
+            if(name==='discovery'){await page.getByRole('combobox',{name:'What are you looking for?',exact:true}).selectOption('dining');await page.locator('.fp26-filters input[name=q]').fill('coffee');await page.locator('.fp26-filters input[name=area]').fill('Colombo');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/eat-drink'&&url.searchParams.get('q')==='coffee'&&url.searchParams.get('area')==='Colombo');}
             if(name==='directory'){
-              await page.getByLabel('Food category',{exact:true}).selectOption('Pantry');
-              await page.getByLabel('Business type',{exact:true}).selectOption('food_brand');
+              await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Pantry');
+              await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
               await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand');
-              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Pantry');
-              assert.equal(await page.getByLabel('Business type',{exact:true}).inputValue(),'food_brand');
+              assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Pantry');
+              assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).inputValue(),'food_brand');
               await page.getByRole('link',{name:'Clear filters',exact:true}).click();
               await page.waitForURL(url=>url.pathname==='/makers'&&!url.search);
-              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'');
+              assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
         }
