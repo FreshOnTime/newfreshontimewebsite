@@ -65,6 +65,38 @@ it('indexes published maker profiles, items, stories and editorial articles', as
   }));
 });
 
+describe('sitemap database failure isolation', () => {
+  const sources = [
+    prisma.supplier.findMany, prisma.makerItem.findMany, prisma.blog.findMany,
+    prisma.discoveryProspect.findMany, prisma.discoveryContent.findMany,
+  ] as jest.Mock[];
+  beforeEach(() => sources.forEach(mock => mock.mockReset().mockResolvedValue([])));
+  afterEach(() => {
+    sources.forEach(mock => mock.mockReset());
+    jest.restoreAllMocks();
+  });
+
+  it('preserves healthy public URLs when one source rejects and another throws synchronously', async () => {
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (prisma.supplier.findMany as jest.Mock).mockResolvedValue([{makerHandle:'healthy-baker'}]);
+    (prisma.makerItem.findMany as jest.Mock).mockRejectedValue(new Error('missing table'));
+    (prisma.discoveryContent.findMany as jest.Mock).mockImplementation(() => { throw new Error('unavailable'); });
+    (prisma.blog.findMany as jest.Mock).mockReturnValue([]);
+    const urls = (await sitemap()).map(page => page.url);
+    expect(urls).toContain(absoluteUrl('/'));
+    expect(urls).toContain(absoluteUrl('/makers/healthy-baker'));
+    expect(log).toHaveBeenCalledWith('Sitemap source unavailable:', 'items');
+    expect(log).toHaveBeenCalledWith('Sitemap source unavailable:', 'discovery content');
+  });
+
+  it('rejects a total database outage instead of emitting a misleading sitemap', async () => {
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    sources.forEach(mock => mock.mockRejectedValue(new Error('database unavailable')));
+    await expect(sitemap()).rejects.toThrow('All dynamic sitemap sources unavailable');
+    expect(log).toHaveBeenCalledTimes(7);
+  });
+});
+
 it.each(['page=-1', 'page=0', 'page=NaN', 'page=1.5', 'page=100001', 'limit=0', 'limit=-1', 'limit=invalid', 'limit=51'])('rejects an invalid public journal query: %s', async query => {
   const response = await GET(new Request(`https://freshpick.lk/api/blogs?${query}`) as never);
   expect(response.status).toBe(400);
