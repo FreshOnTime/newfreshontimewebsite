@@ -3,7 +3,7 @@ import { ArrowRight, Compass, Home, ShoppingBasket } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-[65vh] items-center justify-center bg-background px-5 py-14 md:py-20">
+    <div className="flex min-h-[65vh] items-center justify-center bg-background px-5 py-14 md:py-20">
       <section aria-labelledby="not-found-title" className="w-full max-w-xl rounded-3xl border border-border bg-card p-7 text-center shadow-sm sm:p-12">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-brand-green">
           <ShoppingBasket strokeWidth={1.5} aria-hidden="true" className="h-7 w-7" />
@@ -25,6 +25,6 @@ export default function NotFound() {
           ))}
         </nav>
       </section>
-    </main>
+    </div>
   );
 }
