@@ -24,21 +24,21 @@ export default async function Home(){
  ]);
  return <div className="fp26-home fp-discovery-home"><div className="fp26-shell">
  <section className="fp-explore-intro" aria-labelledby="home-headline"><p className="fp26-label">{config.eyebrow}</p><h1 id="home-headline">{config.title}</h1><p className="fp26-deck">{config.description}</p><ExploreSearch/></section>
- {config.sections.filter(section=>section.enabled).map(section=>{switch(section.id){
- case 'paths': return <Fragment key={section.id}><HubPaths title={section.title}/></Fragment>;
- case 'dining': return <Fragment key={section.id}><EditorialPicks group="dining" feature heading={section.title}/></Fragment>;
- case 'profiles': return <Fragment key={section.id}>{(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}</Fragment>;
- case 'atlas': return <Fragment key={section.id}><AtlasShelf title={section.title}/></Fragment>;
- case 'culture': return <Fragment key={section.id}><CultureShelf title={section.title}/></Fragment>;
- case 'connections': return <Fragment key={section.id}><ConnectShelf title={section.title}/></Fragment>;
- case 'occasions': return <Fragment key={section.id}><OccasionShelf title={section.title}/></Fragment>;
- case 'brands': return <Fragment key={section.id}><EditorialPicks group="makers" limit={3} heading={section.title}/></Fragment>;
- case 'journal': return <Fragment key={section.id}><DiscoveryChapters title={section.title}/></Fragment>;
- case 'saved': return <Fragment key={section.id}><ReturnShelf title={section.title}/></Fragment>;
- case 'gifts': return <Fragment key={section.id}><GiftCollectionLink title={section.title}/></Fragment>;
- case 'businessStories': return <Fragment key={section.id}>{stories.length>0&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/stories" label="Read the journal"/><div className="fp26-resultgrid">{stories.map(story=><article className="fp26-index" key={story.id}><p className="fp26-label">{story.supplier?.name}</p><h3><Link href={'/makers/'+story.supplier?.makerHandle+'/stories/'+story.slug}>{story.title}</Link></h3><p>{story.excerpt}</p></article>)}</div></section>}</Fragment>;
- case 'business': return <Fragment key={section.id}><section className="fp26-business-band"><div><p className="fp26-label">For restaurants & food businesses</p><h2>{section.title}</h2><p>Create a public profile, showcase your menu or products and publish your own articles. Free to apply.</p></div><Link className="fp26-action" href="/for-businesses">List your business <ArrowUpRight size={18}/></Link></section></Fragment>;
- case 'guides': return <GuideShelfFromCms key={section.id} title={section.title}/>;
+ {config.sections.filter(section=>section.enabled).map(section=>{const intro=section.intro?<p className="fp26-meta mb-4">{section.intro}</p>:null;switch(section.id){
+ case 'paths': return <Fragment key={section.id}>{intro}<HubPaths title={section.title}/></Fragment>;
+ case 'dining': return <Fragment key={section.id}>{intro}<EditorialPicks group="dining" feature heading={section.title}/></Fragment>;
+ case 'profiles': return <Fragment key={section.id}>{intro}{(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}</Fragment>;
+ case 'atlas': return <Fragment key={section.id}>{intro}<AtlasShelf title={section.title}/></Fragment>;
+ case 'culture': return <Fragment key={section.id}>{intro}<CultureShelf title={section.title}/></Fragment>;
+ case 'connections': return <Fragment key={section.id}>{intro}<ConnectShelf title={section.title}/></Fragment>;
+ case 'occasions': return <Fragment key={section.id}>{intro}<OccasionShelf title={section.title}/></Fragment>;
+ case 'brands': return <Fragment key={section.id}>{intro}<EditorialPicks group="makers" limit={3} heading={section.title}/></Fragment>;
+ case 'journal': return <Fragment key={section.id}>{intro}<DiscoveryChapters title={section.title}/></Fragment>;
+ case 'saved': return <Fragment key={section.id}>{intro}<ReturnShelf title={section.title}/></Fragment>;
+ case 'gifts': return <Fragment key={section.id}>{intro}<GiftCollectionLink title={section.title}/></Fragment>;
+ case 'businessStories': return <Fragment key={section.id}>{intro}{stories.length>0&&<section className="fp26-guide-section"><SectionHeading title={section.title} href="/stories" label="Read the journal"/><div className="fp26-resultgrid">{stories.map(story=><article className="fp26-index" key={story.id}><p className="fp26-label">{story.supplier?.name}</p><h3><Link href={'/makers/'+story.supplier?.makerHandle+'/stories/'+story.slug}>{story.title}</Link></h3><p>{story.excerpt}</p></article>)}</div></section>}</Fragment>;
+ case 'business': return <Fragment key={section.id}>{intro}<section className="fp26-business-band"><div><p className="fp26-label">For restaurants & food businesses</p><h2>{section.title}</h2><p>Create a public profile, showcase your menu or products and publish your own articles. Free to apply.</p></div><Link className="fp26-action" href="/for-businesses">List your business <ArrowUpRight size={18}/></Link></section></Fragment>;
+ case 'guides': return <Fragment key={section.id}>{intro}<GuideShelfFromCms title={section.title}/></Fragment>;
  }})}
  </div></div>;
 }

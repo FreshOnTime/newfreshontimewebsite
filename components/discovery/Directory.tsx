@@ -10,6 +10,7 @@ import prisma from '@/lib/prisma';
 import {publicMakerWhere,makerKinds} from '@/lib/makers';
 import {EditorialPicks,OccasionShelf,FoodBrandTabs} from './Curated';
 import {DishCards} from './Hub';
+import {matchGuides} from '@/lib/guideSearch';
 import {GuideCards} from './DiscoveryGuides';
 import {getPublishedDishes,readPublishedContent} from '@/lib/discoveryContent';
 import {matchDishes} from '@/lib/foodAtlas';
@@ -42,7 +43,7 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const unavailable=[prospectResult,makerResult,itemResult,storyResult].some(r=>r.status==='rejected');
  for(const result of [prospectResult,makerResult,itemResult,storyResult])if(result.status==='rejected')console.error('Discovery query failed',result.reason);
  const atlasMatches=mode==='all'&&!articlesOnly&&page===1&&q&&!area?matchDishes(q,await getPublishedDishes().catch(error=>{console.error('Atlas search unavailable',error);return []})):[];
- const guideMatches=mode==='all'&&page===1&&!area&&(q||articlesOnly)?(await readPublishedContent('guide').catch(error=>{console.error('Guide search unavailable',error);return []})).filter(g=>[g.title,g.summary,g.category,...g.aliases].some(v=>v.toLowerCase().includes(q.toLowerCase()))):[];
+ const guideMatches=mode==='all'&&page===1&&(q||articlesOnly)?matchGuides(await readPublishedContent('guide').catch(error=>{console.error('Guide search unavailable',error);return []}),q,area):[];
  const hasResults=prospects.length+makers.length+items.length+stories.length+notes.length+atlasMatches.length+guideMatches.length>0,more=[prospects,makers,items,stories].some(r=>r.length>24);
  const href=(extra:Record<string,string>)=>path+'?'+new URLSearchParams({...(q?{q}:{}),...(area?{area}:{}),...(kind?{kind}:{}),...(type?{type}:{}),...(articlesOnly?{scope:'articles'}:{}),...extra});
  const filtered=!!(q||area||kind||type||articlesOnly||page>1);

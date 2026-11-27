@@ -6,7 +6,7 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
@@ -53,7 +53,7 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','traditions','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
+          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
@@ -195,18 +195,27 @@ async function main(){
         await page.getByRole('heading',{name:'Food & Culture CMS'}).waitFor({timeout:20000});
         await page.getByRole('button',{name:/Kottu/}).waitFor();
         await capture(page,'admin-discovery-cms-390');
-        const headers={Origin:new URL(base).origin};
+        const write=async(url,method,data)=>page.evaluate(async({url,method,data})=>{const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return {status:r.status,ok:r.ok,body:await r.json().catch(()=>null)};},{url,method,data});
         const content={kind:'event',slug:'visual-cms-lifecycle',title:'CMS lifecycle fixture',category:'Workshop',summary:'Private draft test',body:'Isolated test',aliases:[],variations:[],relatedDishes:[],searchTerm:'',sourceUrl:'https://example.org/fixture',sourceName:'Test fixture',location:'Test venue',startsAt:new Date(Date.now()+86400000).toISOString(),endsAt:new Date(Date.now()+90000000).toISOString(),published:false,confirmed:false};
-        const created=await context.request.post(endpoint,{headers,data:content});assert.equal(created.status(),201);
-        const draft=(await created.json()).record;
+        const created=await write(endpoint,'POST',content);assert.equal(created.status,201,JSON.stringify(created.body));
+        const draft=created.body.record;
         const publicUrl=new URL('/experiences/events/'+content.slug,base).href;
         assert.equal((await context.request.get(publicUrl)).status(),404,'Draft must not be public');
-        const published=await context.request.patch(endpoint,{headers,data:{id:draft.id,version:draft.updatedAt,content:{...content,published:true,confirmed:true}}});assert(published.ok(),'Publish failed');
-        const live=(await published.json()).record;
+        const published=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content:{...content,published:true,confirmed:true}});assert(published.ok,'Publish failed: '+JSON.stringify(published.body));
+        const live=published.body.record;
         assert.equal((await context.request.get(publicUrl)).status(),200,'Published event must be public');
-        const stale=await context.request.patch(endpoint,{headers,data:{id:draft.id,version:draft.updatedAt,content}});assert.equal(stale.status(),409);
-        const hidden=await context.request.patch(endpoint,{headers,data:{id:live.id,version:live.updatedAt,content}});assert(hidden.ok(),'Unpublish failed');
+        const stale=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content});assert.equal(stale.status,409);
+        const hidden=await write(endpoint,'PATCH',{id:live.id,version:live.updatedAt,content});assert(hidden.ok,'Unpublish failed: '+JSON.stringify(hidden.body));
         assert.equal((await context.request.get(publicUrl)).status(),404,'Unpublished event must be hidden');
+        const pageEndpoint=new URL('/api/admin/site-pages',base).href;
+        const pageData=await page.evaluate(async url=>(await (await fetch(url,{credentials:'same-origin'})).json()),pageEndpoint);
+        const initial=pageData.pages.find(p=>p.key==='home');
+        const changed={...initial.config,title:'CMS draft fixture headline'};
+        const saved=await write(pageEndpoint,'PATCH',{key:'home',version:initial.version,config:changed,action:'draft'});assert(saved.ok,'Page draft failed: '+JSON.stringify(saved.body));
+        const draftHtml=await (await context.request.get(new URL('/',base).href)).text();assert(!draftHtml.includes('CMS draft fixture headline'),'Draft must not be public');
+        const publishedPage=await write(pageEndpoint,'PATCH',{key:'home',version:saved.body.page.version,config:changed,action:'publish'});assert(publishedPage.ok,'Page publish failed');
+        const liveHtml=await (await context.request.get(new URL('/',base).href)).text();assert(liveHtml.includes('CMS draft fixture headline'),'Published headline missing');
+        const restored=await write(pageEndpoint,'PATCH',{key:'home',version:publishedPage.body.page.version,config:initial.config,action:'publish'});assert(restored.ok,'Restore fixture page failed');
       }catch(error){errors.push('CMS lifecycle: '+String(error));}finally{await context.close();}
     }
     const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});

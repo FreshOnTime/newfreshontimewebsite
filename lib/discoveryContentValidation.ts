@@ -11,6 +11,6 @@ export const contentInput=z.object({
  if(v.kind==='guide'&&!['Comparison','Meal ideas','Place guide','Food guide'].includes(v.category))issue('category','Choose Comparison, Meal ideas, Place guide or Food guide');
  if(v.kind!=='event'&&(v.startsAt||v.endsAt))issue('startsAt','Only events have dates');
  if(v.startsAt&&v.endsAt&&Date.parse(v.endsAt)<=Date.parse(v.startsAt))issue('endsAt','End must be after start');
- if(v.published){if(!v.confirmed)issue('confirmed','Confirm source accuracy and publication rights');if(!v.sourceUrl||!v.sourceName)issue('sourceUrl','Published content requires a source and source name');if(v.kind==='event'&&(!v.startsAt||!v.endsAt||!v.location))issue('startsAt','Published events need start, end and location');}
+ if(v.published){if(v.kind==='guide'&&v.category==='Place guide'&&!v.location)issue('location','Published place guides need an area');if(!v.confirmed)issue('confirmed','Confirm source accuracy and publication rights');if(!v.sourceUrl||!v.sourceName)issue('sourceUrl','Published content requires a source and source name');if(v.kind==='event'&&(!v.startsAt||!v.endsAt||!v.location))issue('startsAt','Published events need start, end and location');}
 });
 export type ContentInput=z.infer<typeof contentInput>;
