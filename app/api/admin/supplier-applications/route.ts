@@ -7,7 +7,7 @@ import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
 
 const statuses = ['pending','approved','rejected'] as const;
 const query = z.object({ page: z.coerce.number().int().min(1).max(100000).default(1), status: z.enum(statuses).optional() });
-const update = z.object({ id: z.string().min(1).max(100), version: z.number().int().min(0), status: z.enum(statuses), notes: z.string().trim().max(5000).default('') });
+const update = z.object({ id: z.string().min(1).max(100), version: z.number().int().min(0), status: z.enum(statuses), confirmed:z.boolean().optional(), notes: z.string().trim().max(5000).default('') });
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
 
 function proposedProducts(notes: string | null) {
@@ -32,14 +32,14 @@ export const GET = requireAdminSimple(async request => {
         select: {
           id: true, name: true, contactName: true, email: true, phone: true, city: true,businessType:true,businessSpecialties:true,
           notes: true, applicationStatus: true, reviewNotes: true,
-          reviewVersion: true, reviewedAt: true, createdAt: true,
+          reviewVersion: true, reviewedAt: true, createdAt: true, status:true,makerPublished:true,products:{select:{isEmailVerified:true,isBanned:true}},
         },
       }),
       prisma.supplier.count({ where }),
     ]);
     return json({
-      applications: applications.map(application => ({
-        ...application,
+      applications: applications.map(({products,...application}) => ({
+        ...application, linkedAccounts:products.length, verifiedAccounts:products.filter(u=>u.isEmailVerified&&!u.isBanned).length,
         proposedProducts: proposedProducts(application.notes),
       })),
       total,
@@ -55,7 +55,7 @@ export const GET = requireAdminSimple(async request => {
 
 export const PATCH = requireAdminSimple(async request => {
   try {
-    const { id, version, status, notes } = update.parse(await request.json());
+    const { id, version, status, notes,confirmed } = update.parse(await request.json());
     const outcome = await prisma.$transaction(async tx => {
       const current = await tx.supplier.findUnique({
         where: { id },
@@ -63,6 +63,7 @@ export const PATCH = requireAdminSimple(async request => {
       });
       if (!current || current.reviewVersion !== version) return { conflict: true as const };
 
+      if(status==='approved'&&current.applicationStatus!=='approved'&&(!confirmed||!notes.trim()))return {conflict:false as const,verificationRequired:true as const};
       const result = await tx.supplier.updateMany({
         where: { id, reviewVersion: version },
         data: {
@@ -71,6 +72,7 @@ export const PATCH = requireAdminSimple(async request => {
           reviewedAt: new Date(),
           reviewVersion: { increment: 1 },
           status: status === 'approved' ? 'active' : 'inactive',
+          ...(status!=='approved'?{makerPublished:false}:{}),
         },
       });
       if (result.count !== 1) return { conflict: true as const };
@@ -101,6 +103,7 @@ export const PATCH = requireAdminSimple(async request => {
       return { conflict: false as const };
     });
 
+    if ('verificationRequired' in outcome&&outcome.verificationRequired)return json({error:'Confirm the business identity and contact details and record review evidence before approving.'},400);
     if (outcome.conflict) return json({ error: 'This application changed or was removed. Refresh before saving.' }, 409);
     await logAuditAction(request.user!.userId, 'review-application', 'supplier', id, undefined, { applicationStatus: status }, request);
     return json({ success: true });

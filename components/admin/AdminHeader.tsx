@@ -52,14 +52,14 @@ export function AdminHeader() {
             {/* User menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" aria-label="Admin account and settings" className="flex items-center space-x-2">
+                <Button variant="ghost" aria-label="Admin account and settings" className="flex items-center space-x-2 bg-[#d9edc7] text-[#21452f] hover:bg-[#cde5b8]">
                   <User className="h-5 w-5" aria-hidden="true" />
                   <span className="hidden md:block">
-                    {user?.firstName} {user?.lastName}
+                    {user?.firstName} {user?.lastName} · Admin
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-24px)]">
                 <DropdownMenuItem className="text-sm text-muted-foreground">
                   {user?.email}
                 </DropdownMenuItem>

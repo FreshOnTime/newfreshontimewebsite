@@ -23,6 +23,7 @@ interface Supplier {
   email: string;
   phone: string;
   status: 'active' | 'inactive';
+  applicationStatus?:string;makerPublished?:boolean;reviewedAt?:string|null;
   createdAt: string;
 }
 
@@ -64,24 +65,23 @@ export function SuppliersPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-normal text-foreground">Suppliers</h1>
-          <p className="text-muted-foreground mt-2">Manage supplier records</p>
+          <h1 className="text-3xl font-normal text-foreground">Business directory</h1>
+          <p className="text-muted-foreground mt-2">Manage owner records, approval and public page visibility. Inactive means publishing is disabled.</p>
         </div>
         <div className="flex flex-wrap gap-3">
         <Button variant="outline" onClick={fetchItems} disabled={loading}><RefreshCw className="mr-2 h-4 w-4" />Refresh</Button>
         <Button variant="outline" asChild><Link href="/admin/supplier-applications">Review applications</Link></Button>
-        <Button variant="outline" asChild><Link href="/admin/supplier-uploads">Review supplier uploads</Link></Button>
         <Button onClick={() => { setEditing(null); setIsDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Supplier
+          Add administrative record
         </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Supplier List</CardTitle>
-          <CardDescription>View and manage suppliers</CardDescription>
+          <CardTitle>Business records</CardTitle>
+          <CardDescription>Approved, pending and historical business records</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2 mb-6">
@@ -102,7 +102,7 @@ export function SuppliersPage() {
                     <TableHead>Contact</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Approval &amp; visibility</TableHead>
                     <TableHead className="w-[70px]" />
                   </TableRow>
                 </TableHeader>
@@ -114,7 +114,7 @@ export function SuppliersPage() {
                       <TableCell>{s.email}</TableCell>
                       <TableCell>{s.phone}</TableCell>
                       <TableCell>
-                        <Badge variant={s.status === 'active' ? 'secondary' : 'outline'}>{s.status}</Badge>
+                        <div className="grid gap-1"><Badge variant={s.applicationStatus==='approved'?'secondary':'outline'}>{s.applicationStatus==='pending'?'Awaiting review':s.applicationStatus||'Unknown'}</Badge><span className="text-xs text-muted-foreground">{s.status==='active'&&s.applicationStatus==='approved'?(s.makerPublished?'Published':'Private page'):'Publishing disabled'}</span>{!s.reviewedAt&&<span className="text-xs text-muted-foreground">No recorded review</span>}</div>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

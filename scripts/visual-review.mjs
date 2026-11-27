@@ -95,7 +95,7 @@ async function main(){
               assert.equal(await page.locator('[data-home-section="culture"]').count(),0);
               if(!phone&&width>=1440){const journal=page.getByRole('button',{name:'Journal and food culture'});await journal.click();await page.getByRole('menuitem',{name:'Food guides & comparisons'}).waitFor();await page.keyboard.press('Escape');}
 
-              assert(await page.locator('.fp-dish-black-card').count()>0);
+              assert(await page.locator('.fp-dish-black-card').count()>0);assert.equal(await page.locator('.fp-dish-black-card img').count(),0);
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
@@ -139,7 +139,7 @@ async function main(){
               assert(await page.locator('#main-content').getByRole('heading',{name:'Kottu',exact:true}).isVisible());
             }
             if(name==='atlas-dish'){
-              assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
+              assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());assert.equal(await page.locator('.fp-atlas-detail-photo').count(),0);
               await page.getByRole('button',{name:'Save',exact:true}).click();
               assert.equal(await page.getByRole('button',{name:'Saved',exact:true}).getAttribute('aria-pressed'),'true');
               const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('freshpick:saved-maker-picks')||'[]'));
@@ -281,7 +281,7 @@ async function main(){
         const page=await context.newPage();
         await ready(page,new URL('/admin',base).href);
         await page.getByRole('heading',{name:'Discovery control centre.'}).waitFor({timeout:20000});
-        await page.getByRole('heading',{name:'Account & delivery health'}).waitFor();
+        await page.getByText('Account & delivery health',{exact:true}).waitFor();
         await capture(page,'admin-discovery-overview-390');
         await ready(page,new URL('/admin/discovery-content',base).href);
         await page.getByRole('heading',{name:'Food & Culture CMS'}).waitFor({timeout:20000});
