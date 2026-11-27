@@ -1,180 +1,47 @@
 'use client';
 
-import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Bell, Check, AlertCircle, Clock } from 'lucide-react';
-import { toast } from 'sonner';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
+import {Bell,Check,RefreshCw,ArrowUpRight} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {DropdownMenu,DropdownMenuContent,DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import {useAuth} from '@/contexts/AuthContext';
+import {readWorkspace} from '@/lib/api/workspace-read';
+import {authenticatedApiFetch} from '@/lib/api/authenticated-fetch';
+import {safeNotificationLink} from '@/lib/notificationInput';
 
-type Activity = {
-  _id: string;
-  type: string; // e.g., order_created, product_updated
-  description: string;
-  timestamp: string; // ISO
-  userName?: string;
-  orderId?: string;
-  productId?: string;
-};
-
-const LAST_SEEN_KEY = 'admin.notifications.lastSeen';
-
-function timeAgo(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = Math.max(0, now.getTime() - d.getTime());
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+type Notice={_id:string;title:string;message:string;isRead:boolean;link:string|null;createdAt:string};
+type Inbox={success:boolean;data:Notice[];unreadCount:number};
+export function NotificationsBell(){
+ const {user}=useAuth();const id=user?._id;
+ return id?<InboxBell key={id}/>:null;
 }
-
-export function NotificationsBell() {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [items, setItems] = useState<Activity[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const lastSeenRef = useRef<number | (() => number)>(() => {
-    const raw = typeof window !== 'undefined' ? window.localStorage.getItem(LAST_SEEN_KEY) : null;
-    return raw ? Number(raw) : 0;
-  });
-  // ref initializer workaround for SSR
-  if (typeof lastSeenRef.current === 'function') {
-    const fn = lastSeenRef.current as unknown as () => number;
-    lastSeenRef.current = fn();
-  }
-
-  const unreadCount = useMemo(() => {
-    const lastSeen = Number(lastSeenRef.current || 0);
-    return items.filter((i) => new Date(i.timestamp).getTime() > lastSeen).length;
-  }, [items]);
-
-  // Fetch activities
-  const fetchItems = async (signal?: AbortSignal) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authenticatedApiFetch(`/api/admin/activities?limit=10`, { signal });
-      if (!res.ok) throw new Error(`Failed (${res.status})`);
-      const data = await res.json();
-      const incoming: Activity[] = data.activities ?? [];
-
-      // Toast if there are brand new items since lastSeen
-      const lastSeen = Number(lastSeenRef.current || 0);
-      const newly = incoming.filter((i) => new Date(i.timestamp).getTime() > lastSeen);
-      if (items.length && newly.length > 0) {
-        const first = newly[0];
-        toast.info(`New: ${first.description}`, { description: first.userName ? `by ${first.userName}` : undefined });
-      }
-      setItems(incoming);
-    } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'name' in e && (e as { name?: string }).name === 'AbortError') return;
-      setError(e instanceof Error ? e.message : 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const ac = new AbortController();
-    fetchItems(ac.signal);
-    const id = setInterval(() => fetchItems(ac.signal), 30000);
-    return () => {
-      ac.abort();
-      clearInterval(id);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Mark notifications as read when opening the dropdown
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (next) {
-      const now = Date.now();
-      lastSeenRef.current = now;
-      try { localStorage.setItem(LAST_SEEN_KEY, String(now)); } catch { /* noop */ }
-    }
-  };
-
-  const markAllRead = () => {
-    const now = Date.now();
-    lastSeenRef.current = now;
-    try { localStorage.setItem(LAST_SEEN_KEY, String(now)); } catch { /* noop */ }
-  };
-
-  const badgeFor = (t: string) => {
-    const v = t.includes('order') ? 'secondary' : t.includes('product') ? 'outline' : 'default';
-    return <Badge variant={v}>{t.replaceAll('_', ' ')}</Badge>;
-  };
-
-  return (
-    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] h-4 min-w-4 px-1 ring-2 ring-white">
-              {unreadCount}
-            </span>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-96 p-0">
-        <DropdownMenuLabel className="flex items-center justify-between py-2">
-          <span>Notifications</span>
-          <Button variant="ghost" size="sm" onClick={markAllRead} className="gap-1">
-            <Check className="h-4 w-4" /> Mark all read
-          </Button>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {loading && (
-          <div className="p-4 text-sm text-muted-foreground flex items-center gap-2">
-            <Clock className="h-4 w-4 animate-spin" /> Loading…
-          </div>
-        )}
-        {error && (
-          <div className="p-4 text-sm text-red-600 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" /> {error}
-          </div>
-        )}
-        {!loading && !error && items.length === 0 && (
-          <div className="p-4 text-sm text-muted-foreground">No notifications</div>
-        )}
-        {!loading && !error && items.length > 0 && (
-          <div className="max-h-96 overflow-auto py-1">
-            {items.map((n) => (
-              <DropdownMenuItem key={n._id} className="flex items-start gap-2 py-3 px-3">
-                <div className="mt-0.5">{badgeFor(n.type)}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-foreground truncate">{n.description}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {n.userName ? `${n.userName} · ` : ''}{timeAgo(n.timestamp)}
-                  </div>
-                </div>
-              </DropdownMenuItem>
-            ))}
-          </div>
-        )}
-        <DropdownMenuSeparator />
-        <div className="p-2">
-          <a href="/admin/audit-logs" className="block w-full text-center text-sm text-brand-green hover:underline">
-            View all activity
-          </a>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+function InboxBell(){
+ const [open,setOpen]=useState(false),[data,setData]=useState<Inbox>(),[loading,setLoading]=useState(false),[error,setError]=useState(''),[saving,setSaving]=useState(false);
+ const active=useRef<AbortController|null>(null);const mounted=useRef(false);const writing=useRef(false);
+ const reload=useCallback(async()=>{
+  if(active.current||writing.current||!mounted.current)return;
+  const c=new AbortController();active.current=c;setLoading(true);setError('');
+  try{const inbox=await readWorkspace<Inbox>('/api/notifications?limit=10',c.signal);if(!inbox.success)throw Error('Unable to load notifications.');if(!c.signal.aborted)setData(inbox);}
+  catch(e){if(!c.signal.aborted)setError(e instanceof Error?e.message:'Unable to load notifications.');}
+  finally{if(active.current===c){active.current=null;if(mounted.current)setLoading(false);}}
+ },[]);
+ useEffect(()=>{mounted.current=true;void reload();const timer=setInterval(()=>{if(document.visibilityState==='visible')void reload();},60000);const visible=()=>{if(document.visibilityState==='visible')void reload();};document.addEventListener('visibilitychange',visible);return()=>{mounted.current=false;active.current?.abort();active.current=null;clearInterval(timer);document.removeEventListener('visibilitychange',visible);};},[reload]);
+ async function markRead(ids:string[]){
+  if(!ids.length||writing.current)return;
+  writing.current=true;setSaving(true);setError('');
+  active.current?.abort();active.current=null;setLoading(false);
+  try{const r=await authenticatedApiFetch('/api/notifications',{method:'PATCH',body:JSON.stringify({ids})});if(!r.ok||!(await r.json()).success)throw Error('Unable to mark notifications read.');if(mounted.current)setData(old=>old?{...old,unreadCount:Math.max(0,old.unreadCount-old.data.filter(n=>!n.isRead&&ids.includes(n._id)).length),data:old.data.map(n=>ids.includes(n._id)?{...n,isRead:true}:n)}:old);}
+  catch(e){if(mounted.current)setError(e instanceof Error?e.message:'Unable to mark notifications read.');}
+  finally{writing.current=false;if(mounted.current)setSaving(false);}
+ }
+ const unread=data?.unreadCount??0;
+ return <DropdownMenu open={open} onOpenChange={value=>{setOpen(value);if(value)void reload();}}><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="relative min-h-11 min-w-11" aria-label={data? `Notifications, ${unread} unread`:'Notifications'}><Bell size={21}/>{unread>0&&<span className="absolute right-0 top-0 rounded-full bg-[#c4e3a7] px-1.5 text-xs font-bold text-[#21452f]">{unread>99?'99+':unread}</span>}</Button></DropdownMenuTrigger>
+ <DropdownMenuContent align="end" className="w-[360px] max-w-[calc(100vw-24px)] p-0 rounded-xl shadow-lg"><div className="bg-[#e4f2d7] px-4 py-3 text-[#21452f]"><div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Notifications</h2><Button variant="ghost" size="icon" aria-label="Refresh notifications" disabled={loading||saving} onClick={()=>void reload()}><RefreshCw size={16} className={loading?'animate-spin':''}/></Button></div><p className="text-xs">{data?`${unread} unread in your account`:'Account updates'}</p></div>
+ {error&&<p role="alert" className="p-3 text-sm text-destructive">{error}</p>}
+ {loading&&!data&&<p role="status" className="p-4 text-sm text-muted-foreground">Loading notifications…</p>}
+ {data&&!data.data.length&&<p className="p-4 text-sm text-muted-foreground">No notifications yet. Business applications and account updates appear here.</p>}
+ <div className="max-h-[50vh] overflow-y-auto divide-y">{data?.data.map(n=>{const href=safeNotificationLink(n.link);return <article key={n._id} className={`p-3 break-words ${n.isRead?'':'bg-[#f1f8e9]'}`}><h3 className="text-sm font-semibold">{n.title}</h3><p className="line-clamp-3 text-xs leading-relaxed mt-1">{n.message}</p><p className="text-xs text-muted-foreground mt-1">{new Date(n.createdAt).toLocaleDateString('en-LK',{timeZone:'Asia/Colombo'})} · {n.isRead?'Read':'Unread'}</p><div className="flex flex-wrap gap-2 mt-2">{!n.isRead&&<button type="button" disabled={saving} onClick={()=>void markRead([n._id])} className="min-h-11 text-xs font-semibold text-brand-green">Mark read</button>}{href&&<Link href={href} onClick={()=>setOpen(false)} className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-brand-green">View <ArrowUpRight size={13}/></Link>}</div></article>})}</div>
+ <div className="border-t p-3 flex flex-wrap gap-3 justify-between items-center"><button type="button" disabled={saving||!data?.data.some(n=>!n.isRead)} onClick={()=>void markRead(data?.data.filter(n=>!n.isRead).map(n=>n._id)||[])} className="min-h-11 inline-flex items-center gap-1 text-xs font-semibold disabled:opacity-40"><Check size={15}/>Mark shown read</button><Link href="/profile/notifications" onClick={()=>setOpen(false)} className="min-h-11 inline-flex items-center text-xs font-semibold text-brand-green">All notifications</Link></div></DropdownMenuContent></DropdownMenu>;
 }
-
 export default NotificationsBell;

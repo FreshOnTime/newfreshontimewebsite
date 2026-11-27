@@ -18,6 +18,6 @@ export const notificationInput = z.object({
   message: z.string().trim().min(1).max(5000),
   type: z.enum(['info', 'success', 'warning', 'error', 'promo']).default('info'),
   targetUserId: z.string().trim().min(1).max(100).default('all'),
-  link: z.string().trim().max(1000).optional().transform(value => value || null).refine(value => value === null || safeNotificationLink(value) !== null, 'Use a storefront path such as /products'),
+  link: z.string().trim().max(1000).optional().transform(value => value || null).refine(value => value === null || safeNotificationLink(value) !== null, 'Use a FreshPick path such as /discover'),
   submissionId: z.string().uuid().optional(),
 });

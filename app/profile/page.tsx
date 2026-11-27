@@ -3,7 +3,7 @@
 import { useEffect, useState, useId } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Check, Edit3, Loader2, Mail, MapPin, Phone, Save, UserRound, X } from 'lucide-react';
+import { ArrowRight, Check, Edit3, Loader2, Mail, Phone, Save, UserRound, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,9 +44,8 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const role = typeof user.role === 'string' && user.role ? user.role.toLowerCase() : 'customer';
-  const dashboardHref = role === 'admin' ? '/admin' : '/dashboard';
+  const dashboardHref = role === 'admin'||user.secondaryRoles?.includes('admin') ? '/admin' : '/dashboard';
   const status = user as typeof user & { isEmailVerified?: boolean; isPhoneVerified?: boolean };
-  const address = user.registrationAddress;
 
   const resetForm = () => {
     setEditedUser({
@@ -121,16 +120,12 @@ export default function ProfilePage() {
           </form>
 
           <aside className="space-y-6">
-            {address && <section className="rounded-lg border border-border bg-background p-6">
-              <h2 className="text-xl">Previous delivery address</h2>
-              <div className="mt-4 flex gap-3 text-sm leading-6"><MapPin className="mt-1 h-4 w-4 shrink-0"/><p>{[address.streetAddress, address.streetAddress2, address.town, address.city, address.state, address.postalCode].filter(Boolean).join(', ')}</p></div>
-            </section>}
             <section className="rounded-lg bg-background p-6 text-foreground">
               <p className="text-xs font-bold normal-case text-brand-green">Account status</p>
               <div className="mt-5 space-y-4">
                 <StatusRow label="Email" value={user.email ? (status.isEmailVerified ? 'Verified' : 'Verification pending') : 'Not added'} verified={Boolean(status.isEmailVerified)} />
                 <StatusRow label="Phone" value={user.phoneNumber ? (status.isPhoneVerified ? 'Verified' : 'Verification pending') : 'Not added'} verified={Boolean(status.isPhoneVerified)} />
-                <StatusRow label="Account" value={role === 'supplier' ? 'Maker' : role.replace(/_/g, ' ')} verified />
+                <StatusRow label="Account" value={role === 'supplier' ? 'Business owner' : role.replace(/_/g, ' ')} verified />
               </div>
             </section>
 

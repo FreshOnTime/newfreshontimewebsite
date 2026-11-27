@@ -1,0 +1,9 @@
+# Workspace quality release
+
+- Admin notification bell now reads the same account inbox and receipt store as the member notification page, with server-side read receipts and explicit mark-shown-read. Audit activity remains a separate page. Polling is non-overlapping, visible-tab only, every 60 seconds instead of 30. No fake notifications or local-storage read state.
+- Audit filter requests happen on Apply/navigation, not every keystroke. Invalid pagination yields 400; stable ordering, empty-state page count, newer resource filters, summaries without before/after snapshots, private no-store, explicit error and retry. Audit writes are unchanged; this is not a guarantee that every admin action is audited.
+- Member/business pages no longer show previous orders, subscriptions, delivery address or old catalogue-copy controls. Admin historical records remain intact. Studio no longer queries the old Product table on load.
+- Key workspace reads (admin overview, audit, notifications, application state, studio) are bounded at 15 seconds, with abort handling and retry. No automatic retry of mutations. Timeout bounds waiting in the UI, not measured backend latency or a performance SLA.
+- Restore the safe route-level error boundary and supplier-photo fallback separately from closed PR #175, preserving new directory structure.
+- Existing live deployment was PR #177 while main included #182. New checks and Vercel rollout must be verified before testing on freshpick.lk. No schema migration, database deletion, authentication provider switch, or billing changes.
+- Manual checks after rollout: admin login, received business application notification, mark read and reload, audit filtering/pagination and expired session; member profile/inbox no legacy links; pending owner status; approved owner studio, product/article publish; 320/390/768/1440px layouts. Verify recovery email separately. Real latency and Lighthouse measurements still required.

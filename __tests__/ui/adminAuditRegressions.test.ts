@@ -37,7 +37,6 @@ it('uses refresh-aware authenticated fetches on core admin data surfaces', () =>
     'components/admin/AdminOverview.tsx',
     'app/admin/analytics/page.tsx',
     'components/admin/NotificationsBell.tsx',
-    'app/admin/audit-logs/page.tsx',
   ]) {
     expect(source(file)).toContain('authenticatedApiFetch');
   }
@@ -60,3 +59,6 @@ it('accepts direct-upload category paths as well as HTTPS image URLs', () => {
     expect(code).toContain("/^https:\\/\\//i.test(value)");
   }
 });
+
+it('loads audit summaries only after applying filters and uses bounded workspace reads',()=>{const page=source('app/admin/audit-logs/page.tsx');expect(page).toContain('readWorkspace');expect(page).toContain('const applied=searchParams.toString()');expect(page).not.toContain('Mongo ObjectId');const api=source('app/api/admin/activities/route.ts');expect(api).not.toContain('const log = { ...l');expect(api).toContain("resourceType: z.string()");expect(api).toContain("'Cache-Control':'private, no-store'");});
+it('uses account notifications instead of audit activity and hides legacy member and business controls',()=>{const bell=source('components/admin/NotificationsBell.tsx');expect(bell).toContain('/api/notifications?limit=10');expect(bell).not.toContain('localStorage');expect(bell).not.toContain('/api/admin/activities');expect(source('components/account/AccountPage.tsx')).not.toContain('Previous orders');expect(source('components/makers/MakerStudio.tsx')).not.toContain('Start from your catalogue');expect(source('app/api/suppliers/maker/route.ts')).not.toContain('prisma.product.findMany');});

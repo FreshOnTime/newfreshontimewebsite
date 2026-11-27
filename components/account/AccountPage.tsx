@@ -4,22 +4,22 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import {useAuth} from '@/contexts/AuthContext';
 
 const accountLinks = [
   { href: '/profile', label: 'Details' },
-  { href: '/orders', label: 'Previous orders' },
   { href: '/saved', label: 'Saved picks' },
   { href: '/profile/messages', label: 'Messages' },
   { href: '/profile/notifications', label: 'Notifications' },
-  { href: '/profile/subscriptions', label: 'Subscriptions' },
   { href: '/dashboard', label: 'Account home' },
 ];
 
 export function AccountPage({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
+  const {user}=useAuth();const admin=user?.role==='admin'||user?.secondaryRoles?.includes('admin');
   return (
     <div className="fp-account lux-account bg-background pb-12 text-foreground">
-      <header className="border-b border-brand-green/10 bg-brand-cream">
+      <header className="border-b border-brand-green/10 bg-[#e4f2d7]">
         <div className="mx-auto max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
           <div className="flex flex-wrap items-end justify-between gap-5 pb-7 md:pb-8">
             <div className="min-w-0 max-w-full">
@@ -29,9 +29,9 @@ export function AccountPage({ title, description, action, children }: { title: s
             </div>
             {action}
           </div>
-          <nav aria-label="Account navigation" className="lux-account-nav flex gap-x-6 gap-y-1">
-            {accountLinks.map(({ href, label }) => {
-              const active = pathname === href || (href === '/orders' && pathname.startsWith('/orders/'));
+          <nav aria-label="Account navigation" className="lux-account-nav flex flex-wrap gap-x-6 gap-y-1">
+            {accountLinks.map(link=>link.href==='/dashboard'&&admin?{href:'/admin',label:'Admin dashboard'}:link).map(({ href, label }) => {
+              const active = pathname === href;
               return <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={`shrink-0 border-b-2 py-3 text-sm transition-colors ${active ? 'border-brand-green font-medium text-brand-green' : 'border-transparent text-muted-foreground hover:text-brand-green'}`}>{label}</Link>;
             })}
           </nav>

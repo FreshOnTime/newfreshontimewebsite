@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import {readWorkspace} from '@/lib/api/workspace-read';
 import { safeNotificationLink } from '@/lib/notificationInput';
 import { AccountLoading, accountSecondaryButton } from '@/components/account/AccountPage';
 
@@ -29,9 +30,8 @@ export function NotificationCenter() {
     setState(current => ({ ...current, owner: account, rows: current.owner === account ? current.rows : [], loading: true, error: null }));
     void (async () => {
       try {
-        const response = await authenticatedApiFetch(`/api/notifications?page=${page}&limit=20${unread ? '&unread=true' : ''}`, { cache: 'no-store', signal: controller.signal });
-        const data = await response.json();
-        if (!response.ok || !data.success) throw new Error(data.message || data.error || 'Unable to load notifications');
+        const data = await readWorkspace<{success:boolean;data:Notification[];pagination:{pages:number;total:number};unreadCount:number;message?:string;error?:string}>(`/api/notifications?page=${page}&limit=20${unread ? '&unread=true' : ''}`,controller.signal);
+        if (!data.success) throw new Error(data.message || data.error || 'Unable to load notifications');
         if (controller.signal.aborted || accountRef.current !== account) return;
         if (page > data.pagination.pages) { setPage(data.pagination.pages); return; }
         setState({ owner: account, rows: data.data, loading: false, error: null, pages: data.pagination.pages, total: data.pagination.total, unreadCount: data.unreadCount });
@@ -49,6 +49,7 @@ export function NotificationCenter() {
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.message || data.error || 'Unable to mark notifications read');
       if (accountRef.current !== account) return;
+      setState(current=>current.owner===account?{...current,unreadCount:Math.max(0,current.unreadCount-current.rows.filter(row=>!row.isRead&&ids.includes(row._id)).length),rows:unread?current.rows.filter(row=>!ids.includes(row._id)):current.rows.map(row=>ids.includes(row._id)?{...row,isRead:true}:row)}:current);
       setVersion(value => value + 1);
     } catch (error) {
       if (accountRef.current === account) setReadError(error instanceof Error ? error.message : 'Unable to mark notifications read');
@@ -58,7 +59,7 @@ export function NotificationCenter() {
     }
   };
   if (!userId && !authLoading) return null;
-  return <section aria-label="Notification inbox" className="rounded-lg border border-border bg-background p-5 md:p-7">
+  return <section aria-label="Notification inbox" className="rounded-xl border border-border bg-background p-5 md:p-7">
     <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-xl font-normal text-brand-green"><Bell aria-hidden="true" className="h-5 w-5" /> Updates{owned && <span className="text-sm text-muted-foreground">{state.unreadCount} unread</span>}</h2><button type="button" className={accountSecondaryButton} disabled={loading || saving} onClick={() => setVersion(value => value + 1)}>Refresh notifications</button></div>
     <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><label className="inline-flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={unread} disabled={saving} onChange={event => { setUnread(event.target.checked); setPage(1); }} /> Unread only</label><button type="button" className={accountSecondaryButton} disabled={saving || loading || !rows.some(row => !row.isRead)} onClick={() => void markRead(rows.filter(row => !row.isRead).map(row => row._id))}>{saving ? 'Saving…' : 'Mark this page read'}</button></div>
     {owned && state.error && <div role="alert" className="mt-4 text-sm text-destructive"><p>{state.error}</p><button type="button" className="mt-2 min-h-11 underline" onClick={() => setVersion(value => value + 1)}>Try again</button></div>}
