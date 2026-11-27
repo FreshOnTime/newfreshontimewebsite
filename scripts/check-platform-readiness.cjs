@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- standalone read-only Node preflight */
 require('dotenv').config({quiet:true});
-const Module=require('module'),path=require('path'),resolve=Module._resolveFilename;
+const Module=require('module'),path=require('path'),fs=require('node:fs'),resolve=Module._resolveFilename;
 Module._resolveFilename=function(name,...args){return resolve.call(this,name.startsWith('@/')?path.join(__dirname,'..',name.slice(2)):name,...args);};
 require('esbuild-register');
 (async()=>{
@@ -14,8 +14,14 @@ require('esbuild-register');
  checks.productStorage=!!process.env.SUPABASE_URL&&!!(process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY);
  if(!process.argv.includes('--config-only')){
   const prisma=require('../lib/prisma').default;
-  try{const migrations=await prisma.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations"`;checks.platformMigration=migrations.some(row=>row.migration_name==='20261003050000_platform_operations'&&row.finished_at&&!row.rolled_back_at);checks.notificationReadsMigration=migrations.some(row=>row.migration_name==='20261003180000_notification_reads'&&row.finished_at&&!row.rolled_back_at);checks.noFailedMigrations=!migrations.some(row=>!row.finished_at&&!row.rolled_back_at);}
-  catch{checks.platformMigration=false;checks.databaseRead=false;}
+  try{const migrations=await prisma.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations"`;checks.platformMigration=migrations.some(row=>row.migration_name==='20261003050000_platform_operations'&&row.finished_at&&!row.rolled_back_at);checks.notificationReadsMigration=migrations.some(row=>row.migration_name==='20261003180000_notification_reads'&&row.finished_at&&!row.rolled_back_at);checks.noFailedMigrations=!migrations.some(row=>!row.finished_at&&!row.rolled_back_at);
+   const migrationDir=path.join(__dirname,'..','prisma','migrations');
+   const expected=fs.readdirSync(migrationDir,{withFileTypes:true}).filter(entry=>entry.isDirectory()&&fs.existsSync(path.join(migrationDir,entry.name,'migration.sql'))).map(entry=>entry.name).sort();
+   const applied=new Set(migrations.filter(row=>row.finished_at&&!row.rolled_back_at).map(row=>row.migration_name));
+   const pending=expected.filter(name=>!applied.has(name));
+   checks.allRepositoryMigrationsApplied=expected.length>0&&pending.length===0;
+   if(pending.length)console.error('Pending repository migrations:',pending.join(', '));}
+  catch{checks.platformMigration=false;checks.databaseRead=false;checks.allRepositoryMigrationsApplied=false;}
   finally{await prisma.$disconnect();}
  }
  console.log(JSON.stringify({checks,ready:Object.values(checks).every(Boolean)},null,2));

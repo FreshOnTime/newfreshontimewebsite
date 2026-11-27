@@ -1,5 +1,5 @@
 import { absoluteUrl, SITE_URL } from '@/lib/config/site';
-import { catalogueMetadata, pageMetadata, privateMetadata, serializeJsonLd } from '@/lib/seo';
+import { breadcrumbJsonLd, catalogueMetadata, pageMetadata, privateMetadata, serializeJsonLd } from '@/lib/seo';
 import { PUBLIC_PAGES } from '@/lib/publicPages';
 import sitemap from '@/app/sitemap';
 import robots from '@/app/robots';
@@ -25,6 +25,19 @@ it('gives public pages distinct canonical URLs and working share asset paths', (
   expect(pageMetadata({ title: 'Blog | FreshPick', description: '', path: '/blog' }).title).toEqual({ absolute: 'Blog | FreshPick' });
   expect(meta.openGraph).toMatchObject({ url: absoluteUrl('/help'), images: [{ url: absoluteUrl('/opengraph-image') }] });
   expect(absoluteUrl('https://images.example.com/food.jpg')).toBe('https://images.example.com/food.jpg');
+});
+
+it('describes ordered public breadcrumb URLs with safe JSON-LD', () => {
+  const schema = breadcrumbJsonLd([{name:'Food Atlas',path:'/food-atlas'},{name:'Kottu & <food>',path:'/food-atlas/kottu'}]);
+  expect(schema).toEqual({
+    '@context':'https://schema.org','@type':'BreadcrumbList',
+    itemListElement:[
+      {'@type':'ListItem',position:1,name:'Food Atlas',item:absoluteUrl('/food-atlas')},
+      {'@type':'ListItem',position:2,name:'Kottu & <food>',item:absoluteUrl('/food-atlas/kottu')},
+    ],
+  });
+  expect(serializeJsonLd(schema)).not.toMatch(/[<>&]/);
+  expect(JSON.parse(serializeJsonLd(schema))).toEqual(schema);
 });
 
 it('preserves paginated canonicals and excludes faceted catalogue URLs from indexing', () => {
@@ -63,6 +76,38 @@ it('indexes published maker profiles, items, stories and editorial articles', as
   expect(prisma.makerItem.findMany).toHaveBeenCalledWith(expect.objectContaining({
     where: expect.objectContaining({ published:true, supplier:expect.objectContaining({makerPublished:true}) }),
   }));
+});
+
+describe('sitemap database failure isolation', () => {
+  const sources = [
+    prisma.supplier.findMany, prisma.makerItem.findMany, prisma.blog.findMany,
+    prisma.discoveryProspect.findMany, prisma.discoveryContent.findMany,
+  ] as jest.Mock[];
+  beforeEach(() => sources.forEach(mock => mock.mockReset().mockResolvedValue([])));
+  afterEach(() => {
+    sources.forEach(mock => mock.mockReset());
+    jest.restoreAllMocks();
+  });
+
+  it('preserves healthy public URLs when one source rejects and another throws synchronously', async () => {
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (prisma.supplier.findMany as jest.Mock).mockResolvedValue([{makerHandle:'healthy-baker'}]);
+    (prisma.makerItem.findMany as jest.Mock).mockRejectedValue(new Error('missing table'));
+    (prisma.discoveryContent.findMany as jest.Mock).mockImplementation(() => { throw new Error('unavailable'); });
+    (prisma.blog.findMany as jest.Mock).mockReturnValue([]);
+    const urls = (await sitemap()).map(page => page.url);
+    expect(urls).toContain(absoluteUrl('/'));
+    expect(urls).toContain(absoluteUrl('/makers/healthy-baker'));
+    expect(log).toHaveBeenCalledWith('Sitemap source unavailable:', 'items');
+    expect(log).toHaveBeenCalledWith('Sitemap source unavailable:', 'discovery content');
+  });
+
+  it('rejects a total database outage instead of emitting a misleading sitemap', async () => {
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    sources.forEach(mock => mock.mockRejectedValue(new Error('database unavailable')));
+    await expect(sitemap()).rejects.toThrow('All dynamic sitemap sources unavailable');
+    expect(log).toHaveBeenCalledTimes(7);
+  });
 });
 
 it.each(['page=-1', 'page=0', 'page=NaN', 'page=1.5', 'page=100001', 'limit=0', 'limit=-1', 'limit=invalid', 'limit=51'])('rejects an invalid public journal query: %s', async query => {

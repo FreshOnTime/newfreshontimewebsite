@@ -34,6 +34,17 @@ export function catalogueMetadata(path: string, title: string, description: stri
   };
 }
 
+/** Breadcrumbs describe the public page hierarchy, not search rankings. */
+export function breadcrumbJsonLd(items: readonly { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map(({name,path},index)=>({
+      '@type': 'ListItem', position:index+1, name, item:absoluteUrl(path),
+    })),
+  };
+}
+
 /** Search/filter variants are useful to visitors but should not flood the index. */
 export function directoryMetadata(path:string,title:string,description:string,query:{q?:unknown;area?:unknown;town?:unknown;kind?:unknown;type?:unknown;scope?:unknown;page?:unknown}):Metadata {
  const filtered=[query.q,query.area,query.town,query.kind,query.type,query.scope].some(v=>Array.isArray(v)||typeof v==='string'&&v.trim()!=='');
