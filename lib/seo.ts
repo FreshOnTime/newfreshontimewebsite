@@ -11,16 +11,16 @@ export const privateMetadata: Metadata = {
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 
-export function pageMetadata({ title, description, path, image, type = 'website', keywords }: {
-  title: string; description: string; path: string; image?: string; type?: 'website' | 'article'; keywords?: readonly string[];
+export function pageMetadata({ title, description, path, image, type = 'website', keywords, publishedAt, updatedAt }: {
+  title: string; description: string; path: string; image?: string; type?: 'website' | 'article'; keywords?: readonly string[]; publishedAt?:Date|null; updatedAt?:Date|null;
 }): Metadata {
   const fullTitle = /fresh\s?pick/i.test(title) ? title : `${title} | FreshPick`;
   const url = absoluteUrl(path);
   const imageUrl = absoluteUrl(image || '/opengraph-image');
   return {
     title: { absolute: fullTitle }, description, keywords: keywords ? [...keywords] : undefined,
-    alternates: { canonical: url },
-    openGraph: { title: fullTitle, description, url, type, siteName: SITE_NAME_LONG, locale: 'en_LK', images: [{ url: imageUrl, ...(image ? {} : { width: 1200, height: 630 }), alt: title }] },
+    alternates: { canonical: url,types:{'application/rss+xml':absoluteUrl('/feed.xml')} },
+    openGraph: { title: fullTitle, description, url, type, siteName: SITE_NAME_LONG, locale: 'en_LK', ...(type==='article'?{...(publishedAt?{publishedTime:publishedAt.toISOString()}:{}),...(updatedAt?{modifiedTime:updatedAt.toISOString()}:{})}:{}), images: [{ url: imageUrl, ...(image ? {} : { width: 1200, height: 630 }), alt: title }] },
     twitter: { card: 'summary_large_image', title: fullTitle, description, images: [imageUrl] },
   };
 }

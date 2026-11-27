@@ -15,6 +15,7 @@ import { SITE_URL, SOCIAL_LINKS } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
+  alternates:{types:{'application/rss+xml':'/feed.xml'}},
   category: 'food',
   keywords: ['FreshPick','restaurants Sri Lanka','cafés Sri Lanka','food discovery','independent food businesses'],
   title: { default: 'Discover Sri Lankan food, makers and dining | FreshPick', template: '%s | FreshPick' },

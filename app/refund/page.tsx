@@ -1,5 +1,7 @@
 
 import Link from 'next/link';
+import {pageMetadata} from '@/lib/seo';
+export const metadata={...pageMetadata({path:'/refund',title:'Previous FreshPick order support',description:'Support for historical FreshPick checkout orders.'}),robots:{index:false,follow:true}};
 import { Clock, CheckCircle2 } from 'lucide-react';
 import PremiumPageHeader from '@/components/ui/PremiumPageHeader';
 import { SUPPORT_EMAIL } from '@/lib/config/site';
