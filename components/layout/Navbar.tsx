@@ -21,7 +21,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const maker = user?.role === "supplier";
   const account = user?.role === "admin" ? "/admin" : "/dashboard";
-  const links = [...MARKET_NAVIGATION, {label:maker ? "Maker studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}];
+  const links = [...MARKET_NAVIGATION, {label:maker ? "Business studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}];
 
   useEffect(() => { setMenuOpen(false); setSearchOpen(false); }, [pathname]);
   useEffect(() => {
@@ -53,7 +53,7 @@ export function Navbar() {
               <DropdownMenuTrigger asChild><button type="button" aria-label="Open account menu" className={iconButton}><UserRound strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /></button></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 border-border bg-background p-2 shadow-sm">
                 {user ? <>
-                  {[[maker ? 'Maker studio' : 'Your account',account],['Profile','/profile'],['Saved picks','/saved']].map(([label,href]) => <DropdownMenuItem key={href} asChild><Link href={href} className="min-h-11">{label}</Link></DropdownMenuItem>)}
+                  {[[maker ? 'Business studio' : 'Your account',account],['Profile','/profile'],['Saved picks','/saved']].map(([label,href]) => <DropdownMenuItem key={href} asChild><Link href={href} className="min-h-11">{label}</Link></DropdownMenuItem>)}
                   <DropdownMenuSeparator /><DropdownMenuItem onSelect={() => void signOut()} className="min-h-11 text-destructive">Sign out</DropdownMenuItem>
                 </> : <><DropdownMenuItem asChild><Link href="/auth/login" className="min-h-11">Sign in</Link></DropdownMenuItem><DropdownMenuItem asChild><Link href="/auth/signup" className="min-h-11">Create account</Link></DropdownMenuItem></>}
               </DropdownMenuContent>
@@ -62,7 +62,7 @@ export function Navbar() {
             <button type="button" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="heritage-mobile-menu" onClick={() => { setMenuOpen((open) => !open); setSearchOpen(false); }} className={`${iconButton} xl:hidden`}>{menuOpen ? <X strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" /> : <Menu strokeWidth={1.5} aria-hidden="true" className="h-5 w-5" />}</button>
           </div>
       </div>
-      {searchOpen && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find food, a maker or a place" className="h-12 min-w-0 flex-1 border-0 border-b border-border bg-transparent text-base outline-none focus:border-primary" /><button type="submit" className="editorial-button">Search</button></form></div>}
+      {searchOpen && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" maxLength={100} autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search places, products or articles" className="h-12 min-w-0 flex-1 border border-border bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green" /><button type="submit" className="fp26-action">Search</button></form></div>}
       {menuOpen && <div id="heritage-mobile-menu" className="max-h-[75svh] overflow-y-auto border-t border-brand-green/10 bg-brand-cream/95 shadow-xl backdrop-blur-xl xl:hidden">
         <nav aria-label="Mobile discovery navigation" className="editorial-wrap grid gap-x-6 py-6 sm:grid-cols-2">{[...links,{label:"Saved picks",href:"/saved"},...moreLinks].map((link) => <Link key={link.href} href={link.href} aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined} className="flex min-h-12 items-center border-b border-border py-3 text-base font-semibold text-brand-green">{link.label}</Link>)}</nav>
       </div>}

@@ -2,11 +2,11 @@ import { pageMetadata } from '@/lib/seo';
 
 /** Canonical public pages shared by metadata and the XML sitemap. */
 export const PUBLIC_PAGES = [
-  { path: '/', title: 'Discover Sri Lankan food makers | FreshPick', description: 'Meet bakers, home cooks and growers across Sri Lanka. Explore their food, read their stories and contact them directly.' },
+  { path: '/', title: 'Discover restaurants, food businesses and stories in Sri Lanka', description: 'Find places to eat, food brands, products and local food stories. Connect with businesses directly.' },
   { path: '/products', title: 'Shop groceries in Colombo', description: 'Browse FreshPick produce, pantry essentials and everyday groceries. Check current prices and availability in the market.' },
   { path: '/categories', title: 'Shop by category', description: 'Explore FreshPick grocery categories, from fresh produce to pantry essentials for your Colombo kitchen.' },
   { path: '/deals', title: 'Grocery offers', description: 'Browse currently discounted FreshPick groceries and check the latest prices and availability.' },
-  { path: '/makers', title: 'Fresh near you', description: 'Discover local bakers, cooks, growers and food makers. Explore their latest batches and get in touch directly.' },
+  { path: '/makers', title: 'Independent food businesses in Sri Lanka', description: 'Discover independent food brands, bakeries, home kitchens, caterers and specialty businesses.' },
   { path: '/discover', title: 'Discover Sri Lankan food', description: 'Explore independent food makers, restaurants, cafés and products.' },
   { path: '/eat-drink', title: 'Eat and drink', description: 'Discover reviewed restaurants, cafés and caterers in Sri Lanka.' },
   { path: '/food-products', title: 'Food products', description: 'Explore independent producers and food products.' },
@@ -37,7 +37,7 @@ export const PUBLIC_PAGES = [
 
 /** Search intent groups, chosen for the actual content rather than keyword stuffing. */
 const SEARCH_TERMS: Record<string, readonly string[]> = {
-  '/': ['FreshPick', 'food makers Sri Lanka', 'local bakeries Sri Lanka'],
+  '/': ['FreshPick','restaurants Sri Lanka','food discovery Sri Lanka','independent food businesses'],
   '/products': ['groceries Colombo', 'fresh vegetables', 'online grocery shopping Sri Lanka'],
   '/categories': ['grocery categories', 'fresh produce Colombo', 'pantry staples'],
   '/subscriptions': ['recurring grocery baskets', 'weekly grocery shopping Colombo'],

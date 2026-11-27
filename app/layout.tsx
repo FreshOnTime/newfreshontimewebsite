@@ -12,7 +12,7 @@ import { SERVICE_AREAS, SITE_URL, SUPPORT_EMAIL, SOCIAL_LINKS } from "@/lib/conf
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL), applicationName: 'FreshPick',
   category: 'food',
-  keywords: ['FreshPick', 'local bakers and cooks', 'Sri Lankan local food'],
+  keywords: ['FreshPick','restaurants Sri Lanka','cafés Sri Lanka','food discovery','independent food businesses'],
   title: { default: 'Discover Sri Lankan food, makers and dining | FreshPick', template: '%s | FreshPick' },
   description: 'Discover independent Sri Lankan food makers, restaurants, cafés, products and stories.',
   openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Sri Lankan food makers on FreshPick' }] },
@@ -30,7 +30,7 @@ const organizationJsonLd = {
       "name": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/brand/freshpick-wordmark.svg`,
-      "description": "FreshPick connects people with independent food makers across Sri Lanka.",
+      "description": "FreshPick helps people discover restaurants, cafés, food businesses, products and food stories across Sri Lanka.",
       "sameAs": Object.values(SOCIAL_LINKS).filter(Boolean),
       "email": SUPPORT_EMAIL,
       "areaServed": SERVICE_AREAS.map((name) => ({ "@type": "City", "name": `${name}, Sri Lanka` })),
@@ -40,7 +40,7 @@ const organizationJsonLd = {
         "email": SUPPORT_EMAIL,
         "availableLanguage": "English"
       },
-      "knowsAbout": ["Sri Lankan food makers", "Home baking", "Food stories", "Local produce"]
+      "knowsAbout": ["Sri Lankan restaurants","Cafés","Food businesses","Food products","Food stories"]
     },
     {
       "@type": "WebSite",
