@@ -3,7 +3,7 @@ import { adminDataError } from '@/lib/adminApiErrors';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { requireAdminSimple, logAuditAction } from '@/lib/middleware/adminAuth';
+import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 const statuses = ['pending','approved','rejected'] as const;
 const query = z.object({ page: z.coerce.number().int().min(1).max(100000).default(1), status: z.enum(statuses).optional() });
@@ -100,12 +100,12 @@ export const PATCH = requireAdminSimple(async request => {
           });
         }
       }
+      await tx.auditLog.create({data:{userId:request.user!.userId,action:'review-application',resourceType:'supplier',resourceId:id,before:{applicationStatus:current.applicationStatus,reviewVersion:current.reviewVersion},after:{applicationStatus:status,reviewVersion:version+1}}});
       return { conflict: false as const };
     });
 
     if ('verificationRequired' in outcome&&outcome.verificationRequired)return json({error:'Confirm the business identity and contact details and record review evidence before approving.'},400);
     if (outcome.conflict) return json({ error: 'This application changed or was removed. Refresh before saving.' }, 409);
-    await logAuditAction(request.user!.userId, 'review-application', 'supplier', id, undefined, { applicationStatus: status }, request);
     return json({ success: true });
   } catch (error) {
     return error instanceof z.ZodError || error instanceof SyntaxError

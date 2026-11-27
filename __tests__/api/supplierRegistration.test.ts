@@ -69,12 +69,12 @@ it('atomically saves the supplier, catalogue note and account link', async () =>
 
 it('lets an already-linked pending supplier complete or correct the proposed catalogue', async () => {
   (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'customer', role: 'supplier', supplierId: 'own-supplier', isBanned: false });
-  (prisma.supplier.findUnique as jest.Mock).mockResolvedValue({ id: 'own-supplier', name: 'Old name', applicationStatus: 'pending' });
+  (prisma.supplier.findUnique as jest.Mock).mockResolvedValue({ id: 'own-supplier', name: 'Old name', applicationStatus: 'pending', reviewVersion:2 });
   const response = await POST(request());
   expect(response.status).toBe(200);
   expect(prisma.supplier.update).toHaveBeenCalledWith(expect.objectContaining({
-    where: { id: 'own-supplier' },
-    data: expect.objectContaining({ notes: body.productListCsv, name: body.companyName }),
+    where: { id: 'own-supplier',applicationStatus:'pending',reviewVersion:2 },
+    data: expect.objectContaining({ reviewVersion:{increment:1},notes: body.productListCsv, name: body.companyName }),
   }));
   expect(await response.json()).toMatchObject({ message: 'Supplier application updated' });
   expect(prisma.notification.createMany).toHaveBeenCalledWith(expect.objectContaining({
@@ -153,4 +153,19 @@ it('persists a gift creator with multiple validated specialities',async()=>{
 it('rejects unrecognised business specialities before any writes',async()=>{
  expect((await POST(request({...body,businessSpecialties:['invalid']}))).status).toBe(400);
  expect(prisma.$transaction).not.toHaveBeenCalled();
+});
+
+it('rejects a pending application edit when another business owns its contact details',async()=>{
+ (prisma.user.findUnique as jest.Mock).mockResolvedValue({id:'customer',role:'supplier',supplierId:'own-supplier',isBanned:false});
+ (prisma.supplier.findUnique as jest.Mock).mockResolvedValue({id:'own-supplier',applicationStatus:'pending',reviewVersion:2});
+ (prisma.supplier.findFirst as jest.Mock).mockResolvedValue({id:'another'});
+ expect((await POST(request())).status).toBe(409);
+ expect(prisma.supplier.update).not.toHaveBeenCalled();
+});
+it('returns a conflict rather than rewriting an application that was reviewed during editing',async()=>{
+ (prisma.user.findUnique as jest.Mock).mockResolvedValue({id:'customer',role:'supplier',supplierId:'own-supplier',isBanned:false});
+ (prisma.supplier.findUnique as jest.Mock).mockResolvedValue({id:'own-supplier',applicationStatus:'pending',reviewVersion:2});
+ (prisma.supplier.update as jest.Mock).mockRejectedValueOnce({code:'P2025'});
+ expect((await POST(request())).status).toBe(409);
+ expect(prisma.notification.createMany).not.toHaveBeenCalled();
 });

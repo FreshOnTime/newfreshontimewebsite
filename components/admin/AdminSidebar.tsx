@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Wordmark from '@/components/brand/Wordmark';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ArrowUpRight, MessageSquare, Mail, Store, MapPin, Radio } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Building2, Tags, Menu, BookOpen, Layers, Handshake, ArrowUpRight, MessageSquare, Mail, Store, MapPin, Radio, Bell, ShieldCheck } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 const groups = [
  {name:'Discovery',items:[{name:'Control centre',href:'/admin',icon:LayoutDashboard},{name:'Business applications',href:'/admin/supplier-applications',icon:Building2},{name:'Business directory',href:'/admin/suppliers',icon:Store},{name:'External listing review',href:'/admin/discovery-prospects',icon:MapPin},{name:'Live vendors',href:'/admin/live-vendors',icon:Radio}]},
  {name:'Publishing',items:[{name:'Journal articles',href:'/admin/blogs',icon:BookOpen},{name:'Website pages',href:'/admin/site-pages',icon:Layers},{name:'Food & Culture CMS',href:'/admin/discovery-content',icon:BookOpen}]},
- {name:'Community & support',items:[{name:'Enquiry inbox',href:'/admin/enquiries',icon:MessageSquare},{name:'Business enquiries',href:'/admin/business-leads',icon:Handshake},{name:'Members & access',href:'/admin/users',icon:Users}]},
+ {name:'Community & support',items:[{name:'Enquiry inbox',href:'/admin/enquiries',icon:MessageSquare},{name:'Business enquiries',href:'/admin/business-leads',icon:Handshake},{name:'Members & access',href:'/admin/users',icon:Users},{name:'Notifications',href:'/admin/notifications',icon:Bell},{name:'Audit trail',href:'/admin/audit-logs',icon:ShieldCheck}]},
  {name:'Legacy records',items:[{name:'Orders',href:'/admin/orders',icon:ShoppingCart},{name:'Products',href:'/admin/products',icon:Package},{name:'Categories',href:'/admin/categories',icon:Tags},{name:'Customers',href:'/admin/customers',icon:Users},{name:'Subscriptions',href:'/admin/subscriptions',icon:Layers},{name:'Collections',href:'/admin/collections',icon:Layers},{name:'Newsletter archive',href:'/admin/newsletter',icon:Mail},{name:'Store reports',href:'/admin/analytics',icon:BarChart3}]}
 ];
 

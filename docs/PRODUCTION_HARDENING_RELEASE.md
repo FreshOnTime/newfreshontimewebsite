@@ -1,0 +1,9 @@
+# Production hardening
+
+PR #183 was merged before lint and build completed. The recorded failures are an unescaped apostrophe in app/error.tsx and references to removed catalogue state in MakerStudio. This release fixes both and adds regression coverage.
+
+Pending business edits now use the same review version as administrator approval, increment it, and recheck duplicate contact details. An approval race returns 409 rather than rewriting reviewed details. Email comparisons are case insensitive; existing duplicates are not deleted. This is not a global unique-phone constraint or a complete duplicate prevention guarantee.
+
+Application reviews now record an audit event inside the same transaction as the approval and notifications. Audit failure rolls back the review. Disabling a business clears its published flag; profile writes recheck approval in the update predicate. Other owner writes still need a concurrency audit. Audit and notification management are linked in the administrator navigation. Session refresh has a 10-second transport abort to avoid a permanently stuck shared refresh.
+
+No schema migration, production mutation, paid dependency, or account provider switch. Existing production serves PR #177. Do not merge or deploy until the exact head passes lint, tests, build and visual review. Supabase SMTP and legacy account migration remain unverified. Production latency, Lighthouse scores and authenticated smoke tests remain outstanding.

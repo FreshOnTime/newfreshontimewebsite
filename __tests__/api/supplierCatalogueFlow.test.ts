@@ -26,6 +26,7 @@ jest.mock('@/lib/prisma', () => ({
     product: { findMany: jest.fn(), count: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
     category: { findUnique: jest.fn() },
     notification: { createMany: jest.fn() },
+    auditLog:{create:jest.fn()},
   },
 }));
 
@@ -37,6 +38,7 @@ const db = prisma as unknown as {
   product: { findMany: jest.Mock; count: jest.Mock; findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
   category: { findUnique: jest.Mock };
   notification: { createMany: jest.Mock };
+  auditLog:{create:jest.Mock};
 };
 
 function req(url: string, method = 'GET', body?: unknown, user = { userId: 'supplier-user', role: 'supplier' }) {
@@ -54,6 +56,7 @@ beforeEach(() => {
     : Promise.all(value as Promise<unknown>[]));
   db.user.findMany.mockResolvedValue([]);
   db.notification.createMany.mockResolvedValue({ count: 0 });
+  db.auditLog.create.mockResolvedValue({id:'audit'});
 });
 
 it('lists imported products back to the owning approved supplier', async () => {
@@ -179,6 +182,7 @@ it('notifies the linked supplier account when an admin approves the application'
     { userId: 'admin-1', role: 'admin' },
   ));
   expect(response.status).toBe(200);
+  expect(db.auditLog.create).toHaveBeenCalledWith({data:expect.objectContaining({action:'review-application',resourceType:'supplier',resourceId:'supplier-1',after:{applicationStatus:'approved',reviewVersion:3}})});
   expect(db.notification.createMany).toHaveBeenCalledWith({
     data: [expect.objectContaining({
       targetUserId: 'supplier-user',
