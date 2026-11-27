@@ -17,7 +17,8 @@ it('keeps discovery navigation keyboard accessible and respects reduced motion',
   expect(rail).toContain('aria-label');
   expect(rail).toContain('observer.disconnect()');
   const directory = source('components/discovery/Directory.tsx');
-  expect(directory).toContain('aria-label="Browse by craft"');
+  expect(directory).toContain('<select name="kind" defaultValue={kind');
+  expect(directory).toContain('<select name="type" defaultValue={type');
   expect(directory).toContain('aria-current');
 });
 it('only recommends published items from the same maker', () => {

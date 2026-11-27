@@ -44,6 +44,9 @@ async function main(){
               assert(family.includes('Instrument Serif'),'Unexpected homepage font: '+family);
               const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),gift:parseFloat(getComputedStyle(document.querySelector('.fp-gift-feature')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-copy .fp26-action')).borderTopLeftRadius)}));
               assert.equal(finish.paper,'rgb(248, 245, 238)');
+              assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
+              assert.equal(await page.locator('.fp-gift-feature').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(36, 69, 57)');
+              assert.equal(await page.locator('.fp-gift-copy .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(244, 151, 26)');
               assert(finish.search>=16&&finish.gift>=20&&finish.image>=12&&finish.button>=24,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
@@ -77,6 +80,12 @@ async function main(){
               assert(await page.getByRole('heading',{name:'Café Kumbuk',exact:true}).isVisible());
               assert.equal(await page.getByRole('heading',{name:'Ministry of Crab',exact:true}).count(),0);
             }
+            if(name==='food-products'){
+              await page.getByLabel('Food category',{exact:true}).selectOption('Drinks');
+              await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
+              await page.waitForURL(url=>url.pathname==='/food-products'&&url.searchParams.get('kind')==='Drinks');
+              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Drinks');
+            }
             if(name==='gifting'){
               await page.getByLabel('Total budget (LKR)').fill('10000');
               await page.getByLabel('Quantity').fill('5');
@@ -84,9 +93,15 @@ async function main(){
               assert((await page.getByLabel('Gift enquiry brief').inputValue()).includes('Quantity: 5'));
             }
             if(name==='directory'){
-              await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).click();
-              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Bakery');
-              assert.equal(await page.getByRole('navigation',{name:'Browse by craft'}).getByRole('link',{name:'Bakery',exact:true}).getAttribute('aria-current'),'page');
+              await page.getByLabel('Food category',{exact:true}).selectOption('Bakery');
+              await page.getByLabel('Business type',{exact:true}).selectOption('bakery');
+              await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
+              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Bakery'&&url.searchParams.get('type')==='bakery');
+              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'Bakery');
+              assert.equal(await page.getByLabel('Business type',{exact:true}).inputValue(),'bakery');
+              await page.getByRole('link',{name:'Clear filters',exact:true}).click();
+              await page.waitForURL(url=>url.pathname==='/makers'&&!url.search);
+              assert.equal(await page.getByLabel('Food category',{exact:true}).inputValue(),'');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
         }

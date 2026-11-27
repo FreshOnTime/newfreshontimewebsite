@@ -17,10 +17,10 @@
 .freshpick-market[data-fp-theme="tasting-room"] .heritage-header :is(button,a)[aria-label]{border-radius:12px}
 .freshpick-market[data-fp-theme="tasting-room"] #header-search input{border-radius:var(--fp-r-control);background:var(--fp-surface)}
 .freshpick-market[data-fp-theme="tasting-room"] #heritage-mobile-menu{background:var(--fp-paper)}
-.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer{background:var(--fp-cocoa);border-radius:24px 24px 0 0}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer{background:var(--fp-footer);border-radius:24px 24px 0 0}
 .freshpick-market[data-fp-theme="tasting-room"] .heritage-footer h2{font:400 clamp(2.4rem,4vw,3.8rem)/1.05 var(--fp-serif);letter-spacing:-.02em}
 .freshpick-market[data-fp-theme="tasting-room"] .heritage-footer input{background:var(--fp-surface);border-color:var(--fp-rule);color:var(--fp-ink);border-radius:var(--fp-r-control)}
-.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer button[type=submit]{background:var(--fp-bronze);border-color:var(--fp-bronze);color:var(--fp-ink);border-radius:999px}
+.freshpick-market[data-fp-theme="tasting-room"] .heritage-footer button[type=submit]{background:var(--fp-amber);border-color:var(--fp-amber);color:var(--fp-ink);border-radius:999px}
 .freshpick-market[data-fp-theme="tasting-room"] .heritage-footer button:focus-visible{outline-color:#FFFDF8}
 .freshpick-market>main[data-publication=true]{--studio-radius:var(--fp-r-panel)}
 .freshpick-market>main[data-publication=true] .fp26-sectionhead{border-color:var(--fp-rule);align-items:baseline;padding-top:1rem;margin-bottom:1.15rem}
@@ -52,23 +52,23 @@
 .freshpick-market>main[data-publication=true] .fp-curated-lead{border-bottom:0}
 .freshpick-market>main[data-publication=true] .fp-curated-lead>div:last-child{padding:1.1rem .2rem .4rem}
 .freshpick-market>main[data-publication=true] .fp-curated-lead h3{font-size:clamp(2.4rem,4.1vw,4rem);color:var(--fp-green)}
-/* Signature feature: a dark cacao gift edit, framed like a gift box, not a generic CTA banner. */
-.freshpick-market>main[data-publication=true] .fp-gift-feature{background:var(--fp-cocoa);color:var(--fp-surface);border-radius:var(--fp-r-panel);overflow:hidden;padding:12px;gap:0}
+/* Signature feature: a deep green and amber gift edit, framed like a gift box, not a generic CTA banner. */
+.freshpick-market>main[data-publication=true] .fp-gift-feature{background:var(--fp-green);color:var(--fp-surface);border-radius:var(--fp-r-panel);overflow:hidden;padding:12px;gap:0}
 .freshpick-market>main[data-publication=true] .fp-gift-image{border-radius:var(--fp-r-image);overflow:hidden}
 .freshpick-market>main[data-publication=true] .fp-gift-copy h2{color:var(--fp-surface);font-size:clamp(2.5rem,4.4vw,4.3rem);line-height:1.02}
-.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-label{color:#E2C79B}
-.freshpick-market>main[data-publication=true] .fp-gift-copy>p:not(.fp26-label){color:#F3E8D9}
-.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-action{background:var(--fp-bronze);color:var(--fp-ink)}
-.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-action:hover{background:#E2C79B}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-label{color:#FFD08A}
+.freshpick-market>main[data-publication=true] .fp-gift-copy>p:not(.fp26-label){color:#F0F5EC}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-action{background:var(--fp-amber);color:var(--fp-ink)}
+.freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-action:hover{background:#FFD08A}
 .freshpick-market>main[data-publication=true] .fp-gift-copy .fp26-textlink{color:var(--fp-surface)}
 .freshpick-market>main[data-publication=true] .fp-gift-copy :is(a,button):focus-visible{outline-color:#FFFDF8}
 .freshpick-market>main[data-publication=true] .fp-occasion{border-radius:var(--fp-r-image);background:var(--fp-surface);transition:background-color .2s,border-color .2s}
 .freshpick-market>main[data-publication=true] .fp-occasion:hover{background:var(--fp-soft);border-color:#A3AFA0}
 .freshpick-market>main[data-publication=true] .fp-connect-grid article{background:var(--fp-soft)}
-.freshpick-market>main[data-publication=true] .fp-connect-grid article:nth-child(2){background:#EDE3D3}
+.freshpick-market>main[data-publication=true] .fp-connect-grid article:nth-child(2){background:var(--fp-amber-soft)}
 .freshpick-market>main[data-publication=true] .fp26-business-band{border-color:var(--fp-rule)}
 .freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth aside{border-radius:var(--fp-r-panel);overflow:hidden}
-.freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth aside>div:last-child{background:var(--fp-cocoa)}
+.freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth aside>div:last-child{background:var(--fp-green)}
 .freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth :is(input,select,textarea):not([type=checkbox]):not([type=radio]){border-radius:var(--fp-r-control)}
 .freshpick-market[data-fp-theme="tasting-room"] .fp-discovery-auth button[type=submit]{border-radius:999px}
 @media(max-width:760px){
@@ -83,3 +83,15 @@
  .freshpick-market[data-fp-theme="tasting-room"] .heritage-footer{border-radius:18px 18px 0 0}
 }
 @media(prefers-reduced-motion:reduce){.freshpick-market[data-fp-theme="tasting-room"] :is(.fp-occasion,.fp26-action,.fp26-search button){transition:none}}
+
+/* Compact native filters for Food & Brands, using the same GET form as search.
+   Native controls support keyboard, mobile pickers and no-JavaScript navigation. */
+.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.85fr) minmax(0,1fr) minmax(0,.95fr) auto;gap:.4rem;padding:.7rem;align-items:center}
+.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) auto}
+.fp-brand-filters label{min-width:0;padding:.15rem .55rem}
+.fp-brand-filters label.fp-filter-select{display:block}
+.fp-filter-select select{display:block;width:100%;min-width:0;min-height:40px;padding:.45rem 1.65rem .45rem .65rem;font:400 16px/1.4 var(--fp-sans);color:var(--fp-ink);background:var(--fp-surface);border:1px solid var(--fp-rule);border-radius:var(--fp-r-control);text-overflow:ellipsis}
+.fp-filter-select select:focus-visible{outline:2px solid var(--fp-green);outline-offset:2px}
+.fp-brand-filters .fp26-action{white-space:nowrap}
+@media(max-width:1100px){.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters,.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:.6rem}.fp-brand-filters .fp26-action{grid-column:3;grid-row:1/3;align-self:stretch;height:auto}.fp-brand-filters label.fp-filter-select{border-left:0}.fp-brand-filters label.fp-filter-select+label.fp-filter-select{border-left:1px solid var(--fp-rule)}}
+@media(max-width:760px){.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters,.freshpick-market>main[data-publication=true] .fp26-filters.fp-brand-filters.fp-product-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;padding:.65rem}.fp-brand-filters label:not(.fp-filter-select){grid-column:1/-1;border-left:0}.fp-brand-filters .fp-filter-select{border-top:1px solid var(--fp-rule);padding-top:.5rem}.fp-brand-filters.fp-product-filters .fp-filter-select{grid-column:1/-1}.fp-brand-filters .fp26-action{grid-column:1/-1;grid-row:auto;width:100%;height:48px}.fp-brand-filters label.fp-filter-select+label.fp-filter-select{border-left:0}}
