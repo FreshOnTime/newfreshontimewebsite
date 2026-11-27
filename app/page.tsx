@@ -19,7 +19,7 @@ export default async function Home(){
  ]);
  return <div className="fp26-home fp-discovery-home"><div className="fp26-shell">
  <section className="fp-explore-intro" aria-labelledby="home-headline"><p className="fp26-label">Your guide to food in Sri Lanka</p><h1 id="home-headline">Find your next favourite.</h1><p className="fp26-deck">Places to eat, food worth trying and people worth discovering. Explore restaurants, local brands and gifts, then connect directly.</p><ExploreSearch/></section>
- <EditorialPicks group="dining"/>
+ <EditorialPicks group="dining" feature/>
  {(venues.length>0||prospects.length>0)&&<section className="fp26-guide-section"><SectionHeading title="Explore FreshPick profiles" href="/eat-drink" label="All dining profiles"/><div className="fp26-resultgrid">{venues.map(v=><article className="fp26-index" key={v.id}><p className="fp26-label">{businessTypeLabel(v.businessType)}{v.makerTown?' / '+v.makerTown:''}</p><h3><Link href={'/makers/'+v.makerHandle}>{v.name}<ArrowUpRight size={18}/></Link></h3>{v.makerBio&&<p className="line-clamp-3">{v.makerBio}</p>}</article>)}{prospects.map(p=><ProspectCard key={p.id} business={p}/>)}</div></section>}
  <GiftFeature/>
  <OccasionShelf/>

@@ -12,3 +12,5 @@ Per confirmed referral or monthly booking tools subscription after measuring ado
 
 ## Release criteria
 Test timezones, simultaneous requests, access isolation, double-booking prevention, cancellation, reminders, expired requests, data deletion and calendar sync failures. Do not display a Book now control until restaurant availability and confirmation workflows are operational.
+
+Editorial references are also searchable for dining type (café/restaurant), text and town. Food makers can browse three of the gift-supplier references as independent food brands. References remain external editorial links, not account records.

@@ -10,6 +10,7 @@ import prisma from '@/lib/prisma';
 import {publicMakerWhere,makerKinds} from '@/lib/makers';
 import GiftPlanner from './GiftPlanner';
 import {EditorialPicks,OccasionShelf,GiftFeature,FoodBrandTabs} from './Curated';
+import {editorialMatches} from '@/lib/editorialDiscoveries';
 export function SocialLinks({business}:{business:PublicProspect}){const links=[['Website',publicLink(business.website)],['Instagram',publicLink(business.instagram,'instagram.com')],['Facebook',publicLink(business.facebook,'facebook.com')],['TikTok',publicLink(business.tiktok,'tiktok.com')]] as const;return <div className="fp26-socials">{links.map(([label,url])=>url&&<a key={label} href={url} target="_blank" rel="noopener noreferrer">{label}<ArrowUpRight size={16} aria-hidden="true"/></a>)}</div>}
 export function ProspectCard({business}:{business:PublicProspect}){return <article className="fp26-index"><p className="fp26-label">{business.category}</p><h3><Link href={'/places/'+encodeURIComponent(business.id)}>{business.name}<ArrowUpRight size={18} aria-hidden="true"/></Link></h3>{business.area&&<p className="fp26-location"><MapPin size={14} aria-hidden="true"/>{business.area}</p>}{business.products&&<p className="line-clamp-3">{business.products}</p>}</article>}
 export type DirectoryParams={q?:string|string[];area?:string|string[];town?:string|string[];page?:string|string[];kind?:string;type?:string};
@@ -39,7 +40,8 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const hasResults=prospects.length+makers.length+items.length+stories.length+notes.length>0,more=[prospects,makers,items,stories].some(r=>r.length>24);
  const href=(extra:Record<string,string>)=>path+'?'+new URLSearchParams({...(q?{q}:{}),...(area?{area}:{}),...(kind?{kind}:{}),...(type?{type}:{}),...extra});
  const filtered=!!(q||area||kind||type||page>1);
- const showEditorial=page===1&&!kind&&!type&&(mode==='all'||mode==='dining'||mode==='gifting');
+ const showEditorial=page===1&&!kind&&mode!=='products';
+ const editorialCount=showEditorial?((mode==='all'||mode==='dining'?editorialMatches('dining',q,area,type).length:0)+(mode==='all'||mode==='gifting'?editorialMatches('gifting',q,area,type).length:0)+(mode==='makers'?editorialMatches('makers',q,area,type).length:0)):0;
  return <div className="fp26-shell fp26-directory">
  <EditorialHeader eyebrow={eyebrow} title={title} description={description} photo={!filtered&&mode!=='all'?photo:undefined}/>
  {(mode==='makers'||mode==='products')&&<FoodBrandTabs products={mode==='products'}/>}
@@ -54,9 +56,11 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  {dishes.length>0&&<section className="fp26-guide-section"><SectionHeading title="Menu discoveries"/><div className="journal-item-grid">{dishes.slice(0,24).map(item=><MakerItemCard key={item.id} item={item} handle={item.supplier.makerHandle} makerName={item.supplier.name} makerTown={item.supplier.makerTown} menuItem/>)}</div></section>}
  {prospects.length>0&&<section className="fp26-guide-section"><SectionHeading title={settings.list}/><div className="fp26-resultgrid">{prospects.slice(0,24).map(b=><ProspectCard key={b.id} business={b}/>)}</div><p className="fp26-meta">Reviewed business details. Confirm current offerings directly.</p></section>}
  {(stories.length>0||notes.length>0)&&<section className="fp26-guide-section"><SectionHeading title="Articles"/><div className="fp26-resultgrid">{stories.slice(0,24).map(story=><article className="fp26-index" key={story.id}><p className="fp26-label">{story.supplier?.name}</p><h3><Link href={'/makers/'+story.supplier?.makerHandle+'/stories/'+story.slug}>{story.title}</Link></h3><p>{story.excerpt}</p></article>)}{notes.map(n=><article className="fp26-index" key={n.slug}><p className="fp26-label">FreshPick editorial</p><h3><Link href={notePath(n)}>{n.title}</Link></h3><p>{n.excerpt}</p></article>)}</div></section>}
- {!hasResults&&!unavailable&&<section className="fp26-empty"><div><h2>{filtered?'No matching FreshPick profiles yet.':mode==='makers'?'The directory is opening.':'Verified listings are being added.'}</h2><p>{filtered?'Try another search or reset your filters.':'Explore the independent editorial selections below where available, or suggest a business.'}</p></div><Link className="fp26-textlink" href={filtered?path:'/for-businesses'}>{filtered?'Browse all':'Suggest a business'} <ArrowUpRight size={16}/></Link></section>}
- {showEditorial&&(mode==='all'||mode==='dining')&&<EditorialPicks group="dining" q={q} area={area}/>}
- {showEditorial&&(mode==='all'||mode==='gifting')&&<EditorialPicks group="gifting" q={q} area={area}/>}
+ {!hasResults&&!unavailable&&editorialCount===0&&<section className="fp26-empty"><div><h2>{filtered?'No matching FreshPick profiles yet.':mode==='makers'?'The directory is opening.':'Verified listings are being added.'}</h2><p>{filtered?'Try another search or reset your filters.':'Explore the independent editorial selections below where available, or suggest a business.'}</p></div><Link className="fp26-textlink" href={filtered?path:'/for-businesses'}>{filtered?'Browse all':'Suggest a business'} <ArrowUpRight size={16}/></Link></section>}
+ {showEditorial&&(mode==='all'||mode==='dining')&&<EditorialPicks group="dining" q={q} area={area} type={type}/>}
+ {showEditorial&&(mode==='all'||mode==='gifting')&&<EditorialPicks group="gifting" q={q} area={area} type={type}/>
+ }
+ {showEditorial&&mode==='makers'&&<EditorialPicks group="makers" q={q} area={area} type={type}/>}
  {mode==='all'&&!filtered&&<><OccasionShelf/><GiftFeature/></>}
  {(page>1||more)&&<nav className="fp26-pagination" aria-label="Result pages">{page>1&&<Link href={href({page:String(page-1)})}><ArrowLeft size={16}/> Previous</Link>}<span>Page {page}</span>{more&&<Link href={href({page:String(page+1)})}>Next <ArrowRight size={16}/></Link>}</nav>}
  {mode==='gifting'&&<GiftPlanner/>}
