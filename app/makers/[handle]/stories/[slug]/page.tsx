@@ -1,3 +1,5 @@
+import { ShareDiscovery } from '@/components/discovery/ShareDiscovery';
+import { absoluteUrl } from '@/lib/config/site';
 import { SavePick } from '@/components/makers/SavedPicks';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -50,7 +52,7 @@ export default async function MakerStoryPage({ params }: Props) {
       <header className="journal-story-header">
       <p className="fp-kicker">From the makers · {Math.max(1,Math.ceil(story.content.trim().split(/\s+/).length/220))} min read</p><div className="mt-3"><Link href={`/makers/${handle}`} className="journal-text-cta">{maker.name} · {maker.makerTown}</Link></div>
       <h1 className="mt-4 break-words font-serif text-4xl text-brand-green md:text-6xl">{story.title}</h1>
-      <SavePick href={`/makers/${handle}/stories/${slug}`} title={story.title} kind="Story" />
+      <div className="flex flex-wrap items-center gap-3"><SavePick href={`/makers/${handle}/stories/${slug}`} title={story.title} kind="Story" /><ShareDiscovery title={story.title} url={absoluteUrl(`/makers/${handle}/stories/${slug}`)}/></div>
         <p className="mt-4 break-words text-lg leading-8 text-muted-foreground">{story.excerpt}</p>
       </header>
       <div className={story.makerItems.length ? "journal-story-columns" : "journal-story-columns journal-story-solo"}>

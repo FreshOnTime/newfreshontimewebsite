@@ -6,7 +6,7 @@ const base = process.env.VISUAL_BASE_URL || 'http://localhost:3000';
 const historical = process.env.HISTORICAL_BASE_URL;
 const maker = process.env.VISUAL_MAKER_PATH || '/makers/visual-review-bakery';
 const routes = [
-  ['homepage','/'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
+  ['homepage','/'],['atlas','/food-atlas'],['atlas-dish','/food-atlas/kottu'],['experiences','/experiences'],['traditions','/traditions'],['guides','/guides'],['guide-detail','/guides/hoppers-vs-string-hoppers'],['tradition-detail','/traditions/avurudu-food-traditions'],['event-detail','/experiences/events/visual-review-event'],['discovery','/discover'],['dining','/eat-drink'],['food-products','/food-products'],['gifting','/gifting'],['food-tools','/food-tools'],['businesses','/for-businesses'],['directory','/makers'],['maker-profile',maker],
   ['item',process.env.VISUAL_ITEM_PATH || maker+'/items/visual-review-loaf'],
   ['story',process.env.VISUAL_STORY_PATH || maker+'/stories/visual-review-story'],
   ['field-note','/stories/the-bread-window'],['empty-directory','/makers?q=visual-no-match-000'],
@@ -53,7 +53,7 @@ async function main(){
       const page=await context.newPage();
       try{
         for(const [name,path] of routes){
-          if((width===320||width===430)&&!['homepage','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
+          if((width===320||width===430)&&!['homepage','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
             if(name==='homepage'){
@@ -74,13 +74,34 @@ async function main(){
               if(width>=1280){const contact=page.getByRole('navigation',{name:'Discover FreshPick',exact:true}).getByRole('link',{name:'Contact',exact:true});assert(await contact.isVisible());assert.equal(await contact.getAttribute('href'),'/contact');}
               if(phone){await page.getByRole('button',{name:'Open menu'}).click();await page.locator('#heritage-mobile-menu').waitFor();const contact=page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Contact',exact:true});assert(await contact.isVisible());assert.equal(await contact.getAttribute('href'),'/contact');assert(await page.getByRole('navigation',{name:'Mobile discovery navigation'}).getByRole('link',{name:'Saved picks'}).isVisible());await page.screenshot({path:out+'/current-mobile-menu-'+width+'.png',animations:'disabled'});await page.keyboard.press('Escape');await page.getByRole('button',{name:'Open menu'}).waitFor();await page.getByRole('button',{name:'Open search'}).click();await page.locator('#nav-search').waitFor();assert(await page.locator('#nav-search').isEditable());await page.getByRole('button',{name:'Close search'}).click();}
               assert.equal(await page.locator('.fp26-search').getAttribute('action'),'/discover');
+              assert.equal(await page.locator('.fp-hub-path').count(),6);
+              assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
+              assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(184, 222, 156)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
               assert.equal(await page.locator('.fp-connect-card').first().getAttribute('href'),'/eat-drink');
               await page.locator('.fp-explore-intro').screenshot({path:out+'/explore-intro-'+width+'.png'});
               await page.locator('#home-discover').fill('visual-no-match-000');
               await page.locator('.fp26-search button').click();
               await page.waitForURL(url=>url.pathname==='/discover'&&url.searchParams.get('q')==='visual-no-match-000');
-              await page.getByRole('heading',{name:'No matching FreshPick profiles yet.'}).waitFor();
+              await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
+              await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
+            }
+            if(name==='atlas'){
+              await page.locator('.fp-atlas-search input[name=q]').fill('කොත්තු');
+              await page.locator('.fp-atlas-search button').click();
+              await page.waitForURL(url=>url.pathname==='/food-atlas'&&url.searchParams.get('q')==='කොත්තු');
+              await page.locator('#main-content [data-atlas-query="කොත්තු"][data-result-count="1"]').waitFor();
+              assert.equal(await page.locator('#main-content .fp-atlas-card').count(),1);
+              assert(await page.locator('#main-content').getByRole('heading',{name:'Kottu',exact:true}).isVisible());
+            }
+            if(name==='atlas-dish'){
+              assert(await page.getByRole('heading',{name:'Kottu',exact:true}).isVisible());
+              await page.getByRole('button',{name:'Save',exact:true}).click();
+              assert.equal(await page.getByRole('button',{name:'Saved',exact:true}).getAttribute('aria-pressed'),'true');
+              const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('freshpick:saved-maker-picks')||'[]'));
+              assert(stored.some(p=>p.href==='/food-atlas/kottu'));
+              await page.getByRole('button',{name:'Saved',exact:true}).click();
+              assert.equal(await page.getByRole('link',{name:'Find related dining discoveries'}).getAttribute('href'),'/eat-drink?q=kottu');
             }
             if(name==='item'){
               const details = page.locator('.lux-detail').first();
@@ -111,11 +132,13 @@ async function main(){
               await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Pantry');
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
-              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand');
+              await page.waitForURL(url=>url.pathname==='/makers'&&url.searchParams.get('kind')==='Pantry'&&url.searchParams.get('type')==='food_brand',{waitUntil:'domcontentloaded'});
+              await page.locator('#main-content .fp26-resultbar[data-kind="Pantry"][data-type="food_brand"]').waitFor();
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'Pantry');
               assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).inputValue(),'food_brand');
-              await page.getByRole('link',{name:'Clear filters',exact:true}).click();
-              await page.waitForURL(url=>url.pathname==='/makers'&&!url.search);
+              await page.locator('#main-content').getByRole('link',{name:'Clear filters',exact:true}).click();
+              await page.waitForURL(url=>url.pathname==='/makers'&&![...url.searchParams.values()].some(Boolean),{waitUntil:'domcontentloaded'});
+              await page.locator('#main-content .fp26-resultbar[data-kind=""][data-type=""]').waitFor();
               assert.equal(await page.getByRole('combobox',{name:'Food category',exact:true}).inputValue(),'');
             }
           }catch(error){errors.push(name+' '+width+': '+String(error));}
@@ -163,6 +186,94 @@ async function main(){
         }
       } catch(error) { errors.push(String(error)); }
       finally { await db.$disconnect(); }
+    }
+    if(process.env.FRESHPICK_VISUAL_FIXTURES==='1'){
+      const context=await browser.newContext({viewport:{width:390,height:844}});
+      try{
+        const endpoint=new URL('/api/admin/discovery-content',base).href;
+        assert.equal((await context.request.get(endpoint)).status(),401);
+        const login=await context.request.post(new URL('/api/auth/login',base).href,{data:{identifier:'visual-admin@example.invalid',password:process.env.VISUAL_PASSWORD}});
+        assert(login.ok(),'CMS admin fixture login failed');
+        const page=await context.newPage();
+        await ready(page,new URL('/admin/discovery-content',base).href);
+        await page.getByRole('heading',{name:'Food & Culture CMS'}).waitFor({timeout:20000});
+        await page.getByRole('button',{name:/Kottu/}).waitFor();
+        await capture(page,'admin-discovery-cms-390');
+        const write=async(url,method,data)=>page.evaluate(async({url,method,data})=>{const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return {status:r.status,ok:r.ok,body:await r.json().catch(()=>null)};},{url,method,data});
+        const content={kind:'event',slug:'visual-cms-lifecycle',title:'CMS lifecycle fixture '+Date.now(),category:'Workshop',summary:'Private draft test',body:'Private event body '+Date.now(),aliases:[],variations:[],relatedDishes:[],searchTerm:'',sourceUrl:'https://example.org/fixture',sourceName:'Test fixture',location:'Test venue',startsAt:new Date(Date.now()+86400000).toISOString(),endsAt:new Date(Date.now()+90000000).toISOString(),published:false,confirmed:false};
+        const created=await write(endpoint,'POST',content);assert.equal(created.status,201,JSON.stringify(created.body));
+        const draft=created.body.record;
+        const publicUrl=new URL('/experiences/events/'+content.slug,base).href;
+        // Next.js can send 200 for a streamed notFound() response. Assert actual
+        // anonymous visibility, noindex and absence of the private payload.
+        const eventGuest=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+        try{
+          const visitor=await eventGuest.newPage();
+          const expectPrivate=async(label)=>{
+            const response=await visitor.goto(publicUrl,{waitUntil:'networkidle'});
+            assert(response&&[200,404].includes(response.status()),label+': unexpected HTTP status '+response?.status());
+            await visitor.locator('#main-content').getByRole('heading',{name:'We couldn’t find that page.',exact:true}).waitFor();
+            assert.equal(await visitor.locator('#main-content').getByText(content.title,{exact:true}).count(),0,label+': private title rendered');
+            assert.equal(await visitor.locator('#main-content').getByText(content.body,{exact:true}).count(),0,label+': private body rendered');
+            const html=await response.text();
+            assert(!html.includes(content.title)&&!html.includes(content.body),label+': private payload present in HTML');
+            assert(await visitor.locator('meta[name="robots"]').evaluateAll(nodes=>nodes.some(n=>n.getAttribute('content')?.includes('noindex'))),label+': missing noindex');
+            const sitemap=await eventGuest.request.get(new URL('/sitemap.xml',base).href);
+            assert(sitemap.ok(),label+': sitemap unavailable');
+            assert(!(await sitemap.text()).includes('/experiences/events/'+content.slug),label+': private URL present in sitemap');
+          };
+          await expectPrivate('Draft must not be public');
+          const published=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content:{...content,published:true,confirmed:true}});assert(published.ok,'Publish failed: '+JSON.stringify(published.body));
+          const live=published.body.record;
+          const response=await visitor.goto(publicUrl,{waitUntil:'networkidle'});
+          assert(response?.ok(),'Published event must be public');
+          await visitor.locator('#main-content').getByRole('heading',{name:content.title,exact:true}).waitFor();
+          assert(await visitor.locator('#main-content').getByText(content.body,{exact:true}).isVisible(),'Published event body missing');
+          const stale=await write(endpoint,'PATCH',{id:draft.id,version:draft.updatedAt,content});assert.equal(stale.status,409);
+          const hidden=await write(endpoint,'PATCH',{id:live.id,version:live.updatedAt,content});assert(hidden.ok,'Unpublish failed: '+JSON.stringify(hidden.body));
+          await expectPrivate('Unpublished event must be hidden');
+        }finally{await eventGuest.close();}
+        const pageEndpoint=new URL('/api/admin/site-pages',base).href;
+        const pageData=await page.evaluate(async url=>(await (await fetch(url,{credentials:'same-origin'})).json()),pageEndpoint);
+        const initial=pageData.pages.find(p=>p.key==='home');
+        assert(initial,'Home CMS configuration missing');
+        const changed={...initial.config,title:'CMS private draft fixture '+Date.now()};
+        const guest=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+        const {PrismaClient}=await import('@prisma/client');
+        const db=new PrismaClient();
+        let version=initial.version;
+        try{
+          const publicPage=await guest.newPage();
+          await ready(publicPage,new URL('/',base).href);
+          // Reproduce the real returning-visitor path with an active worker, not a bypassed cache.
+          await publicPage.evaluate(()=>navigator.serviceWorker.ready);
+          await publicPage.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
+          await ready(publicPage,new URL('/',base).href);
+          const original=await publicPage.locator('#main-content #home-headline').innerText();
+          const saved=await write(pageEndpoint,'PATCH',{key:'home',version,config:changed,action:'draft'});assert(saved.ok,'Page draft failed: '+JSON.stringify(saved.body));version=saved.body.page.version;
+          const stored=await db.sitePageContent.findUniqueOrThrow({where:{key:'home'}});
+          assert.equal(stored.draft.title,changed.title,'Draft must be saved');
+          assert.notEqual(stored.live.title,changed.title,'Draft must not overwrite published JSON');
+          const response=await guest.request.get(new URL('/',base).href,{headers:{'Cache-Control':'no-cache'}});
+          assert(response.ok(),'Guest homepage failed');
+          assert(!(await response.text()).includes(changed.title),'Draft must not be in anonymous response');
+          await ready(publicPage,new URL('/',base).href);
+          assert.equal(await publicPage.locator('#home-headline').innerText(),original,'Draft must not change public headline');
+          const publishedPage=await write(pageEndpoint,'PATCH',{key:'home',version,config:changed,action:'publish'});assert(publishedPage.ok,'Page publish failed: '+JSON.stringify(publishedPage.body));version=publishedPage.body.page.version;
+          const publishedRow=await db.sitePageContent.findUniqueOrThrow({where:{key:'home'}});
+          assert.equal(publishedRow.live.title,changed.title,'Publish must persist live headline');
+          assert(publishedRow.publishedAt,'Publish timestamp missing');
+          const publishedHtml=await guest.request.get(new URL('/',base).href,{headers:{'Cache-Control':'no-cache'}});
+          assert(publishedHtml.ok()&&(await publishedHtml.text()).includes(changed.title),'Published headline missing from server response');
+          await ready(publicPage,new URL('/',base).href);
+          await publicPage.locator('#main-content').getByRole('heading',{name:changed.title,exact:true}).waitFor({timeout:15000});
+          assert.equal(await publicPage.locator('#main-content #home-headline').innerText(),changed.title,'Published headline missing with active service worker');
+          const pageCache=await publicPage.evaluate(async()=>{const keys=await caches.keys();const entries=await Promise.all(keys.filter(k=>k.startsWith('freshpick-')).map(async key=>(await (await caches.open(key)).keys()).map(r=>new URL(r.url))));return entries.flat().some(url=>url.pathname==='/'||url.searchParams.has('_rsc'));});
+          assert(!pageCache,'CMS documents or RSC payloads must not be stored in Cache Storage');
+        }finally{
+          try{if(version!==initial.version){const restored=await write(pageEndpoint,'PATCH',{key:'home',version,config:initial.config,action:'publish'});assert(restored.ok,'Restore fixture page failed');}}finally{await guest.close();await db.$disconnect();}
+        }
+      }catch(error){errors.push('CMS lifecycle: '+(error instanceof Error?error.stack||error.message:String(error)));}finally{await context.close();}
     }
     const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
     try{

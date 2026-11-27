@@ -1,3 +1,5 @@
+import { socialProfileUrl } from '../socialProfiles';
+
 const normalizeUrl = (value: string) => value.trim().replace(/\/+$/, "");
 
 export const SITE_URL = normalizeUrl(
@@ -18,9 +20,11 @@ export const WHATSAPP_NUMBER = (
 ).replace(/\D/g, "");
 
 export const SOCIAL_LINKS = {
-  instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
-  facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || "",
-  x: process.env.NEXT_PUBLIC_X_URL || "",
+  instagram: socialProfileUrl('instagram',process.env.NEXT_PUBLIC_INSTAGRAM_URL),
+  facebook: socialProfileUrl('facebook',process.env.NEXT_PUBLIC_FACEBOOK_URL),
+  x: socialProfileUrl('x',process.env.NEXT_PUBLIC_X_URL),
+  linkedin: socialProfileUrl('linkedin',process.env.NEXT_PUBLIC_LINKEDIN_URL),
+  bluesky: socialProfileUrl('bluesky',process.env.NEXT_PUBLIC_BLUESKY_URL),
 } as const;
 
 export const SERVICE_AREAS = [
