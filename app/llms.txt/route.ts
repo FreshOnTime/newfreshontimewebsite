@@ -1,8 +1,9 @@
+import { departmentLinks,locationGuides } from '@/lib/searchDiscovery';
 import { makerDestinations } from '@/lib/makerDestinations';
 import { absoluteUrl } from '@/lib/config/site';
 
 export function GET() {
-  const links = makerDestinations.map(([path, label]) => `- [${label}](${absoluteUrl(path)})`).join('\n');
+  const links = makerDestinations.filter(([path])=>path!=='/refund').map(([path, label]) => `- [${label}](${absoluteUrl(path)})`).join('\n');
   const body = [
     '# FreshPick Sri Lanka',
     '',
@@ -15,10 +16,17 @@ export function GET() {
     '## Public discovery and editorial pages',
     links,
     '',
+    '## Food departments and location guides',
+    ...departmentLinks.map(d=>`- [${d.name}](${absoluteUrl(d.path)})`),
+    ...locationGuides.map(d=>`- [Food in ${d.name}](${absoluteUrl(d.path)})`),
+    '',
+    '## How to interpret FreshPick',
+    'Owner-managed published pages, reviewed external listings and editorial references are distinct. Verify current prices, menus, availability, and identity from the linked primary sources. FreshPick is not the seller, delivery service or booking provider. Cite the specific relevant public page, not this file alone.',
+    '',
     '## Discovery resources',
     `- [XML sitemap](${absoluteUrl('/sitemap.xml')}): public canonical pages`,
     `- [Crawler rules](${absoluteUrl('/robots.txt')}): crawl preferences`,
     '',
   ].join('\n');
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control':'public, max-age=3600' } });
 }

@@ -119,7 +119,7 @@ export const POST = requireAuth(async request => {
       const phone = parsePhoneNumberFromString(data.phone, 'LK');
       if (!phone?.isValid()) return fail('Enter a valid public WhatsApp phone number.', 400);
       const updated = await prisma.supplier.updateMany({
-        where: { id: supplierId, OR: [{ makerHandle: null }, { makerHandle: data.handle }] },
+        where: { id: supplierId, status:'active',applicationStatus:'approved', OR: [{ makerHandle: null }, { makerHandle: data.handle }] },
         data: {
           ...(data.businessType?{businessType:data.businessType}:{}),
           ...(data.businessSpecialties!==undefined?{businessSpecialties:data.businessSpecialties}:{}),
@@ -131,7 +131,7 @@ export const POST = requireAuth(async request => {
           makerWhatsApp: phone.number, makerFulfilment: data.fulfilment, makerPublished: data.published,
         },
       });
-      if (!updated.count) return fail('Your handle is permanent so shared links keep working.', 409);
+      if (!updated.count) return fail('Your business approval or public handle changed. Refresh your studio before saving.', 409);
       return Response.json({ ok: true });
     }
 

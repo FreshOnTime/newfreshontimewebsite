@@ -7,7 +7,8 @@ import { findPublicMaker, publicItemSelect } from '@/lib/makerQueries';
 import { formatMakerPrice, makerImageSrc, makerItemPath, makerWhatsAppLink, openBatches } from '@/lib/makers';
 import prisma from '@/lib/prisma';
 import {isVenueOnly} from '@/lib/businessTypes';
-import { pageMetadata } from '@/lib/seo';
+import { pageMetadata,serializeJsonLd,breadcrumbJsonLd } from '@/lib/seo';
+import {offeringJsonLd} from '@/lib/searchDiscovery';
 
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ handle: string; slug: string }> };
@@ -43,7 +44,7 @@ export default async function MakerItemPage({ params }: Props) {
   const related = await prisma.makerItem.findMany({ where: {supplierId: maker.id, published: true, slug: {not: slug}}, orderBy: [{createdAt: 'desc'}, {id:'asc'}], take: 3, select: publicItemSelect });
   const venue=isVenueOnly(maker.businessType);
   const enquiry = makerWhatsAppLink(maker.makerWhatsApp, item.name);
-  return <div className="fp-item-page editorial-wrap py-10 md:py-16">
+  return <div className="fp-item-page editorial-wrap py-10 md:py-16"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd(breadcrumbJsonLd([{name:venue?"Eat & drink":"Food products",path:venue?"/eat-drink":"/food-products"},{name:maker.name,path:"/makers/"+handle},{name:item.name,path:makerItemPath(handle,slug)}]))}}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd(offeringJsonLd({path:makerItemPath(handle,slug),name:item.name,description:item.description,kind:item.kind,venue,makerHandle:handle,image:makerImageSrc(item.image)}))}}/>
     <nav aria-label="Breadcrumb" className="journal-breadcrumb"><Link href={venue?"/eat-drink":"/food-products"}>{venue?"Eat & drink":"Products"}</Link><span aria-hidden="true">/</span><Link href={`/makers/${handle}`}>{maker.name}</Link><span aria-hidden="true">/</span><span aria-current="page">{item.name}</span></nav>
     <div className="journal-item-layout mt-5 grid items-start gap-8 lg:grid-cols-2">
       <div className="journal-item-photo lux-item-visual"><MakerPhoto image={item.image} name={item.name} /></div>

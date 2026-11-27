@@ -1,3 +1,4 @@
+import {locationGuides} from '@/lib/searchDiscovery';
 import {foodDepartments,departmentPath} from '@/lib/foodDepartments';
 import {contentPath,publishedContentWhere} from '@/lib/discoveryContent';
 import { fieldNotes, notePath } from '@/lib/fieldNotes';
@@ -25,19 +26,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   };
   const [makers, items, stories, journal, managedGuides, prospects, content] = await Promise.all([
-    source('makers', () => prisma.supplier.findMany({ where: publicMakerWhere, select: { makerHandle:true } })),
-    source('items', () => prisma.makerItem.findMany({ where:{published:true, supplier:publicMakerWhere}, select:{slug:true,supplier:{select:{makerHandle:true}}} })),
-    source('stories', () => prisma.blog.findMany({ where:{published:true,isDeleted:false,supplier:publicMakerWhere}, select:{slug:true,supplier:{select:{makerHandle:true}}} })),
-    source('journal', () => prisma.blog.findMany({ where:publishedJournalWhere, select:{slug:true} })),
+    source('makers', () => prisma.supplier.findMany({ where: publicMakerWhere, select: { makerHandle:true,updatedAt:true } })),
+    source('items', () => prisma.makerItem.findMany({ where:{published:true, supplier:publicMakerWhere}, select:{slug:true,updatedAt:true,supplier:{select:{makerHandle:true}}} })),
+    source('stories', () => prisma.blog.findMany({ where:{published:true,isDeleted:false,supplier:publicMakerWhere}, select:{slug:true,updatedAt:true,supplier:{select:{makerHandle:true}}} })),
+    source('journal', () => prisma.blog.findMany({ where:publishedJournalWhere, select:{slug:true,updatedAt:true} })),
     source('managed guides', () => prisma.blog.findMany({ where:{slug:{in:editorialGuides.map(g=>g.slug)}}, select:{slug:true} })),
-    source('prospects', () => prisma.discoveryProspect.findMany({where:publicProspectWhere,select:{id:true}})),
+    source('prospects', () => prisma.discoveryProspect.findMany({where:publicProspectWhere,select:{id:true,updatedAt:true}})),
     source('discovery content', () => prisma.discoveryContent.findMany({where:publishedContentWhere,select:{kind:true,slug:true,updatedAt:true}})),
   ]);
   if (failedSources === 7) throw new Error('All dynamic sitemap sources unavailable');
   const managed = new Set(managedGuides.map(row=>row.slug));
-  const paths = ['/explore',...foodDepartments.map(d=>departmentPath(d.slug)),...content.map(c=>contentPath(c.kind,c.slug)),...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
+  const paths = ['/explore','/site-map',...locationGuides.map(l=>l.path),...foodDepartments.map(d=>departmentPath(d.slug)),...content.map(c=>contentPath(c.kind,c.slug)),...fieldNotes.map(notePath), ...makerDestinations.map(([path])=>path), ...makers.map(m=>`/makers/${m.makerHandle}`), ...prospects.map(p=>`/places/${encodeURIComponent(p.id)}`),
     ...items.map(i=>makerItemPath(i.supplier.makerHandle,i.slug)), ...stories.map(s=>`/makers/${s.supplier?.makerHandle}/stories/${s.slug}`),
     ...journal.map(j=>`/blog/${encodeURIComponent(j.slug)}`), ...editorialGuides.filter(g=>!managed.has(g.slug)).map(g => guidePath(g.slug))];
-  const dates=new Map(content.map(c=>[contentPath(c.kind,c.slug),c.updatedAt]));
+  const dates=new Map<string,Date>();
+  const date=(path:string,value:Date|undefined)=>{if(value instanceof Date&&!Number.isNaN(value.getTime()))dates.set(path,value);};
+  content.forEach(c=>date(contentPath(c.kind,c.slug),c.updatedAt));makers.forEach(m=>date('/makers/'+m.makerHandle,m.updatedAt));items.forEach(i=>date(makerItemPath(i.supplier.makerHandle,i.slug),i.updatedAt));stories.forEach(s=>date('/makers/'+s.supplier?.makerHandle+'/stories/'+s.slug,s.updatedAt));journal.forEach(j=>date('/blog/'+encodeURIComponent(j.slug),j.updatedAt));prospects.forEach(p=>date('/places/'+encodeURIComponent(p.id),p.updatedAt));
   return [...new Set(paths)].map(path=>({url:absoluteUrl(path),...(dates.has(path)?{lastModified:dates.get(path)}:{})}));
 }

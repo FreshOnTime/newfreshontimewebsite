@@ -95,9 +95,8 @@ export default function MakerStudio() {
   const { supplier, items, stories } = studio;
   const venue=isVenueOnly(supplier.businessType);
   const item = items.find(entry => entry.id === itemEdit);
-  const copy = catalogue.find(entry => entry.id === copyId);
   const story = stories.find(entry => entry.id === storyEdit);
-  const source = item || copy;
+  const source = item;
   const sourceImage = makerImageSrc(source?.image ?? null);
   const openItems = items.filter(entry => entry.published);
   const profilePath = `/makers/${supplier.makerHandle}`;

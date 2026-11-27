@@ -12,6 +12,8 @@ const PRIVATE_PATHS = [
   '/wishlist',
   '/bags',
   '/for-you',
+  '/supplier',
+  '/saved',
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -19,7 +21,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       // Explicitly allow search/answer crawlers to discover public content while
       // keeping account, checkout and admin surfaces out of crawl indexes.
-      { userAgent: ['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User'], allow: '/', disallow: PRIVATE_PATHS },
+      { userAgent: ['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot'], allow: '/', disallow: PRIVATE_PATHS },
       { userAgent: '*', allow: '/', disallow: PRIVATE_PATHS },
     ],
     sitemap: absoluteUrl('/sitemap.xml'),

@@ -114,6 +114,7 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
         ...(data.paymentTerms !== undefined ? { paymentTerms: termsToDb(data.paymentTerms) } : {}),
         ...(data.notes !== undefined ? { notes: data.notes } : {}),
         ...(data.status !== undefined ? { status: data.status } : {}),
+        ...(data.status==='inactive'?{makerPublished:false}:{}),
       },
     });
 

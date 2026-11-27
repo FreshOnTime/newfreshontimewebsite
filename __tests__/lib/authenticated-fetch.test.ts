@@ -19,11 +19,13 @@ test('replays the same update once after a successful refresh', async () => {
   const init = { method: 'PATCH', body: JSON.stringify({ action: 'pause' }) };
   request.mockResolvedValueOnce(response(401)).mockResolvedValueOnce(response(200)).mockResolvedValueOnce(result);
   expect(await authenticatedApiFetch('/api/orders/recurring/123', init)).toBe(result);
-  expect(request.mock.calls).toEqual([
-    ['/api/orders/recurring/123', init],
-    ['/api/auth/refresh', { method: 'POST', signal: undefined }],
-    ['/api/orders/recurring/123', init],
-  ]);
+  expect(request).toHaveBeenCalledTimes(3);
+  expect(request.mock.calls[0]).toEqual(['/api/orders/recurring/123',init]);
+  expect(request.mock.calls[1][0]).toBe('/api/auth/refresh');
+  expect(request.mock.calls[1][1]?.method).toBe('POST');
+  expect(request.mock.calls[1][1]?.signal).toBeInstanceOf(AbortSignal);
+  expect(request.mock.calls[1][1]?.signal?.aborted).toBe(false);
+  expect(request.mock.calls[2]).toEqual(['/api/orders/recurring/123',init]);
 });
 
 test('a second unauthorized response never starts another refresh', async () => {
@@ -89,4 +91,21 @@ test('role denial is never retried as a session expiry', async () => {
   request.mockResolvedValueOnce(response(403));
   expect((await authenticatedApiFetch('/api/admin/suppliers')).status).toBe(403);
   expect(request).toHaveBeenCalledTimes(1);
+});
+
+test('shared refresh aborts its transport after ten seconds and permits a subsequent refresh',async()=>{
+ jest.useFakeTimers();
+ try{
+  request.mockResolvedValueOnce(response(401)).mockImplementationOnce(async (_path,init)=>new Promise<Response>((_resolve,reject)=>{
+   init?.signal?.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')),{once:true});
+  }));
+  const pending=authenticatedApiFetch('/api/admin/enquiries');
+  const check=expect(pending).rejects.toMatchObject({name:'AbortError'});
+  await Promise.resolve();await Promise.resolve();
+  await jest.advanceTimersByTimeAsync(10000);
+  await check;
+  expect(request.mock.calls[1][1]?.signal?.aborted).toBe(true);
+  request.mockResolvedValueOnce(response(401)).mockResolvedValueOnce(response(200)).mockResolvedValueOnce(response(200));
+  expect((await authenticatedApiFetch('/api/admin/enquiries')).status).toBe(200);
+ }finally{jest.useRealTimers();}
 });

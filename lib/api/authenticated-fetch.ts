@@ -5,8 +5,10 @@ let refreshInFlight: Promise<Response> | null = null;
 /** Share token rotation so simultaneous admin requests cannot invalidate each other's refresh token. */
 export function refreshSession(): Promise<Response> {
   if (!refreshInFlight) {
-    refreshInFlight = apiFetch('/api/auth/refresh', { method: 'POST', signal: undefined })
-      .finally(() => { refreshInFlight = null; });
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),10000);
+    refreshInFlight = apiFetch('/api/auth/refresh', { method: 'POST', signal: controller.signal })
+      .finally(() => { clearTimeout(timer);refreshInFlight = null; });
   }
   return refreshInFlight;
 }
