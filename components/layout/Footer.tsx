@@ -14,7 +14,7 @@ export function Footer() {
     <footer className="heritage-footer mt-8 bg-brand-green-deep text-white">
       <div className="editorial-wrap">
         <div className="grid gap-8 border-b border-white/20 py-9 md:grid-cols-2 md:items-center md:gap-12 md:py-12">
-          <div><p className="text-[10px] uppercase tracking-[0.16em] text-white/85">FreshPick newsletter</p><h2 className="mt-4 max-w-xl font-heading text-4xl font-normal leading-[1.08] tracking-[-.025em] text-white md:text-6xl">The FreshPick newsletter.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">Restaurant stories, new food finds and independent business updates.</p></div>
+          <div><h2 className=" max-w-xl font-heading text-4xl font-normal leading-[1.08] tracking-[-.025em] text-white md:text-6xl">A little more good food.</h2><p className="mt-4 max-w-md text-sm leading-6 text-white/85">A note from FreshPick with new dining finds, local makers and thoughtful gift ideas.</p></div>
           <FooterNewsletterForm />
         </div>
         <div className="grid gap-8 py-10 lg:grid-cols-[1fr_2fr] md:py-12">

@@ -42,6 +42,9 @@ async function main(){
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
               const family=await page.locator('main h1').evaluate(node=>getComputedStyle(node).fontFamily);
               assert(family.includes('Instrument Serif'),'Unexpected homepage font: '+family);
+              const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),gift:parseFloat(getComputedStyle(document.querySelector('.fp-gift-feature')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-copy .fp26-action')).borderTopLeftRadius)}));
+              assert.equal(finish.paper,'rgb(248, 245, 238)');
+              assert(finish.search>=16&&finish.gift>=20&&finish.image>=12&&finish.button>=24,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
               await capture(page,'motion-homepage-'+width);

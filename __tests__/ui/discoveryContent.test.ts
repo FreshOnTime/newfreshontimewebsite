@@ -35,3 +35,5 @@ it('keeps products separate from businesses and restaurants in the new discovery
 });
 
 it('makes gifting and contact paths prominent without the repeated homepage navigation',()=>{const home=read('app/page.tsx');expect(home).toContain('<GiftFeature/>');expect(home).toContain('<ConnectShelf/>');expect(home).not.toContain('<DiscoveryRail/>');expect(home).toContain('<EditorialPicks group="dining" feature/>');expect(read('components/discovery/Curated.tsx')).toContain('Not FreshPick partners');});
+
+it('loads the premium public finish without changing admin chrome',()=>{expect(read('app/layout.tsx')).toContain('import "./discovery-polish.css"');expect(read('components/layout/AdminChromeGuard.tsx')).toContain('publication||authentication?"tasting-room":undefined');const css=read('app/discovery.css');for(const value of ['#F8F5EE','#244539','#49362B','--fp-r-image:16px','--fp-r-panel:24px'])expect(css).toContain(value);expect(read('app/discovery-polish.css')).toContain('prefers-reduced-motion');});

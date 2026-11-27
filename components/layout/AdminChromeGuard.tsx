@@ -20,7 +20,7 @@ export default function AdminChromeGuard({ children, footer }: { children: React
   if (workspace) return <AuthProvider><div className="fp-admin flex min-h-screen flex-col"><main id="main-content" className="flex-1">{children}</main></div></AuthProvider>;
   return (
     <AuthProvider><BagProvider><WishlistProvider>
-      <div className="freshpick-market flex min-h-screen flex-col">
+      <div className="freshpick-market flex min-h-screen flex-col" data-fp-theme={publication||authentication?"tasting-room":undefined}>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-5 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-3 focus:text-primary-foreground">Skip to content</a>
         <Navbar />
         <main id="main-content" className="flex-1 studio-content" data-publication={publication ? "true" : undefined}><ModernMotion/>{authentication ? <AuthFrame>{children}</AuthFrame> : children}</main>
