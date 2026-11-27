@@ -60,7 +60,7 @@ export default function MakerStudio() {
 
   useEffect(() => {
     const controller = new AbortController();
-    readStudio(controller.signal).then(setStudio).catch(error => {
+    readStudio(controller.signal).then(value=>{if(!controller.signal.aborted)setStudio(value)}).catch(error => {
       if (!controller.signal.aborted) setNotice({ text: error.message, error: true });
     });
     return () => controller.abort();

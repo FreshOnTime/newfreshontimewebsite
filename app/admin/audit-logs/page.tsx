@@ -44,11 +44,12 @@ export default function AuditLogsPage() {
   const [userId, setUserId] = useState<string>(searchParams.get('userId') || '');
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
 
-  const page = Math.max(1,Math.min(100000,Number(searchParams.get('page'))||1));
-  const limit = Math.max(1,Math.min(100,Number(searchParams.get('limit'))||20));
+  const page = Math.max(1,Math.min(100000,Math.floor(Number(searchParams.get('page')))||1));
+  const limit = Math.max(1,Math.min(100,Math.floor(Number(searchParams.get('limit')))||20));
   const applied=searchParams.toString();
   const [version,setVersion]=useState(0);
   const resourceTypeSelectValue = resourceType === '' ? 'all' : resourceType;
+  useEffect(()=>{const p=new URLSearchParams(applied);setResourceType(p.get('resourceType')||'');setAction(p.get('action')||'');setUserId(p.get('userId')||'');setSearch(p.get('search')||'');},[applied]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -60,6 +61,7 @@ export default function AuditLogsPage() {
         params.set('page',String(page));params.set('limit',String(limit));
         const data=await readWorkspace<{activities:Activity[];pagination:Pagination}>(`/api/admin/activities?${params}`,controller.signal);
         if(controller.signal.aborted)return;
+        if(page>data.pagination.pages){const next=new URLSearchParams(applied);next.set('page',String(data.pagination.pages));router.replace('/admin/audit-logs?'+next.toString());return;}
         setActivities(data.activities || []);
         setPagination(data.pagination || { page: 1, limit: 20, total: 0, pages: 0 });
       } catch (e) {
@@ -71,7 +73,7 @@ export default function AuditLogsPage() {
     }
     load();
     return () => controller.abort();
-  }, [page, limit, applied,version]);
+  }, [page, limit, applied,version,router]);
 
   const applyFilters = () => {
     const params = new URLSearchParams();
@@ -135,16 +137,16 @@ export default function AuditLogsPage() {
             </div>
             <div className="md:col-span-1">
               <label className="text-xs text-muted-foreground">Action</label>
-              <Input value={action} onChange={(e) => setAction(e.target.value)} placeholder="create, update, delete..."/>
+              <Input value={action} onChange={(e) => setAction(e.target.value)} maxLength={200} placeholder="create, update, delete..."/>
             </div>
             <div className="md:col-span-1">
               <label className="text-xs text-muted-foreground">User ID</label>
-              <Input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="Account ID"/>
+              <Input value={userId} onChange={(e) => setUserId(e.target.value)} maxLength={200} placeholder="Account ID"/>
             </div>
             <div className="md:col-span-2">
               <label className="text-xs text-muted-foreground">Search</label>
               <div className="flex gap-2">
-                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search action, resource, IP..."/>
+                <Input value={search} onChange={(e) => setSearch(e.target.value)} maxLength={200} placeholder="Search action, resource, IP..."/>
                 <Button onClick={applyFilters} aria-label="Apply audit filters" variant="default"><Search className="h-4 w-4"/></Button>
                 <Button onClick={clearFilters} variant="outline">Reset</Button>
               </div>
