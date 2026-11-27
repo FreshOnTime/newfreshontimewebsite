@@ -289,6 +289,7 @@ model Supplier {
   makerFulfilment  String?
   makerItems       MakerItem[]
   makerStories     Blog[]
+  liveVendor       LiveVendor?
 
   products User[] // supplier-role accounts linked to this supplier
   catalog  Product[]
@@ -1097,4 +1098,24 @@ model SitePageContent {
   updatedAt DateTime @updatedAt
   publishedAt DateTime?
   @@map("site_page_content")
+}
+
+model LiveVendor {
+  supplierId String @id
+  supplier Supplier @relation(fields:[supplierId], references:[id], onDelete:Cascade)
+  kind String
+  approval String @default("pending")
+  reviewNotes String @default("")
+  reviewedBy String?
+  reviewedAt DateTime?
+  location String @default("")
+  area String @default("")
+  latitude Float?
+  longitude Float?
+  note String @default("")
+  servingUntil DateTime?
+  checkedInAt DateTime?
+  updatedAt DateTime @updatedAt
+  @@index([approval, servingUntil])
+  @@map("live_vendors")
 }
