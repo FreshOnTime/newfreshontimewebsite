@@ -137,6 +137,14 @@ async function main(){
               assert(await page.getByRole('button',{name:'Send enquiry'}).isEnabled());
               assert.equal(await page.locator('.fp-contact-submit').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
             }
+            if(name==='join'){
+              await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('gift_creator');
+              await page.getByRole('checkbox',{name:'Food hampers',exact:true}).check();
+              const target=await page.getByRole('link',{name:'Create your login',exact:true}).getAttribute('href');
+              const next=new URL(target,base).searchParams.get('redirect');
+              assert.equal(new URL(next,base).searchParams.get('type'),'gift_creator');
+              assert.equal(new URL(next,base).searchParams.get('specialty'),'food-hampers');
+            }
             if(name==='businesses'){
               assert.equal(await page.locator('.fp-business-type-card img').count(),3);
               await page.getByRole('button',{name:'Café',exact:true}).click();
@@ -181,6 +189,7 @@ async function main(){
             await ready(page,new URL('/dashboard',base).href);
             await page.getByRole('heading',{name:'Business studio.'}).waitFor({timeout:20000});
             await page.getByRole('heading',{name:'Public profile'}).waitFor({timeout:20000});
+            assert(await page.getByRole('checkbox',{name:'Food hampers',exact:true}).isVisible());
             await capture(page,'maker-studio-'+width);
           }catch(error){errors.push(String(error));}
         }else errors.push('Maker Studio requires a non-sensitive test login.');
