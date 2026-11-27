@@ -81,3 +81,14 @@
 
 /* Additional discovery facets wrap in balanced rows instead of squeezing select controls. */
 @media(min-width:768px){.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;align-items:end}.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters label{min-width:0;border-left:0;padding:.15rem .45rem}.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters select{width:100%;min-width:0}.freshpick-market>main[data-publication=true] .fp26-filters.fp-taxonomy-filters .fp26-action{grid-column:auto;grid-row:auto;min-height:46px;height:auto;align-self:end;justify-content:center}}
+
+/* Public business pages retain the publication identity while differentiating their craft. */
+.freshpick-market>main[data-publication=true] .fp-maker-profile[data-business-type="bakery"] .lux-storefront{background:#f5ebdc;border-color:#d5c5ad}
+.freshpick-market>main[data-publication=true] .fp-maker-profile[data-business-type="gift_creator"] .lux-storefront{background:#f0e8e0;border-color:#d2bfb0}
+.freshpick-market>main[data-publication=true] .fp-maker-profile:is([data-business-type="restaurant"],[data-business-type="cafe"]) .lux-storefront{background:#e5eee3;border-color:#bdcdb8}
+.freshpick-market>main[data-publication=true] .fp-maker-profile[data-business-type="caterer"] .lux-storefront{background:#f0eee3;border-color:#d3cdb8}
+.fp-maker-profile [id="maker-items"]>div>h3{border-bottom:1px solid var(--fp-rule,#d5d4cb);padding-bottom:.5rem}
+.fp-studio-overview progress{display:block;overflow:hidden;border:0;border-radius:999px;background:#ffffff26}
+.fp-studio-overview progress::-webkit-progress-bar{background:#ffffff26;border-radius:999px}
+.fp-studio-overview progress::-webkit-progress-value{background:#b9e98c;border-radius:999px}
+.fp-studio-overview progress::-moz-progress-bar{background:#b9e98c;border-radius:999px}
