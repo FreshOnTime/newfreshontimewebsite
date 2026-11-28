@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { MessageSquare, MapPin, ArrowUpRight, Send } from "lucide-react";
+import { MessageSquare, MapPin, ArrowUpRight, Send, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -64,8 +64,8 @@ export default function ContactPage() {
     <div className="fp26-shell fp-contact-page">
       <header className="fp-contact-hero"><div><p className="fp26-label">Contact FreshPick</p><h1>Good food starts with a conversation.</h1><p className="fp26-deck">Have a question, a food discovery to share or an idea for FreshPick? We would love to hear from you.</p></div><figure><Image src="/images/editorial/hands-at-work.webp" alt="Hands preparing dough, editorial photograph" fill priority sizes="(max-width:760px) 100vw, 36vw"/></figure></header>
       <section className="fp-contact-grid">
-          <aside className="fp-contact-aside"><p className="fp26-label">How can we help?</p><h2>Let’s talk.</h2><div className="fp-contact-options"><div><MessageSquare size={22} aria-hidden="true"/><h3>Platform help &amp; feedback</h3><p>Ask about your account, a listing, or suggest an improvement. Your enquiry goes to the FreshPick team.</p></div><div><ArrowUpRight size={22} aria-hidden="true"/><h3>For food businesses</h3><p>Discover how to publish your profile, menus, products and stories.</p><Link href="/for-businesses">Explore business features</Link></div><div><MapPin size={22} aria-hidden="true"/><h3>Contact a food business</h3><p>For availability, bookings and fulfilment, contact the relevant business directly using its public profile.</p><Link href="/discover">Find a business</Link></div></div><p className="fp-contact-region">Sri Lanka · Independent food discovery</p></aside>
-          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="fp-contact-form grid min-w-0 grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-2"><legend className="sr-only">Send an enquiry to FreshPick</legend><div className="md:col-span-2"><h2>Send us a message</h2><p className="fp-contact-form-hint">Include your email so we can respond to your enquiry.</p></div>
+          <aside className="fp-contact-aside"><p className="fp26-label">How can we help?</p><h2>Let’s talk.</h2><div className="fp-contact-options"><div><MessageSquare size={22} aria-hidden="true"/><h3>Platform help &amp; feedback</h3><p>Ask about your account, a listing, or suggest an improvement. Your enquiry goes to the FreshPick team.</p></div><div><ArrowUpRight size={22} aria-hidden="true"/><h3>For food businesses</h3><p>Discover how to publish your profile, menus, products and stories.</p><Link href="/for-businesses">Explore business features</Link></div><div><MapPin size={22} aria-hidden="true"/><h3>Contact a food business</h3><p>For availability, bookings and fulfilment, contact the relevant business directly using its public profile.</p><Link href="/discover">Find a business</Link></div></div><p className="fp-contact-region">Independent food discovery · Starting in Sri Lanka</p></aside>
+          <form onSubmit={handleSubmit}><fieldset disabled={status === "sending"} className="fp-contact-form grid min-w-0 grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-2"><legend className="sr-only">Send an enquiry to FreshPick</legend><div className="md:col-span-2"><h2>Send us a message</h2><p className="fp-contact-form-hint">Your message goes directly to the FreshPick team. Include your email so we can get back to you.</p></div>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Name
               <Input className={` ${fieldClass} mt-2`} autoComplete="name" maxLength={100} value={name} onChange={(event) => setName(event.target.value)} required />
@@ -75,7 +75,7 @@ export default function ContactPage() {
               <Input className={` ${fieldClass} mt-2`} type="email" autoComplete="email" maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} required />
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
-              Enquiry
+              What can we help with?
               <select value={type} onChange={(event) => setType(event.target.value as EnquiryType)} className="fp-contact-field mt-2 h-12 w-full text-base font-normal">
                 <option value="question">Question</option>
                 <option value="issue">Issue</option>
@@ -83,7 +83,7 @@ export default function ContactPage() {
                 <option value="other">Other</option>
               </select>
             </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
+            <details className="fp-contact-optional md:col-span-2"><summary>Additional details (optional)</summary><div className="grid gap-4 pt-3 sm:grid-cols-2"><label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
               Priority
               <select value={priority} onChange={(event) => setPriority(event.target.value as "low" | "normal" | "high")} className="fp-contact-field mt-2 h-12 w-full text-base font-normal">
                 <option value="low">Low</option>
@@ -92,11 +92,11 @@ export default function ContactPage() {
               </select>
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
-              Reference or order ID <span className="font-normal normal-case tracking-normal text-muted-foreground">(optional)</span>
+              Previous enquiry or order reference <span className="font-normal normal-case tracking-normal text-muted-foreground">(optional)</span>
               <Input className={` ${fieldClass} mt-2`} maxLength={100} value={orderId} onChange={(event) => setOrderId(event.target.value)} />
-            </label>
-            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground">
-              Subject
+            </label></div></details>
+            <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground md:col-span-2">
+              Subject (optional)
               <Input className={` ${fieldClass} mt-2`} maxLength={160} value={subject} onChange={(event) => setSubject(event.target.value)} />
             </label>
             <label className="col-span-1 text-xs font-bold normal-case text-muted-foreground md:col-span-2">
@@ -108,9 +108,7 @@ export default function ContactPage() {
               <Button type="submit" className="fp-contact-submit h-12 px-7 text-sm font-semibold" disabled={status === "sending"}>
                 {status === "sending" ? "Sending…" : "Send enquiry"} <Send size={16} aria-hidden="true"/>
               </Button>
-              <p role={status === "error" ? "alert" : "status"} aria-live="polite" className={`text-sm ${status === "error" ? "text-red-600" : "text-brand-green"} `}>
-                {feedback}
-              </p>
+              <div role={status === "error" ? "alert" : "status"} aria-live="polite" className={`w-full text-sm ${status === "sent" ? "fp-contact-receipt" : status === "error" ? "text-red-600" : "text-brand-green"}`}>{status === "sent" && <p className="flex items-center gap-2 font-semibold mb-1"><CheckCircle size={20} aria-hidden="true"/> Message received</p>}{feedback}</div>
             </div>
           </fieldset></form>
       </section>
