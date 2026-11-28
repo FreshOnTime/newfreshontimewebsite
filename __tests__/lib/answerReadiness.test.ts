@@ -35,7 +35,8 @@ describe('public discovery and citation readiness', () => {
 
   it('publishes a readable llms.txt pointing to real canonical discovery pages', async () => {
     const body = await llms().text();
-    expect(body).toContain('# FreshPick Sri Lanka');
+    expect(body.split('\n')[0]).toBe('# FreshPick');
+    expect(body).toContain('Sri Lanka is the first active market.');
     for (const path of ['/explore/coffee-cafes','/explore/bakeries','/locations/colombo','/help','/blog','/for-businesses','/contact']) {
       expect(body).toContain(absoluteUrl(path));
     }
