@@ -16,6 +16,7 @@ const supplierSchema = z.object({
   email: z.string().trim().toLowerCase().email().optional().or(z.literal('')),
   phone: phoneSchema,
   town: z.string().trim().min(2).max(100).optional(),
+  country: z.literal('Sri Lanka').optional(),
   address: z.object({
     addressLine1: z.string().trim().min(1), city: z.string().trim().min(1),
     province: z.string().trim().min(1), postalCode: z.string().trim().min(1),
@@ -89,7 +90,7 @@ async function handleRegister(request: NextRequest) {
               city: body.town || body.address?.city, makerTown: body.town,
               state: body.address?.province,
               zipCode: body.address?.postalCode,
-              country: body.address?.country,
+              country: body.country || body.address?.country,
               ...(productNotes !== undefined ? { notes: productNotes } : {}),
             },
           });
@@ -103,7 +104,7 @@ async function handleRegister(request: NextRequest) {
       const supplier = await tx.supplier.create({ data: {
         name: body.companyName, ...(body.businessType?{businessType:body.businessType}:{}), ...(body.businessSpecialties!==undefined?{businessSpecialties:body.businessSpecialties}:{}), contactName: body.contactName, email: body.email || undefined,
         phone: body.phone, street: body.address?.addressLine1, city: body.town || body.address?.city, makerTown: body.town,
-        state: body.address?.province, zipCode: body.address?.postalCode, country: body.address?.country,
+        state: body.address?.province, zipCode: body.address?.postalCode, country: body.country || body.address?.country,
         status: 'inactive', applicationStatus: 'pending', paymentTerms: 'net_30', notes: productNotes,
       } });
       const link = await tx.user.updateMany({ where: { id: user.id, supplierId: null }, data: { supplierId: supplier.id, ...(user.role === 'customer' ? { role: 'supplier' as const } : {}) } });

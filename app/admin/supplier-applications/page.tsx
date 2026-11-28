@@ -18,6 +18,7 @@ interface Application {
   businessSpecialties?:string[];
   contactName: string;
   city?: string | null;
+  country?: string | null;
   email: string | null;
   phone: string;
   notes: string | null;
@@ -61,7 +62,7 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
           <h2 className="text-xl font-semibold">{application.name}</h2><p className="text-xs font-semibold text-brand-green">{businessTypeLabel(application.businessType)}</p>
           {!!application.businessSpecialties?.length && <p className="mt-1 text-sm text-muted-foreground">{application.businessSpecialties.map(specialtyLabel).join(' · ')}</p>}
           <div className="mt-3 flex flex-wrap gap-2 text-xs"><Badge variant="outline">{application.applicationStatus==="pending"?"Awaiting review":application.applicationStatus}</Badge><Badge variant="outline">{application.makerPublished&&application.status==="active"&&application.applicationStatus==="approved"?"Page published":"Page private"}</Badge><Badge variant="outline">{application.linkedAccounts??0} linked account(s) · {application.verifiedAccounts??0} email verified</Badge></div><p className="mt-2 text-xs text-muted-foreground">Stored business record. A linked account does not establish the owner’s identity. {application.reviewedAt?"Previously reviewed.":"No recorded review yet."}</p><p className="mt-1 break-words text-sm text-muted-foreground">
-            {application.city && `${application.city} · `}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
+            {[application.city,application.country].filter(Boolean).join(', ')}{(application.city||application.country)&&' · '}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
           </p>
         </div>
 
