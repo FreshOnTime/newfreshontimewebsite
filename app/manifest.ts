@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'FreshPick — Sri Lanka food discovery',
+    name: 'FreshPick — Discover the world of food',
     short_name: 'FreshPick',
-    description: 'Discover restaurants, local producers, food products, events, experiences and food stories across Sri Lanka.',
+    description: 'Discover restaurants, local producers, food events and stories, starting in Sri Lanka.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F8F7F2',
