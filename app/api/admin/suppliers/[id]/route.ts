@@ -7,13 +7,14 @@ import { requireAdmin, logAuditAction } from '@/lib/middleware/adminAuth';
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   contactName: z.string().min(1).max(200).optional(),
-  email: z.string().email().optional(),
+  email: z.union([z.string().email(),z.literal('')]).optional(),
+  reviewVersion: z.number().int().nonnegative().optional(),
   phone: z.string().min(3).optional(),
   address: z.object({
-    street: z.string().min(1),
+    street: z.string().max(200),
     city: z.string().min(1),
-    state: z.string().min(1),
-    zipCode: z.string().min(1),
+    state: z.string().max(100),
+    zipCode: z.string().max(30),
     country: z.string().min(1),
   }).optional(),
   paymentTerms: z.enum(['net-15', 'net-30', 'net-60', 'net-90', 'cod', 'prepaid']).optional(),
@@ -48,7 +49,7 @@ function serializeSupplier(s: Supplier) {
     paymentTerms: termsToApi(s.paymentTerms),
     notes: s.notes ?? undefined,
     status: s.status,
-    applicationStatus: s.applicationStatus,
+    applicationStatus: s.applicationStatus, reviewVersion:s.reviewVersion,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };
@@ -79,6 +80,7 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
       return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
 
+    if (data.reviewVersion !== undefined && data.reviewVersion !== before.reviewVersion) return NextResponse.json({error:'Business changed since you opened this form. Close it, refresh and try again.'},{status:409});
     if (data.status === 'active' && before.applicationStatus !== 'approved') return NextResponse.json({ error: 'Approve this supplier application before activating the account' }, { status: 409 });
 
     // Ensure unique email if changed
@@ -100,7 +102,7 @@ export const PUT = requireAdmin(async (request, context: { params: Promise<{ id:
         reviewVersion: { increment: 1 },
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.contactName !== undefined ? { contactName: data.contactName } : {}),
-        ...(data.email !== undefined ? { email: data.email } : {}),
+        ...(data.email !== undefined ? { email: data.email || null } : {}),
         ...(data.phone !== undefined ? { phone: data.phone } : {}),
         ...(data.address !== undefined
           ? {
