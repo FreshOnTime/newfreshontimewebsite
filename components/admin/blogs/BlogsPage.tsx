@@ -9,6 +9,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { BlogDialog } from '@/components/admin/blogs/BlogDialog';
+import {authenticatedApiFetch} from '@/lib/api/authenticated-fetch';
+import {QueueFeedback} from '@/components/admin/QueueFeedback';
 import { toast } from 'sonner';
 
 interface Blog {
@@ -40,6 +42,8 @@ interface BlogsResponse {
 export function BlogsPage() {
   const [items, setItems] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError,setLoadError]=useState('');
+  const loadSequence=useRef(0);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
@@ -52,7 +56,7 @@ export function BlogsPage() {
     if (guidesImportedRef.current) return;
     guidesImportedRef.current = true;
     try {
-      const response = await fetch('/api/admin/blogs/import-guides', {
+      const response = await authenticatedApiFetch('/api/admin/blogs/import-guides', {
         method: 'POST',
         credentials: 'include',
       });
@@ -62,33 +66,37 @@ export function BlogsPage() {
         toast.success(`${result.imported} existing blog guide${result.imported === 1 ? '' : 's'} added to the CMS`);
       }
     } catch {
+      guidesImportedRef.current=false;
       toast.error('Existing static guides could not be added to the admin list');
     }
   };
 
   const fetchItems = async () => {
+    const sequence=++loadSequence.current;
     try {
-      setLoading(true);
+      setLoading(true);setLoadError('');
       await ensureExistingGuidesAreManaged();
       const params = new URLSearchParams({
         page: String(page),
         limit: '20',
         ...(search && { search })
       });
-      const res = await fetch(`/api/admin/blogs?${params}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch blogs');
-      const data: BlogsResponse = await res.json();
+      const res = await authenticatedApiFetch(`/api/admin/blogs?${params}`, { credentials: 'include' });
+      const data = await res.json().catch(()=>null) as (BlogsResponse & {error?:string})|null;
+      if (!res.ok || !Array.isArray(data?.blogs) || !data.pagination) throw new Error(data?.error||'Failed to fetch blogs');
+      if(sequence!==loadSequence.current)return;
       setItems(data.blogs);
       setPagination(data.pagination);
-    } catch {
-      toast.error('Failed to load blogs');
+    } catch(error) {
+      if(sequence===loadSequence.current)setLoadError(error instanceof Error?error.message:'Failed to load blogs');
     } finally {
-      setLoading(false);
+      if(sequence===loadSequence.current)setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchItems();
+    return ()=>{loadSequence.current++;};
   }, [page, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleEdit = (blog: Blog) => {
@@ -106,13 +114,13 @@ export function BlogsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this blog post? This action cannot be undone.')) return;
     try {
-      const res = await fetch(`/api/admin/blogs/${id}`, {
+      const res = await authenticatedApiFetch(`/api/admin/blogs/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Blog deleted successfully');
-      fetchItems();
+      if(items.length===1&&page>1)setPage(page-1);else fetchItems();
     } catch {
       toast.error('Failed to delete blog');
     }
@@ -176,7 +184,7 @@ export function BlogsPage() {
             </div>
           </div>
 
-          {loading ? (
+          {loadError ? <QueueFeedback loading={false} error={loadError} retry={fetchItems}/> : loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
