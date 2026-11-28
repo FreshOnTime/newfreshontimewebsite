@@ -14,8 +14,9 @@ export function safeAccountRedirect(requested: string | null | undefined): strin
   }
 }
 
-export function accountDestination(role: string, requested?: string | null): string {
-  return role === 'admin' ? '/admin' : safeAccountRedirect(requested) || '/dashboard';
+export function accountDestination(role: string, requested?: string | null, resumeBusinessOnboarding = false, secondaryRoles: readonly string[] = []): string {
+  if (role === 'admin' || secondaryRoles.includes('admin')) return '/admin';
+  return safeAccountRedirect(requested) || (role === 'customer' && resumeBusinessOnboarding ? '/dashboard/business-onboarding' : '/dashboard');
 }
 
 export function accountLink(path: string, requested?: string | null): string {

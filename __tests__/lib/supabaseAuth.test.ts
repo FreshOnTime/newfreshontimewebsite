@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import {shouldResumeBusinessOnboarding} from '@/lib/businessOnboarding';
 import { managedUser, managedSignupSchema, managedRefreshPrefix, managedPasswordLogin, startManagedSignup } from '@/lib/supabaseAuth';
 jest.mock('@/lib/prisma', () => ({__esModule:true,default:{user:{findUnique:jest.fn(),findFirst:jest.fn(),create:jest.fn()}}}));
 const subject='8cfd9a20-aaca-4b53-99d4-a9d75d3a5b55';
@@ -49,4 +50,22 @@ it('requires email confirmation before accepting signup',async()=>{
   (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
   mockFetch.mockResolvedValue({ok:true,status:200,json:async()=>session});
   await expect(startManagedSignup({firstName:'Member',email:identity.email,password:'StrongPass1'})).rejects.toThrow('Email confirmation');
+});
+
+it('sends business name as non-authoritative signup metadata and restores the draft for verified identities',async()=>{
+ (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+ mockFetch.mockResolvedValue({ok:true,status:200,json:async()=>({id:subject})});
+ await startManagedSignup({firstName:'Member',email:identity.email,password:'StrongPass1',businessName:'Example Bakery'});
+ const sent=JSON.parse(mockFetch.mock.calls[0][1].body);expect(sent.data.businessName).toBe('Example Bakery');expect(sent.data).not.toHaveProperty('role');
+ (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+ (prisma.user.create as jest.Mock).mockResolvedValue(user);
+ await managedUser({...session,user:{...identity,user_metadata:{...identity.user_metadata,businessName:'Example Bakery'}}},true);
+ expect(prisma.user.create).toHaveBeenCalledWith({data:expect.objectContaining({role:'customer',businessOnboardingDraft:{name:'Example Bakery'}})});
+});
+it('resumes only eligible unlinked member drafts',()=>{
+ const candidate={role:'customer',businessOnboardingDraft:{name:'Example Bakery'}};
+ expect(shouldResumeBusinessOnboarding(candidate)).toBe(true);
+ expect(shouldResumeBusinessOnboarding({...candidate,secondaryRoles:['admin']})).toBe(false);
+ expect(shouldResumeBusinessOnboarding({...candidate,supplierId:'existing'})).toBe(false);
+ expect(shouldResumeBusinessOnboarding({...candidate,businessOnboardingDraft:{name:''}})).toBe(false);
 });
