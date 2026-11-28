@@ -42,6 +42,52 @@ async function checkMobile(page,name){
  if(measurements.homeAction)assert(measurements.homeAction.button>=measurements.homeAction.form-32,'Homepage search action should fill its row: '+name);
  assert(measurements.authFirst,'Mobile auth form must precede promotional imagery: '+name);
 }
+// Exercise the sticky header from a scrolled page, not just at the top.
+async function checkJournalNavigation(page,width){
+  await page.evaluate(()=>window.scrollTo({top:Math.min(400,document.documentElement.scrollHeight-window.innerHeight),behavior:'instant'}));
+  const scrollBefore=await page.evaluate(()=>window.scrollY);
+  const mainBefore=await page.locator('main').evaluate(el=>el.getBoundingClientRect().top);
+  const unlocked=()=>page.evaluate(()=>({pointer:getComputedStyle(document.body).pointerEvents,overflow:getComputedStyle(document.body).overflowY,locked:document.body.hasAttribute('data-scroll-locked')}));
+  const before=await unlocked();
+  if(width>=1280){
+    const trigger=page.getByRole('button',{name:'Journal and food culture'});
+    await trigger.click();
+    const menu=page.getByRole('menu').filter({has:page.getByRole('menuitem',{name:'Food guides & comparisons',exact:true})});
+    await menu.waitFor();
+    const bounds=await menu.boundingBox();
+    assert(bounds&&bounds.x>=0&&bounds.y>=0&&bounds.x+bounds.width<=width+1&&bounds.y+bounds.height<=page.viewportSize().height+1,'Journal dropdown is clipped');
+    assert.deepEqual(await unlocked(),before,'Opening Journal must not lock the document');
+    assert(Math.abs(await page.evaluate(()=>window.scrollY)-scrollBefore)<=2,'Journal trigger jumped the scroll position');
+    await page.keyboard.press('Escape');
+    await menu.waitFor({state:'hidden'});
+    assert(await trigger.evaluate(el=>document.activeElement===el),'Escape should restore focus to Journal');
+    await trigger.click();
+    await menu.getByRole('menuitem',{name:'Food guides & comparisons',exact:true}).click();
+    await page.waitForURL(url=>url.pathname==='/guides');
+    await menu.waitFor({state:'hidden'});
+  }else{
+    await page.getByRole('button',{name:'Open menu'}).click();
+    const nav=page.getByRole('navigation',{name:'Mobile discovery navigation'});
+    await nav.waitFor();
+    assert(Math.abs(await page.locator('main').evaluate(el=>el.getBoundingClientRect().top)-mainBefore)<=2,'Mobile menu must not push the page down');
+    assert.deepEqual(await unlocked(),before,'Mobile menu must not lock the document');
+    await nav.locator('summary').filter({hasText:'Journal & food culture'}).click();
+    await nav.getByRole('link',{name:'Food guides & comparisons',exact:true}).click();
+    await page.waitForURL(url=>url.pathname==='/guides');
+    await nav.waitFor({state:'hidden'});
+  }
+  assert.deepEqual(await unlocked(),before,'Navigation must leave the document interactive');
+  const account=page.getByRole('button',{name:'Open account menu'});
+  await account.click();
+  await page.getByRole('menu').waitFor();
+  assert.deepEqual(await unlocked(),before,'Account dropdown must not lock the document either');
+  await page.keyboard.press('Escape');
+  await page.getByRole('menu').waitFor({state:'hidden'});
+  await page.getByRole('button',{name:'Open search'}).click();
+  await page.locator('#nav-search').waitFor();
+  assert(await page.locator('#nav-search').isEditable());
+  await page.getByRole('button',{name:'Close search'}).click();
+}
 async function main(){
   await fs.mkdir(out,{recursive:true});
   const browser=await chromium.launch({headless:true});
@@ -56,6 +102,7 @@ async function main(){
           if((width===320||width===430)&&!['homepage','departments','department-bakery','department-coffee','department-produce','live','atlas','atlas-dish','experiences','traditions','guides','guide-detail','tradition-detail','event-detail','discovery','dining','food-products','directory','businesses','maker-profile','item','journal','field-note','join','login','signup','account-choice','not-found','contact'].includes(name))continue;
           try{await ready(page,new URL(path,base).href,name==='not-found'?404:200);await capture(page,name+'-'+width);
             if(phone)await checkMobile(page,name+'-'+width);
+            if(name==='journal')await checkJournalNavigation(page,width);
             if(name==='not-found'){assert.equal(await page.locator('main h1').count(),1);assert.equal(await page.getByRole('link',{name:'Discover food',exact:true}).getAttribute('href'),'/discover');}
             if(name==='account-choice'){assert(await page.getByRole('heading',{name:'Member account',exact:true}).isVisible());assert(await page.getByRole('heading',{name:'Business page',exact:true}).isVisible());}
             if(name==='homepage'){
