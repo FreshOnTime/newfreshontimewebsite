@@ -8,6 +8,8 @@ export const SITE_URL = normalizeUrl(
 
 export const SITE_NAME = "FreshPick";
 export const SITE_NAME_LONG = "FreshPick Sri Lanka";
+export const DISCOVERY_TITLE = "Sri Lanka food discovery, dining & events";
+export const DISCOVERY_DESCRIPTION = "Discover restaurants, food brands, local producers, gifts, food events and culinary stories across Sri Lanka. Connect directly with businesses.";
 
 export const SUPPORT_EMAIL =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "concierge@freshpick.lk";
