@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
 const base=process.env.VISUAL_BASE_URL||process.env.BASE_URL||'http://localhost:3000';
 const canonicalBase=(process.env.NEXT_PUBLIC_SITE_URL||'https://freshpick.lk').replace(/\/+$/,'');
-const routes=['/','/explore','/explore/coffee-cafes','/explore/bakeries','/locations/colombo','/food-atlas','/food-atlas/kottu','/guides/hoppers-vs-string-hoppers','/traditions/avurudu-food-traditions','/stories/the-bread-window','/editorial-policy'];
+const routes=['/','/explore','/explore/coffee-cafes','/explore/bakeries','/explore/groceries','/explore/farms','/explore/mobile-food','/experiences','/about','/locations/colombo','/food-atlas','/food-atlas/kottu','/guides/hoppers-vs-string-hoppers','/traditions/avurudu-food-traditions','/stories/the-bread-window','/editorial-policy'];
 const browser=await chromium.launch({headless:true});
 const report=[];
 try{
@@ -24,6 +24,7 @@ try{
    const data=await page.evaluate(()=>({title:document.title,description:document.querySelector('meta[name=description]')?.getAttribute('content'),canonical:[...document.querySelectorAll('link[rel=canonical]')].map(x=>x.getAttribute('href')),robots:document.querySelector('meta[name=robots]')?.getAttribute('content')||'',h1:document.querySelectorAll('main h1').length,schemas:[...document.querySelectorAll('script[type="application/ld+json"]')].map(x=>JSON.parse(x.textContent||''))}));
    const check=(key,value)=>{row.checks[key]=Boolean(value);if(!value)row.errors.push(key);};
    check('title',data.title.trim()&&!titles.has(data.title));titles.add(data.title);
+   if(path==='/'){check('discovery identity',data.title.includes('food discovery')&&data.description?.includes('food events'));check('homepage identity section',await page.locator('#freshpick-discovery-title').count()===1);}
    check('description',data.description?.trim());
    // The origin with or without a final slash denotes the same homepage URL.
    const expectedCanonical=canonicalBase+path;
