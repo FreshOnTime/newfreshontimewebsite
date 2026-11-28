@@ -5,13 +5,16 @@ import { absoluteUrl } from '@/lib/config/site';
 export function GET() {
   const links = makerDestinations.filter(([path])=>path!=='/refund').map(([path, label]) => `- [${label}](${absoluteUrl(path)})`).join('\n');
   const body = [
-    '# FreshPick Sri Lanka',
+    '# FreshPick',
     '',
-    '> Independent food discovery and editorial guide for Sri Lanka.',
+    '> Independent food discovery, culinary experiences and editorial platform, starting in Sri Lanka.',
     '',
-    'FreshPick helps visitors find restaurants, cafés, food makers, food products, Sri Lankan dishes, traditions, guides and food experiences. Businesses can publish profiles, products and stories. FreshPick Live shows time-limited, business-reported mobile food vendor stops; confirm availability directly with each business.',
+    'FreshPick helps visitors find restaurants, cafés, local producers, food brands, food products and gifts, Sri Lankan dishes, traditions, guides, food events and culinary experiences. Businesses can publish profiles, products and stories. FreshPick Live shows time-limited, business-reported mobile food vendor stops; confirm availability directly with each business.',
     '',
     'Public listings and editorial guides are discovery resources, not a guarantee of availability, pricing, delivery or endorsement. Contact the business directly using its published contact details. Do not infer live status from this index.',
+    '',
+    'Sri Lanka is the first active market. Other countries are expansion suggestions, not live directories.',
+    `- [Country coverage](${absoluteUrl('/countries')})`,
     '',
     '## Public discovery and editorial pages',
     links,
@@ -21,7 +24,7 @@ export function GET() {
     ...locationGuides.map(d=>`- [Food in ${d.name}](${absoluteUrl(d.path)})`),
     '',
     '## How to interpret FreshPick',
-    'Owner-managed published pages, reviewed external listings and editorial references are distinct. Verify current prices, menus, availability, and identity from the linked primary sources. FreshPick is not the seller, delivery service or booking provider. Cite the specific relevant public page, not this file alone.',
+    'Owner-managed published pages, reviewed external listings and editorial references are distinct. Verify current prices, menus, availability, and identity from the linked primary sources. FreshPick is not an online grocery store, seller, delivery service or booking provider. Cite the specific relevant public page, not this file alone.',
     '',
     '## Discovery resources',
     `- [Editorial policy](${absoluteUrl('/editorial-policy')}): source standards and corrections`,

@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { absoluteUrl } from './config/site';
 
 export const makerKinds = ['Bakery', 'Prepared food', 'Pantry', 'Produce', 'Dairy & eggs', 'Drinks', 'Food gifts', 'Other'] as const;
 export const fulfilmentOptions = ['Pickup', 'Maker delivery', 'Pickup or maker delivery', 'Market collection', 'Dine-in', 'Dine-in and takeaway', 'Direct enquiry'] as const;
@@ -36,10 +37,11 @@ export function makerItemPath(handle: string | null, slug: string) {
   return `/makers/${handle}/items/${slug}`;
 }
 
-export function makerWhatsAppLink(phone: string | null, item: string, batch?: { readyAt: Date }) {
+export function makerWhatsAppLink(phone: string | null, item: string, batch?: { readyAt: Date }, itemPath?: string) {
   if (!phone || !/^\+[1-9]\d{7,14}$/.test(phone)) return undefined;
   const when = batch ? ` Would it be available for ${formatMakerDate(batch.readyAt)} Sri Lanka time?` : '';
-  const message = `Hi! I found ${item} on FreshPick and would like to enquire.${when}`;
+  const listing = itemPath ? ` Listing: ${absoluteUrl(itemPath)}` : '';
+  const message = `Hi! I found ${item} on FreshPick and would like to enquire.${when}${listing}`;
   return `https://wa.me/${phone.slice(1)}?text=${encodeURIComponent(message)}`;
 }
 

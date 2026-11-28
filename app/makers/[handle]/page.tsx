@@ -62,7 +62,7 @@ export default async function MakerPage({ params }: Props) {
     {(items.length>0||stories.length>0)&&<nav className="lux-result-jump" aria-label="Maker page sections">{items.length>0&&<a href="#maker-items">{presentation.navigation}</a>}{stories.length > 0 && <a href="#maker-stories">Articles</a>}</nav>}
     {items.length>0&&<section id="maker-items">
       <div className="fp-section-head"><h2 className="editorial-title">{presentation.section}</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
-      {[...new Set(items.map(item=>item.kind))].map(kind=><div key={kind} className="mt-6"><h3 className="mb-3 text-lg font-semibold text-brand-green">{kind}</h3><div className="journal-item-grid">{items.filter(item=>item.kind===kind).map(item=><MakerItemCard key={item.id} handle={handle} item={item} menuItem={venue}/>)}</div></div>)}
+      {[...new Set(items.map(item=>item.kind))].map(kind=><div key={kind} className="mt-6"><h3 className="mb-3 text-lg font-semibold text-brand-green">{kind}</h3><div className="journal-item-grid">{items.filter(item=>item.kind===kind).map(item=><MakerItemCard key={item.id} handle={handle} item={item} menuItem={venue&&item.kind!=='Food gifts'}/>)}</div></div>)}
     </section>}
     {stories.length > 0 && <section id="maker-stories">
       <div className="fp-section-head"><h2 className="editorial-title">Articles from the business</h2></div>

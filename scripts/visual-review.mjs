@@ -59,6 +59,8 @@ async function main(){
             if(name==='not-found'){assert.equal(await page.locator('main h1').count(),1);assert.equal(await page.getByRole('link',{name:'Discover food',exact:true}).getAttribute('href'),'/discover');}
             if(name==='account-choice'){assert(await page.getByRole('heading',{name:'Member account',exact:true}).isVisible());assert(await page.getByRole('heading',{name:'Business page',exact:true}).isVisible());}
             if(name==='homepage'){
+              assert.equal(await page.locator('#home-headline').textContent(),'Discover the world of food.');
+              assert(await page.getByRole('navigation',{name:'Explore food discovery'}).getByRole('link',{name:'Food events & experiences'}).isVisible());
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
               const family=await page.locator('main h1').evaluate(node=>getComputedStyle(node).fontFamily);
@@ -89,7 +91,7 @@ async function main(){
               assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
               assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
-              assert.equal(await page.locator('.fp-department-card').count(),9);
+              assert.equal(await page.locator('.fp-department-card').count(),12);
               assert.equal(await page.locator('.fp-department-card').first().getAttribute('href'),'/explore/places');
               assert.equal(await page.locator('#home-area').inputValue(),'Sri Lanka');
               assert.equal(await page.locator('[data-home-section="culture"]').count(),0);
@@ -103,7 +105,7 @@ async function main(){
               await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
               await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
             }
-            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),9);}
+            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),12);}
             if(name==='department-bakery'){
               assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'bakery');
               assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
@@ -172,12 +174,22 @@ async function main(){
             }
             if(name==='story'){assert(await page.locator('.fp-article-cover[alt="Test editorial image"]').isVisible());}
             if(name==='join'){
-              await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('gift_creator');
-              await page.getByRole('checkbox',{name:'Food hampers',exact:true}).check();
-              const target=await page.getByRole('link',{name:'Create your login',exact:true}).getAttribute('href');
-              const next=new URL(target,base).searchParams.get('redirect');
-              assert.equal(new URL(next,base).searchParams.get('type'),'gift_creator');
-              assert.equal(new URL(next,base).searchParams.get('specialty'),'food-hampers');
+              const signupLink=page.getByRole('link',{name:'Create a free business account',exact:true});
+              assert(await signupLink.isVisible());
+              assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).count(),0);
+              const target=new URL(await signupLink.getAttribute('href'),base);
+              assert.equal(target.pathname,'/auth/signup/customer');
+              assert.equal(target.searchParams.get('redirect'),'/dashboard/business-onboarding');
+              await ready(page,new URL('/join?type=bakery&specialty=food-hampers',base).href);
+              assert(await page.getByText('Showcase cakes, breads, pastries and custom bakes so customers can discover your creations.',{exact:true}).isVisible());
+              const typedTarget=new URL(await page.getByRole('link',{name:'Create a free business account',exact:true}).getAttribute('href'),base);
+              const next=new URL(typedTarget.searchParams.get('redirect'),base);
+              assert.equal(next.pathname,'/dashboard/business-onboarding');
+              assert.equal(next.searchParams.get('type'),'bakery');
+              assert.equal(next.searchParams.get('specialty'),'food-hampers');
+              await ready(page,new URL('/join?type=restaurant',base).href);
+              assert(await page.getByText('Help diners discover your restaurant, menu, signature dishes and location.',{exact:true}).isVisible());
+              await ready(page,new URL('/join',base).href);
             }
             if(name==='businesses'){
               assert.equal(await page.locator('.fp-business-type-card img').count(),3);

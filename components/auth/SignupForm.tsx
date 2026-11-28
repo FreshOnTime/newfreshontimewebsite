@@ -5,7 +5,7 @@ import { ArrowUpRight, Bookmark, Compass, Store, UserRound, BookOpen, MessageCir
 export function SignupForm({ requestedDestination }: { requestedDestination?: string }) {
   const accounts = [
     { title: 'Member account', label: 'For food lovers', description: 'Your personal space to explore Sri Lanka’s food scene and keep the discoveries you love.', href: '/auth/signup/customer', icon: UserRound, action: 'Create a member account', features: [{icon: Compass,text:'Discover local dining, dishes and makers'},{icon:Bookmark,text:'Keep your favourite discoveries in one place'},{icon:BookOpen,text:'Explore food guides and editorial stories'}] },
-    { title: 'Business page', label: 'For food businesses', description: 'A public home for your restaurant, bakery, café or independent food brand.', href: '/join', icon: Store, action: 'Create a business page', features: [{icon:Store,text:'Create a public business profile'},{icon:Package,text:'Showcase products, menus and food stories'},{icon:MessageCircle,text:'Help interested customers contact you directly'}] },
+    { title: 'Business page', label: 'For food businesses', description: 'Create a free account first, then set up a public home for your restaurant, bakery, café or independent food brand.', href: '/join', icon: Store, action: 'Create a business account', features: [{icon:Store,text:'Create a public business profile'},{icon:Package,text:'Showcase products, menus and food stories'},{icon:MessageCircle,text:'Help interested customers contact you directly'}] },
   ];
   return (
     <section className="mx-auto w-full max-w-[560px] py-4 xl:py-8" aria-labelledby="account-title">

@@ -30,6 +30,8 @@ export default function ContactPage() {
     const requestedType = searchParams.get("type");
     if (requestedType === "suggest") { setType("suggestion"); }
     else if (enquiryTypes.includes(requestedType as EnquiryType)) setType(requestedType as EnquiryType);
+    if (searchParams.get("topic") === "country-expansion") { const country=(searchParams.get("country") || "").slice(0,100); setSubject(current => current || "FreshPick country suggestion"); setMessage(current => current || `Country: ${country}\nCity or region:\nI am interested as a visitor or business owner:\nSuggested businesses or food experiences:`); }
+    if (searchParams.get("topic") === "food-event") { setSubject(current => current || "Food event submission"); setMessage(current => current || "Event name:\nOrganizer:\nStart and end date/time:\nVenue and town:\nPrice (if applicable):\nOfficial registration or contact link:\nDescription:"); }
     if (source === "producers") setSubject((current) => current || "My maker page");
   }, [searchParams, source]);
 
