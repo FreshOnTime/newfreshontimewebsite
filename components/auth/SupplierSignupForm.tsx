@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter,useSearchParams } from 'next/navigation';
 import {businessSpecialties,type BusinessSpecialty} from '@/lib/businessSpecialties';
 import SpecialtyPicker from '@/components/makers/SpecialtyPicker';
-import {selectableBusinessTypes,businessTypeLabels,type BusinessType} from '@/lib/businessTypes';
+import {selectableBusinessTypes,businessTypeLabels,businessTypeDetails,type BusinessType} from '@/lib/businessTypes';
 import { useAuth } from '@/contexts/AuthContext';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
@@ -18,6 +18,9 @@ const typeCopy: Record<BusinessType,{description:string;name:string;town:string;
   caterer:{description:'Showcase your catering menus, event services and the area you serve.',name:'Catering business name',town:'Service base town',image:'/images/editorial/restaurant-kitchen.webp',alt:'Food preparation in a kitchen'},
   food_brand:{description:'Introduce your food brand, ingredients and product range to interested customers.',name:'Brand name',town:'Business base town',image:'/images/editorial/recipe-ingredients.webp',alt:'Food ingredients'},
   gift_creator:{description:'Showcase your food hampers, celebration gifts and custom creations.',name:'Gift business name',town:'Business base town',image:'/images/editorial/recipe-ingredients.webp',alt:'Speciality food ingredients'},
+  grocery:{description:'Showcase groceries and speciality ingredients from your store and help shoppers contact you directly.',name:'Store name',town:'Store town',image:'/images/categories/pantry-staples.webp',alt:'Pantry ingredients'},
+  farm:{description:'Help shoppers discover your farm, fresh produce and seasonal availability.',name:'Farm or grower name',town:'Farm town',image:'/images/editorial/kitchen-basket.webp',alt:'Fresh ingredients'},
+  mobile_food:{description:'Showcase your mobile food menu and share serving stops through FreshPick Live after approval.',name:'Food truck or pop-up name',town:'Base town',image:'/images/editorial/restaurant-kitchen.webp',alt:'Food preparation'},
   other:{description:'Introduce your independent food business and help customers find your offerings.',name:'Business name',town:'Business town',image:'/images/editorial/hands-at-work.webp',alt:'Independent food maker at work'},
 };
 const defaultCopy = {description:'Create a free account, then set up your restaurant, café, bakery or food brand profile. Once approved, publish your offerings and stories so customers can discover you and contact you directly.',name:'Business name',town:'Town',image:'/images/editorial/restaurant-kitchen.webp',alt:'Chefs preparing food in a kitchen'};
@@ -51,7 +54,7 @@ export function SupplierSignupForm({onboarding=false}:{onboarding?:boolean}) {
       await refreshAuth(); router.push('/dashboard');
     } catch (e) { setError(e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); }
   }
-  const classification=<div className="grid gap-4"><label className="grid gap-2 text-sm font-semibold">Business type<select name="businessType" required value={selectedType} onChange={e=>setSelectedType(selectableBusinessTypes.find(t=>t===e.target.value)||'')} className="block min-h-11 w-full rounded-md border border-border bg-background p-3 text-base font-normal"><option value="" disabled>Choose your main business type</option>{selectableBusinessTypes.map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label><SpecialtyPicker value={specialties} onChange={setSpecialties}/></div>;
+  const classification=<div className="grid gap-4"><label className="grid gap-2 text-sm font-semibold">Business type<select name="businessType" required value={selectedType} onChange={e=>setSelectedType(selectableBusinessTypes.find(t=>t===e.target.value)||'')} className="block min-h-11 w-full rounded-md border border-border bg-background p-3 text-base font-normal"><option value="" disabled>Choose your main business type</option>{selectableBusinessTypes.map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label><p className="text-sm leading-6 text-muted-foreground" aria-live="polite">{selectedType ? businessTypeDetails[selectedType].description+' Examples: '+businessTypeDetails[selectedType].examples : 'Choose what your business primarily does. You can offer products, gifts and articles regardless of type.'}</p><details className="rounded-lg border border-border p-3"><summary className="min-h-11 cursor-pointer font-semibold text-sm">Not sure which category fits?</summary><dl className="grid gap-3 pt-2">{selectableBusinessTypes.map(t=><div key={t}><dt className="font-semibold text-sm">{businessTypeLabels[t]}</dt><dd className="text-sm text-muted-foreground">{businessTypeDetails[t].description} Examples: {businessTypeDetails[t].examples}.</dd></div>)}</dl></details><SpecialtyPicker value={specialties} onChange={setSpecialties}/></div>;
   return <div className="maker-hero fp-join min-w-0"><div className="maker-hero-copy min-w-0">
     <p className="fp26-label">{onboarding ? "Step 2 of 2 · Business details" : "Free business registration"}</p><h1 className="maker-headline">{onboarding ? "Set up your business." : "Your business."}<br/><em>{onboarding ? "Make it yours." : "Your story."}</em></h1>
     <p className="my-5 max-w-lg leading-7">{copy.description}</p>
