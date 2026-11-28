@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { requireAdminSimple } from "@/lib/middleware/adminAuth";
 
 const statuses = ["new", "contacted", "qualified", "won", "lost"] as const;
+const querySchema=z.object({page:z.coerce.number().int().min(1).max(100000).default(1),status:z.enum(statuses).optional()});
 const updateSchema = z.object({
   id: z.string().min(1),
   status: z.enum(statuses),
@@ -12,16 +13,15 @@ const updateSchema = z.object({
 
 export const GET = requireAdminSimple(async (request: NextRequest) => {
   try {
-    const status = new URL(request.url).searchParams.get("status");
-    const where = status && statuses.includes(status as (typeof statuses)[number]) ? { status } : undefined;
-
-    const leads = await prisma.businessLead.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    });
-
-    return NextResponse.json({ success: true, leads: leads.map((lead) => ({ ...lead, _id: lead.id })) }, { headers: { 'Cache-Control': 'private, no-store' } });
+    const parsed=querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+    if(!parsed.success)return NextResponse.json({error:'Invalid partnership filters'},{status:400});
+    const {page,status}=parsed.data;
+    const where=status?{status}:undefined;
+    const [leads,total]=await prisma.$transaction([
+      prisma.businessLead.findMany({where,orderBy:[{createdAt:'desc'},{id:'desc'}],skip:(page-1)*20,take:20}),
+      prisma.businessLead.count({where}),
+    ]);
+    return NextResponse.json({ success: true, leads: leads.map((lead) => ({ ...lead, _id: lead.id })),total,page,pages:Math.max(1,Math.ceil(total/20)) }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     return adminDataError(error, 'Unable to load partnership applications. Please try again.');
   }
