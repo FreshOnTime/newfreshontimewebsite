@@ -59,6 +59,8 @@ async function main(){
             if(name==='not-found'){assert.equal(await page.locator('main h1').count(),1);assert.equal(await page.getByRole('link',{name:'Discover food',exact:true}).getAttribute('href'),'/discover');}
             if(name==='account-choice'){assert(await page.getByRole('heading',{name:'Member account',exact:true}).isVisible());assert(await page.getByRole('heading',{name:'Business page',exact:true}).isVisible());}
             if(name==='homepage'){
+              assert.equal(await page.locator('#home-headline').textContent(),'Discover the world of food.');
+              assert(await page.getByRole('navigation',{name:'Explore food discovery'}).getByRole('link',{name:'Food events & experiences'}).isVisible());
               await page.locator('main[data-studio-motion="active"]').waitFor({timeout:15000});
               await page.locator('.fp26-storytile').first().scrollIntoViewIfNeeded();
               const family=await page.locator('main h1').evaluate(node=>getComputedStyle(node).fontFamily);
@@ -89,7 +91,7 @@ async function main(){
               assert.equal(await page.locator('.fp-hub-path[href="/food-atlas"]').count(),1);
               assert.equal(await page.locator('.fp26-search button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
               assert.equal(await page.getByRole('link',{name:'Browse gift suppliers',exact:true}).getAttribute('href'),'/gifting');
-              assert.equal(await page.locator('.fp-department-card').count(),9);
+              assert.equal(await page.locator('.fp-department-card').count(),12);
               assert.equal(await page.locator('.fp-department-card').first().getAttribute('href'),'/explore/places');
               assert.equal(await page.locator('#home-area').inputValue(),'Sri Lanka');
               assert.equal(await page.locator('[data-home-section="culture"]').count(),0);
@@ -103,7 +105,7 @@ async function main(){
               await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
               await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
             }
-            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),9);}
+            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),12);}
             if(name==='department-bakery'){
               assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'bakery');
               assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
