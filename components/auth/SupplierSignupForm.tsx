@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter,useSearchParams } from 'next/navigation';
 import {businessSpecialties,type BusinessSpecialty} from '@/lib/businessSpecialties';
 import SpecialtyPicker from '@/components/makers/SpecialtyPicker';
-import {businessTypes,businessTypeLabels,type BusinessType} from '@/lib/businessTypes';
+import {selectableBusinessTypes,businessTypeLabels,type BusinessType} from '@/lib/businessTypes';
 import { useAuth } from '@/contexts/AuthContext';
 import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 
@@ -27,8 +27,8 @@ export function SupplierSignupForm({onboarding=false}:{onboarding?:boolean}) {
   const router = useRouter();
   const params=useSearchParams();
   const requestedType=params.get("type");
-  const [selectedType,setSelectedType]=useState<BusinessType|''>(()=>businessTypes.find(t=>t===requestedType)||'');
-  const [specialties,setSpecialties]=useState<BusinessSpecialty[]>(()=>businessSpecialties.filter(s=>params.getAll("specialty").includes(s)).slice(0,8));
+  const [selectedType,setSelectedType]=useState<BusinessType|''>(()=>requestedType==='gift_creator'?'maker':selectableBusinessTypes.find(t=>t===requestedType)||'');
+  const [specialties,setSpecialties]=useState<BusinessSpecialty[]>(()=>businessSpecialties.filter(s=>params.getAll("specialty").includes(s)||(requestedType==='gift_creator'&&s==='food-hampers')).slice(0,8));
   const joinQuery=new URLSearchParams();
   if(selectedType)joinQuery.set("type",selectedType);
   specialties.forEach(s=>joinQuery.append("specialty",s));
@@ -51,7 +51,7 @@ export function SupplierSignupForm({onboarding=false}:{onboarding?:boolean}) {
       await refreshAuth(); router.push('/dashboard');
     } catch (e) { setError(e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); }
   }
-  const classification=<div className="grid gap-4"><label className="grid gap-2 text-sm font-semibold">Business type<select name="businessType" required value={selectedType} onChange={e=>setSelectedType(businessTypes.find(t=>t===e.target.value)||'')} className="block min-h-11 w-full rounded-md border border-border bg-background p-3 text-base font-normal"><option value="" disabled>Choose your main business type</option>{businessTypes.map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label><SpecialtyPicker value={specialties} onChange={setSpecialties}/></div>;
+  const classification=<div className="grid gap-4"><label className="grid gap-2 text-sm font-semibold">Business type<select name="businessType" required value={selectedType} onChange={e=>setSelectedType(selectableBusinessTypes.find(t=>t===e.target.value)||'')} className="block min-h-11 w-full rounded-md border border-border bg-background p-3 text-base font-normal"><option value="" disabled>Choose your main business type</option>{selectableBusinessTypes.map(t=><option key={t} value={t}>{businessTypeLabels[t]}</option>)}</select></label><SpecialtyPicker value={specialties} onChange={setSpecialties}/></div>;
   return <div className="maker-hero fp-join min-w-0"><div className="maker-hero-copy min-w-0">
     <p className="fp26-label">{onboarding ? "Step 2 of 2 · Business details" : "Free business registration"}</p><h1 className="maker-headline">{onboarding ? "Set up your business." : "Your business."}<br/><em>{onboarding ? "Make it yours." : "Your story."}</em></h1>
     <p className="my-5 max-w-lg leading-7">{copy.description}</p>
