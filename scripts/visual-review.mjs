@@ -68,7 +68,8 @@ async function main(){
               const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-collection .fp26-action')).borderTopLeftRadius)}));
               assert.equal(finish.paper,'rgb(248, 245, 238)');
               assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
-              assert.equal(await page.locator('.fp-gift-collection .fp26-action').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(169, 219, 118)');
+              for(const selector of ['.fp-gift-collection','.fp-return-shelf']){const styles=await page.locator(selector).evaluate(el=>({background:getComputedStyle(el).backgroundColor,heading:getComputedStyle(el.querySelector('h2')).color,button:getComputedStyle(el.querySelector('.fp26-action')).borderTopColor}));assert.equal(styles.background,'rgb(25, 28, 25)');assert.equal(styles.heading,'rgb(255, 255, 255)');assert.equal(styles.button,'rgb(185, 233, 140)');}
+              assert.equal(await page.locator('.fp-footer-explore-list').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),2);
               assert(finish.search>=(phone?12:16)&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForTimeout(1400);
@@ -158,6 +159,7 @@ async function main(){
             }
             if(name==='contact'){
               assert.equal(await page.locator('.fp-contact-hero img').count(),1);
+              assert.equal(await page.locator('.fp-contact-hero').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(25, 28, 25)');
               await page.getByRole('textbox',{name:'Name',exact:true}).fill('Visual fixture');
               await page.getByRole('textbox',{name:'Email',exact:true}).fill('visual@example.invalid');
               await page.getByRole('textbox',{name:'Message',exact:true}).fill('Visual review only; not submitted.');

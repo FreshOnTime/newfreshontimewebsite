@@ -163,3 +163,31 @@
 .fp-onboard-primary{display:inline-flex;min-height:48px;align-items:center;justify-content:center;gap:8px;padding:12px 20px;background:#b9e98c;color:#17231a;border-radius:9px;font-weight:700}
 .fp-onboard-primary:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:480px){.fp-onboard-card{padding:14px}.fp-onboard-primary{width:100%}}
+
+/* Charcoal accents for discovery and account controls, without changing the reading surfaces. */
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection){background:#191c19;color:#fff;border:1px solid #343b34;border-radius:16px;padding:clamp(1.1rem,3vw,2rem)}
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) h2{color:#fff}
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) .fp26-label{color:#b9e98c}
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) p:not(.fp26-label){color:#e2e7df}
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) .fp26-action{background:#191c19;color:#c7efa5;border:1px solid #b9e98c;border-radius:8px}
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) .fp26-action:hover{background:#b9e98c;color:#191c19;border-color:#b9e98c}
+.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) .fp26-action:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.fp-contact-page .fp-contact-hero{background:#191c19;border-color:#343b34;color:#fff}
+.freshpick-market>main[data-publication=true] .fp-contact-hero h1{color:#fff}
+.freshpick-market>main[data-publication=true] .fp-contact-hero .fp26-label{color:#b9e98c}
+.freshpick-market>main[data-publication=true] .fp-contact-hero .fp26-deck{color:#e2e7df}
+.fp-contact-page .fp-contact-aside{background:#e8f4df;border-color:#d2e3c9}
+.fp-contact-page .fp-contact-options>div{border-color:#c9dbc1}
+.fp-contact-page .fp-contact-options svg{color:#191c19}
+.fp-contact-page .fp-contact-form{background:#fff;border-color:#d5ddd2;box-shadow:0 12px 36px rgba(25,28,25,.045)}
+.fp-contact-page .fp-contact-receipt{padding:14px;border:1px solid #c9dbc1;background:#e8f4df;color:#19351e;border-radius:10px;overflow-wrap:anywhere}
+.fp-contact-page .fp-contact-optional{border:1px solid #d5ddd2;padding:12px;border-radius:10px}
+.fp-contact-page .fp-contact-optional summary{min-height:32px;cursor:pointer;font-size:.85rem;font-weight:600}
+.heritage-header .fp-signed-in-account{background:#191c19;color:#fff;border:1px solid #191c19;border-radius:50%}
+.heritage-header .fp-signed-in-account:hover{background:#303830;color:#fff}
+.heritage-header .fp-signed-in-account:focus-visible{outline:2px solid #528c3b;outline-offset:3px}
+.fp-account-menu-heading{background:#e8f4df;color:#191c19;border-radius:8px;padding:12px;overflow-wrap:anywhere}
+.fp-footer-links .fp-footer-explore-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.fp-footer-links>nav{min-width:0}
+.fp-footer-links li a{overflow-wrap:anywhere}
+@media(max-width:767px){.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) .fp26-action{width:100%;justify-content:center}.fp-contact-page .fp-contact-hero figure{aspect-ratio:16/9}}
