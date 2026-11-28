@@ -63,6 +63,7 @@ jobs:
             sleep 2
           done
           if [ "$ready" != true ]; then cat /tmp/visual-server.log; exit 1; fi
+          node scripts/business-lifecycle-integration.mjs || { cat /tmp/visual-server.log; exit 1; }
           node scripts/seo-browser-audit.mjs || { cat /tmp/visual-server.log; exit 1; }
           node scripts/visual-review.mjs || { cat /tmp/visual-server.log; exit 1; }
       - name: Upload screenshots (isolated test data)
