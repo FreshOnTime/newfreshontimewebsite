@@ -4,6 +4,7 @@ import { signAccessToken, signRefreshToken, hashRefreshToken, verifyToken } from
 import prisma from '@/lib/prisma';
 
 export interface SignupData {
+  businessName?: string;
   firstName: string;
   lastName?: string;
   email?: string;
@@ -144,6 +145,7 @@ export class AuthService {
         email: data.email,
         phoneNumber: data.phoneNumber,
         passwordHash,
+        ...(data.businessName ? {businessOnboardingDraft:{name:data.businessName}} : {}),
         role: 'customer',
         addresses: data.registrationAddress ? {
           create: [

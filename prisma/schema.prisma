@@ -148,6 +148,7 @@ model User {
   phoneNumber     String?    @unique
   passwordHash    String?
   supabaseAuthId  String?    @unique
+  businessOnboardingDraft Json?
   role            UserRole   @default(customer)
   secondaryRoles  UserRole[] @default([])
   isBanned        Boolean    @default(false)
@@ -280,6 +281,7 @@ model Supplier {
 
   businessType     String      @default("maker")
   businessSpecialties String[] @default([])
+  businessOfferingLabels String[] @default([])
   businessWebsite  String?
   businessInstagram String?
   businessLogo      String?

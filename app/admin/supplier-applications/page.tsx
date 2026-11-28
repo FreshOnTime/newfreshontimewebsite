@@ -16,6 +16,7 @@ interface Application {
   name: string;
   businessType?:string;
   businessSpecialties?:string[];
+  businessOfferingLabels?:string[];
   contactName: string;
   city?: string | null;
   country?: string | null;
@@ -65,6 +66,8 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
             {[application.city,application.country].filter(Boolean).join(', ')}{(application.city||application.country)&&' · '}{application.contactName} · {application.phone}{application.email ? ` · ${application.email}` : ''}
           </p>
         </div>
+
+        {!!application.businessOfferingLabels?.length && <section className="rounded-lg border border-border bg-secondary/40 p-4"><h3 className="text-sm font-semibold text-foreground">Declared offerings</h3><p className="mt-2 text-sm break-words">{application.businessOfferingLabels.join(" · ")}</p><p className="mt-2 text-xs text-muted-foreground">Review these specialties before approving the business.</p></section>}
 
         {!!application.notes && <section className="rounded-lg border border-border bg-secondary/40 p-4">
           <h3 className="text-sm font-semibold text-foreground">Proposed offerings</h3>

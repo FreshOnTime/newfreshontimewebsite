@@ -25,7 +25,7 @@ try{
    const check=(key,value)=>{row.checks[key]=Boolean(value);if(!value)row.errors.push(key);};
    check('title',data.title.trim()&&!titles.has(data.title));titles.add(data.title);
    if(path==='/countries'){check('coverage transparency',await page.getByText('Available now',{exact:true}).count()===1);}
-   if(path==='/'){check('discovery identity',data.title.includes('food discovery')&&data.description?.includes('food events'));check('homepage identity section',await page.locator('#freshpick-discovery-title').count()===1);}
+   if(path==='/'){check('discovery identity',/food discovery/i.test(data.title)&&/food events/i.test(data.description||''));check('homepage identity section',await page.locator('#freshpick-discovery-title').count()===1);}
    check('description',data.description?.trim());
    // The origin with or without a final slash denotes the same homepage URL.
    const expectedCanonical=canonicalBase+path;

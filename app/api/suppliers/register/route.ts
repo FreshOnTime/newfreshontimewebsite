@@ -6,11 +6,13 @@ import { verifyToken } from '@/lib/auth';
 import { phoneSchema } from '@/lib/utils/validation';
 import { businessSpecialties } from '@/lib/businessSpecialties';
 import { businessTypes } from '@/lib/businessTypes';
+import { offeringsSchema,canonicalSpecialties,isBusinessApplicant } from '@/lib/businessOnboarding';
 import { withRateLimit } from '@/lib/utils/rateLimit';
 
 const supplierSchema = z.object({
   businessType: z.enum(businessTypes).optional(),
   businessSpecialties: z.array(z.enum(businessSpecialties)).max(8).transform(values=>[...new Set(values)]).optional(),
+  offerings: offeringsSchema.optional(),
   companyName: z.string().trim().min(1).max(150),
   contactName: z.string().trim().min(1).max(100),
   email: z.string().trim().toLowerCase().email().optional().or(z.literal('')),
@@ -62,12 +64,15 @@ async function handleRegister(request: NextRequest) {
     const parsed = supplierSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: 'Check your business and contact details', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     const body = parsed.data;
+    const mapped=body.offerings===undefined?body.businessSpecialties:canonicalSpecialties(body.offerings);
+    const labels=body.offerings?.map(o=>o.label);
     const productNotes = (body.productListCsv || body.productList || '').trim() || undefined;
 
     const result = await prisma.$transaction(async tx => {
-      const user = await tx.user.findUnique({ where: { id: auth.userId }, select: { id: true, role: true, supplierId: true, isBanned: true } });
+      const user = await tx.user.findUnique({ where: { id: auth.userId }, select: { id: true, role: true, secondaryRoles:true, supplierId: true, isBanned: true } });
       if (!user || user.isBanned) throw new RegistrationError('Sign in before applying as a supplier', 401);
 
+      if (!isBusinessApplicant(user.role,user.secondaryRoles)) throw new RegistrationError('Use a regular member account to register a business',403);
       // An already-linked pending supplier can return to the application and
       // complete/correct the proposed catalogue instead of silently discarding it.
       if (user.supplierId) {
@@ -82,7 +87,7 @@ async function handleRegister(request: NextRequest) {
               reviewVersion:{increment:1},
               name: body.companyName,
               ...(body.businessType ? {businessType:body.businessType}:{}),
-              ...(body.businessSpecialties !== undefined ? {businessSpecialties:body.businessSpecialties}:{}),
+              ...(mapped !== undefined ? {businessSpecialties:mapped}:{}), ...(labels!==undefined?{businessOfferingLabels:labels}:{}),
               contactName: body.contactName,
               email: body.email || null,
               phone: body.phone,
@@ -102,7 +107,7 @@ async function handleRegister(request: NextRequest) {
       const existing = await tx.supplier.findFirst({ where: { OR: [{ phone: body.phone }, ...(body.email ? [{ email: { equals:body.email,mode:'insensitive' as const } }] : [])] } });
       if (existing) throw new RegistrationError('A supplier with these contact details already exists. Contact FreshPick to link your account.', 409);
       const supplier = await tx.supplier.create({ data: {
-        name: body.companyName, ...(body.businessType?{businessType:body.businessType}:{}), ...(body.businessSpecialties!==undefined?{businessSpecialties:body.businessSpecialties}:{}), contactName: body.contactName, email: body.email || undefined,
+        name: body.companyName, ...(body.businessType?{businessType:body.businessType}:{}), ...(mapped!==undefined?{businessSpecialties:mapped}:{}), ...(labels!==undefined?{businessOfferingLabels:labels}:{}), contactName: body.contactName, email: body.email || undefined,
         phone: body.phone, street: body.address?.addressLine1, city: body.town || body.address?.city, makerTown: body.town,
         state: body.address?.province, zipCode: body.address?.postalCode, country: body.country || body.address?.country,
         status: 'inactive', applicationStatus: 'pending', paymentTerms: 'net_30', notes: productNotes,
