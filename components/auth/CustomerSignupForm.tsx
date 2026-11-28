@@ -95,12 +95,12 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
           </div>
 
           <div className="mt-6 border-b border-border pb-8">
-            <span className="text-xs font-bold normal-case text-brand-green">Create your FreshPick</span>
+            <span className="text-xs font-bold normal-case text-brand-green">{businessSignup?"FreshPick for Business · Step 1 of 3":"Create your FreshPick"}</span>
             <h1 className="mt-4 font-serif text-4xl font-normal leading-tight text-foreground md:text-4xl">{businessSignup ? "Create your business account" : "Join FreshPick"}</h1>
-            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">{businessSignup ? "Step 1 of 2. Create your secure login first. You will add your business type and profile details after signing in." : "Create an account to discover restaurants and food businesses and save your favourites."}</p>
+            <p className="mt-5 max-w-2xl text-sm font-normal leading-7 text-muted-foreground">{businessSignup ? "Step 1 of 3. Create your free secure login first, choose your business type, then add your business details. No credit card required." : "Create an account to discover restaurants and food businesses and save your favourites."}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-9 space-y-10">
+          <form onSubmit={handleSubmit} className={businessSignup?"mt-9 space-y-8 fp-onboard-card":"mt-9 space-y-10"}>
             <section>
               <div className="mb-5 flex items-end justify-between gap-4">
                 <div>
