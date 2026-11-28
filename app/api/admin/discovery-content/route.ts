@@ -10,7 +10,13 @@ const editEnvelope=z.object({id:z.string().min(1).max(120),version:z.string().da
 function payload(v:ContentInput,userId:string,publishedAt:Date|null){
  return {kind:v.kind,slug:v.slug,title:v.title,category:v.category,summary:v.summary,body:v.body,aliases:v.aliases,variations:v.variations,relatedDishes:v.relatedDishes,searchTerm:v.searchTerm,sourceUrl:v.sourceUrl,sourceName:v.sourceName,location:v.location,startsAt:v.startsAt?new Date(v.startsAt):null,endsAt:v.endsAt?new Date(v.endsAt):null,published:v.published,publishedAt:v.published?(publishedAt||new Date()):null,updatedBy:userId};
 }
-export const GET=requireAdminSimple(async()=>respond({records:await prisma.discoveryContent.findMany({orderBy:[{updatedAt:'desc'},{id:'asc'}],take:500})}));
+export const GET=requireAdminSimple(async request=>{
+ const query=z.object({page:z.coerce.number().int().min(1).max(100000).default(1),kind:z.enum(['dish','tradition','event','guide']).optional()}).safeParse(Object.fromEntries(new URL(request.url).searchParams));
+ if(!query.success)return respond({error:'Invalid content filters'},400);
+ const {page,kind}=query.data,where=kind?{kind}:{};
+ const [records,total]=await prisma.$transaction([prisma.discoveryContent.findMany({where,orderBy:[{updatedAt:'desc'},{id:'asc'}],skip:(page-1)*20,take:20}),prisma.discoveryContent.count({where})]);
+ return respond({records,total,page,pages:Math.max(1,Math.ceil(total/20))});
+});
 export const POST=requireAdminSimple(async request=>{
  if(!validateOrigin(request))return respond({error:'Invalid request origin'},403);
  const parsed=contentInput.safeParse(await request.json().catch(()=>null));if(!parsed.success)return respond({error:parsed.error.issues[0].message},400);
