@@ -27,12 +27,13 @@ export function MakerItemCard({ handle, item, makerName, makerTown, menuItem=fal
   </Link>;
 }
 
-export function BatchDetails({ batch, itemName, phone }: {
+export function BatchDetails({ batch, itemName, phone, itemPath }: {
   batch: { note: string; price: Money; cutoff: Date; readyAt: Date };
   itemName: string;
   phone: string | null;
+  itemPath?: string;
 }) {
-  const link = makerWhatsAppLink(phone, itemName, batch);
+  const link = makerWhatsAppLink(phone, itemName, batch, itemPath);
   return <div className="space-y-3 text-sm">
     <div>
       <p className="font-semibold text-brand-green">{formatMakerPrice(batch.price)}</p>
