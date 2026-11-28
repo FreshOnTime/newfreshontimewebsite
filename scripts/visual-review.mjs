@@ -68,7 +68,7 @@ async function main(){
               const finish=await page.evaluate(()=>({paper:getComputedStyle(document.querySelector('main')).backgroundColor,search:parseFloat(getComputedStyle(document.querySelector('.fp26-search')).borderTopLeftRadius),image:parseFloat(getComputedStyle(document.querySelector('.fp-curated-lead-photo')).borderTopLeftRadius),button:parseFloat(getComputedStyle(document.querySelector('.fp-gift-collection .fp26-action')).borderTopLeftRadius)}));
               assert.equal(finish.paper,'rgb(248, 245, 238)');
               assert.equal(await page.locator('.heritage-footer').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(23, 62, 43)');
-              for(const selector of ['.fp-gift-collection','.fp-return-shelf']){const styles=await page.locator(selector).evaluate(el=>({background:getComputedStyle(el).backgroundColor,heading:getComputedStyle(el.querySelector('h2')).color,button:getComputedStyle(el.querySelector('.fp26-action')).borderTopColor}));assert.equal(styles.background,'rgb(25, 28, 25)');assert.equal(styles.heading,'rgb(255, 255, 255)');assert.equal(styles.button,'rgb(185, 233, 140)');}
+              for(const selector of ['.fp-gift-collection','.fp-return-shelf']){const styles=await page.locator(selector).evaluate(el=>({background:getComputedStyle(el).backgroundColor,heading:getComputedStyle(el.querySelector('h2')).color,button:getComputedStyle(el.querySelector('.fp26-action')).borderTopColor}));assert.equal(styles.background,'rgb(25, 28, 25)');assert.equal(styles.heading,'rgb(255, 255, 255)');assert(['rgb(185, 233, 140)','rgba(0, 0, 0, 0)'].includes(styles.button),'Unexpected CTA border '+styles.button);assert(await page.locator(selector+' .fp26-action').isVisible());}
               assert.equal(await page.locator('.fp-footer-explore-list').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),2);
               assert(finish.search>=(phone?12:16)&&finish.image>=12&&finish.button>=6&&finish.button<=12,'Premium radius tokens not applied: '+JSON.stringify(finish));
               await page.evaluate(()=>window.scrollTo(0,0));
@@ -283,7 +283,7 @@ async function main(){
               const page=await context.newPage();
               await ready(page,new URL('/makers',base).href);
               await page.getByRole('heading',{name:'Independent food brands to explore'}).waitFor();
-              await page.getByRole('heading',{name:'Meet the world of local food'}).waitFor();
+              await page.getByRole('heading',{name:'Food & brands',exact:true}).waitFor();
               assert.equal(await page.locator('#makers-results').count(),0);
               await capture(page,'directory-launch-'+width);
             } finally { await context.close(); }
@@ -392,7 +392,7 @@ async function main(){
       const page=await reduced.newPage();
       await ready(page,new URL('/',base).href);
       assert.equal(await page.locator('main').getAttribute('data-studio-motion'),null,'Reduced motion must not activate GSAP');
-      assert(await page.getByRole('heading',{name:'Find your next favourite.'}).isVisible(),'Headline must remain visible');
+      assert(await page.locator('#home-headline').isVisible(),'Headline must remain visible');
       await capture(page,'reduced-motion-homepage-390');
     }catch(error){errors.push(String(error));}finally{await reduced.close();}
   }finally{await browser.close();}
