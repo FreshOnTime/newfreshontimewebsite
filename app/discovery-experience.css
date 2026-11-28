@@ -191,3 +191,33 @@
 .fp-footer-links>nav{min-width:0}
 .fp-footer-links li a{overflow-wrap:anywhere}
 @media(max-width:767px){.freshpick-market>main[data-publication=true] :is(.fp-return-shelf,.fp-gift-collection) .fp26-action{width:100%;justify-content:center}.fp-contact-page .fp-contact-hero figure{aspect-ratio:16/9}}
+
+/* Charcoal discovery system: white canvas, dark content cards, green highlights.
+   Deliberately leave the Food Atlas's dedicated dish-card styling untouched. */
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-index,.fp-charcoal-discovery .fp-curated-entry,.fp-charcoal-discovery .fp26-storytile,.fp-charcoal-discovery .fp-atlas-card:not(.fp-dish-black-card),.fp-charcoal-discovery .fp-item-card,.fp-charcoal-discovery .fp-occasion,.fp-department-card){background:#191c19;color:#fff;border:1px solid #343b34;border-radius:14px;overflow:hidden;min-width:0;transition:border-color .18s,background-color .18s}
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-index,.fp-charcoal-discovery .fp-curated-entry,.fp-charcoal-discovery .fp-atlas-card:not(.fp-dish-black-card)){padding:clamp(1rem,2vw,1.45rem)}
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-index,.fp-charcoal-discovery .fp-curated-entry,.fp-charcoal-discovery .fp26-storytile,.fp-charcoal-discovery .fp-atlas-card:not(.fp-dish-black-card),.fp-charcoal-discovery .fp-item-card,.fp-charcoal-discovery .fp-occasion,.fp-department-card) :is(h2,h3,h3 a){color:#fff}
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-index,.fp-charcoal-discovery .fp-curated-entry,.fp-charcoal-discovery .fp26-storytile,.fp-charcoal-discovery .fp-atlas-card:not(.fp-dish-black-card),.fp-charcoal-discovery .fp-item-card,.fp-charcoal-discovery .fp-occasion,.fp-department-card) p:not(.fp26-label){color:#e2e7df}
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-index,.fp-charcoal-discovery .fp-curated-entry,.fp-charcoal-discovery .fp26-storytile,.fp-charcoal-discovery .fp-atlas-card:not(.fp-dish-black-card),.fp-charcoal-discovery .fp-item-card,.fp-charcoal-discovery .fp-occasion,.fp-department-card) :is(.fp26-label,.fp26-textlink,.fp26-storylink,svg){color:#b9e98c}
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-index,.fp-charcoal-discovery .fp-curated-entry,.fp-charcoal-discovery .fp26-storytile,.fp-charcoal-discovery .fp-atlas-card:not(.fp-dish-black-card),.fp-charcoal-discovery .fp-item-card,.fp-charcoal-discovery .fp-occasion,.fp-department-card):hover{border-color:#a9db76;background:#232a23}
+.freshpick-market>main[data-publication=true] :is(.fp-charcoal-discovery .fp26-storytile,.fp-charcoal-discovery .fp-atlas-card,.fp-charcoal-discovery .fp-item-card,.fp-department-card):focus-visible{outline:3px solid #528c3b;outline-offset:3px}
+.fp-charcoal-discovery .fp-curated-list{gap:12px;background:transparent!important;overflow:visible!important}
+.fp-charcoal-discovery .fp26-storytile .fp26-storycopy{padding:1rem}
+.fp-charcoal-discovery .fp26-storycompact{padding:10px;align-items:center;gap:12px}
+.fp-charcoal-discovery .fp26-storycompact .fp26-storycopy{padding:.35rem}
+.fp-charcoal-discovery .fp-tradition-number{color:#b9e98c}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery :is(.fp26-topicnav,.fp-department-nav) a[aria-current=page]{background:#b9e98c;color:#191c19;border-color:#a2cc80;font-weight:700}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp-green-highlight{display:flex;align-items:center;justify-content:space-between;gap:1.25rem;background:#e8f4df;border:1px solid #c9dbc1;border-radius:16px;padding:clamp(1.1rem,3vw,2rem);color:#191c19}
+.freshpick-market>main[data-publication=true] .fp-green-highlight :is(h2,.fp26-label){color:#191c19}
+.freshpick-market>main[data-publication=true] .fp-green-highlight p:not(.fp26-label){color:#38513d;max-width:65ch}
+.freshpick-market>main[data-publication=true] .fp-green-highlight .fp26-action{background:#191c19;color:#b9e98c;border:1px solid #191c19;border-radius:8px;flex-shrink:0}
+.freshpick-market>main[data-publication=true] .fp-green-highlight .fp26-action:hover{background:#303830;color:#fff}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-directory-tools>a{background:#191c19;color:#fff;border:1px solid #343b34;border-radius:12px;padding:1rem}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-directory-tools>a :is(strong,svg){color:#b9e98c}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-directory-tools>a p{color:#e2e7df}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-filters{background:#fff;border:1px solid #d5ddd2;border-radius:16px;padding:14px;box-shadow:0 8px 24px #191c1908}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery form.fp26-filters.fp-taxonomy-filters label.fp-filter-select>select,.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-filters .fp-filter-select select{appearance:none;background-color:#f5f8f2;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m5 8 5 5 5-5' stroke='%2338513d' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:20px;border:1px solid #cbd8c6;border-radius:10px;padding:0 38px 0 12px;color:#191c19;min-height:48px}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-filters .fp-directory-location>div{background:#f5f8f2;border-color:#cbd8c6;border-radius:10px}
+.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp26-filters :is(select,input):focus-visible{outline:2px solid #528c3b;outline-offset:2px}
+@media(max-width:760px){.freshpick-market>main[data-publication=true] .fp-charcoal-discovery .fp-green-highlight{align-items:stretch;flex-direction:column}.fp-green-highlight .fp26-action{width:100%;justify-content:center}.fp-charcoal-discovery .fp26-storycompact{grid-template-columns:100px minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.fp-charcoal-discovery *, .fp-department-card{transition:none}}

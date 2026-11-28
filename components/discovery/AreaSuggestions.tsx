@@ -1,0 +1,2 @@
+const areas=['Sri Lanka','Colombo','Kandy','Galle','Negombo','Jaffna','Kurunegala','Anuradhapura','Matara','Nuwara Eliya','Batticaloa','Trincomalee','Ratnapura','Badulla','Gampaha','Maharagama','Nugegoda','Dehiwala','Mount Lavinia','Battaramulla','Rajagiriya'];
+export default function AreaSuggestions({id}:{id:string}){return <datalist id={id}>{areas.map(area=><option key={area} value={area}/>)}</datalist>}
