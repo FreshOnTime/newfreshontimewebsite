@@ -6,8 +6,9 @@ import { notFound } from 'next/navigation';
 import { MakerItemCard, MakerPhoto } from '@/components/makers/MakerCards';
 import { findPublicMaker, publicItemSelect } from '@/lib/makerQueries';
 import prisma from '@/lib/prisma';
-import { makerWhatsAppLink } from '@/lib/makers';
-import {businessTypeLabel,isVenueOnly,officialHttps} from '@/lib/businessTypes';
+import { makerContactLinks } from '@/lib/makerContacts';
+import ContactLinks from '@/components/makers/ContactLinks';
+import {businessTypeLabel,isVenueOnly} from '@/lib/businessTypes';
 import { specialtyLabel } from '@/lib/businessSpecialties';
 import { pageMetadata, breadcrumbJsonLd, serializeJsonLd } from '@/lib/seo';
 import {businessPresentation,businessDescription,businessJsonLd} from '@/lib/businessPresentation';
@@ -39,10 +40,9 @@ export default async function MakerPage({ params }: Props) {
     }),
   ]);
 
-  const enquiry = makerWhatsAppLink(maker.makerWhatsApp, maker.name);
+  const links = makerContactLinks(maker, maker.name, `/makers/${handle}`);
   const venue=isVenueOnly(maker.businessType);
   const presentation=businessPresentation(maker.businessType);
-  const website=officialHttps(maker.businessWebsite),instagram=officialHttps(maker.businessInstagram,"instagram.com");
   const leadItem = items.find(item => item.image);
   return <div className="fp-maker-profile editorial-wrap space-y-10 py-10 md:py-16" data-business-type={maker.businessType}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd(businessJsonLd(maker))}}/>
@@ -59,7 +59,7 @@ export default async function MakerPage({ params }: Props) {
       {maker.makerBio && <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words leading-7 text-muted-foreground">{maker.makerBio}</p>}
       </div>{leadItem && <Link href={`/makers/${handle}/items/${leadItem.slug}`} className="lux-storefront-feature"><MakerPhoto image={leadItem.image} name={leadItem.name}/><span>Featured offering · {leadItem.name} <span aria-hidden="true">↗</span></span></Link>}
     </header>
-    <section id="connect-business" className="fp26-panel"><h2>{presentation.contact}</h2><p className="fp26-meta mb-4">{presentation.hint}</p><div className="fp26-socials">{enquiry&&<a href={enquiry} target="_blank" rel="noopener noreferrer">WhatsApp</a>}{website&&<a href={website} target="_blank" rel="noopener noreferrer">Official website</a>}{instagram&&<a href={instagram} target="_blank" rel="noopener noreferrer">Instagram</a>}</div>{!enquiry&&!website&&!instagram&&<p className="fp26-meta">This business has not published an official contact channel yet.</p>}</section>
+    <section id="connect-business" className="fp26-panel"><h2>{presentation.contact}</h2><p className="fp26-meta mb-4">{presentation.hint}</p><ContactLinks links={links}/></section>
     {(items.length>0||stories.length>0)&&<nav className="lux-result-jump" aria-label="Maker page sections">{items.length>0&&<a href="#maker-items">{presentation.navigation}</a>}{stories.length > 0 && <a href="#maker-stories">Articles</a>}</nav>}
     {items.length>0&&<section id="maker-items">
       <div className="fp-section-head"><h2 className="editorial-title">{presentation.section}</h2><span className="fp-kicker">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
