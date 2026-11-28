@@ -48,6 +48,7 @@ export default function BusinessLeadsPage() {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || data?.lead?.status!==status) throw new Error(data?.error || "Unable to update application");
+      setPage(1);
       queue.reload();
       toast.success("Partnership status updated");
     } catch (error) {
