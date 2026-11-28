@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   category: 'food',
   title: { default: `${DISCOVERY_TITLE} | FreshPick`, template: '%s | FreshPick' },
   description: DISCOVERY_DESCRIPTION,
-  openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick Sri Lanka', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'FreshPick Sri Lanka food discovery, dining, producers and events' }] },
+  openGraph: { type: 'website', locale: 'en_LK', siteName: 'FreshPick', images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'FreshPick Sri Lanka food discovery, dining, producers and events' }] },
   twitter: { card: 'summary_large_image', images: ['/opengraph-image'] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
   formatDetection: { email: false, address: false, telephone: false },
@@ -31,7 +31,8 @@ const organizationJsonLd = {
     {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
-      "name": "FreshPick Sri Lanka",
+      "name": "FreshPick",
+      "alternateName": "FreshPick Sri Lanka",
       "url": SITE_URL,
       "logo": `${SITE_URL}/brand/freshpick-wordmark.svg`,
       "description": DISCOVERY_DESCRIPTION,
@@ -47,7 +48,7 @@ const organizationJsonLd = {
       "alternateName": "FreshPick Sri Lanka",
       "description": DISCOVERY_DESCRIPTION,
       "publisher": { "@id": `${SITE_URL}/#organization` },
-      "inLanguage": "en-LK",
+      "inLanguage": "en",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -66,7 +67,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-LK">
+    <html lang="en">
       <body className="min-h-screen bg-background font-sans antialiased">
         <AdminChromeGuard footer={<Footer />}>{children}</AdminChromeGuard>
         <Toaster />
