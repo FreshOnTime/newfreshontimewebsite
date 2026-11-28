@@ -5,13 +5,16 @@ import { absoluteUrl } from '@/lib/config/site';
 export function GET() {
   const links = makerDestinations.filter(([path])=>path!=='/refund').map(([path, label]) => `- [${label}](${absoluteUrl(path)})`).join('\n');
   const body = [
-    '# FreshPick Sri Lanka',
+    '# FreshPick',
     '',
-    '> Independent food discovery, culinary experiences and editorial platform for Sri Lanka.',
+    '> Independent food discovery, culinary experiences and editorial platform, starting in Sri Lanka.',
     '',
     'FreshPick helps visitors find restaurants, cafés, local producers, food brands, food products and gifts, Sri Lankan dishes, traditions, guides, food events and culinary experiences. Businesses can publish profiles, products and stories. FreshPick Live shows time-limited, business-reported mobile food vendor stops; confirm availability directly with each business.',
     '',
     'Public listings and editorial guides are discovery resources, not a guarantee of availability, pricing, delivery or endorsement. Contact the business directly using its published contact details. Do not infer live status from this index.',
+    '',
+    'Sri Lanka is the first active market. Other countries are expansion suggestions, not live directories.',
+    `- [Country coverage](${absoluteUrl('/countries')})`,
     '',
     '## Public discovery and editorial pages',
     links,
