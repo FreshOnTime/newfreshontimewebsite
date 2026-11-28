@@ -13,7 +13,7 @@ import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import {readWorkspace} from '@/lib/api/workspace-read';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
-import {businessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
+import {selectableBusinessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
 
 type Profile = {
   businessLogo?:string|null;businessCover?:string|null;
@@ -178,7 +178,7 @@ export default function MakerStudio() {
         {supplier.makerPublished && <Link href={profilePath} className={plain}>View your page</Link>}
       </div>
       <form key={JSON.stringify([supplier.businessLogo,supplier.businessCover])} onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
-        <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{businessTypes.map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
+        <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{(supplier.businessType==='gift_creator'?[...selectableBusinessTypes,'gift_creator' as const]:selectableBusinessTypes).map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
         <div className="md:col-span-2"><SpecialtyPicker initial={supplier.businessSpecialties}/></div>
         <div className="md:col-span-2 grid gap-4 sm:grid-cols-2"><MediaField name="logo" title="Business logo" current={supplier.businessLogo} hint="Square image recommended."/><MediaField name="cover" title="Business cover photo" current={supplier.businessCover} hint="Wide landscape photograph recommended."/></div>
         <label className={label}>Public handle
@@ -212,11 +212,11 @@ export default function MakerStudio() {
 
     {supplier.makerHandle && <>
       <section hidden={tab !== 'Items'} className={panel}>
-        <h2 className={heading}>{item ? 'Edit offering' : venue?'Add a menu item':'Add a product'}</h2>
+        <h2 className={heading}>{item ? 'Edit offering' : venue?'Add a menu item or gift':'Add a product or gift'}</h2>
         <form key={item?.id || 'new-item'} onSubmit={submitItem} className="grid gap-4 md:grid-cols-2">
           <label className={label}>Item name<input name="name" className={fields} defaultValue={source?.name || ''} required minLength={2} maxLength={120} /></label>
           <label className={label}>Category
-            <select name="kind" className={fields} defaultValue={item?.kind || 'Bakery'}>{makerKinds.map(kind => <option key={kind}>{kind}</option>)}</select>
+            <select name="kind" className={fields} defaultValue={item?.kind || 'Bakery'}>{makerKinds.map(kind => <option key={kind}>{kind}</option>)}</select><span className="text-xs font-normal text-muted-foreground">Choose Food gifts for hampers, gift boxes or edible gifts, whatever your business type.</span>
           </label>
           <label className={`${label} md:col-span-2`}>Description<textarea name="description" className={fields} defaultValue={source?.description || ''} rows={3} required minLength={2} maxLength={2000} /></label>
           <label className={label}>Price (LKR, optional)
