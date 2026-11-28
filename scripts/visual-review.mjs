@@ -172,12 +172,22 @@ async function main(){
             }
             if(name==='story'){assert(await page.locator('.fp-article-cover[alt="Test editorial image"]').isVisible());}
             if(name==='join'){
-              await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('gift_creator');
-              await page.getByRole('checkbox',{name:'Food hampers',exact:true}).check();
-              const target=await page.getByRole('link',{name:'Create your login',exact:true}).getAttribute('href');
-              const next=new URL(target,base).searchParams.get('redirect');
-              assert.equal(new URL(next,base).searchParams.get('type'),'gift_creator');
-              assert.equal(new URL(next,base).searchParams.get('specialty'),'food-hampers');
+              const signupLink=page.getByRole('link',{name:'Create a free business account',exact:true});
+              assert(await signupLink.isVisible());
+              assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).count(),0);
+              const target=new URL(await signupLink.getAttribute('href'),base);
+              assert.equal(target.pathname,'/auth/signup/customer');
+              assert.equal(target.searchParams.get('redirect'),'/dashboard/business-onboarding');
+              await ready(page,new URL('/join?type=gift_creator&specialty=food-hampers',base).href);
+              assert(await page.getByText('Showcase your food hampers, celebration gifts and custom creations.',{exact:true}).isVisible());
+              const typedTarget=new URL(await page.getByRole('link',{name:'Create a free business account',exact:true}).getAttribute('href'),base);
+              const next=new URL(typedTarget.searchParams.get('redirect'),base);
+              assert.equal(next.pathname,'/dashboard/business-onboarding');
+              assert.equal(next.searchParams.get('type'),'gift_creator');
+              assert.equal(next.searchParams.get('specialty'),'food-hampers');
+              await ready(page,new URL('/join?type=restaurant',base).href);
+              assert(await page.getByText('Help diners discover your restaurant, menu, signature dishes and location.',{exact:true}).isVisible());
+              await ready(page,new URL('/join',base).href);
             }
             if(name==='businesses'){
               assert.equal(await page.locator('.fp-business-type-card img').count(),3);
