@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {authenticatedApiFetch} from '@/lib/api/authenticated-fetch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -137,7 +138,7 @@ export function BlogDialog({ open, onOpenChange, blog, onSave, readOnly }: BlogD
       const url = blog ? `/api/admin/blogs/${blog._id}` : '/api/admin/blogs';
       const method = blog ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await authenticatedApiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

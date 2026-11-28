@@ -10,7 +10,7 @@ jest.mock('next/server', () => jest.requireActual('next/server'));
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: {
   user: { findUnique: jest.fn() },
   supplier: { findMany: jest.fn(), count: jest.fn() },
-  businessLead: { findMany: jest.fn(), update: jest.fn() },
+  businessLead: { findMany: jest.fn(), count:jest.fn(), update: jest.fn() },
   contactEnquiry: { findMany: jest.fn(), count: jest.fn() },
   $transaction: jest.fn(),
 } }));
@@ -31,6 +31,7 @@ beforeEach(() => {
   (prisma.supplier.findMany as jest.Mock).mockResolvedValue([]);
   (prisma.supplier.count as jest.Mock).mockResolvedValue(0);
   (prisma.businessLead.findMany as jest.Mock).mockResolvedValue([]);
+  (prisma.businessLead.count as jest.Mock).mockResolvedValue(0);
   (prisma.contactEnquiry.findMany as jest.Mock).mockResolvedValue([]);
   (prisma.contactEnquiry.count as jest.Mock).mockResolvedValue(0);
   (prisma.$transaction as jest.Mock).mockImplementation(values => Promise.all(values));
@@ -99,3 +100,5 @@ it('partnership filters and missing update records return meaningful results', a
   (prisma.businessLead.update as jest.Mock).mockRejectedValue({ code: 'P2025' });
   expect((await updateLead(request('', 60, { id: 'missing', status: 'won' }))).status).toBe(404);
 });
+
+it('paginates partnership records instead of silently hiding older applications',async()=>{(prisma.businessLead.count as jest.Mock).mockResolvedValue(221);const response=await leads(request('business-leads?page=11&status=qualified'));expect(response.status).toBe(200);expect(await response.json()).toMatchObject({total:221,page:11,pages:12});expect(prisma.businessLead.findMany).toHaveBeenCalledWith(expect.objectContaining({skip:200,take:20,where:{status:'qualified'}}));});

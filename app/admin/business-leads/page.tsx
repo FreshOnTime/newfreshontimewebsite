@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { authenticatedApiFetch } from "@/lib/api/authenticated-fetch";
 import { useAdminQueue } from "@/components/admin/useAdminQueue";
-import { QueueFeedback } from "@/components/admin/QueueFeedback";
+import { QueueFeedback, QueuePager } from "@/components/admin/QueueFeedback";
 
 const statuses = ["new", "contacted", "qualified", "won", "lost"] as const;
 type LeadStatus = (typeof statuses)[number];
@@ -33,8 +33,9 @@ const statusStyles: Record<LeadStatus, string> = {
 
 export default function BusinessLeadsPage() {
   const [filter, setFilter] = useState<"all" | LeadStatus>("all");
+  const [page,setPage]=useState(1);
   const [savingId, setSavingId] = useState<string | null>(null);
-  const queue = useAdminQueue<BusinessLead>(`/api/admin/business-leads${filter === 'all' ? '' : `?status=${filter}`}`, 'leads');
+  const queue = useAdminQueue<BusinessLead>(`/api/admin/business-leads?page=${page}${filter === 'all' ? '' : `&status=${filter}`}`, 'leads');
   const { items: filteredLeads, loading } = queue;
   const loadLeads = queue.reload;
 
@@ -46,7 +47,8 @@ export default function BusinessLeadsPage() {
         body: JSON.stringify({ id, status }),
       });
       const data = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(data?.error || "Unable to update application");
+      if (!response.ok || data?.lead?.status!==status) throw new Error(data?.error || "Unable to update application");
+      setPage(1);
       queue.reload();
       toast.success("Partnership status updated");
     } catch (error) {
@@ -71,7 +73,7 @@ export default function BusinessLeadsPage() {
 
       <div className="flex flex-wrap gap-2">
         {(["all", ...statuses] as const).map((status) => (
-          <button key={status} onClick={() => setFilter(status)} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${filter === status ? "bg-brand-leaf text-brand-ink" : "bg-background text-muted-foreground ring-1 ring-border hover:bg-secondary"}`}>
+          <button key={status} onClick={() => {setFilter(status);setPage(1);}} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${filter === status ? "bg-brand-leaf text-brand-ink" : "bg-background text-muted-foreground ring-1 ring-border hover:bg-secondary"}`}>
             {status === "all" ? 'All' : `${status[0].toUpperCase()}${status.slice(1)}`}
           </button>
         ))}
@@ -105,7 +107,7 @@ export default function BusinessLeadsPage() {
                 {lead.requirement && <p className="whitespace-pre-line rounded-lg bg-secondary p-4 text-sm leading-relaxed text-muted-foreground">{lead.requirement}</p>}
                 <label className="flex items-center justify-between gap-3 border-t border-border pt-4 text-sm font-medium text-foreground">
                   Partnership status
-                  <select value={lead.status} disabled={savingId === lead._id} onChange={(event) => updateStatus(lead._id, event.target.value as LeadStatus)} className="rounded-md border border-border bg-background px-3 py-2 text-sm disabled:opacity-60">
+                  <select value={lead.status} disabled={savingId !== null} onChange={(event) => updateStatus(lead._id, event.target.value as LeadStatus)} className="rounded-md border border-border bg-background px-3 py-2 text-sm disabled:opacity-60">
                     {statuses.map((status) => <option key={status} value={status}>{status[0].toUpperCase()}{status.slice(1)}</option>)}
                   </select>
                 </label>
@@ -114,6 +116,7 @@ export default function BusinessLeadsPage() {
           ))}
         </div>
       )}
+      {!loading&&!queue.error&&<QueuePager page={page} pages={queue.pages} change={setPage}/>}
     </div>
   );
 }

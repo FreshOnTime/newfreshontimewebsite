@@ -15,35 +15,35 @@ import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 const schema = z.object({
   name: z.string().min(1, 'Required'),
   contactName: z.string().min(1, 'Required'),
-  email: z.string().email('Invalid email'),
+  email: z.union([z.string().email('Invalid email'),z.literal('')]),
   phone: z.string().min(3, 'Invalid'),
   address: z.object({
-    street: z.string().min(1, 'Required'),
+    street: z.string().max(200),
     city: z.string().min(1, 'Required'),
-    state: z.string().min(1, 'Required'),
-    zipCode: z.string().min(1, 'Required'),
+    state: z.string().max(100),
+    zipCode: z.string().max(30),
     country: z.string().min(1, 'Required'),
   }),
   paymentTerms: z.enum(['net-15','net-30','net-60','net-90','cod','prepaid']).default('net-30'),
-  status: z.enum(['active','inactive']).default('active'),
+  status: z.enum(['active','inactive']).default('inactive'),
 });
 
 type FormData = z.infer<typeof schema>;
 
-interface Supplier { _id?: string; name: string; contactName: string; email: string; phone: string; address: { street: string; city: string; state: string; zipCode: string; country: string; }; paymentTerms: 'net-15'|'net-30'|'net-60'|'net-90'|'cod'|'prepaid'; status: 'active' | 'inactive'; }
+interface Supplier { _id?: string; name: string; contactName: string; email: string; phone: string; address: { street: string; city: string; state: string; zipCode: string; country: string; }; paymentTerms: 'net-15'|'net-30'|'net-60'|'net-90'|'cod'|'prepaid'; status: 'active' | 'inactive'; applicationStatus?:string; reviewVersion?:number; }
 
 export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly = false }: { open: boolean; onOpenChange: (o: boolean) => void; supplier?: Partial<Supplier> | null; onSave: () => void; readOnly?: boolean; }) {
   const isEditing = !!supplier?._id;
   const [loading, setLoading] = useState(false);
   type UploadRow = { _id: string; filename: string; originalName?: string; path?: string; createdAt: string };
   const [uploads, setUploads] = useState<UploadRow[] | null>(null);
-  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'active' } });
+  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'inactive' } });
 
   useEffect(() => {
     if (supplier) {
-      form.reset({ name: supplier.name, contactName: supplier.contactName, email: supplier.email, phone: supplier.phone, address: supplier.address, paymentTerms: supplier.paymentTerms || 'net-30', status: supplier.status });
+      form.reset({ name: supplier.name, contactName: supplier.contactName, email: supplier.email ?? '', phone: supplier.phone, address: {street:'',city:'',state:'',zipCode:'',country:'Sri Lanka',...supplier.address}, paymentTerms: supplier.paymentTerms || 'net-30', status: supplier.status });
     } else {
-      form.reset({ name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'active' });
+      form.reset({ name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'inactive' });
     }
     if (readOnly && supplier?._id) {
       // fetch uploads for this supplier
@@ -63,13 +63,15 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
   }, [supplier, form, readOnly]);
 
   const submit = async (data: FormData) => {
+    if (readOnly || loading) return;
+    if (!isEditing && !data.email) {form.setError('email',{message:'Email is required for a new record'});return;}
     try {
       setLoading(true);
       const res = await authenticatedApiFetch(isEditing ? `/api/admin/suppliers/${supplier!._id}` : '/api/admin/suppliers', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify({...data,...(isEditing?{reviewVersion:supplier?.reviewVersion}: {})}),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -96,12 +98,12 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField name="name" control={form.control} render={({ field }) => (<FormItem><FormLabel>Name *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
               <FormField name="contactName" control={form.control} render={({ field }) => (<FormItem><FormLabel>Contact Name *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField name="email" control={form.control} render={({ field }) => (<FormItem><FormLabel>Email *</FormLabel><FormControl><Input type="email" {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField name="email" control={form.control} render={({ field }) => (<FormItem><FormLabel>Email {isEditing?'(optional)':'*'}</FormLabel><FormControl><Input type="email" {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
               <FormField name="phone" control={form.control} render={({ field }) => (<FormItem><FormLabel>Phone *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField name="address.street" control={form.control} render={({ field }) => (<FormItem><FormLabel>Street *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField name="address.street" control={form.control} render={({ field }) => (<FormItem><FormLabel>Street (optional)</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
               <FormField name="address.city" control={form.control} render={({ field }) => (<FormItem><FormLabel>City *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField name="address.state" control={form.control} render={({ field }) => (<FormItem><FormLabel>State *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField name="address.zipCode" control={form.control} render={({ field }) => (<FormItem><FormLabel>ZIP Code *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField name="address.state" control={form.control} render={({ field }) => (<FormItem><FormLabel>State / province (optional)</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField name="address.zipCode" control={form.control} render={({ field }) => (<FormItem><FormLabel>Postal code (optional)</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
               <FormField name="address.country" control={form.control} render={({ field }) => (<FormItem><FormLabel>Country *</FormLabel><FormControl><Input {...field} disabled={readOnly} /></FormControl><FormMessage /></FormItem>)} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +111,7 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
                 <FormItem>
                   <FormLabel>Payment Terms</FormLabel>
                   <FormControl>
-        <Select value={field.value} onValueChange={field.onChange}>
+        <Select disabled={readOnly || loading} value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select payment terms" />
                       </SelectTrigger>
@@ -128,14 +130,14 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
               )} />
               <FormField name="status" control={form.control} render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Account status</FormLabel>{(!isEditing||supplier?.applicationStatus!=='approved')&&<p className="text-xs text-muted-foreground">Approve the business in Business Applications before activating it.</p>}
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="active" disabled={!isEditing || supplier?.applicationStatus!=='approved'}>Active (approved businesses only)</SelectItem>
                         <SelectItem value="inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>

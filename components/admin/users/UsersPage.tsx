@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
+import { QueueFeedback } from '@/components/admin/QueueFeedback';
 import { UserDialog } from '@/components/admin/users/UserDialog';
 
 type IUser = {
@@ -44,6 +46,8 @@ interface UsersResponse {
 export function UsersPage() {
   const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError,setLoadError]=useState('');
+  const loadSequence=useRef(0);
   const [search, setSearch] = useState('');
   const [role, setRole] = useState<string>('');
   const [page, setPage] = useState(1);
@@ -53,31 +57,33 @@ export function UsersPage() {
   const [editing, setEditing] = useState<IUser | null>(null);
 
   const fetchUsers = async () => {
+    const sequence=++loadSequence.current;
     try {
-      setLoading(true);
+      setLoading(true);setLoadError('');
       const params = new URLSearchParams({
         page: String(page),
         limit: '20',
         ...(search ? { search } : {}),
         ...(role ? { role } : {}),
       });
-      const res = await fetch(`/api/admin/users?${params}`, { credentials: 'include' });
+      const res = await authenticatedApiFetch(`/api/admin/users?${params}`, { credentials: 'include' });
       const response = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(response.error || 'Failed to fetch users');
+      if (!res.ok || !Array.isArray(response.users) || !response.pagination) throw new Error(response.error || 'Failed to fetch users');
+      if(sequence!==loadSequence.current)return;
 
       const data = response as UsersResponse;
       setUsers(data.users);
       setPagination(data.pagination);
     } catch (error) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : 'Failed to load users');
+      if(sequence===loadSequence.current)setLoadError(error instanceof Error ? error.message : 'Failed to load users');
     } finally {
-      setLoading(false);
+      if(sequence===loadSequence.current)setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchUsers();
+    return ()=>{loadSequence.current++;};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, role]);
 
@@ -106,7 +112,7 @@ export function UsersPage() {
     if (!confirm(`Delete ${user.firstName} ${user.lastName || ''}? This cannot be undone.`)) return;
 
     try {
-      const res = await fetch(`/api/admin/users/${user._id}`, {
+      const res = await authenticatedApiFetch(`/api/admin/users/${user._id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -182,7 +188,7 @@ export function UsersPage() {
             </select>
           </div>
 
-          {loading ? (
+          {loadError ? <QueueFeedback loading={false} error={loadError} retry={fetchUsers}/> : loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
             </div>

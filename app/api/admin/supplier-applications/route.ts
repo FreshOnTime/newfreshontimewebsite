@@ -59,11 +59,12 @@ export const PATCH = requireAdminSimple(async request => {
     const outcome = await prisma.$transaction(async tx => {
       const current = await tx.supplier.findUnique({
         where: { id },
-        select: { id: true, name: true, applicationStatus: true, reviewVersion: true },
+        select: { id: true, name: true, applicationStatus: true, reviewVersion: true, status: true },
       });
       if (!current || current.reviewVersion !== version) return { conflict: true as const };
 
       if(status==='approved'&&current.applicationStatus!=='approved'&&(!confirmed||!notes.trim()))return {conflict:false as const,verificationRequired:true as const};
+      const nextStatus = status === 'approved' ? (current.applicationStatus === 'approved' ? current.status : 'active') : 'inactive';
       const result = await tx.supplier.updateMany({
         where: { id, reviewVersion: version },
         data: {
@@ -71,7 +72,7 @@ export const PATCH = requireAdminSimple(async request => {
           reviewNotes: notes,
           reviewedAt: new Date(),
           reviewVersion: { increment: 1 },
-          status: status === 'approved' ? 'active' : 'inactive',
+          status: nextStatus,
           ...(status!=='approved'?{makerPublished:false}:{}),
         },
       });
@@ -101,7 +102,7 @@ export const PATCH = requireAdminSimple(async request => {
         }
       }
       await tx.auditLog.create({data:{userId:request.user!.userId,action:'review-application',resourceType:'supplier',resourceId:id,before:{applicationStatus:current.applicationStatus,reviewVersion:current.reviewVersion},after:{applicationStatus:status,reviewVersion:version+1}}});
-      return { conflict: false as const, application: { id, applicationStatus: status, status: status === 'approved' ? 'active' : 'inactive', reviewVersion: version + 1 } };
+      return { conflict: false as const, application: { id, applicationStatus: status, status: nextStatus, reviewVersion: version + 1 } };
     }, { maxWait: 10000, timeout: 15000 });
 
     if ('verificationRequired' in outcome&&outcome.verificationRequired)return json({error:'Confirm the business identity and contact details and record review evidence before approving.'},400);

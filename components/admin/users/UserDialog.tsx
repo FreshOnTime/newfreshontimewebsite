@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import {authenticatedApiFetch} from '@/lib/api/authenticated-fetch';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -117,7 +118,7 @@ export function UserDialog({
         ...(password ? { password } : {}),
       };
 
-      const res = await fetch(form._id ? `/api/admin/users/${form._id}` : '/api/admin/users', {
+      const res = await authenticatedApiFetch(form._id ? `/api/admin/users/${form._id}` : '/api/admin/users', {
         method: form._id ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

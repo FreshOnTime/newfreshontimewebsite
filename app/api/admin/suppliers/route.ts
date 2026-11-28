@@ -11,10 +11,10 @@ const supplierSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(3),
   address: z.object({
-    street: z.string().min(1),
+    street: z.string().max(200),
     city: z.string().min(1),
-    state: z.string().min(1),
-    zipCode: z.string().min(1),
+    state: z.string().max(100),
+    zipCode: z.string().max(30),
     country: z.string().min(1),
   }),
   paymentTerms: z.enum(['net-15', 'net-30', 'net-60', 'net-90', 'cod', 'prepaid']).default('net-30'),
@@ -56,7 +56,7 @@ function serializeSupplier(s: Supplier) {
     paymentTerms: termsToApi(s.paymentTerms),
     notes: s.notes ?? undefined,
     status: s.status,
-    applicationStatus: s.applicationStatus, makerPublished:s.makerPublished,reviewedAt:s.reviewedAt,
+    applicationStatus: s.applicationStatus, reviewVersion:s.reviewVersion, makerPublished:s.makerPublished,reviewedAt:s.reviewedAt,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };
