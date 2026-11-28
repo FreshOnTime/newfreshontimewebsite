@@ -67,11 +67,12 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
           </p>
         </div>
 
+        {!!application.businessOfferingLabels?.length && <section className="rounded-lg border border-border bg-secondary/40 p-4"><h3 className="text-sm font-semibold text-foreground">Declared offerings</h3><p className="mt-2 text-sm break-words">{application.businessOfferingLabels.join(" · ")}</p><p className="mt-2 text-xs text-muted-foreground">Review these specialties before approving the business.</p></section>}
+
         {!!application.notes && <section className="rounded-lg border border-border bg-secondary/40 p-4">
           <h3 className="text-sm font-semibold text-foreground">Proposed offerings</h3>
           {application.proposedProducts.length ? (
-            {!!application.businessOfferingLabels?.length&&<p className="mt-2 text-sm">Declared offerings (review before approval): {application.businessOfferingLabels.join(' · ')}</p>}
-           <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {application.proposedProducts.map(product => (
                 <Badge key={product} variant="secondary" className="max-w-full whitespace-normal text-left">
                   {product}
