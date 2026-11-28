@@ -284,6 +284,10 @@ model Supplier {
   businessOfferingLabels String[] @default([])
   businessWebsite  String?
   businessInstagram String?
+  businessPublicEmail String?
+  businessPublicPhone String?
+  businessFacebook String?
+  businessTikTok String?
   businessLogo      String?
   businessCover     String?
   makerHandle      String?     @unique
@@ -1006,6 +1010,11 @@ model MakerItem {
   kind         String
   price        Decimal?       @db.Decimal(12, 2)
   image        String?
+  contactWhatsApp String?
+  contactEmail String?
+  contactPhone String?
+  contactWebsite String?
+  purchaseUrl String?
   madeToOrder  Boolean        @default(false)
   published    Boolean        @default(true)
   batches      MakerBatch[]
