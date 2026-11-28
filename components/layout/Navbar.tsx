@@ -9,6 +9,7 @@ import { MARKET_NAVIGATION,isMarketRouteActive,isJournalRoute } from "@/lib/navi
 import Wordmark from "@/components/brand/Wordmark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
+const contactLink = {label:"Contact",href:"/contact"};
 const cultureLinks=[{label:'Food guides & comparisons',href:'/guides'},{label:'Food Atlas',href:'/food-atlas'},{label:'Food traditions',href:'/traditions'},{label:'Food experiences',href:'/experiences'}];
 const iconButton = "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-brand-green transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green";
 
@@ -21,7 +22,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const maker = user?.role === "supplier";
   const account = (user?.role === "admin"||user?.secondaryRoles?.includes("admin")) ? "/admin" : "/dashboard";
-  const links = [...MARKET_NAVIGATION, {label:maker ? "Business studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}, {label:"Contact",href:"/contact"}];
+  const links = [...MARKET_NAVIGATION, {label:maker ? "Business studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}, contactLink];
 
   useEffect(() => { setMenuOpen(false); setSearchOpen(false); }, [pathname]);
   useEffect(() => {
@@ -68,7 +69,7 @@ export function Navbar() {
           {[
             { title: "Discover", items: [...links.filter(link => link.href !== "/stories" && link.href !== "/contact" && link.href !== "/for-businesses" && link.href !== "/dashboard"), {label:"Food departments",href:"/explore"},{label:"Food in Colombo",href:"/locations/colombo"},{label:"Products",href:"/food-products"},{label:"Gift suppliers",href:"/gifting"},{label:"FreshPick Live",href:"/live"}] },
             { title: "Journal & food culture", items: [{label:"Journal",href:"/stories"},...cultureLinks,{label:"Food calculators",href:"/food-tools"},{label:"Editorial archive",href:"/blog"}] },
-            { title: "Business & support", items: [{label:"For businesses",href:"/for-businesses"},{label:"List your business",href:"/join"},...(maker?[{label:"Business studio",href:"/dashboard"}]:[]),{label:"About FreshPick",href:"/about"},{label:"How it works",href:"/how-it-works"},{label:"Help",href:"/help"},{label:"Contact",href:"/contact"}] },
+            { title: "Business & support", items: [{label:"For businesses",href:"/for-businesses"},{label:"List your business",href:"/join"},...(maker?[{label:"Business studio",href:"/dashboard"}]:[]),{label:"About FreshPick",href:"/about"},{label:"How it works",href:"/how-it-works"},{label:"Help",href:"/help"},contactLink] },
             { title: "Your account", items: [{label:"Saved picks",href:"/saved"},...(user?[{label:"Your account",href:account},{label:"Profile",href:"/profile"}]:[{label:"Sign in",href:"/auth/login"},{label:"Create account",href:"/auth/signup"}])] }
           ].map(group => (
             <details key={group.title}  className="group rounded-xl border border-border bg-background">
