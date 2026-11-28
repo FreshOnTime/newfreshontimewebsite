@@ -41,9 +41,9 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSave, readOnly 
 
   useEffect(() => {
     if (supplier) {
-      form.reset({ name: supplier.name, contactName: supplier.contactName, email: supplier.email, phone: supplier.phone, address: {street:'',city:'',state:'',zipCode:'',country:'Sri Lanka',...supplier.address}, paymentTerms: supplier.paymentTerms || 'net-30', status: supplier.status });
+      form.reset({ name: supplier.name, contactName: supplier.contactName, email: supplier.email ?? '', phone: supplier.phone, address: {street:'',city:'',state:'',zipCode:'',country:'Sri Lanka',...supplier.address}, paymentTerms: supplier.paymentTerms || 'net-30', status: supplier.status });
     } else {
-      form.reset({ name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'active' });
+      form.reset({ name: '', contactName: '', email: '', phone: '', address: { street: '', city: '', state: '', zipCode: '', country: '' }, paymentTerms: 'net-30', status: 'inactive' });
     }
     if (readOnly && supplier?._id) {
       // fetch uploads for this supplier
