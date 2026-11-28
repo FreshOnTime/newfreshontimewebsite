@@ -83,7 +83,7 @@ export function BlogsPage() {
       });
       const res = await authenticatedApiFetch(`/api/admin/blogs?${params}`, { credentials: 'include' });
       const data = await res.json().catch(()=>null) as (BlogsResponse & {error?:string})|null;
-      if (!res.ok || !Array.isArray(data?.blogs) || !data.pagination) throw new Error(data?.error||'Failed to fetch blogs');
+      if (!res.ok || !data || !Array.isArray(data.blogs) || !data.pagination) throw new Error(data?.error||'Failed to fetch blogs');
       if(sequence!==loadSequence.current)return;
       setItems(data.blogs);
       setPagination(data.pagination);
