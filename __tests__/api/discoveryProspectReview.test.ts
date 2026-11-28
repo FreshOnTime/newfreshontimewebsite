@@ -1,4 +1,4 @@
-import {NextRequest} from 'next/server';
+import type {NextRequest} from 'next/server';
 import prisma from '@/lib/prisma';
 import {GET,PATCH} from '@/app/api/admin/discovery-prospects/route';
 
@@ -9,10 +9,10 @@ jest.mock('@/lib/prisma',()=>({__esModule:true,default:{
 const db=prisma as unknown as {$transaction:jest.Mock;discoveryProspect:{findMany:jest.Mock;count:jest.Mock;findUnique:jest.Mock;updateMany:jest.Mock;findUniqueOrThrow:jest.Mock}};
 const version='2026-11-28T12:00:00.000Z';
 const body={id:'listing-1',version,decision:'approved',notes:'Existing verified review evidence',confirmed:true};
-function request(payload=body){return new NextRequest('http://localhost/api/admin/discovery-prospects',{method:'PATCH',body:JSON.stringify(payload)});}
+function request(payload=body){return new Request('http://localhost/api/admin/discovery-prospects',{method:'PATCH',body:JSON.stringify(payload)}) as unknown as NextRequest;}
 beforeEach(()=>{jest.resetAllMocks();db.$transaction.mockImplementation((v:Promise<unknown>[])=>Promise.all(v));db.discoveryProspect.findMany.mockResolvedValue([]);db.discoveryProspect.count.mockResolvedValue(521);db.discoveryProspect.findUnique.mockResolvedValue({id:'listing-1'});db.discoveryProspect.updateMany.mockResolvedValue({count:1});db.discoveryProspect.findUniqueOrThrow.mockResolvedValue({id:'listing-1',reviewStatus:'approved',reviewNotes:body.notes});});
 it('pages filtered records beyond the old 500 record cap',async()=>{
- const response=await GET(new NextRequest('http://localhost/api/admin/discovery-prospects?page=26&status=pending'));
+ const response=await GET(new Request('http://localhost/api/admin/discovery-prospects?page=26&status=pending') as unknown as NextRequest);
  expect(response.status).toBe(200);expect(await response.json()).toMatchObject({page:26,pages:27,total:521});
  expect(db.discoveryProspect.findMany).toHaveBeenCalledWith(expect.objectContaining({skip:500,take:20,where:{reviewStatus:'pending'}}));
 });
