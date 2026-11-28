@@ -4,7 +4,7 @@ import {DepartmentNav} from './DepartmentMenu';
 import type { Prisma } from '@prisma/client';
 import {businessSpecialties,specialtyLabels,specialtyLabel,giftSpecialties,matchSpecialties} from '@/lib/businessSpecialties';
 import {ArrowUpRight,Search,MapPin,ArrowLeft,ArrowRight} from 'lucide-react';
-import {EditorialHeader,GuideShelf,SectionHeading} from './Editorial';
+import {EditorialHeader,GuideShelf,SectionHeading,DirectoryTools} from './Editorial';
 import {listProspects,searchText,pageNumber,publicLink,type DiscoveryMode,type PublicProspect} from '@/lib/discovery';
 import {businessTypes,businessTypeLabels,businessTypeLabel,diningBusinessTypes,venueOnlyTypes,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
 import {publicItemSelect} from '@/lib/makerQueries';
@@ -12,7 +12,7 @@ import {MakerItemCard} from '@/components/makers/MakerCards';
 import {fieldNotes,notePath} from '@/lib/fieldNotes';
 import prisma from '@/lib/prisma';
 import {publicMakerWhere,makerKinds} from '@/lib/makers';
-import {EditorialPicks,OccasionShelf,FoodBrandTabs} from './Curated';
+import {EditorialPicks,OccasionShelf} from './Curated';
 import {DishCards} from './Hub';
 import {matchGuides} from '@/lib/guideSearch';
 import {GuideCards} from './DiscoveryGuides';
@@ -36,13 +36,13 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const giftItem:Prisma.MakerItemWhereInput={OR:[{kind:'Food gifts'},{name:{contains:'gift',mode:'insensitive'}},{name:{contains:'hamper',mode:'insensitive'}}]};
  const classification:Prisma.SupplierWhereInput[]=[...(type?[{businessType:type}]:[]),...(specialty?[{businessSpecialties:{has:specialty}}]:[])];
  const businessWhere:Prisma.SupplierWhereInput={...supplier,AND:[...classification,...(eligibleTypes?[{businessType:{in:eligibleTypes}}]:[]),...(mode==='gifting'?[{OR:[{businessType:'gift_creator'},{businessSpecialties:{hasSome:giftSpecialties}},{makerItems:{some:{published:true,...giftItem}}}]}]:[]),...(kind?[{makerItems:{some:{kind,published:true}}}]:[]),...(q?[{OR:[{name:match},{makerBio:match},{makerItems:{some:{published:true,OR:[{name:match},{description:match},{kind:match}]}}},...(matchedSpecialties.length?[{businessSpecialties:{hasSome:matchedSpecialties}}]:[])]}]:[])]};
- const productSupplier={...supplier,AND:classification};
+ const productSupplier={...supplier,AND:[...classification,...(mode==='makers'&&eligibleTypes?[{businessType:{in:eligibleTypes}}]:[])]};
  const nonMenuOffering:Prisma.MakerItemWhereInput={OR:[{supplier:{businessType:{notIn:[...venueOnlyTypes]}}},{kind:'Food gifts'}]};
  const offset=(page-1)*24;
  const [prospectResult,makerResult,itemResult,storyResult]=await Promise.allSettled([
  mode==='products'?Promise.resolve([] as PublicProspect[]):specialty||articlesOnly?Promise.resolve([] as PublicProspect[]):listProspects(mode,q,area,page,{type,kind}),
  !articlesOnly&&['all','dining','makers','gifting'].includes(mode)?prisma.supplier.findMany({where:businessWhere,select:{id:true,name:true,makerTown:true,makerHandle:true,makerBio:true,businessType:true,businessSpecialties:true},skip:offset,take:25,orderBy:[{name:'asc'},{id:'asc'}]}):Promise.resolve([]),
- (!articlesOnly&&(['all','products','gifting'].includes(mode)||(mode==='dining'&&(!!q||!!department))))?prisma.makerItem.findMany({where:{published:true,supplier:mode==='all'?{...supplier,AND:classification}:mode==='dining'?{...supplier,AND:classification,businessType:{in:venueOnlyTypes.filter(t=>!type||t===type)}}:productSupplier,AND:[...(q?[{OR:[{name:match},{description:match},{supplier:{name:match}}]}]:[]),...(mode==='gifting'?[giftItem]:[]),...(mode==='products'?[nonMenuOffering]:[]),...(kind?[{kind}]:[])]},select:{...publicItemSelect,supplier:{select:{name:true,makerHandle:true,makerTown:true,businessType:true}}},skip:offset,take:25,orderBy:[{createdAt:'desc'},{id:'asc'}]}):Promise.resolve([]),
+ (!articlesOnly&&(['all','makers','products','gifting'].includes(mode)||(mode==='dining'&&(!!q||!!department))))?prisma.makerItem.findMany({where:{published:true,supplier:mode==='all'?{...supplier,AND:classification}:mode==='dining'?{...supplier,AND:classification,businessType:{in:venueOnlyTypes.filter(t=>!type||t===type)}}:productSupplier,AND:[...(q?[{OR:[{name:match},{description:match},{supplier:{name:match}}]}]:[]),...(mode==='gifting'?[giftItem]:[]),...((mode==='products'||mode==='makers')?[nonMenuOffering]:[]),...(kind?[{kind}]:[])]},select:{...publicItemSelect,supplier:{select:{name:true,makerHandle:true,makerTown:true,businessType:true}}},skip:offset,take:25,orderBy:[{createdAt:'desc'},{id:'asc'}]}):Promise.resolve([]),
  mode==='all'&&(!department||!!department.type)?prisma.blog.findMany({where:{published:true,isDeleted:false,supplier:{...supplier,AND:classification},...(q?{OR:[{title:match},{excerpt:match},{category:match},{supplier:{name:match}}]}:{})},select:{id:true,title:true,excerpt:true,slug:true,supplier:{select:{name:true,makerHandle:true}}},skip:offset,take:25,orderBy:[{publishedAt:'desc'},{id:'asc'}]}):Promise.resolve([])
  ]);
  const prospects=prospectResult.status==='fulfilled'?prospectResult.value:[],makers=makerResult.status==='fulfilled'?makerResult.value:[],items=itemResult.status==='fulfilled'?itemResult.value:[],stories=storyResult.status==='fulfilled'?storyResult.value:[];
@@ -58,10 +58,9 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  const filtered=!!(q||area||(!department&&kind)||(!department&&type)||specialty||articlesOnly||page>1);
  const showEditorial=(!department||department.mode==='dining'||department.mode==='gifting'||department.mode==='makers'||department.type==='food_brand')&&page===1&&!kind&&!specialty&&!articlesOnly&&mode!=='products';
  const editorialCount=showEditorial?(((mode==='all'&&!department)||mode==='dining'?editorialMatches('dining',q,area,type).length:0)+((mode==='all'&&!department)||mode==='gifting'?editorialMatches('gifting',q,area,type).length:0)+(mode==='makers'||department?.type==='food_brand'?editorialMatches('makers',q,area,type).length:0)):0;
- return <div className="fp26-shell fp26-directory">
+ return <div className="fp26-shell fp26-directory fp-charcoal-discovery">
  <EditorialHeader eyebrow={eyebrow} title={title} description={description} photo={!filtered&&(mode!=='all'||department)?photo:undefined}/>
  {department&&<DepartmentNav active={department.slug}/>}
- {!department&&(mode==='makers'||mode==='products')&&<FoodBrandTabs products={mode==='products'}/>}
  <form key={JSON.stringify([path,q,area,kind,type,specialty,articlesOnly])} action={path} className={'fp26-filters fp-taxonomy-filters'+(mode==='makers'||mode==='products'||mode==='all'?' fp-brand-filters'+(mode==='makers'?'':' fp-product-filters'):'')} role="search">
  {!department&&kind&&mode!=='makers'&&mode!=='products'&&<input type="hidden" name="kind" value={kind}/>}
  {!department&&type&&mode!=='makers'&&mode!=='products'&&mode!=='gifting'&&<input type="hidden" name="type" value={type}/>}
@@ -88,9 +87,9 @@ export async function DiscoveryDirectory({mode,params,path,title,description,eye
  {showEditorial&&((mode==='all'&&!department)||mode==='gifting')&&<EditorialPicks group="gifting" q={q} area={area} type={type}/>
  }
  {showEditorial&&(mode==='makers'||department?.type==='food_brand')&&<EditorialPicks group="makers" q={q} area={area} type={type}/>}
- {!department&&mode==='all'&&!filtered&&<OccasionShelf/>}
+ {!department&&(mode==='all'||mode==='dining')&&!filtered&&<OccasionShelf/>}
  {(page>1||more)&&<nav className="fp26-pagination" aria-label="Result pages">{page>1&&<Link href={href({page:String(page-1)})}><ArrowLeft size={16}/> Previous</Link>}<span>Page {page}</span>{more&&<Link href={href({page:String(page+1)})}>Next <ArrowRight size={16}/></Link>}</nav>}
  
- {page===1&&<GuideShelf slugs={settings.guide} heading={mode==='makers'?'Meet the world of local food':'Useful reading'} compact/>}
+ {page===1&&<><GuideShelf slugs={mode==='dining'?['a-table-for-two','the-bread-window']:settings.guide} heading="Useful reads" compact/><section className="fp26-guide-section"><SectionHeading title="Helpful food tools"/><DirectoryTools mode={mode}/></section></>}
  </div>;
 }
