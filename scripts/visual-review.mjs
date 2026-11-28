@@ -106,7 +106,8 @@ async function main(){
               await page.locator('#main-content .fp26-resultbar[data-query="visual-no-match-000"]').waitFor();
               await page.locator('#main-content').getByRole('heading',{name:'No matching FreshPick profiles yet.',exact:true}).waitFor();
             }
-            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),12);}
+            if(name==='departments'){assert.equal(await page.locator('.fp-department-card').count(),12);assert.equal(await page.locator('.fp-department-card').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(25, 28, 25)');}
+            if(name==='experiences'){assert(await page.getByRole('link',{name:'Find mobile vendors serving today',exact:true}).isVisible());assert.equal(await page.locator('.fp-green-highlight').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(232, 244, 223)');}
             if(name==='department-bakery'){
               assert.equal(await page.locator('.fp26-resultbar').getAttribute('data-type'),'bakery');
               assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());
@@ -202,6 +203,9 @@ async function main(){
               assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
             }
             if(name==='dining'){
+              assert.equal(await page.locator('.fp-curated-entry').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(25, 28, 25)');
+              assert(await page.getByRole('heading',{name:'Useful reads',exact:true}).isVisible());
+              assert.equal(await page.locator('.fp-directory-location input').getAttribute('list'),'directory-area-options');
               await page.getByRole('navigation',{name:'Business type'}).getByRole('link',{name:'Café',exact:true}).click();
               await page.waitForURL(url=>url.pathname==='/eat-drink'&&url.searchParams.get('type')==='cafe');
               assert(await page.getByRole('heading',{name:'Café Kumbuk',exact:true}).isVisible());
@@ -216,6 +220,8 @@ async function main(){
             if(name==='gifting'){assert(await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).isVisible());await page.getByRole('combobox',{name:'Business speciality',exact:true}).selectOption('food-hampers');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/gifting'&&url.searchParams.get('specialty')==='food-hampers');await page.getByRole('heading',{name:'Visual review fixture — bakery',exact:true}).waitFor();assert(await page.getByRole('heading',{name:'Visual review assortment',exact:true}).isVisible());await ready(page,new URL('/gifting',base).href);assert.equal(await page.getByText('Make the occasion special.',{exact:true}).count(),0);assert(await page.getByRole('heading',{name:'Gift ideas from local businesses'}).isVisible());}
             if(name==='discovery'){await page.getByRole('combobox',{name:'What are you looking for?',exact:true}).selectOption('dining');await page.locator('.fp26-filters input[name=q]').fill('coffee');await page.locator('.fp26-filters input[name=area]').fill('Colombo');await page.locator('.fp26-filters').getByRole('button',{name:'Search'}).click();await page.waitForURL(url=>url.pathname==='/eat-drink'&&url.searchParams.get('q')==='coffee'&&url.searchParams.get('area')==='Colombo');}
             if(name==='directory'){
+              assert.equal(await page.locator('.fp-brand-switch').count(),0);
+              assert(await page.getByRole('heading',{name:'Food products',exact:true}).isVisible());
               await page.getByRole('combobox',{name:'Food category',exact:true}).selectOption('Pantry');
               await page.getByRole('combobox',{name:'Business type',exact:true}).selectOption('food_brand');
               await page.locator('.fp-brand-filters').getByRole('button',{name:'Search'}).click();
