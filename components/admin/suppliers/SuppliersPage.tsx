@@ -114,7 +114,7 @@ export function SuppliersPage() {
                       <TableCell>{s.email}</TableCell>
                       <TableCell>{s.phone}</TableCell>
                       <TableCell>
-                        <div className="grid gap-1"><Badge variant={s.applicationStatus==='approved'?'secondary':'outline'}>{s.applicationStatus==='pending'?'Awaiting review':s.applicationStatus||'Unknown'}</Badge><span className="text-xs text-muted-foreground">{s.status==='active'&&s.applicationStatus==='approved'?(s.makerPublished?'Published':'Private page'):'Publishing disabled'}</span>{!s.reviewedAt&&<span className="text-xs text-muted-foreground">No recorded review</span>}</div>
+                        <div className="grid gap-1"><Badge variant={s.applicationStatus==='approved'?'secondary':'outline'}>{s.applicationStatus==='pending'?'Awaiting review':s.applicationStatus||'Unknown'}</Badge><span className="text-xs text-muted-foreground">{s.status==='active'&&s.applicationStatus==='approved'?(s.makerPublished?'Published':'Private page'):'Publishing disabled'}</span>{!s.reviewedAt&&<span className="text-xs text-muted-foreground">No recorded review</span>}<Link href={`/admin/supplier-applications?business=${encodeURIComponent(s._id)}`} className="text-xs font-semibold text-brand-green underline">{s.applicationStatus === 'pending' ? 'Review / approve' : 'Review application'}</Link></div>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

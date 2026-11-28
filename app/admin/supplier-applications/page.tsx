@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import { useAdminQueue } from '@/components/admin/useAdminQueue';
 import { QueueFeedback, QueuePager } from '@/components/admin/QueueFeedback';
@@ -37,8 +39,15 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  const needsVerification = status === 'approved' && application.applicationStatus !== 'approved';
+  const unchanged = status === application.applicationStatus && notes.trim() === application.reviewNotes.trim();
+
   async function save() {
-    if (busy) return;
+    if (busy || unchanged) return;
+    if (needsVerification && (!confirmed || !notes.trim())) {
+      setError('To approve this business, enter your review evidence and confirm that you checked its identity, ownership and contact details.');
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -46,8 +55,9 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
         method: 'PATCH',
         body: JSON.stringify({ id: application.id, version: application.reviewVersion, status, notes, confirmed }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Unable to save review');
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success || data.application?.applicationStatus !== status) throw new Error(data?.error || 'The review was not confirmed by the server. Refresh and try again.');
+      toast.success(`${application.name}: application ${data.application.applicationStatus}.`);
       saved();
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Unable to save review');
@@ -104,15 +114,16 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
               </select>
             </label>
             <label className="block text-sm">
-              Private review evidence / notes
-              <Textarea className="mt-2" maxLength={5000} value={notes} onChange={event => setNotes(event.target.value)} />
+              Private review evidence / notes {needsVerification && <span className="text-destructive">(required for approval)</span>}
+              <Textarea className="mt-2" maxLength={5000} value={notes} placeholder={needsVerification ? 'Record how you verified this business (e.g. owner contact and official page).' : 'Optional review notes'} onChange={event => setNotes(event.target.value)} />
             </label>
-            {status==="approved"&&application.applicationStatus!=="approved"&&<label className="flex gap-2 items-start text-sm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> I checked the business identity, ownership and contact details and recorded the evidence above.</label>}<p className="text-xs leading-6 text-muted-foreground">
+            {needsVerification&&<label className="flex gap-2 items-start text-sm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> I checked the business identity, ownership and contact details and recorded the evidence above.</label>}<p className="text-xs leading-6 text-muted-foreground">
               Approval opens Business Studio for publishing. The business receives an in-app notification when the application status changes.
             </p>
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-            <Button disabled={busy || (status === application.applicationStatus && notes === application.reviewNotes)||(status==='approved'&&application.applicationStatus!=='approved'&&(!confirmed||!notes.trim()))}>
-              {busy ? 'Saving…' : 'Save review'}
+            {needsVerification && (!confirmed || !notes.trim()) && <p className="text-sm text-muted-foreground">Approval requires both review evidence and the confirmation checkbox. Selecting a status alone does not save it.</p>}
+            <Button type="submit" disabled={busy || unchanged}>
+              {busy ? 'Saving…' : status === 'approved' && needsVerification ? 'Approve business' : 'Save review'}
             </Button>
           </fieldset>
         </form>
@@ -122,9 +133,15 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
 }
 
 export default function ApplicationsPage() {
+  return <Suspense fallback={<p role="status">Loading applications…</p>}><ApplicationQueue /></Suspense>;
+}
+
+function ApplicationQueue() {
+  const business = useSearchParams().get('business');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('pending');
-  const queue = useAdminQueue<Application>(`/api/admin/supplier-applications?page=${page}${status ? `&status=${status}` : ''}`, 'applications');
+  const params = new URLSearchParams({ page: String(page), ...(business ? { id: business } : status ? { status } : {}) });
+  const queue = useAdminQueue<Application>(`/api/admin/supplier-applications?${params}`, 'applications');
 
   return (
     <div className="space-y-6">
@@ -132,7 +149,7 @@ export default function ApplicationsPage() {
       <h1 className="text-3xl font-semibold">Business applications</h1>
       <p className="text-sm text-muted-foreground">Review real stored records, check ownership and contact details, then enable publishing. Approval is not the same as publishing a public page.</p>
       <div className="flex flex-wrap justify-between gap-3">
-        <label className="flex items-center gap-3 text-sm">
+        {business ? <Link className="text-sm text-brand-green underline" href="/admin/supplier-applications">Back to all applications</Link> : <label className="flex items-center gap-3 text-sm">
           Review status
           <select
             aria-label="Review status filter"
@@ -143,7 +160,7 @@ export default function ApplicationsPage() {
             <option value="">All</option>
             {['pending','approved','rejected'].map(value => <option key={value} value={value}>{value}</option>)}
           </select>
-        </label>
+        </label>}
         <Button variant="outline" disabled={queue.loading} onClick={queue.reload}>Refresh</Button>
       </div>
       <QueueFeedback loading={queue.loading} error={queue.error} retry={queue.reload} />

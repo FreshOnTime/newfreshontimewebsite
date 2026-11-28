@@ -182,6 +182,8 @@ it('notifies the linked supplier account when an admin approves the application'
     { userId: 'admin-1', role: 'admin' },
   ));
   expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({success:true,application:{id:'supplier-1',applicationStatus:'approved',status:'active',reviewVersion:3}});
+  expect(db.supplier.updateMany).toHaveBeenCalledWith({where:{id:'supplier-1',reviewVersion:2},data:expect.objectContaining({applicationStatus:'approved',status:'active',reviewVersion:{increment:1}})});
   expect(db.auditLog.create).toHaveBeenCalledWith({data:expect.objectContaining({action:'review-application',resourceType:'supplier',resourceId:'supplier-1',after:{applicationStatus:'approved',reviewVersion:3}})});
   expect(db.notification.createMany).toHaveBeenCalledWith({
     data: [expect.objectContaining({
@@ -288,3 +290,15 @@ it('requires explicit evidence before changing a pending business to approved',a
  const response=await reviewSupplierApplication(req('http://localhost/api/admin/supplier-applications','PATCH',{id:'supplier-1',version:2,status:'approved',notes:'Unconfirmed'},{userId:'admin-1',role:'admin'}));
  expect(response.status).toBe(400);expect(db.supplier.updateMany).not.toHaveBeenCalled();
 });
+
+ it('rejects approval with blank evidence and leaves the application unchanged', async () => {
+  db.supplier.findUnique.mockResolvedValue({id:'supplier-1',name:'Grower One',applicationStatus:'pending',reviewVersion:2});
+  const response=await reviewSupplierApplication(req('http://localhost/api/admin/supplier-applications','PATCH',{id:'supplier-1',version:2,status:'approved',notes:'   ',confirmed:true},{userId:'admin-1',role:'admin'}));
+  expect(response.status).toBe(400);expect(db.supplier.updateMany).not.toHaveBeenCalled();
+ });
+ it('does not report successful approval after a concurrent update', async () => {
+  db.supplier.findUnique.mockResolvedValue({id:'supplier-1',name:'Grower One',applicationStatus:'pending',reviewVersion:2});
+  db.supplier.updateMany.mockResolvedValue({count:0});
+  const response=await reviewSupplierApplication(req('http://localhost/api/admin/supplier-applications','PATCH',{id:'supplier-1',version:2,status:'approved',notes:'Verified official contact',confirmed:true},{userId:'admin-1',role:'admin'}));
+  expect(response.status).toBe(409);expect(db.notification.createMany).not.toHaveBeenCalled();expect(db.auditLog.create).not.toHaveBeenCalled();
+ });
