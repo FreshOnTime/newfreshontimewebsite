@@ -23,7 +23,7 @@ interface Supplier {
   email: string;
   phone: string;
   status: 'active' | 'inactive';
-  applicationStatus?:string;makerPublished?:boolean;reviewedAt?:string|null;
+  applicationStatus?:string;reviewVersion?:number;makerPublished?:boolean;reviewedAt?:string|null;
   createdAt: string;
 }
 
