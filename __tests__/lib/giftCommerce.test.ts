@@ -1,4 +1,4 @@
-import { businessTypes, selectableBusinessTypes } from '@/lib/businessTypes';
+import { businessTypes, selectableBusinessTypes, businessTypeDetails, businessTypeLabels } from '@/lib/businessTypes';
 import { giftSpecialties } from '@/lib/businessSpecialties';
 import { makerKinds, makerWhatsAppLink } from '@/lib/makers';
 import { absoluteUrl } from '@/lib/config/site';
@@ -20,4 +20,10 @@ it('addresses the official seller number and carries the exact item listing',()=
   expect(url.searchParams.get('text')).toContain('Coffee box from Example');
   expect(url.searchParams.get('text')).toContain(absoluteUrl(path));
   expect(makerWhatsAppLink('invalid','Coffee box',undefined,path)).toBeUndefined();
+});
+
+it('provides a label and explanatory examples for every selectable business type',()=>{
+ expect(selectableBusinessTypes).toHaveLength(10);
+ expect(selectableBusinessTypes).toEqual(expect.arrayContaining(['grocery','farm','mobile_food']));
+ for(const type of selectableBusinessTypes){expect(businessTypeLabels[type]).toBeTruthy();expect(businessTypeDetails[type].description).toBeTruthy();expect(businessTypeDetails[type].examples).toBeTruthy();}
 });
