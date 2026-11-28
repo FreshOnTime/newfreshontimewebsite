@@ -1,5 +1,7 @@
 export const businessTypes=['maker','restaurant','cafe','bakery','caterer','food_brand','gift_creator','other'] as const;
 export type BusinessType=typeof businessTypes[number];
+// Retain the legacy stored value for compatibility, but do not offer it to new businesses.
+export const selectableBusinessTypes=businessTypes.filter(type=>type!=='gift_creator');
 export const diningBusinessTypes=['restaurant','cafe','bakery','caterer'] as const;
 export const venueOnlyTypes=['restaurant','cafe'] as const;
 export const businessTypeLabels:Record<BusinessType,string>={maker:'Independent food maker',restaurant:'Restaurant',cafe:'Café',bakery:'Bakery',caterer:'Caterer',food_brand:'Food brand',gift_creator:'Food gift creator',other:'Other food business'};
