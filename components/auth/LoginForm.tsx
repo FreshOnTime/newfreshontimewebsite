@@ -28,7 +28,7 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       const loggedInUser = await login(identifier.trim(), password);
-      window.location.href = accountDestination(loggedInUser.role, requestedDestination);
+      window.location.href = accountDestination(loggedInUser.role, requestedDestination, loggedInUser.resumeBusinessOnboarding, loggedInUser.secondaryRoles);
     } catch (loginError) {
       console.error('Login error:', loginError);
     } finally {

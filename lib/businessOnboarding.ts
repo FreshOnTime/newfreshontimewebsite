@@ -22,3 +22,8 @@ export const offeringsSchema=z.array(offeringSchema).max(8).transform(items=>ite
 export const onboardingDraftSchema=z.object({name:businessNameSchema.optional(),type:z.enum(businessTypes).optional(),offerings:offeringsSchema.optional(),town:z.string().trim().max(100).optional(),phone:z.string().trim().max(30).optional(),step:z.union([z.literal(2),z.literal(3)]).optional()}).strict();
 export function canonicalSpecialties(offerings:Offering[]){return [...new Set(offerings.flatMap(x=>x.category?[x.category]:[]))];}
 export function isBusinessApplicant(role:string,secondaryRoles:readonly string[]=[]){return ['customer','supplier'].includes(role)&&!secondaryRoles.some(r=>r!=='customer'&&r!=='supplier');}
+
+/** A private draft is a navigation hint, never an authorization claim. */
+export function shouldResumeBusinessOnboarding(user:{role:string;secondaryRoles?:readonly string[];supplierId?:string|null;businessOnboardingDraft?:unknown}){
+ return user.role==='customer'&&isBusinessApplicant(user.role,user.secondaryRoles)&&!user.supplierId&&businessNameSchema.safeParse((user.businessOnboardingDraft as {name?:unknown}|null)?.name).success;
+}

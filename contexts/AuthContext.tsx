@@ -14,6 +14,7 @@ interface User {
   phoneNumber: string;
   role: string;
   managedAuth?: boolean;
+  resumeBusinessOnboarding?: boolean;
   secondaryRoles?: string[];
   _id: string;
   registrationAddress?: {

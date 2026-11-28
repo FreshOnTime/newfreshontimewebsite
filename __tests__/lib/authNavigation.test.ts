@@ -12,3 +12,10 @@ it('keeps a local checkout intent across account links and returns admins to the
   expect(accountLink('/auth/signup/customer', path)).toBe(`/auth/signup/customer?redirect=${encodeURIComponent(path)}`);
   expect(accountLink('/auth/login', '//outside.example')).toBe('/auth/login');
 });
+
+it('resumes a verified business draft without overriding explicit destinations or staff routing',()=>{
+ expect(accountDestination('customer',null,true)).toBe('/dashboard/business-onboarding');
+ expect(accountDestination('customer','/saved',true)).toBe('/saved');
+ expect(accountDestination('customer',null,true,['admin'])).toBe('/admin');
+ expect(accountDestination('supplier',null,true)).toBe('/dashboard');
+});

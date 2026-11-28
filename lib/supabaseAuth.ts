@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { businessNameSchema } from '@/lib/businessOnboarding';
+import { businessNameSchema, shouldResumeBusinessOnboarding } from '@/lib/businessOnboarding';
 import prisma from '@/lib/prisma';
 import { signAccessToken } from '@/lib/jwt';
 import { setAuthCookies } from '@/lib/utils/cookies';
@@ -103,7 +103,7 @@ export async function managedSessionResponse(session: Session, allowCreate = fal
   const response = NextResponse.json({ message: 'Signed in', user: {
     _id: user.id, userId: user.id, firstName: user.firstName, lastName: user.lastName,
     email: user.email, phoneNumber: user.phoneNumber || '', role: user.role, secondaryRoles: user.secondaryRoles,
-    isEmailVerified: true, managedAuth: true,
+    isEmailVerified: true, managedAuth: true, resumeBusinessOnboarding: shouldResumeBusinessOnboarding(user),
   } });
   const ttl = 600;
   const access = signAccessToken({ userId: user.id, email: user.email || undefined, role: user.role }, ttl);

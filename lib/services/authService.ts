@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { Prisma, type Address } from '@prisma/client';
 import { signAccessToken, signRefreshToken, hashRefreshToken, verifyToken } from '@/lib/jwt';
 import prisma from '@/lib/prisma';
+import { shouldResumeBusinessOnboarding } from '@/lib/businessOnboarding';
 
 export interface SignupData {
   businessName?: string;
@@ -37,6 +38,7 @@ export interface SafeUser {
   phoneNumber: string;
   role: string;
   secondaryRoles: string[];
+  resumeBusinessOnboarding?: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   giftCardBalance: number;
@@ -104,6 +106,7 @@ function toSafeUser(user: UserWithAddresses): SafeUser {
     phoneNumber: user.phoneNumber || '',
     role: user.role,
     secondaryRoles: user.secondaryRoles,
+    resumeBusinessOnboarding: shouldResumeBusinessOnboarding(user),
     isEmailVerified: user.isEmailVerified,
     isPhoneVerified: user.isPhoneVerified,
     giftCardBalance: Number(user.giftCardBalance),
