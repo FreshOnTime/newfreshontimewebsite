@@ -169,7 +169,7 @@ function ApplicationQueue() {
           <p role="status" className="text-sm">{queue.total} applications in this view</p>
           <div className="grid gap-5 xl:grid-cols-2">
             {queue.items.map(application => (
-              <ReviewCard key={`${application.id}:${application.reviewVersion}`} application={application} saved={queue.reload} />
+              <ReviewCard key={`${application.id}:${application.reviewVersion}`} application={application} saved={()=>{setPage(1);queue.reload()}} />
             ))}
           </div>
           {!queue.items.length && <p className="py-8 text-muted-foreground">No applications in this view.</p>}
