@@ -9,6 +9,7 @@ import { MARKET_NAVIGATION,isMarketRouteActive,isJournalRoute } from "@/lib/navi
 import Wordmark from "@/components/brand/Wordmark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
+const contactLink = {label:"Contact",href:"/contact"};
 const cultureLinks=[{label:'Food guides & comparisons',href:'/guides'},{label:'Food Atlas',href:'/food-atlas'},{label:'Food traditions',href:'/traditions'},{label:'Food experiences',href:'/experiences'}];
 const iconButton = "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-brand-green transition-colors hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green";
 
@@ -21,7 +22,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const maker = user?.role === "supplier";
   const account = (user?.role === "admin"||user?.secondaryRoles?.includes("admin")) ? "/admin" : "/dashboard";
-  const links = [...MARKET_NAVIGATION, {label:maker ? "Business studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}, {label:"Contact",href:"/contact"}];
+  const links = [...MARKET_NAVIGATION, {label:maker ? "Business studio" : "For businesses", href:maker ? "/dashboard" : "/for-businesses"}, contactLink];
 
   useEffect(() => { setMenuOpen(false); setSearchOpen(false); }, [pathname]);
   useEffect(() => {
@@ -63,8 +64,23 @@ export function Navbar() {
           </div>
       </div>
       {searchOpen && <div id="header-search" className="border-t border-border"><form onSubmit={search} role="search" className="fp-header-search-form editorial-wrap flex items-center gap-4 py-5"><label htmlFor="nav-search" className="sr-only">Search FreshPick</label><input id="nav-search" type="search" maxLength={100} autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search places, products or articles" className="h-12 min-w-0 flex-1 rounded-xl border border-border bg-white px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green" /><button type="submit" className="fp26-action">Search</button></form></div>}
-      {menuOpen && <div id="heritage-mobile-menu" className="max-h-[75svh] overflow-y-auto border-t border-brand-green/10 bg-brand-cream/95 shadow-xl backdrop-blur-xl xl:hidden">
-        <nav aria-label="Mobile discovery navigation" className="fp-mobile-links editorial-wrap grid gap-x-6 py-6 sm:grid-cols-2">{[...links,...cultureLinks,{label:"Saved picks",href:"/saved"}].map((link) => <Link key={link.href} href={link.href} aria-current={isMarketRouteActive(pathname,link.href) ? "page" : undefined} className="flex min-h-12 items-center border-b border-border py-3 text-base font-semibold text-brand-green">{link.label}</Link>)}</nav>
+      {menuOpen && <div id="heritage-mobile-menu" className="max-h-[calc(100dvh-76px)] overflow-y-auto overscroll-contain border-t border-brand-green/10 bg-brand-cream/95 shadow-xl backdrop-blur-xl xl:hidden">
+        <nav aria-label="Mobile discovery navigation" className="editorial-wrap grid gap-4 py-4">
+          {[
+            { title: "Discover", items: [...links.filter(link => link.href !== "/stories" && link.href !== "/contact" && link.href !== "/for-businesses" && link.href !== "/dashboard"), {label:"Food departments",href:"/explore"},{label:"Food in Colombo",href:"/locations/colombo"},{label:"Products",href:"/food-products"},{label:"Gift suppliers",href:"/gifting"},{label:"FreshPick Live",href:"/live"}] },
+            { title: "Journal & food culture", items: [{label:"Journal",href:"/stories"},...cultureLinks,{label:"Food calculators",href:"/food-tools"},{label:"Editorial archive",href:"/blog"}] },
+            { title: "Business & support", items: [{label:"For businesses",href:"/for-businesses"},{label:"List your business",href:"/join"},...(maker?[{label:"Business studio",href:"/dashboard"}]:[]),{label:"About FreshPick",href:"/about"},{label:"How it works",href:"/how-it-works"},{label:"Help",href:"/help"},contactLink] },
+            { title: "Your account", items: [{label:"Saved picks",href:"/saved"},...(user?[{label:"Your account",href:account},{label:"Profile",href:"/profile"}]:[{label:"Sign in",href:"/auth/login"},{label:"Create account",href:"/auth/signup"}])] }
+          ].map(group => (
+            <details key={group.title}  className="group rounded-xl border border-border bg-background">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold text-brand-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green [&::-webkit-details-marker]:hidden">{group.title}<ChevronDown aria-hidden="true" size={18} className="shrink-0 transition-transform group-open:rotate-180"/></summary>
+              <div className="grid gap-1 border-t border-border px-3 py-2 sm:grid-cols-2">
+                {group.items.map(link => <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={pathname === link.href ? "page" : undefined} className={`flex min-h-12 items-center rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-green ${pathname === link.href ? "bg-secondary text-brand-green" : "text-foreground hover:bg-secondary"}`}>{link.label}</Link>)}
+              </div>
+            </details>
+          ))}
+          {user && <button type="button" onClick={() => { setMenuOpen(false); void signOut(); }} className="min-h-12 rounded-xl border border-border text-sm font-semibold text-destructive">Sign out</button>}
+        </nav>
       </div>}
     </header>
   );

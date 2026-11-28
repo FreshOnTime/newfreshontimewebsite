@@ -25,7 +25,11 @@ try{
    const check=(key,value)=>{row.checks[key]=Boolean(value);if(!value)row.errors.push(key);};
    check('title',data.title.trim()&&!titles.has(data.title));titles.add(data.title);
    check('description',data.description?.trim());
-   check('canonical',data.canonical.length===1&&data.canonical[0]===canonicalBase+path);
+   // The origin with or without a final slash denotes the same homepage URL.
+   const expectedCanonical=canonicalBase+path;
+   const canonicalMatches=path==='/' ? [canonicalBase,expectedCanonical].includes(data.canonical[0]) : data.canonical[0]===expectedCanonical;
+   check('canonical',data.canonical.length===1&&canonicalMatches);
+   if(!row.checks.canonical)row.errors.push(`Expected ${expectedCanonical}; received ${JSON.stringify(data.canonical)}`);
    check('indexable',!data.robots.includes('noindex'));
    check('sitemap',urls.includes(canonicalBase+path));
    check('single H1',data.h1===1);check('RSS discovery',await page.locator('link[rel=alternate][type="application/rss+xml"]').count()>0);check('JSON-LD',data.schemas.length>0&&data.schemas.every(s=>s['@context']==='https://schema.org'));
