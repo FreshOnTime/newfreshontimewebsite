@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 import { requireAdminSimple } from '@/lib/middleware/adminAuth';
 
 const statuses = ['pending','approved','rejected'] as const;
-const query = z.object({ page: z.coerce.number().int().min(1).max(100000).default(1), status: z.enum(statuses).optional() });
+const query = z.object({ page: z.coerce.number().int().min(1).max(100000).default(1), status: z.enum(statuses).optional(), id: z.string().min(1).max(100).optional() });
 const update = z.object({ id: z.string().min(1).max(100), version: z.number().int().min(0), status: z.enum(statuses), confirmed:z.boolean().optional(), notes: z.string().trim().max(5000).default('') });
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
 
@@ -21,8 +21,8 @@ function proposedProducts(notes: string | null) {
 
 export const GET = requireAdminSimple(async request => {
   try {
-    const { page, status } = query.parse(Object.fromEntries(new URL(request.url).searchParams));
-    const where = status ? { applicationStatus: status } : {};
+    const { page, status, id } = query.parse(Object.fromEntries(new URL(request.url).searchParams));
+    const where = { ...(status ? { applicationStatus: status } : {}), ...(id ? { id } : {}) };
     const [applications, total] = await prisma.$transaction([
       prisma.supplier.findMany({
         where,
@@ -101,12 +101,12 @@ export const PATCH = requireAdminSimple(async request => {
         }
       }
       await tx.auditLog.create({data:{userId:request.user!.userId,action:'review-application',resourceType:'supplier',resourceId:id,before:{applicationStatus:current.applicationStatus,reviewVersion:current.reviewVersion},after:{applicationStatus:status,reviewVersion:version+1}}});
-      return { conflict: false as const };
-    });
+      return { conflict: false as const, application: { id, applicationStatus: status, status: status === 'approved' ? 'active' : 'inactive', reviewVersion: version + 1 } };
+    }, { maxWait: 10000, timeout: 15000 });
 
     if ('verificationRequired' in outcome&&outcome.verificationRequired)return json({error:'Confirm the business identity and contact details and record review evidence before approving.'},400);
     if (outcome.conflict) return json({ error: 'This application changed or was removed. Refresh before saving.' }, 409);
-    return json({ success: true });
+    return json({ success: true, application: outcome.application });
   } catch (error) {
     return error instanceof z.ZodError || error instanceof SyntaxError
       ? json({ error: 'Invalid application review' }, 400)
