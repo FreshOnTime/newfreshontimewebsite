@@ -13,7 +13,7 @@ import { authenticatedApiFetch } from '@/lib/api/authenticated-fetch';
 import {readWorkspace} from '@/lib/api/workspace-read';
 import { fulfilmentOptions, makerImageSrc, makerItemPath, makerKinds, formatMakerDate } from '@/lib/makers';
 
-import {selectableBusinessTypes,businessTypeLabels,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
+import {selectableBusinessTypes,businessTypeLabels,businessTypeDetails,isVenueOnly,type BusinessType} from '@/lib/businessTypes';
 
 type Profile = {
   businessLogo?:string|null;businessCover?:string|null;
@@ -178,7 +178,7 @@ export default function MakerStudio() {
         {supplier.makerPublished && <Link href={profilePath} className={plain}>View your page</Link>}
       </div>
       <form key={JSON.stringify([supplier.businessLogo,supplier.businessCover])} onSubmit={submitProfile} className="grid gap-4 md:grid-cols-2">
-        <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{(supplier.businessType==='gift_creator'?[...selectableBusinessTypes,'gift_creator' as const]:selectableBusinessTypes).map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select></label>
+        <label className={label}>Business type<select name="businessType" className={fields} defaultValue={supplier.businessType||"maker"}>{(supplier.businessType==='gift_creator'?[...selectableBusinessTypes,'gift_creator' as const]:selectableBusinessTypes).map(t=><option value={t} key={t}>{businessTypeLabels[t]}</option>)}</select><span className="text-xs font-normal text-muted-foreground">Choose your main activity. All types can list food gifts and products.</span><details className="text-xs font-normal"><summary className="cursor-pointer">See category definitions</summary>{selectableBusinessTypes.map(t=><p key={t} className="mt-2"><strong>{businessTypeLabels[t]}:</strong> {businessTypeDetails[t].description}</p>)}</details></label>
         <div className="md:col-span-2"><SpecialtyPicker initial={supplier.businessSpecialties}/></div>
         <div className="md:col-span-2 grid gap-4 sm:grid-cols-2"><MediaField name="logo" title="Business logo" current={supplier.businessLogo} hint="Square image recommended."/><MediaField name="cover" title="Business cover photo" current={supplier.businessCover} hint="Wide landscape photograph recommended."/></div>
         <label className={label}>Public handle
