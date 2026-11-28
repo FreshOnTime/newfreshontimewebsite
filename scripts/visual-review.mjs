@@ -178,12 +178,12 @@ async function main(){
               const target=new URL(await signupLink.getAttribute('href'),base);
               assert.equal(target.pathname,'/auth/signup/customer');
               assert.equal(target.searchParams.get('redirect'),'/dashboard/business-onboarding');
-              await ready(page,new URL('/join?type=gift_creator&specialty=food-hampers',base).href);
-              assert(await page.getByText('Showcase your food hampers, celebration gifts and custom creations.',{exact:true}).isVisible());
+              await ready(page,new URL('/join?type=bakery&specialty=food-hampers',base).href);
+              assert(await page.getByText('Showcase cakes, breads, pastries and custom bakes so customers can discover your creations.',{exact:true}).isVisible());
               const typedTarget=new URL(await page.getByRole('link',{name:'Create a free business account',exact:true}).getAttribute('href'),base);
               const next=new URL(typedTarget.searchParams.get('redirect'),base);
               assert.equal(next.pathname,'/dashboard/business-onboarding');
-              assert.equal(next.searchParams.get('type'),'gift_creator');
+              assert.equal(next.searchParams.get('type'),'bakery');
               assert.equal(next.searchParams.get('specialty'),'food-hampers');
               await ready(page,new URL('/join?type=restaurant',base).href);
               assert(await page.getByText('Help diners discover your restaurant, menu, signature dishes and location.',{exact:true}).isVisible());
