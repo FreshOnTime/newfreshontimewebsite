@@ -9,6 +9,13 @@ import {businessSpecialties,businessArticleTopics} from '@/lib/businessSpecialti
 import {businessMediaSource} from '@/lib/businessMedia';
 import {businessTypes,officialHttps} from '@/lib/businessTypes';
 
+import { publicEmail } from '@/lib/makerContacts';
+
+const optionalEmail = z.string().trim().max(254).refine(v => !v || !!publicEmail(v), 'Enter a valid public email address').optional();
+const optionalPhone = z.string().trim().max(32).refine(v => !v || !!parsePhoneNumberFromString(v,'LK')?.isValid(), 'Enter a valid public phone number').optional();
+const optionalWebsite = (host?: string) => z.string().trim().max(2048).refine(v => !v || !!officialHttps(v,host), 'Enter a valid HTTPS link'+(host ? ' for '+host : '')).optional();
+const normalizePhone = (v: string) => v ? parsePhoneNumberFromString(v,'LK')!.number : null;
+
 const price = z.number().min(0.01).max(9999999999.99).multipleOf(0.01);
 const dateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, 'Choose a Sri Lanka date and time')
   .refine(value => {
@@ -26,6 +33,10 @@ const actions = z.discriminatedUnion('action', [
     businessSpecialties:z.array(z.enum(businessSpecialties)).max(8).transform(values=>[...new Set(values)]).optional(),
     website:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v),'Enter a valid HTTPS website'),
     instagram:z.string().trim().max(2048).optional().refine(v=>!v||!!officialHttps(v,'instagram.com'),'Enter a valid Instagram profile URL'),
+    publicEmail: optionalEmail,
+    publicPhone: optionalPhone,
+    facebook: optionalWebsite('facebook.com'),
+    tiktok: optionalWebsite('tiktok.com'),
     logo:mediaUrl.nullable().optional(),
     cover:mediaUrl.nullable().optional(),
     handle: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(50),
@@ -43,6 +54,11 @@ const actions = z.discriminatedUnion('action', [
     kind: z.enum(makerKinds),
     price: price.nullable(),
     image: z.string().max(2048).nullable().refine(value => value === null || !!makerImageSrc(value), 'Choose a valid item image'),
+    contactWhatsApp: optionalPhone,
+    contactEmail: optionalEmail,
+    contactPhone: optionalPhone,
+    contactWebsite: optionalWebsite(),
+    purchaseUrl: optionalWebsite(),
     madeToOrder: z.boolean(),
     published: z.boolean(),
   }),
@@ -125,6 +141,10 @@ export const POST = requireAuth(async request => {
           ...(data.businessSpecialties!==undefined?{businessSpecialties:data.businessSpecialties}:{}),
           ...(data.website!==undefined?{businessWebsite:officialHttps(data.website)||null}:{}),
           ...(data.instagram!==undefined?{businessInstagram:officialHttps(data.instagram,"instagram.com")||null}:{}),
+          ...(data.publicEmail!==undefined?{businessPublicEmail:data.publicEmail||null}:{}),
+          ...(data.publicPhone!==undefined?{businessPublicPhone:normalizePhone(data.publicPhone)}:{}),
+          ...(data.facebook!==undefined?{businessFacebook:officialHttps(data.facebook,'facebook.com')||null}:{}),
+          ...(data.tiktok!==undefined?{businessTikTok:officialHttps(data.tiktok,'tiktok.com')||null}:{}),
           ...(data.logo!==undefined?{businessLogo:data.logo}:{}),
           ...(data.cover!==undefined?{businessCover:data.cover}:{}),
           makerHandle: data.handle, makerBio: data.bio, makerTown: data.town,
@@ -140,7 +160,13 @@ export const POST = requireAuth(async request => {
     switch (data.action) {
       case 'item': {
         const { id: itemId, name, description, kind, price, image, madeToOrder, published } = data;
-        const fields = { name, description, kind, price, image, madeToOrder, published };
+        const fields = { name, description, kind, price, image, madeToOrder, published,
+          ...(data.contactWhatsApp!==undefined?{contactWhatsApp:normalizePhone(data.contactWhatsApp)}:{}),
+          ...(data.contactEmail!==undefined?{contactEmail:data.contactEmail||null}:{}),
+          ...(data.contactPhone!==undefined?{contactPhone:normalizePhone(data.contactPhone)}:{}),
+          ...(data.contactWebsite!==undefined?{contactWebsite:officialHttps(data.contactWebsite)||null}:{}),
+          ...(data.purchaseUrl!==undefined?{purchaseUrl:officialHttps(data.purchaseUrl)||null}:{}),
+        };
         if (!itemId) {
           await prisma.makerItem.create({ data: { ...fields, supplierId, slug: slugFor(fields.name) } });
           break;

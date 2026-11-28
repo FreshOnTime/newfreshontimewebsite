@@ -18,12 +18,14 @@ import {selectableBusinessTypes,businessTypeLabels,businessTypeDetails,isVenueOn
 type Profile = {
   businessLogo?:string|null;businessCover?:string|null;
   businessType?:BusinessType;businessSpecialties?:string[];businessWebsite?:string|null;businessInstagram?:string|null;
+  businessPublicEmail?:string|null;businessPublicPhone?:string|null;businessFacebook?:string|null;businessTikTok?:string|null;
   makerHandle: string | null; makerBio: string | null; makerTown: string | null;
   makerWhatsApp: string | null; makerFulfilment: string | null; makerPublished: boolean;
 };
 type OfferingFields = { id: string; name: string; description: string | null; price: string | null; image: string | null };
 type Item = OfferingFields & {
   slug: string; kind: string; madeToOrder: boolean; published: boolean;
+  contactWhatsApp?:string|null;contactEmail?:string|null;contactPhone?:string|null;contactWebsite?:string|null;purchaseUrl?:string|null;
   batches: { id: string; readyAt: string; cutoff: string; soldOut: boolean }[];
 };
 type Story = {
@@ -112,6 +114,7 @@ export default function MakerStudio() {
     void save(async () => ({
       logo:await uploadedMedia(form,'logo',supplier.businessLogo),cover:await uploadedMedia(form,'cover',supplier.businessCover),
       action: 'profile', businessType:form.get('businessType'),businessSpecialties:form.getAll('businessSpecialties'),website:form.get('website'),instagram:form.get('instagram'), handle: form.get('handle'), bio: form.get('bio'), town: form.get('town'),
+      publicEmail:form.get('publicEmail'),publicPhone:form.get('publicPhone'),facebook:form.get('facebook'),tiktok:form.get('tiktok'),
       phone: form.get('phone'), fulfilment: form.get('fulfilment'), published: form.has('published'),
     }), 'Business profile and specialities saved.',()=>{element.querySelectorAll<HTMLInputElement>('input[type=file]').forEach(input=>input.value='');element.querySelectorAll<HTMLInputElement>('input[name=logoRemove],input[name=coverRemove]').forEach(input=>input.checked=false);});
   }
@@ -134,6 +137,7 @@ export default function MakerStudio() {
       return {
         action: 'item', id: item?.id, name: form.get('name'), description: form.get('description'),
         kind: form.get('kind'), price: form.get('price') ? Number(form.get('price')) : null, image,
+        contactWhatsApp:form.get('contactWhatsApp'),contactEmail:form.get('contactEmail'),contactPhone:form.get('contactPhone'),contactWebsite:form.get('contactWebsite'),purchaseUrl:form.get('purchaseUrl'),
         madeToOrder: form.has('madeToOrder'), published: form.has('published'),
       };
     }, 'Item saved.', () => { element.reset(); setItemEdit(''); });
@@ -200,6 +204,14 @@ export default function MakerStudio() {
         </label>
         <label className={label}>Official website (optional)<input type="url" name="website" className={fields} defaultValue={supplier.businessWebsite||""} placeholder="https://"/></label>
         <label className={label}>Instagram profile (optional)<input type="url" name="instagram" className={fields} defaultValue={supplier.businessInstagram||""} placeholder="https://www.instagram.com/…"/></label>
+        <fieldset className="md:col-span-2 grid gap-4 md:grid-cols-2 rounded-xl border border-border p-4">
+          <legend className="px-2 font-semibold">Additional public contact channels</legend>
+          <p className="md:col-span-2 text-xs text-muted-foreground">Optional. Only enter details you want customers to see. Your private account email is never used automatically.</p>
+          <label className={label}>Public business email<input type="email" name="publicEmail" className={fields} maxLength={254} defaultValue={supplier.businessPublicEmail||''} placeholder="hello@example.com"/></label>
+          <label className={label}>Public telephone<input type="tel" name="publicPhone" className={fields} maxLength={32} defaultValue={supplier.businessPublicPhone||''} placeholder="+94"/></label>
+          <label className={label}>Facebook page<input type="url" name="facebook" className={fields} maxLength={2048} defaultValue={supplier.businessFacebook||''} placeholder="https://www.facebook.com/…"/></label>
+          <label className={label}>TikTok profile<input type="url" name="tiktok" className={fields} maxLength={2048} defaultValue={supplier.businessTikTok||''} placeholder="https://www.tiktok.com/@…"/></label>
+        </fieldset>
         <label className={`${label} md:col-span-2`}>About your business
           <textarea name="bio" className={fields} rows={3} defaultValue={supplier.makerBio || ''} maxLength={1200} />
         </label>
@@ -226,6 +238,15 @@ export default function MakerStudio() {
           {sourceImage && <label className="flex items-center gap-2 text-sm md:col-span-2"><input name="removeImage" type="checkbox" /> Remove current photo</label>}
           <label className="flex items-center gap-2 text-sm"><input name="madeToOrder" type="checkbox" defaultChecked={item?.madeToOrder ?? false} /> Accept enquiries any time (made to order)</label>
           <label className="flex items-center gap-2 text-sm"><input name="published" type="checkbox" defaultChecked={item?.published ?? true} /> Publish item</label>
+          <fieldset className="md:col-span-2 grid gap-4 md:grid-cols-2 rounded-xl border border-border p-4">
+            <legend className="px-2 font-semibold">Customer enquiries and purchase links</legend>
+            <p className="md:col-span-2 text-xs text-muted-foreground">Leave a contact field blank to use your public business profile details. Enter a different value only if this offering needs its own contact. These details are public when the offering is published.</p>
+            <label className={label}>Product WhatsApp<input type="tel" name="contactWhatsApp" className={fields} maxLength={32} defaultValue={item?.contactWhatsApp||''} placeholder={supplier.makerWhatsApp||'+94'}/></label>
+            <label className={label}>Product email<input type="email" name="contactEmail" className={fields} maxLength={254} defaultValue={item?.contactEmail||''} placeholder={supplier.businessPublicEmail||'Use business email'}/></label>
+            <label className={label}>Product telephone<input type="tel" name="contactPhone" className={fields} maxLength={32} defaultValue={item?.contactPhone||''} placeholder={supplier.businessPublicPhone||'Use business telephone'}/></label>
+            <label className={label}>Product website<input type="url" name="contactWebsite" className={fields} maxLength={2048} defaultValue={item?.contactWebsite||''} placeholder={supplier.businessWebsite||'https://'}/></label>
+            <label className={`${label} md:col-span-2`}>External purchase link (optional)<input type="url" name="purchaseUrl" className={fields} maxLength={2048} defaultValue={item?.purchaseUrl||''} placeholder="https://"/><span className="text-xs font-normal text-muted-foreground">Customers buy directly on your website; FreshPick does not process this payment.</span></label>
+          </fieldset>
           <div className="flex items-center gap-4 md:col-span-2">
             <button disabled={busy} className={primary}>Save item</button>
             {item && <button type="button" disabled={busy} onClick={() => setItemEdit('')} className={plain}>Cancel edit</button>}

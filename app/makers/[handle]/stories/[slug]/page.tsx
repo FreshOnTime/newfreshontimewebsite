@@ -10,8 +10,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { BatchDetails, MakerItemCard } from '@/components/makers/MakerCards';
 import { findPublicMaker, publicItemSelect } from '@/lib/makerQueries';
-import { makerWhatsAppLink, openBatches } from '@/lib/makers';
+import { makerWhatsAppLink, makerItemPath, openBatches } from '@/lib/makers';
 import prisma from '@/lib/prisma';
+import { resolveMakerContacts } from '@/lib/makerContacts';
 import {businessArticleTopics} from '@/lib/businessSpecialties';
 import { pageMetadata, serializeJsonLd, breadcrumbJsonLd } from '@/lib/seo';
 
@@ -74,10 +75,12 @@ export default async function MakerStoryPage({ params }: Props) {
         <div className="mt-4 grid gap-5">
           {story.makerItems.map(({ item }) => {
             const batch = item.batches[0];
-            const enquiry = item.madeToOrder && makerWhatsAppLink(maker.makerWhatsApp, item.name);
+            const phone = resolveMakerContacts(maker,item).whatsapp ?? null;
+            const itemPath = makerItemPath(handle,item.slug);
+            const enquiry = item.madeToOrder && makerWhatsAppLink(phone, item.name, undefined, itemPath);
             return <div key={item.id} className="space-y-3">
               <MakerItemCard handle={handle} item={item} />
-              {batch ? <div className="px-3"><BatchDetails batch={batch} itemName={item.name} phone={maker.makerWhatsApp} /></div>
+              {batch ? <div className="px-3"><BatchDetails batch={batch} itemName={item.name} phone={phone} itemPath={itemPath} /></div>
                 : enquiry && <a href={enquiry} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center px-3 text-sm font-semibold text-brand-green underline">Ask on WhatsApp</a>}
             </div>;
           })}

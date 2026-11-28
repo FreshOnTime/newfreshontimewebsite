@@ -14,7 +14,7 @@ export const publicMakerWhere = {
 
 export const makerSummarySelect = {
   id: true, name: true, makerHandle: true, makerBio: true, makerTown: true,
-  makerWhatsApp: true, makerFulfilment: true, businessType:true, businessSpecialties:true,businessOfferingLabels:true, businessWebsite:true, businessInstagram:true, businessLogo:true, businessCover:true,
+  makerWhatsApp: true, makerFulfilment: true, businessType:true, businessSpecialties:true,businessOfferingLabels:true, businessWebsite:true, businessInstagram:true, businessPublicEmail:true, businessPublicPhone:true, businessFacebook:true, businessTikTok:true, businessLogo:true, businessCover:true,
 } satisfies Prisma.SupplierSelect;
 
 export function openBatches(now = new Date()) {
