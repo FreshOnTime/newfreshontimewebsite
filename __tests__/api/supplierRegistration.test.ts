@@ -102,10 +102,10 @@ it('returns failure when a concurrent account link changes rather than reporting
   expect((await POST(request())).status).toBe(409);
 });
 
-it('does not downgrade an administrator role when creating a supplier link', async () => {
+it('rejects administrator business registration', async () => {
   (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'admin', role: 'admin', supplierId: null, isBanned: false });
-  expect((await POST(request())).status).toBe(201);
-  expect(prisma.user.updateMany).toHaveBeenCalledWith({ where: { id: 'admin', supplierId: null }, data: { supplierId: 'new-supplier' } });
+  expect((await POST(request())).status).toBe(403);
+  expect(prisma.user.updateMany).not.toHaveBeenCalled();
 });
 
 it('rejects malformed supplier details before starting a transaction', async () => {

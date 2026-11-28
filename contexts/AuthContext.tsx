@@ -47,6 +47,7 @@ export interface ServerError extends Error {
 }
 
 interface SignupData {
+  businessName?: string;
   firstName: string;
   lastName?: string;
   email?: string;

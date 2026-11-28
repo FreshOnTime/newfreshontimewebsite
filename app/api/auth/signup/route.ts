@@ -3,6 +3,7 @@ import { authService } from '@/lib/services/authService';
 import { signupSchema, validateInput } from '@/lib/utils/validation';
 import { setAuthCookies } from '@/lib/utils/cookies';
 import crypto from 'crypto';
+import { businessNameSchema } from '@/lib/businessOnboarding';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { sendVerificationEmail } from '@/lib/services/mailService';
@@ -34,7 +35,9 @@ async function handleSignup(request: NextRequest) {
     }
 
     // Create user
-    const result = await authService.signup(validation.data!);
+    const businessName = businessNameSchema.optional().safeParse(body.businessName);
+    if (!businessName.success) return NextResponse.json({error:'Enter a valid business name'}, {status:400});
+    const result = await authService.signup({...validation.data!, ...(businessName.data?{businessName:businessName.data}:{})});
 
     // Create response
     const response = NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { businessNameSchema } from '@/lib/businessOnboarding';
 import prisma from '@/lib/prisma';
 import { signAccessToken } from '@/lib/jwt';
 import { setAuthCookies } from '@/lib/utils/cookies';
@@ -13,6 +14,7 @@ export const managedSignupSchema = z.object({
   lastName: z.string().trim().max(30).optional(),
   email: z.string().trim().email().max(254).transform(v => v.toLowerCase()),
   password: managedPassword,
+  businessName: businessNameSchema.optional(),
 });
 const identitySchema = z.object({
   id: z.string().uuid(), email: z.string().email(),
@@ -46,7 +48,7 @@ async function sessionRequest(path: string, body: unknown): Promise<Session> {
 export async function startManagedSignup(input: z.infer<typeof managedSignupSchema>) {
   const existing = await prisma.user.findFirst({ where: { email: { equals: input.email, mode: 'insensitive' } }, select: { id: true } });
   if (existing) throw new ManagedAuthError(409, 'An account with these details already exists. Sign in or reset your password.');
-  const result = await authRequest('/signup', { email: input.email, password: input.password, data: { firstName: input.firstName, lastName: input.lastName || '' } });
+  const result = await authRequest('/signup', { email: input.email, password: input.password, data: { firstName: input.firstName, lastName: input.lastName || '', ...(input.businessName ? {businessName:input.businessName} : {}) } });
   if (result && typeof result === 'object' && 'access_token' in result && result.access_token) throw new ManagedAuthError(503, 'Email confirmation is not configured. Please contact support.');
 }
 export async function managedPasswordLogin(email: string, password: string) {
@@ -85,7 +87,9 @@ export async function managedUser(session: Session, allowCreate: boolean) {
   if (!user && allowCreate) {
     const collision = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
     if (collision) throw new ManagedAuthError(409, 'This account needs to be migrated by FreshPick support.');
+    const draftName=businessNameSchema.safeParse(identity.user_metadata?.businessName);
     user = await prisma.user.create({ data: {
+      ...(draftName.success?{businessOnboardingDraft:{name:draftName.data}}:{}),
       email, firstName: identity.user_metadata?.firstName || 'Member', lastName: identity.user_metadata?.lastName || null,
       supabaseAuthId: identity.id, isEmailVerified: true, role: 'customer',
     } });

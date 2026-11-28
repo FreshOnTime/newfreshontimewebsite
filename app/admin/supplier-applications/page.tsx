@@ -16,6 +16,7 @@ interface Application {
   name: string;
   businessType?:string;
   businessSpecialties?:string[];
+  businessOfferingLabels?:string[];
   contactName: string;
   city?: string | null;
   country?: string | null;
@@ -69,7 +70,8 @@ function ReviewCard({ application, saved }: { application: Application; saved: (
         {!!application.notes && <section className="rounded-lg border border-border bg-secondary/40 p-4">
           <h3 className="text-sm font-semibold text-foreground">Proposed offerings</h3>
           {application.proposedProducts.length ? (
-            <div className="mt-3 flex flex-wrap gap-2">
+            {!!application.businessOfferingLabels?.length&&<p className="mt-2 text-sm">Declared offerings (review before approval): {application.businessOfferingLabels.join(' · ')}</p>}
+           <div className="mt-3 flex flex-wrap gap-2">
               {application.proposedProducts.map(product => (
                 <Badge key={product} variant="secondary" className="max-w-full whitespace-normal text-left">
                   {product}

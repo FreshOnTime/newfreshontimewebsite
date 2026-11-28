@@ -18,6 +18,7 @@ const inputClass = 'h-12 rounded-lg border-border bg-background px-4 shadow-none
 export function CustomerSignupForm({ requestedDestination, managed = false }: { requestedDestination?: string; managed?: boolean }) {
   const businessSignup = accountDestination('customer', requestedDestination).split('?')[0] === '/dashboard/business-onboarding';
   const [formData, setFormData] = useState({
+    businessName: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -52,7 +53,7 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
       setFieldErrors(null);
 
       if (managed) {
-        const result = await signup({firstName: formData.firstName, lastName: formData.lastName || undefined, email: formData.email, password: formData.password});
+        const result = await signup({firstName: formData.firstName, lastName: formData.lastName || undefined, email: formData.email, password: formData.password,...(businessSignup?{businessName:formData.businessName.trim()}:{})});
         if (result.verificationRequired) { setVerificationSent(true); return; }
         router.push(accountDestination('customer', requestedDestination));
         return;
@@ -66,7 +67,7 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
 
       });
       if (!validation.isValid) { setFieldErrors(validation.errors || null); return; }
-      await signup(validation.data!);
+      await signup({...validation.data!,...(businessSignup?{businessName:formData.businessName.trim()}:{})});
       router.push(accountDestination('customer', requestedDestination));
     } catch (e) {
       console.error('Customer signup failed', e);
@@ -105,12 +106,13 @@ export function CustomerSignupForm({ requestedDestination, managed = false }: { 
               <div className="mb-5 flex items-end justify-between gap-4">
                 <div>
                   <p className="text-xs font-bold normal-case text-brand-green">01 · Account</p>
-                  <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">About you</h2>
+                  <h2 className="mt-2 font-serif text-2xl font-normal text-foreground">{businessSignup?'About you and your business':'About you'}</h2>
                 </div>
                 <span className="text-xs text-muted-foreground">* required</span>
               </div>
 
               <div className="grid gap-5 md:grid-cols-2">
+                {businessSignup&&<div className="md:col-span-2"><Field label="Business or brand name *" htmlFor="businessName"><Input id="businessName" autoComplete="organization" maxLength={150} required value={formData.businessName} onChange={e=>handleInputChange("businessName",e.target.value)} className={inputClass}/></Field></div>}
                 <Field label="First name *" htmlFor="firstName">
                   <Input id="firstName" autoComplete="given-name" value={formData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} required className={inputClass} />
                 </Field>

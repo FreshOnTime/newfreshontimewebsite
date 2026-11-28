@@ -54,7 +54,8 @@ export default async function MakerPage({ params }: Props) {
       <p className="fp-kicker mt-6">{businessTypeLabel(maker.businessType)}</p><h1 className="mt-3 font-serif text-4xl text-brand-green md:text-6xl">{maker.name}</h1>
       <div className="flex flex-wrap items-center gap-3 mt-4"><a href="#connect-business" className="fp26-action">{presentation.action}</a><SavePick href={`/makers/${handle}`} title={maker.name} kind={businessTypeLabel(maker.businessType)} /></div>
         <p className="mt-3 text-sm font-medium">{[maker.makerTown, maker.makerFulfilment].filter(Boolean).join(' · ')}</p>
-      {!!maker.businessSpecialties?.length && <ul aria-label="Business specialities" className="mt-4 flex flex-wrap gap-2">{maker.businessSpecialties.map(s=><li key={s}><Link className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm text-brand-green hover:underline" href={'/discover?specialty='+encodeURIComponent(s)}>{specialtyLabel(s)}</Link></li>)}</ul>}
+      {!!maker.businessOfferingLabels?.length&&<p className="mt-4 text-sm">{maker.businessOfferingLabels.join(' · ')}</p>}
+       {!!maker.businessSpecialties?.length && <ul aria-label="Business specialities" className="mt-4 flex flex-wrap gap-2">{maker.businessSpecialties.map(s=><li key={s}><Link className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm text-brand-green hover:underline" href={'/discover?specialty='+encodeURIComponent(s)}>{specialtyLabel(s)}</Link></li>)}</ul>}
       {maker.makerBio && <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words leading-7 text-muted-foreground">{maker.makerBio}</p>}
       </div>{leadItem && <Link href={`/makers/${handle}/items/${leadItem.slug}`} className="lux-storefront-feature"><MakerPhoto image={leadItem.image} name={leadItem.name}/><span>Featured offering · {leadItem.name} <span aria-hidden="true">↗</span></span></Link>}
     </header>
