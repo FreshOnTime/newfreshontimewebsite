@@ -49,7 +49,7 @@ export function SuppliersPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error || 'Failed to delete supplier');
       toast.success('Supplier deleted');
-      fetchItems();
+      setPage(1);fetchItems();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete supplier');
     }
