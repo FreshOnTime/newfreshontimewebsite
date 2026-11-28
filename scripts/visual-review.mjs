@@ -176,6 +176,7 @@ async function main(){
             if(name==='join'){
               const signupLink=page.getByRole('link',{name:'Create a free business account',exact:true});
               assert(await signupLink.isVisible());
+              assert(await page.getByText('Free to get started.',{exact:true}).isVisible());
               assert.equal(await page.getByRole('combobox',{name:'Business type',exact:true}).count(),0);
               const target=new URL(await signupLink.getAttribute('href'),base);
               assert.equal(target.pathname,'/auth/signup/customer');
@@ -192,6 +193,8 @@ async function main(){
               await ready(page,new URL('/join',base).href);
             }
             if(name==='businesses'){
+              assert(await page.getByRole('heading',{name:'Good food deserves to be discovered.',exact:true}).isVisible());
+              assert(await page.getByRole('link',{name:'Get started for free',exact:true}).isVisible());
               assert.equal(await page.locator('.fp-business-type-card img').count(),3);
               await page.getByRole('button',{name:'Café',exact:true}).click();
               assert.equal(await page.getByRole('link',{name:'Create your business profile'}).getAttribute('href'),'/join?type=cafe');
